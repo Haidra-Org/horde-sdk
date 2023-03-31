@@ -1,0 +1,29 @@
+{
+    "total": 4,
+    "image": "https://s3cdn.stability.ai/diffusion-db/897193dc-5ff3-492b-8903-735434eca56b.webp",
+    "image_id": "897193dc-5ff3-492b-8903-735434eca56b",
+    "average": 3.2,
+    "times_rated": 4,
+    "ratings": [
+      {
+        "username": "V2260#15320",
+        "rating": 10,
+        "artifacts": 1
+      },
+      {
+        "username": "Dnezad#15261",
+        "rating": 1,
+        "artifacts": null
+      },
+      {
+        "username": "Pretadog#15827",
+        "rating": 1,
+        "artifacts": null
+      },
+      {
+        "username": "alien#6397",
+        "rating": 1,
+        "artifacts": null
+      }
+    ]
+  }

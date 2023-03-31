@@ -1,0 +1,2005 @@
+{
+    "total": 250,
+    "ratings": [
+      {
+        "username": "AstroAi#9272",
+        "image": "https://s3cdn.stability.ai/diffusion-db/91297b0e-e361-4fbe-a4d7-287263989396.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 10,
+        "times_rated": 2
+      },
+      {
+        "username": "AstroAi#9272",
+        "image": "https://s3cdn.stability.ai/diffusion-db/70b13b76-2718-4576-85ab-377e92e1165f.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 5,
+        "times_rated": 2
+      },
+      {
+        "username": "DoggyDude#5108",
+        "image": "https://s3cdn.stability.ai/diffusion-db/ab2fce08-8641-43a0-b45e-b5bf6bc0c0af.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 5,
+        "times_rated": 2
+      },
+      {
+        "username": "AstroAi#9272",
+        "image": "https://s3cdn.stability.ai/diffusion-db/608aa509-d9df-47d4-b31c-bfd53d57a96b.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 5,
+        "times_rated": 2
+      },
+      {
+        "username": "2#11545",
+        "image": "https://s3cdn.stability.ai/diffusion-db/f7a53372-9288-454c-8c5a-7fed8c8e5322.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 5,
+        "times_rated": 2
+      },
+      {
+        "username": "papa#664",
+        "image": "https://s3cdn.stability.ai/diffusion-db/a4f6a537-e063-4168-a11b-7e8f2d4b5726.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "GGTumblr#15674",
+        "image": "https://s3cdn.stability.ai/diffusion-db/f4e15747-4d26-4eb1-ae6e-4b627ac5fec8.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "DoggyDude#5108",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d659150c-43da-4a0b-8262-edf444b94546.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "eyyyeuyyuey#16520",
+        "image": "https://s3cdn.stability.ai/diffusion-db/dba86d5e-36b2-437d-9e98-1304e3e645be.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "ThiagoMaia#14149",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d58fc513-5163-49cd-8338-38fd8eead22d.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Clipper152#5709",
+        "image": "https://s3cdn.stability.ai/diffusion-db/523a8847-e459-4105-ad7d-9dd41e8fdf8a.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "LiteraryYandere#5717",
+        "image": "https://s3cdn.stability.ai/diffusion-db/4e12efff-0764-43f9-923e-21e0cb5af8cc.webp",
+        "rating": 10,
+        "artifacts": 5,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Determinism#5391",
+        "image": "https://s3cdn.stability.ai/diffusion-db/9d249646-24fd-48d7-8abe-a648da5fe311.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Aryankk#11569",
+        "image": "https://s3cdn.stability.ai/diffusion-db/b5d97d40-c4fd-48f2-834d-9bb75b95a1a4.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "a12345#9254",
+        "image": "https://s3cdn.stability.ai/diffusion-db/11ac33dd-6f79-4b73-9c6d-cb16c15bbddc.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Akaraiden#10835",
+        "image": "https://s3cdn.stability.ai/diffusion-db/f4235b91-edea-4693-a3df-9baeced2042e.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "V2260#15320",
+        "image": "https://s3cdn.stability.ai/diffusion-db/897193dc-5ff3-492b-8903-735434eca56b.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "DoggyDude#5108",
+        "image": "https://s3cdn.stability.ai/diffusion-db/9b548070-5b4a-461b-9485-d15dd24134ae.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Madman#17857",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d6444649-50ca-4aff-a0e8-b8364247d499.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "DoggyDude#5108",
+        "image": "https://s3cdn.stability.ai/diffusion-db/c07c374f-d81a-4969-8eae-7e175af79b26.webp",
+        "rating": 10,
+        "artifacts": 5,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Zedzbackup#18265",
+        "image": "https://s3cdn.stability.ai/diffusion-db/de50c685-2a96-4c43-b3b3-46cb1fc87d72.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Pybok6868#8083",
+        "image": "https://s3cdn.stability.ai/diffusion-db/26fe4ee8-179e-4fdc-9340-f920a43188dc.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "DoggyDude#5108",
+        "image": "https://s3cdn.stability.ai/diffusion-db/2580938a-56a9-4c25-8b78-a24a4e83405f.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "amf101fma#16623",
+        "image": "https://s3cdn.stability.ai/diffusion-db/7d95d6bf-023a-4209-9816-9e20c861cced.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Jimmmmm#16223",
+        "image": "https://s3cdn.stability.ai/diffusion-db/7660f3aa-5acf-47ae-a877-c725a99cd94e.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "DoggyDude#5108",
+        "image": "https://s3cdn.stability.ai/diffusion-db/85cb4619-de8f-4fd4-9873-86a9c61b7b61.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/c2fc7a77-68c1-4424-bf89-b33871d4eadf.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Radastage#18165",
+        "image": "https://s3cdn.stability.ai/diffusion-db/91cfcfd4-f5cc-4c7c-a62a-d4a3338207e8.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "111111#6707",
+        "image": "https://s3cdn.stability.ai/diffusion-db/783ff06a-8613-442f-a8f4-8b70f8dd1c14.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "LiteraryYandere#5717",
+        "image": "https://s3cdn.stability.ai/diffusion-db/60dc6740-2704-467a-bda5-67719bbdc6c2.webp",
+        "rating": 10,
+        "artifacts": 5,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "DoggyDude#5108",
+        "image": "https://s3cdn.stability.ai/diffusion-db/da83d9b2-2fad-4ef7-9c67-3a1974120287.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "displaypatience14-03#16449",
+        "image": "https://s3cdn.stability.ai/diffusion-db/619453f6-df4a-49b7-9e68-4fa4f54b4308.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Lucas91#12482",
+        "image": "https://s3cdn.stability.ai/diffusion-db/cbb96855-25ba-4662-86b1-08f0dd54bad9.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d0c8da5b-db25-4bbb-918c-f2a1ed324949.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "CaroltheIntern#15650",
+        "image": "https://s3cdn.stability.ai/diffusion-db/4cf63884-897d-47ae-b834-fc1606e95c59.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/7cf27c30-162f-4a8b-bfac-5d5a35543c15.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Faster#10800",
+        "image": "https://s3cdn.stability.ai/diffusion-db/ce414edb-e013-4b2b-8acd-e98009c358d7.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "XXXZero#10627",
+        "image": "https://s3cdn.stability.ai/diffusion-db/756dfaf0-56d5-4ea5-b857-de1072bbbc9c.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Steven Ford#12263",
+        "image": "https://s3cdn.stability.ai/diffusion-db/bf8aaeae-1b8a-408f-aaf1-1598e61bb3f8.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Sdlegend#10042",
+        "image": "https://s3cdn.stability.ai/diffusion-db/bd3fa30a-eed7-4c70-9d4c-5298304dcbf8.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "leee#12594",
+        "image": "https://s3cdn.stability.ai/diffusion-db/a379d69d-32ee-4993-88bd-2d2d0ddc5031.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Madman#17857",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d14ce60d-3fd3-4aa4-bbfd-8abd8f88debe.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Madman#17857",
+        "image": "https://s3cdn.stability.ai/diffusion-db/839beba8-9180-4385-aa94-61d6488c4f81.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "a12345#9254",
+        "image": "https://s3cdn.stability.ai/diffusion-db/12bdcb40-219a-48e9-805c-69d56790776e.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "FORTTE#6029",
+        "image": "https://s3cdn.stability.ai/diffusion-db/5f814d7a-d9d8-4a1b-8b95-27ef5dee1868.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "bruhmomentum#8562",
+        "image": "https://s3cdn.stability.ai/diffusion-db/31e2ade5-07e7-4d73-b358-ceecdcdb6a2d.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d1398f1b-c680-49fe-8356-8f8c7e87baa2.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Clipper152#5709",
+        "image": "https://s3cdn.stability.ai/diffusion-db/060c62ee-5d10-41b2-830a-eed000fbef9e.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "RiddleName#5897",
+        "image": "https://s3cdn.stability.ai/diffusion-db/14c59825-9634-41d6-88b1-20cc19595abe.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "amf101fma#16623",
+        "image": "https://s3cdn.stability.ai/diffusion-db/7066fa28-baa1-40ee-ba60-61831a201741.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "angrynch#10089",
+        "image": "https://s3cdn.stability.ai/diffusion-db/0a8a0fec-fe68-49af-9157-48dfc7ab0e1d.webp",
+        "rating": 10,
+        "artifacts": 5,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "111111#6707",
+        "image": "https://s3cdn.stability.ai/diffusion-db/ba9daa01-c3e8-4b47-805e-7f77045d8768.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/1bd115e5-7807-486f-8cc2-1adff7e60974.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "rafa777#9549",
+        "image": "https://s3cdn.stability.ai/diffusion-db/966e4d54-ee0d-4793-afb7-517c42ace319.webp",
+        "rating": 10,
+        "artifacts": 5,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/6109f87b-0c31-4762-9df9-ca3b0f37907f.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Chicken Burger Lord#15739",
+        "image": "https://s3cdn.stability.ai/diffusion-db/52b11c36-225a-4347-b27a-fe37f73cb95c.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/a3c636e5-06fa-46f1-8e98-328d37069414.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Khaled#7715",
+        "image": "https://s3cdn.stability.ai/diffusion-db/2d3bb905-9853-40e0-9d6b-c7914eeceb05.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "openco#7464",
+        "image": "https://s3cdn.stability.ai/diffusion-db/6e494c78-c4a9-412e-8c34-bcc8d3048eab.webp",
+        "rating": 10,
+        "artifacts": 5,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Error54#15164",
+        "image": "https://s3cdn.stability.ai/diffusion-db/3a29fc66-932d-4e0c-b4e2-f6ae931edd71.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "111111#6707",
+        "image": "https://s3cdn.stability.ai/diffusion-db/3bba5f61-08a2-4cab-a06d-1387b7963b38.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "AzuraiBoz#18231",
+        "image": "https://s3cdn.stability.ai/diffusion-db/3075820f-8f46-499a-bee7-4278222543d4.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "AstroAi#9272",
+        "image": "https://s3cdn.stability.ai/diffusion-db/bb231fa1-379f-4456-97bd-547b2d97b8da.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "flaminghottaco#17498",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d5e05e91-56f5-406e-8774-fa3a21ba3f9b.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "submit#18019",
+        "image": "https://s3cdn.stability.ai/diffusion-db/74d47a74-f05c-490c-9bf7-afb554946670.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Experimenter#17619",
+        "image": "https://s3cdn.stability.ai/diffusion-db/cd258f07-f007-4fe6-beb7-2f047aa16338.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "amf101fma#16623",
+        "image": "https://s3cdn.stability.ai/diffusion-db/7421c69c-750d-457d-bbf7-4cc1e723a25c.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/7036bb0f-f3d8-44bc-8637-778a8725d23e.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "ffork#10167",
+        "image": "https://s3cdn.stability.ai/diffusion-db/66d1c308-fb42-4f1b-bce8-c3dc2cf5a33e.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "LiteraryYandere#5717",
+        "image": "https://s3cdn.stability.ai/diffusion-db/32363700-aabf-48aa-a7d3-99dddfff3441.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "AstroAi#9272",
+        "image": "https://s3cdn.stability.ai/diffusion-db/fed13682-c751-41fe-a0c6-961f4222afaa.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 6,
+        "times_rated": 3
+      },
+      {
+        "username": "AstroAi#9272",
+        "image": "https://s3cdn.stability.ai/diffusion-db/50b63550-e2c0-4942-9f17-1b1741f35e81.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 6,
+        "times_rated": 3
+      },
+      {
+        "username": "XenaXen#10591",
+        "image": "https://s3cdn.stability.ai/diffusion-db/91297b0e-e361-4fbe-a4d7-287263989396.webp",
+        "rating": 9,
+        "artifacts": 4,
+        "average": 10,
+        "times_rated": 2
+      },
+      {
+        "username": "adfarrwrites#2664",
+        "image": "https://s3cdn.stability.ai/diffusion-db/4e369145-8f16-4c24-8bd6-98a224326851.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Error54#15164",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d9feceae-36ec-4ae1-b90f-7ce1ea994ee8.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/0fbf2167-4f38-4d00-a59c-69e99e52eab8.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "King1#6968",
+        "image": "https://s3cdn.stability.ai/diffusion-db/091391fa-1777-4692-a956-48171ed53da3.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Trixtine#14933",
+        "image": "https://s3cdn.stability.ai/diffusion-db/fe0e7ee4-284c-40a0-8ae6-fc5a2772844f.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "DarHemGa#11770",
+        "image": "https://s3cdn.stability.ai/diffusion-db/dacbc99b-a376-47ad-8221-559df0e0bc0e.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Madman#17857",
+        "image": "https://s3cdn.stability.ai/diffusion-db/fe0fd762-5a98-4000-8f4d-8cf76c6f79d1.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "RidgwayT#5890",
+        "image": "https://s3cdn.stability.ai/diffusion-db/2d6254f2-ae6c-4445-b5ca-e7f31d4ae158.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "a12345#9254",
+        "image": "https://s3cdn.stability.ai/diffusion-db/0eeca9a4-db86-4653-995d-6c62572667ec.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/6e9088de-6297-499d-9e18-e308eb2548fa.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Underwater_Silver#7361",
+        "image": "https://s3cdn.stability.ai/diffusion-db/12e89801-7b51-4705-94ef-8e061ef842c3.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "MetaphoricalJo#2858",
+        "image": "https://s3cdn.stability.ai/diffusion-db/996caee0-b547-449f-9e9e-87f3cd1663b2.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Madman#17857",
+        "image": "https://s3cdn.stability.ai/diffusion-db/cb85da05-e4f3-48bb-b140-034d6a99f7e8.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/1c3093da-560a-496c-a06d-def67df39ce3.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "papa#664",
+        "image": "https://s3cdn.stability.ai/diffusion-db/870adb42-db18-481e-9da0-032c23382c71.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "2#11545",
+        "image": "https://s3cdn.stability.ai/diffusion-db/b544b051-29c9-428f-ab66-1065836df6f5.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Thegfn#8664",
+        "image": "https://s3cdn.stability.ai/diffusion-db/05e62e3d-1b96-4efa-af58-7d0b0d859132.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "King1#6968",
+        "image": "https://s3cdn.stability.ai/diffusion-db/120953f6-5a24-4ff3-a6d0-3ea0063e9936.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "thecustomcoder2325#16436",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d5cc5a5e-28e9-41f0-a3fb-a2b81dcbdc81.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "mister_checkers#9958",
+        "image": "https://s3cdn.stability.ai/diffusion-db/3c277a35-36d6-41ef-b3d1-2a028d0a0ed9.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Madman#17857",
+        "image": "https://s3cdn.stability.ai/diffusion-db/cfc10987-dfc0-4d43-8348-bb80f698dd76.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Madman#17857",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d90f0087-9226-430b-99bb-01d3991b8de9.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "111111#6707",
+        "image": "https://s3cdn.stability.ai/diffusion-db/1334327c-b369-4e6f-a2d9-9a842b551971.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/f0af0a51-3e5f-4115-950f-748fa3290d53.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/347afea1-a721-46d4-b614-23058f8edd11.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "King1#6968",
+        "image": "https://s3cdn.stability.ai/diffusion-db/1bae9f0a-6433-4337-a835-2d7716091c29.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "rafa777#9549",
+        "image": "https://s3cdn.stability.ai/diffusion-db/20f4566d-4ec1-4990-83e2-6230bb370ce2.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Madman#17857",
+        "image": "https://s3cdn.stability.ai/diffusion-db/21287def-838b-4faf-9b44-baf47d823ffa.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "MrPoutine#16926",
+        "image": "https://s3cdn.stability.ai/diffusion-db/70aa054b-4c62-4e6e-b7c8-73503fe7474a.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "V2260#15320",
+        "image": "https://s3cdn.stability.ai/diffusion-db/77f9d7b8-90e7-4299-979c-b5b31fae46c0.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/bee70aa4-63f6-4881-aec5-d30b8cc35f5c.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Experimenter#17619",
+        "image": "https://s3cdn.stability.ai/diffusion-db/a0ba47a7-4fc6-4972-a9be-3597354dbc28.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "theclownofthecircus#2470",
+        "image": "https://s3cdn.stability.ai/diffusion-db/793cbfe9-2cfa-46ee-99b9-6c8992838849.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "111111#6707",
+        "image": "https://s3cdn.stability.ai/diffusion-db/867de4fc-9b85-4543-8f56-af27346cdadf.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "openco#7464",
+        "image": "https://s3cdn.stability.ai/diffusion-db/48055e5d-5a26-4c86-b918-76efbd541d90.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "amf101fma#16623",
+        "image": "https://s3cdn.stability.ai/diffusion-db/9cfb41b7-c0e6-46c9-8d0e-f6030714f76a.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "kiprona#12659",
+        "image": "https://s3cdn.stability.ai/diffusion-db/5643b95b-708e-4eab-ab62-309be1ca4022.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "111111#6707",
+        "image": "https://s3cdn.stability.ai/diffusion-db/8546a4ab-e5b3-4ffa-a496-d477a90d87cf.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "AstroAi#9272",
+        "image": "https://s3cdn.stability.ai/diffusion-db/ddd568e3-9f70-45c7-8b98-aa55b549fda1.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Madman#17857",
+        "image": "https://s3cdn.stability.ai/diffusion-db/c9d7e3b3-5b10-4705-a3c4-97c9942f2f02.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "LiteraryYandere#5717",
+        "image": "https://s3cdn.stability.ai/diffusion-db/cd2211f6-7cc3-4596-a96d-e837f8543488.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "Blade#17289",
+        "image": "https://s3cdn.stability.ai/diffusion-db/ce8d3833-1172-4364-8cd7-0c0c0319d7f8.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/4d42a67e-49df-41ad-84e4-6b9e20563b55.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "projectcybersyn1#10560",
+        "image": "https://s3cdn.stability.ai/diffusion-db/4c2f34bf-4924-4973-984b-b3677ab67f62.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/667aac22-fc0c-4e24-a525-0f68fc7e3fcc.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "papa#664",
+        "image": "https://s3cdn.stability.ai/diffusion-db/8b4d65b7-936d-4058-97f3-4ecb1b3af51d.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/7ea985a3-bbbf-49c0-ab2f-fb8f691bf499.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "mlfypoo#15299",
+        "image": "https://s3cdn.stability.ai/diffusion-db/3a61f4e1-62ee-4d90-a27a-9400bda701d3.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "StalkerOfCreativity1999#7783",
+        "image": "https://s3cdn.stability.ai/diffusion-db/1f79eab8-5c27-4275-b91f-d0b2b46ae95e.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "patience18.03#17350",
+        "image": "https://s3cdn.stability.ai/diffusion-db/fddc4c45-4a74-468a-83c3-b71952bf8a72.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Art_AI_mage_Wen#13786",
+        "image": "https://s3cdn.stability.ai/diffusion-db/738e19cb-c32a-45b3-a0ac-80f10d1da832.webp",
+        "rating": 10,
+        "artifacts": 5,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "AstroAi#9272",
+        "image": "https://s3cdn.stability.ai/diffusion-db/b9798960-9485-4210-b8d1-3cb65867733b.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "GGTumblr#15674",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d0acb731-5867-42bc-a845-039146652a91.webp",
+        "rating": 9,
+        "artifacts": 3,
+        "average": 5,
+        "times_rated": 2
+      },
+      {
+        "username": "LiteraryYandere#5717",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d5e507f9-b0fe-4826-ab8d-1aa8ac27ea55.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "mister_checkers#9958",
+        "image": "https://s3cdn.stability.ai/diffusion-db/78cb3723-73fa-466a-ba4b-47cd062b8a1a.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Trollemperor#11970",
+        "image": "https://s3cdn.stability.ai/diffusion-db/f8cb5ecc-01e5-4998-bf05-401e2ba4eeff.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/a668c43e-8716-4d1f-91a9-3fc3b0f24f11.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "canteroprime789#12447",
+        "image": "https://s3cdn.stability.ai/diffusion-db/4c0cc9c6-2308-4f51-97c1-9fc507c64764.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Dinosaurier25565#1795",
+        "image": "https://s3cdn.stability.ai/diffusion-db/3e9c71f8-90c2-4d27-b101-35f71ea4a13d.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "GGTumblr#15674",
+        "image": "https://s3cdn.stability.ai/diffusion-db/8242a4f1-8901-4403-907c-a4b974fec32d.webp",
+        "rating": 9,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 2
+      },
+      {
+        "username": "mister_checkers#9958",
+        "image": "https://s3cdn.stability.ai/diffusion-db/81069569-322f-4aad-9743-fe783a47b49e.webp",
+        "rating": 9,
+        "artifacts": 2,
+        "average": 5,
+        "times_rated": 2
+      },
+      {
+        "username": "amf101fma#16623",
+        "image": "https://s3cdn.stability.ai/diffusion-db/79e0549e-c2a9-401d-881f-7c9f81b99bba.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 3
+      },
+      {
+        "username": "Ai Studio Art#1492",
+        "image": "https://s3cdn.stability.ai/diffusion-db/98d4d3a6-2b6e-451a-9246-090b52c2b363.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 6,
+        "times_rated": 3
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/36d9e5b0-7909-4f04-ad90-1375e660de3e.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "mister_checkers#9958",
+        "image": "https://s3cdn.stability.ai/diffusion-db/f34af67d-4415-4fd0-af89-9f03ba8bb20c.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "ffork#10167",
+        "image": "https://s3cdn.stability.ai/diffusion-db/4db35fa7-d17c-4fcd-b54f-579185244070.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "Joy#18122",
+        "image": "https://s3cdn.stability.ai/diffusion-db/658f3e41-5fec-43aa-a770-5a49b2cf1fa6.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/b9367f9c-1ec0-4104-ab37-b97b757ecc51.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "Johnnyrebel211#16119",
+        "image": "https://s3cdn.stability.ai/diffusion-db/72ecf2f1-1a93-43d2-b894-3b228c71ea2d.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "alex.#16294",
+        "image": "https://s3cdn.stability.ai/diffusion-db/8c3c444a-9699-46c8-a034-0025ee54110c.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "2#11545",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d5f3d59f-869f-47fa-b371-5b708b22e1d2.webp",
+        "rating": 9,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/016c0d97-8ef5-4438-8286-cc5a4b8bb483.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "MrPoutine#16926",
+        "image": "https://s3cdn.stability.ai/diffusion-db/1591284b-6559-484e-afd7-cbdf3f4b8dfb.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "theclownofthecircus#2470",
+        "image": "https://s3cdn.stability.ai/diffusion-db/dd900dc2-b0ab-404e-8c9d-8811a86510d2.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "Sil-the-Kind#16557",
+        "image": "https://s3cdn.stability.ai/diffusion-db/6a37bba8-f61c-4436-8da4-5449f3b5a5c7.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 7,
+        "times_rated": 4
+      },
+      {
+        "username": "LiteraryYandere#5717",
+        "image": "https://s3cdn.stability.ai/diffusion-db/3226b1e5-d189-499e-b2d1-7bb01b689a61.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/526b27cf-b0f4-457a-a2ed-1c5961acee33.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/77f7708a-d078-43e0-8d3c-7cb8cd611d33.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "UMT#10608",
+        "image": "https://s3cdn.stability.ai/diffusion-db/6cbc3428-7e81-419b-8287-ba19c9ac1dcd.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "V2260#15320",
+        "image": "https://s3cdn.stability.ai/diffusion-db/2e4e033b-0ae1-4ab0-b5a8-e94e332bc575.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "ffork#10167",
+        "image": "https://s3cdn.stability.ai/diffusion-db/c5d5da95-fb3f-4c7b-b714-7664e7a016cb.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "theclownofthecircus#2470",
+        "image": "https://s3cdn.stability.ai/diffusion-db/b2de9f61-0206-4cf7-ab80-dc05938ffa14.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "openco#7464",
+        "image": "https://s3cdn.stability.ai/diffusion-db/c3ab8e96-f85d-4c08-8238-680a48c07068.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "xenograftsleepingdog#17213",
+        "image": "https://s3cdn.stability.ai/diffusion-db/df4eb115-d79f-47f5-898c-063771a95926.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "displaypatience14-03#16449",
+        "image": "https://s3cdn.stability.ai/diffusion-db/97355a39-e450-4d7e-99dc-3041e823571b.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "111111#6707",
+        "image": "https://s3cdn.stability.ai/diffusion-db/efd7ffbc-0421-4916-ad0c-759f5ab8eaf8.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/e0e6bbd6-acc7-4bfe-b2d9-9056e25f71c7.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Rigoberta#16046",
+        "image": "https://s3cdn.stability.ai/diffusion-db/3a8946fb-a1bd-46ab-b281-752cfcfe9de8.webp",
+        "rating": 9,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "theclownofthecircus#2470",
+        "image": "https://s3cdn.stability.ai/diffusion-db/6e4a583a-3cae-4b48-972f-a269d0113326.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "DoggyDude#5108",
+        "image": "https://s3cdn.stability.ai/diffusion-db/f6c76a5f-9cd1-4fe7-9e07-887c987dfdbd.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "Givemeacool#11287",
+        "image": "https://s3cdn.stability.ai/diffusion-db/1be3ab97-0598-4003-b8a9-76b52c45ba60.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "juglipaff#17985",
+        "image": "https://s3cdn.stability.ai/diffusion-db/7ace0f45-b19a-48c5-ad2d-244e57ce6db7.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "aerfcyqwgeufgy4qwhegf#17860",
+        "image": "https://s3cdn.stability.ai/diffusion-db/86e9c90f-d179-465a-bf19-233b22b6020f.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/8038b6da-eeaf-459c-82a8-ac871a398b11.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/a0eff64c-d056-492f-a469-547ff488a058.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "theclownofthecircus#2470",
+        "image": "https://s3cdn.stability.ai/diffusion-db/8d68cf0a-7a7d-47a8-94bb-71f009761521.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "AstroAi#9272",
+        "image": "https://s3cdn.stability.ai/diffusion-db/1a2b8483-4dc8-45b9-a800-e97e3bd90dd2.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "DoggyDude#5108",
+        "image": "https://s3cdn.stability.ai/diffusion-db/6239c8d9-9fab-4b36-96dd-155a3bb357c5.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "wearenot#17251",
+        "image": "https://s3cdn.stability.ai/diffusion-db/5e7dc228-9ae4-42bc-9805-09243ccf4b1a.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "HyenaGhost#1395",
+        "image": "https://s3cdn.stability.ai/diffusion-db/e8ca93e6-f881-442e-8438-07aeca735400.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "papa#664",
+        "image": "https://s3cdn.stability.ai/diffusion-db/a2b00025-bac6-4501-98bc-aca4c0e5870b.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Danixt#16161",
+        "image": "https://s3cdn.stability.ai/diffusion-db/149df71b-5230-4a9b-a102-0f901820f741.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "DoggyDude#5108",
+        "image": "https://s3cdn.stability.ai/diffusion-db/cba92440-1323-41a2-b4aa-6b27255785c4.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "canteroprime789#12447",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d531ea3f-9dc0-4eb2-a10f-ccdf566a6804.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "strider1184#9148",
+        "image": "https://s3cdn.stability.ai/diffusion-db/bf7682f2-6a8c-41ab-b20c-94fd65e6754b.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Sdlegend#10042",
+        "image": "https://s3cdn.stability.ai/diffusion-db/46d5284e-75ee-4d97-bab0-acef690ecffd.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "papa#664",
+        "image": "https://s3cdn.stability.ai/diffusion-db/89961722-dea2-4d45-a5f5-2da9c13ae3b6.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "canteroprime789#12447",
+        "image": "https://s3cdn.stability.ai/diffusion-db/5854d50c-ef1d-4dc5-8950-7fdcd1473da2.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "LiteraryYandere#5717",
+        "image": "https://s3cdn.stability.ai/diffusion-db/9cbc6441-4a55-4821-88cc-64db4f3842d1.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "submit#18019",
+        "image": "https://s3cdn.stability.ai/diffusion-db/8a9b336e-45c9-4325-b153-3e231e730ca9.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "Madman#17857",
+        "image": "https://s3cdn.stability.ai/diffusion-db/7eec0d9e-322e-4ab3-9e04-77e6216886dc.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "DoggyDude#5108",
+        "image": "https://s3cdn.stability.ai/diffusion-db/737a5077-e326-48bd-bf5c-99d49e72c5f3.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "DoggyDude#5108",
+        "image": "https://s3cdn.stability.ai/diffusion-db/1f0b6fb0-fa23-46ef-87c5-378ff85931b5.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Thomaspuss#13402",
+        "image": "https://s3cdn.stability.ai/diffusion-db/5b76a53c-20f5-42b5-92f2-1fe7291f8a07.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "111111#6707",
+        "image": "https://s3cdn.stability.ai/diffusion-db/5b5af598-2f4a-4f6c-add0-7c30bf257934.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Khaled#7715",
+        "image": "https://s3cdn.stability.ai/diffusion-db/31fe89ec-a5bc-4e84-8890-a5d276fdb170.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Madman#17857",
+        "image": "https://s3cdn.stability.ai/diffusion-db/761c2c58-6e13-4b4f-80f1-787066b1c4c2.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "AmgdeG#8043",
+        "image": "https://s3cdn.stability.ai/diffusion-db/2358b94a-98eb-4edc-8015-785737224295.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "King1#6968",
+        "image": "https://s3cdn.stability.ai/diffusion-db/07cb5f50-cd50-497d-bd13-c505a616d32e.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Cricca#6913",
+        "image": "https://s3cdn.stability.ai/diffusion-db/032717e1-2e5d-4ba8-8802-9837ed8269fc.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "MetaphoricalJo#2858",
+        "image": "https://s3cdn.stability.ai/diffusion-db/03460c32-3379-4feb-a837-d2508255c19b.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/a9ce308d-36c2-4373-b5b2-efe1c7350a77.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "CYNKM#16118",
+        "image": "https://s3cdn.stability.ai/diffusion-db/5882284b-d2fd-4d43-b362-dd9bef6b3c8e.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "AIfun#18318",
+        "image": "https://s3cdn.stability.ai/diffusion-db/0a7355f5-8df1-44bb-bdf4-7d8775e82283.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "lightthedark#14959",
+        "image": "https://s3cdn.stability.ai/diffusion-db/ce04ad67-fdd2-4fb7-b2d1-5a0d5392bc3a.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "lumenale15#17715",
+        "image": "https://s3cdn.stability.ai/diffusion-db/983b6f3b-99f0-4e1c-9c8f-b32f98132390.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "anonymous#0",
+        "image": "https://s3cdn.stability.ai/diffusion-db/31d07797-f196-4597-a5b9-08340fecf0a8.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Khaled#7715",
+        "image": "https://s3cdn.stability.ai/diffusion-db/3273931f-5754-4c65-ab8b-4e39f34ba8c6.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "mister_checkers#9958",
+        "image": "https://s3cdn.stability.ai/diffusion-db/602d3776-c7a7-427c-bad0-03ca55d5be27.webp",
+        "rating": 9,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "papa#664",
+        "image": "https://s3cdn.stability.ai/diffusion-db/e5f9f550-4451-4c64-ba12-4a8ffcf0fafd.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "Another Briscou#8324",
+        "image": "https://s3cdn.stability.ai/diffusion-db/237d10a1-c71d-4fdf-9f7e-a8b62b1b9d73.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/5c71cff5-d055-43a4-b48e-2ece0832896d.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "Kaminskiy#6648",
+        "image": "https://s3cdn.stability.ai/diffusion-db/3077efd0-4b5d-45df-afda-5f5ade2a2939.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Timmy'sZeldaobsession#15402",
+        "image": "https://s3cdn.stability.ai/diffusion-db/66b02076-c7d2-490c-8f82-09999116164c.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "a12345#9254",
+        "image": "https://s3cdn.stability.ai/diffusion-db/0e916dfe-f218-4fb2-90d4-db67c4f32904.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "neven#9580",
+        "image": "https://s3cdn.stability.ai/diffusion-db/a7bf6dbc-a7ea-4bb1-a83b-dac95edc0ca1.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "Thegfn#8664",
+        "image": "https://s3cdn.stability.ai/diffusion-db/031783be-21c4-406e-bb67-a05d589a5771.webp",
+        "rating": 9,
+        "artifacts": 5,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "AstroAi#9272",
+        "image": "https://s3cdn.stability.ai/diffusion-db/d5246817-b540-4881-96f4-9c73459b95e8.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "AdrienCooper#16093",
+        "image": "https://s3cdn.stability.ai/diffusion-db/5d480062-da00-4e23-8ee0-40234c4b882b.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "daftblox#2410",
+        "image": "https://s3cdn.stability.ai/diffusion-db/2f5acbdf-07b5-4923-824a-7244ef604d55.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "111111#6707",
+        "image": "https://s3cdn.stability.ai/diffusion-db/13ff3f56-6796-46b1-a81f-64f084f7c2c2.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "displaypatience14-03#16449",
+        "image": "https://s3cdn.stability.ai/diffusion-db/a0ad59f9-d5dd-43a7-a365-f42a326ae980.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Pc#6583",
+        "image": "https://s3cdn.stability.ai/diffusion-db/065f40f3-264c-4225-8f34-9a5ffcdae0f2.webp",
+        "rating": 10,
+        "artifacts": 5,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "Cricca#6913",
+        "image": "https://s3cdn.stability.ai/diffusion-db/03628625-3c1c-4d5c-84d4-1ec7f899d822.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "Davinci#17009",
+        "image": "https://s3cdn.stability.ai/diffusion-db/1982ea6b-034e-4c2b-84a2-93bdc06cb0eb.webp",
+        "rating": 10,
+        "artifacts": 5,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "computaertist#18166",
+        "image": "https://s3cdn.stability.ai/diffusion-db/172b227a-2e05-4476-9973-3eae61ac471b.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "ettie#10213",
+        "image": "https://s3cdn.stability.ai/diffusion-db/ef6674c7-87e4-4cff-a904-c63731caeeec.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "a12345#9254",
+        "image": "https://s3cdn.stability.ai/diffusion-db/0f6565a2-6be4-4379-bac6-2417223af297.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "adeel#5907",
+        "image": "https://s3cdn.stability.ai/diffusion-db/5704a122-971e-44c3-8da3-debc1b49ed46.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "Cricca#6913",
+        "image": "https://s3cdn.stability.ai/diffusion-db/0502b9ad-1659-4189-a6ef-3aeb3cb908ee.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "King1#6968",
+        "image": "https://s3cdn.stability.ai/diffusion-db/13ac887d-fc4a-4e76-8d8d-f87e920d5c23.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Casimir#6449",
+        "image": "https://s3cdn.stability.ai/diffusion-db/4aeb40ac-17a0-4638-9210-86e781b67d0e.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Jarhog#8578",
+        "image": "https://s3cdn.stability.ai/diffusion-db/abf3f3b4-9272-420d-a6da-1992e2ba7309.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Nemoodysseusnoone#6880",
+        "image": "https://s3cdn.stability.ai/diffusion-db/29d19775-3ea8-4225-9a74-2aeddb635702.webp",
+        "rating": 10,
+        "artifacts": 0,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "111111#6707",
+        "image": "https://s3cdn.stability.ai/diffusion-db/2db05e92-4eb6-4d05-a064-031b897054b8.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "AstroAi#9272",
+        "image": "https://s3cdn.stability.ai/diffusion-db/9b57d0a8-1c76-482a-b184-9aa2fc568986.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "papa#664",
+        "image": "https://s3cdn.stability.ai/diffusion-db/02d83840-9aa4-4cc1-8586-e8c0052a3b64.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Thegfn#8664",
+        "image": "https://s3cdn.stability.ai/diffusion-db/31bfd364-1cf1-4f13-8e74-86e7a5ad4f6d.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "R3H#10691",
+        "image": "https://s3cdn.stability.ai/diffusion-db/0f21aa28-9c97-44fd-936d-0ca783dce091.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "Joy#18122",
+        "image": "https://s3cdn.stability.ai/diffusion-db/4fc9ecf3-29dc-41cf-b5c5-d405e3096d27.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "Geigertube#5136",
+        "image": "https://s3cdn.stability.ai/diffusion-db/37d07b58-4a3c-443b-a92a-a6bf3b0f256d.webp",
+        "rating": 10,
+        "artifacts": 5,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Sabb9th#6571",
+        "image": "https://s3cdn.stability.ai/diffusion-db/0bc2875e-f537-4db6-8d17-b554c3e41cff.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "alex.#16294",
+        "image": "https://s3cdn.stability.ai/diffusion-db/6d2a811f-697c-4842-98eb-4a1a68429624.webp",
+        "rating": 10,
+        "artifacts": 4,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "King1#6968",
+        "image": "https://s3cdn.stability.ai/diffusion-db/040d83f5-318f-4879-9f4d-d14b2554ce54.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "DiscoMan2#16855",
+        "image": "https://s3cdn.stability.ai/diffusion-db/5d8a7765-cd5b-4c8a-8a74-a2a3a008f4e3.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "LiteraryYandere#5717",
+        "image": "https://s3cdn.stability.ai/diffusion-db/4429d191-3344-4f2d-91dc-fbcc170a713a.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "LiteraryYandere#5717",
+        "image": "https://s3cdn.stability.ai/diffusion-db/0c71a81b-5b33-4e30-b965-c29c4f8ef567.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "rafa777#9549",
+        "image": "https://s3cdn.stability.ai/diffusion-db/25e8ed06-be22-420e-b0aa-86be3ae7c1e0.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "Khaled#7715",
+        "image": "https://s3cdn.stability.ai/diffusion-db/2fa6189a-f8dd-4ec7-b6f2-27e60625d9a6.webp",
+        "rating": 10,
+        "artifacts": 5,
+        "average": 5,
+        "times_rated": 4
+      },
+      {
+        "username": "khsbvsdiuy#12973",
+        "image": "https://s3cdn.stability.ai/diffusion-db/3b3b0aec-e0db-4472-b02c-795ced94036d.webp",
+        "rating": 10,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "DopeKing#13450",
+        "image": "https://s3cdn.stability.ai/diffusion-db/f7ecbbdd-861f-4f4e-b737-e23ab65717c7.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "ffork#10167",
+        "image": "https://s3cdn.stability.ai/diffusion-db/bdbdd3f4-53bd-4a46-8f00-9b33782027fa.webp",
+        "rating": 10,
+        "artifacts": 3,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "Madman#17857",
+        "image": "https://s3cdn.stability.ai/diffusion-db/7685311d-cfc2-4a55-b101-04a9cc7ce3c2.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 4,
+        "times_rated": 4
+      },
+      {
+        "username": "Khaled#7715",
+        "image": "https://s3cdn.stability.ai/diffusion-db/29f5a4bf-6d3f-4926-995f-af039167c396.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Cricca#6913",
+        "image": "https://s3cdn.stability.ai/diffusion-db/245a6428-0a66-4075-a2f0-75a21b3f553d.webp",
+        "rating": 10,
+        "artifacts": 1,
+        "average": 3,
+        "times_rated": 4
+      },
+      {
+        "username": "Hat_Weaver#1907",
+        "image": "https://s3cdn.stability.ai/diffusion-db/00fb2896-dd65-4166-a5d3-f06a0fa2dfef.webp",
+        "rating": 9,
+        "artifacts": null,
+        "average": 4,
+        "times_rated": 3
+      },
+      {
+        "username": "bune#8577",
+        "image": "https://s3cdn.stability.ai/diffusion-db/3226225d-49b2-45fa-a57f-ffdaf4a4d294.webp",
+        "rating": 10,
+        "artifacts": 2,
+        "average": 3,
+        "times_rated": 4
+      }
+    ]
+  }
