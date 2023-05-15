@@ -66,8 +66,8 @@ def main() -> None:  # noqa: D103
         import style
         import typechecking
 
-        style.main(args.fix)
         typechecking.main()
+        style.main(args.fix)
 
     elif args.clean:
         base_caches_to_remove = [".mypy_cache", ".pytest_cache"]

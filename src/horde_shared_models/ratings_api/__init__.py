@@ -1,7 +1,6 @@
 """Tools for making or interacting with the horde ratings APIs."""
 from .apimodels import (
     ImageRatingsComparisonTypes,
-    Rating_API_Reflection,
     SelectableReturnFormats,
     UserCheckRequest,
     UserCheckResponse,
@@ -18,7 +17,6 @@ from .ratings_client import RatingsAPIClient
 # FIXME
 __all__ = [
     "ImageRatingsComparisonTypes",
-    "Rating_API_Reflection",
     "SelectableReturnFormats",
     "UserCheckRequest",
     "UserCheckResponse",

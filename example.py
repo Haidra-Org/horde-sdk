@@ -2,7 +2,7 @@
 
 import argparse
 
-import requests
+import pydantic
 from horde_shared_models.ratings_api import (
     ImageRatingsComparisonTypes,
     RatingsAPIClient,
@@ -39,13 +39,15 @@ def main() -> None:
         min_ratings=0,
     )
 
-    response: requests.Response = ratingsAPIClient.submitRequest(userValidateRequest)
+    response: pydantic.BaseModel = ratingsAPIClient.submitRequest(userValidateRequest)
+    if not isinstance(response, UserValidateResponse):
+        raise Exception("The response type doesn't match expected one!")
+
     responseJson = response.json()
     print(responseJson)
-    validate_response = UserValidateResponse(**responseJson)
 
-    print(f"{validate_response.total=}")
-    first_rating: UserValidateResponseRecord = validate_response.ratings[0]
+    print(f"{response.total=}")
+    first_rating: UserValidateResponseRecord = response.ratings[0]
 
     print(f"{first_rating.image=}")
     print(f"{first_rating.rating=}")

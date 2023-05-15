@@ -1,6 +1,7 @@
 """The API client which can perform arbitrary horde API requests."""
 from enum import Enum
 
+import pydantic
 import requests
 
 from .apimodels import BaseRequest
@@ -36,8 +37,8 @@ class GenericHordeAPIClient:
         self._pathDataKeys = list(pathData.__members__.keys())
         self._acceptTypes = list(acceptTypes.__members__.keys())
 
-    def submitRequest(self, request: BaseRequest) -> requests.Response:
-        """Handles making any Ratings API request.."""
+    def submitRequest(self, request: BaseRequest) -> pydantic.BaseModel:
+        """Handles making any horde related API request.."""
         if not issubclass(request.__class__, BaseRequest):
             raise TypeError("`request` must be of type `BaseRequest` or a subclass of it!")
 
@@ -75,4 +76,10 @@ class GenericHordeAPIClient:
 
             requestParams[key] = value
 
-        return requests.get(endpointNoQuery, headers=requestHeaders, params=requestParams)
+        rawResponse = requests.get(endpointNoQuery, headers=requestHeaders, params=requestParams)
+        # FIXME no timeout or network error handling
+        rawResponseJson = rawResponse.json()
+        expectedResponseType = request.getExpectedResponseType()
+
+        # FIXME should be something resembling error handling here
+        return expectedResponseType(**rawResponseJson)

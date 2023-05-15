@@ -1,35 +1,15 @@
 """Model definitions for AI Horde Ratings API."""
-import inspect
-import sys
 import uuid
 from enum import Enum
 
 import pydantic
-import typing_extensions
 from typing_extensions import override
 
-from ..generic_api import BaseRequest, BaseRequestAuthenticated
-from .endpoints import Rating_API_URL_Literals, URLWithPath
+from ..generic_api import BaseRequestAuthenticated, BaseRequestUserSpecific
+from ..generic_api.endpoints import URLWithPath
+from .endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
 
 # region Requests
-
-
-class BaseRequestUserSpecific(BaseRequestAuthenticated):
-    """Represents the minimum for any request specifying a specific user to the API."""
-
-    user_id: str
-    """The user's ID, as a `str`, but only containing numeric values."""
-
-    @pydantic.validator("user_id")
-    def user_idNumeric(cls, value: str) -> str:
-        """The API endpoint expects a string, but the only valid values would be numbers only."""
-        try:
-            int(value)
-        except ValueError as valueError:
-            raise ValueError(
-                f"user_id must be a str, but only numeric values are allowed!\n  Value: {value}"
-            ) from valueError
-        return value
 
 
 class BaseRequestImageSpecific(BaseRequestAuthenticated):
@@ -59,7 +39,7 @@ class ImageRatingsRequest(BaseRequestAuthenticated, BaseSelectableReturnTypeRequ
     @override
     @staticmethod
     def getEndpointURL() -> str:
-        return URLWithPath(path=Rating_API_URL_Literals.v1_image_ratings)
+        return URLWithPath(baseURL=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_image_ratings)
 
     @override
     @staticmethod
@@ -95,7 +75,7 @@ class UserValidateRequest(BaseRequestUserSpecific, ImageRatingsFilterableRequest
     @override
     @staticmethod
     def getEndpointURL() -> str:
-        return URLWithPath(path=Rating_API_URL_Literals.v1_user_validate)
+        return URLWithPath(baseURL=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_user_validate)
 
     @override
     @staticmethod
@@ -126,7 +106,7 @@ class UserCheckRequest(BaseRequestUserSpecific):
     @override
     @staticmethod
     def getEndpointURL() -> str:
-        return URLWithPath(path=Rating_API_URL_Literals.v1_user_check)
+        return URLWithPath(baseURL=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_user_check)
 
     @override
     @staticmethod
@@ -145,7 +125,7 @@ class UserRatingsRequest(BaseRequestAuthenticated, ImageRatingsFilterableRequest
     @override
     @staticmethod
     def getEndpointURL() -> str:
-        return URLWithPath(path=Rating_API_URL_Literals.v1_user_ratings)
+        return URLWithPath(baseURL=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_user_ratings)
 
     @override
     @staticmethod
@@ -268,28 +248,3 @@ class UserCheckResponse(pydantic.BaseModel):
 
 
 # endregion
-
-
-class Rating_API_Reflection:
-    """Uses reflection to dynamically get all subclasses of `BaseRequest` defined in module `ratings_api.apimodels`."""
-
-    _instance = None
-    _listOfTypes: list[type[BaseRequest]] = []  # default mutable ok because this class is a singleton
-
-    def __new__(cls) -> typing_extensions.Self:  # noqa: ANN204, ANN101
-        """Create an instance if no instance already exists, otherwise returns the already created instance."""
-        # Prevents reflection from happening more than once.
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
-    def getAllRequestTypes(self) -> list[type[BaseRequest]]:
-        """Returns all non-abstract classes inheriting from `BaseRequest`."""
-        if len(self._listOfTypes) > 0:
-            return self._listOfTypes
-
-        for value in sys.modules[__name__].__dict__.values():
-            if isinstance(value, type) and issubclass(value, BaseRequest) and not inspect.isabstract(value):
-                self._listOfTypes.append(value)
-
-        return self._listOfTypes.copy()

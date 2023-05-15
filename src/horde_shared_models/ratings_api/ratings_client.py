@@ -1,4 +1,4 @@
-"""Definitions to help interact with the RatingsAPI."""
+"""Definitions to help interact with the Ratings API."""
 from ..generic_api import GenericHordeAPIClient
 from .metadata import RatingsAPIPathData
 
