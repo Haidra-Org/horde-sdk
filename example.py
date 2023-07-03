@@ -39,7 +39,7 @@ def main() -> None:
         min_ratings=0,
     )
 
-    response: pydantic.BaseModel = ratingsAPIClient.submitRequest(userValidateRequest)
+    response: pydantic.BaseModel = ratingsAPIClient.submit_request(userValidateRequest)
     if not isinstance(response, UserValidateResponse):
         raise Exception("The response type doesn't match expected one!")
 
