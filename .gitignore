@@ -133,6 +133,5 @@ dmypy.json
 .ruff_cache
 
 
-.vscode/launch.json
-.vscode/settings.json
+.vscode
 out.json
