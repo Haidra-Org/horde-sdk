@@ -1,3 +1,4 @@
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -130,3 +131,7 @@ dmypy.json
 
 # Ruff
 .ruff_cache
+
+
+.vscode/launch.json
+.vscode/settings.json
