@@ -2,9 +2,9 @@
 import pydantic
 from typing_extensions import override
 
-from ..generic_api import GenericHordeAPIClient
-from ..generic_api.apimodels import BaseRequest
-from .metadata import RatingsAPIPathData
+from horde_shared_models.ai_horde_api.metadata import AIHordePathData
+from horde_shared_models.generic_api import GenericHordeAPIClient
+from horde_shared_models.generic_api.apimodels import BaseRequest
 
 
 class RatingsAPIClient(GenericHordeAPIClient):
@@ -12,8 +12,8 @@ class RatingsAPIClient(GenericHordeAPIClient):
 
     def __init__(self) -> None:
         """Create a new instance of the RatingsAPIClient."""
-        super().__init__(pathData=RatingsAPIPathData)
+        super().__init__(path_data=AIHordePathData)
 
     @override
-    def submitRequest(self, request: BaseRequest) -> pydantic.BaseModel:
-        return super().submitRequest(request)
+    def submit_request(self, request: BaseRequest) -> pydantic.BaseModel:
+        return super().submit_request(request)

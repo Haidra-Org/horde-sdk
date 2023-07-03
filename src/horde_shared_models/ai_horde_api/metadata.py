@@ -2,7 +2,7 @@
 from ..generic_api import GenericPathData
 
 
-class RatingsAPIPathData(GenericPathData):
+class AIHordePathData(GenericPathData):
     # TODO docstrings
     id = "id"  # noqa: A003
     """A request GUID as a str."""

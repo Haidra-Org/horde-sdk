@@ -1,13 +1,14 @@
 """Model definitions for AI Horde Ratings API."""
 import uuid
-from enum import Enum
+from enum import auto
 
 import pydantic
+from strenum import StrEnum
 from typing_extensions import override
 
-from ..generic_api import BaseRequestAuthenticated, BaseRequestUserSpecific
-from ..generic_api.endpoints import URLWithPath
-from .endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
+from horde_shared_models.generic_api import BaseRequestAuthenticated, BaseRequestUserSpecific
+from horde_shared_models.generic_api.endpoints import url_with_path
+from horde_shared_models.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
 
 # region Requests
 
@@ -19,11 +20,11 @@ class BaseRequestImageSpecific(BaseRequestAuthenticated):
     """The UUID of the image."""
 
 
-class SelectableReturnFormats(str, Enum):
+class SelectableReturnFormats(StrEnum):
     """Formats the API supports returning data."""
 
-    html = "html"
-    json = "json"
+    html = auto()
+    json = auto()
 
 
 class BaseSelectableReturnTypeRequest(pydantic.BaseModel):
@@ -38,16 +39,16 @@ class ImageRatingsRequest(BaseRequestAuthenticated, BaseSelectableReturnTypeRequ
 
     @override
     @staticmethod
-    def getEndpointURL() -> str:
-        return URLWithPath(baseURL=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_image_ratings)
+    def get_endpoint_url() -> str:
+        return url_with_path(base_url=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_image_ratings)
 
     @override
     @staticmethod
-    def getExpectedResponseType() -> type[pydantic.BaseModel]:
+    def get_expected_response_type() -> type[pydantic.BaseModel]:
         return ImageRatingsResponse
 
 
-class ImageRatingsComparisonTypes(str, Enum):
+class ImageRatingsComparisonTypes(StrEnum):
     """Ways the API supports selecting a rating range."""
 
     greater_than_equal = "ge"
@@ -74,12 +75,12 @@ class UserValidateRequest(BaseRequestUserSpecific, ImageRatingsFilterableRequest
 
     @override
     @staticmethod
-    def getEndpointURL() -> str:
-        return URLWithPath(baseURL=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_user_validate)
+    def get_endpoint_url() -> str:
+        return url_with_path(base_url=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_user_validate)
 
     @override
     @staticmethod
-    def getExpectedResponseType() -> type[pydantic.BaseModel]:
+    def get_expected_response_type() -> type[pydantic.BaseModel]:
         return UserValidateResponse
 
 
@@ -90,14 +91,14 @@ class UserCheckRequest(BaseRequestUserSpecific):
     divergence: int
 
     @pydantic.validator("minutes")
-    def minutesIsPositive(cls, value: int) -> int:
+    def minutes_is_positive(cls, value: int) -> int:
         """Endpoint expects a positive integer."""
         if value <= 0:
             raise ValueError("minutes is required, and must be > 0!")
         return value
 
     @pydantic.validator("divergence")
-    def divergenceIsNotNegative(cls, value: int) -> int:
+    def divergence_is_not_negative(cls, value: int) -> int:
         """Negative values are meaningless in this context."""
         if value < 0:
             raise ValueError("divergence must be >= 0!")
@@ -105,12 +106,12 @@ class UserCheckRequest(BaseRequestUserSpecific):
 
     @override
     @staticmethod
-    def getEndpointURL() -> str:
-        return URLWithPath(baseURL=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_user_check)
+    def get_endpoint_url() -> str:
+        return url_with_path(base_url=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_user_check)
 
     @override
     @staticmethod
-    def getExpectedResponseType() -> type[pydantic.BaseModel]:
+    def get_expected_response_type() -> type[pydantic.BaseModel]:
         return UserCheckResponse
 
 
@@ -124,12 +125,12 @@ class UserRatingsRequest(BaseRequestAuthenticated, ImageRatingsFilterableRequest
 
     @override
     @staticmethod
-    def getEndpointURL() -> str:
-        return URLWithPath(baseURL=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_user_ratings)
+    def get_endpoint_url() -> str:
+        return url_with_path(base_url=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_user_ratings)
 
     @override
     @staticmethod
-    def getExpectedResponseType() -> type[pydantic.BaseModel]:
+    def get_expected_response_type() -> type[pydantic.BaseModel]:
         return UserRatingsResponse
 
 

@@ -8,4 +8,4 @@ class RatingsAPIClient(GenericHordeAPIClient):
 
     def __init__(self) -> None:
         """Create a new instance of the RatingsAPIClient."""
-        super().__init__(pathData=RatingsAPIPathData)
+        super().__init__(path_data=RatingsAPIPathData)

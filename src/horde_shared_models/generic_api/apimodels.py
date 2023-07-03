@@ -21,12 +21,12 @@ class BaseRequest(pydantic.BaseModel, abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
-    def getEndpointURL() -> str:
+    def get_endpoint_url() -> str:
         """Return the endpoint URL, including the path to the specific API action defined by this object."""
 
     @staticmethod
     @abc.abstractmethod
-    def getExpectedResponseType() -> type[pydantic.BaseModel]:
+    def get_expected_response_type() -> type[pydantic.BaseModel]:
         """Return the `type` of the response expected."""
 
 
@@ -44,12 +44,19 @@ class BaseRequestUserSpecific(BaseRequestAuthenticated):
     """The user's ID, as a `str`, but only containing numeric values."""
 
     @pydantic.validator("user_id")
-    def user_idNumeric(cls, value: str) -> str:
+    def user_id_is_numeric(cls, value: str) -> str:
         """The API endpoint expects a string, but the only valid values would be numbers only."""
-        try:
-            int(value)
-        except ValueError as valueError:
-            raise ValueError(
-                f"user_id must be a str, but only numeric values are allowed!\n  Value: {value}"
-            ) from valueError
+        if not value.isnumeric():
+            raise ValueError("user_id must only contain numeric values")
         return value
+
+
+class BaseRequestWorkerDriven(BaseRequestAuthenticated):
+    trusted_workers: bool = False
+    slow_workers: bool = False
+    workers: list[str] = pydantic.Field(default_factory=list)
+    worker_blacklist: list[str] = pydantic.Field(default_factory=list)
+
+    models: list[str]
+
+    dry_run: bool = False

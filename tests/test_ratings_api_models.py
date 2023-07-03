@@ -38,7 +38,7 @@ class Test_validators:
             )
             ratings_api.UserCheckRequest(
                 apikey="key",
-                accept="non-enum_accept_value",
+                accept="non-enum_accept_value",  # type: ignore
                 user_id="123",
                 divergence=3,
                 minutes=180,

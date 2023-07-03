@@ -2,8 +2,8 @@ import functools
 import urllib.parse
 
 
-def URLWithPath(*, baseURL: str, path: str) -> str:
-    """Returns the combined baseURL and endpoint path.
+def url_with_path(*, base_url: str, path: str) -> str:
+    """Returns the combined baseURL and endpoint path. Cached for a marginal performance boost.
 
     Args:
         path (Rating_API_URL_Literals): The API action path.
@@ -17,12 +17,12 @@ def URLWithPath(*, baseURL: str, path: str) -> str:
     """
 
     @functools.cache
-    def _shadowedCachedFunc(*, baseURL: str, path: str) -> str:
+    def _shadowed_cached_func(*, base_url: str, path: str) -> str:
         # TODO why does the decorator break the pylance lang server?
         # TODO this sub def side steps intellisense not working, but doesn't feel right
-        parsedURL = urllib.parse.urlparse(baseURL)
+        parsedURL = urllib.parse.urlparse(base_url)
         if not parsedURL.scheme:
-            raise ValueError(f"Missing URL scheme (e.g., http, https)!\n  Is baseURL valid? baseURL: {baseURL}")
-        return urllib.parse.urljoin(baseURL, path)
+            raise ValueError(f"Missing URL scheme (e.g., http, https)!\n  Is baseURL valid? baseURL: {base_url}")
+        return urllib.parse.urljoin(base_url, path)
 
-    return _shadowedCachedFunc(baseURL=baseURL, path=path)
+    return _shadowed_cached_func(base_url=base_url, path=path)

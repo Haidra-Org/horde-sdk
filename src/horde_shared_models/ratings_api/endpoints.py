@@ -1,11 +1,11 @@
 """Information and helper functions for URL endpoints to horde APIs."""
-from enum import Enum
+from strenum import StrEnum
 
 # TODO make RATING_API_BASE_URL a env variable?
 RATING_API_BASE_URL = "https://ratings.aihorde.net/api/"
 
 
-class Rating_API_URL_Literals(str, Enum):
+class Rating_API_URL_Literals(StrEnum):
     """The URL actions 'paths' to the endpoints. Includes find/replace strings for path (non-query) variables."""
 
     v1_user_check = "v1/user/check/{user_id}"

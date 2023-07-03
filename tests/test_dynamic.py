@@ -5,7 +5,7 @@ import horde_shared_models.ai_horde_api as ai_horde_api
 import horde_shared_models.generic_api as generic_api
 import horde_shared_models.ratings_api as ratings_api
 import pydantic
-from horde_shared_models.generic_api.reflection import getAllRequestTypes
+from horde_shared_models.generic_api._reflection import get_all_request_types
 
 RATINGS_SAMPLE_DATA_FOLDER = "tests/test_data/ratings_api"
 AI_HORDE_SAMPLE_DATA_FOLDER = "tests/test_data/ai_horde_api"
@@ -13,9 +13,13 @@ AI_HORDE_SAMPLE_DATA_FOLDER = "tests/test_data/ai_horde_api"
 
 class Test_reflection_and_dynamic:  # noqa: D101
     def test_reflection(self) -> None:  # noqa: D102
-        allRequestTypes = getAllRequestTypes(ratings_api.__name__)
+        allRequestTypes = get_all_request_types(ratings_api.__name__)
         for requestType in allRequestTypes:
             assert issubclass(requestType, generic_api.BaseRequest)
+
+    def test_reflection_recursive(self, package) -> None:
+        # Recursively discover all modules in the package and run get_all_request_types
+        # on each of them/
 
     @staticmethod
     def dynamic_json_load(moduleName: str, sampleDataFolder: str) -> None:
@@ -24,12 +28,12 @@ class Test_reflection_and_dynamic:  # noqa: D101
         # If you're here because it failed and you're not sure why,
         # check the implementation of `BaseRequestUserSpecific` and `UserRatingsRequest`
 
-        allRequestTypes: list[type[generic_api.BaseRequest]] = getAllRequestTypes(moduleName)
+        allRequestTypes: list[type[generic_api.BaseRequest]] = get_all_request_types(moduleName)
 
         for requestType in allRequestTypes:
             assert issubclass(requestType, generic_api.BaseRequest)
 
-            responseType: type[pydantic.BaseModel] = requestType.getExpectedResponseType()
+            responseType: type[pydantic.BaseModel] = requestType.get_expected_response_type()
             assert isinstance(responseType, type)
             assert issubclass(responseType, pydantic.BaseModel)
 
