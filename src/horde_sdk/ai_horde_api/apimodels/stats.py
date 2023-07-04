@@ -19,10 +19,7 @@ class StatsImageModels(BaseRequest):
 
 
 class StatsModelsResponse(pydantic.BaseModel):
-    class Config:
-        """Pydantic config class."""
-
-        allow_mutation = False
+    model_config = {"frozen": True}
 
     day: dict[str, int]
     month: dict[str, int]

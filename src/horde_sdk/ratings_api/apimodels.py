@@ -2,13 +2,13 @@
 import uuid
 from enum import auto
 
-import pydantic
+from pydantic import BaseModel, Field, field_validator
 from strenum import StrEnum
 from typing_extensions import override
 
-from horde_shared_models.generic_api import BaseRequestAuthenticated, BaseRequestUserSpecific
-from horde_shared_models.generic_api.endpoints import url_with_path
-from horde_shared_models.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
+from horde_sdk.generic_api import BaseRequestAuthenticated, BaseRequestUserSpecific
+from horde_sdk.generic_api.endpoints import url_with_path
+from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
 
 # region Requests
 
@@ -27,7 +27,7 @@ class SelectableReturnFormats(StrEnum):
     json = auto()
 
 
-class BaseSelectableReturnTypeRequest(pydantic.BaseModel):
+class BaseSelectableReturnTypeRequest(BaseModel):
     """Mix-in class to describe an endpoint for which you can select the return data format."""
 
     format: SelectableReturnFormats  # noqa: A003
@@ -44,7 +44,7 @@ class ImageRatingsRequest(BaseRequestAuthenticated, BaseSelectableReturnTypeRequ
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[pydantic.BaseModel]:
+    def get_expected_response_type() -> type[BaseModel]:
         return ImageRatingsResponse
 
 
@@ -80,29 +80,15 @@ class UserValidateRequest(BaseRequestUserSpecific, ImageRatingsFilterableRequest
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[pydantic.BaseModel]:
+    def get_expected_response_type() -> type[BaseModel]:
         return UserValidateResponse
 
 
 class UserCheckRequest(BaseRequestUserSpecific):
     """Represents the data needed to make a request to the `/v1/user/check/` endpoint."""
 
-    minutes: int
-    divergence: int
-
-    @pydantic.validator("minutes")
-    def minutes_is_positive(cls, value: int) -> int:
-        """Endpoint expects a positive integer."""
-        if value <= 0:
-            raise ValueError("minutes is required, and must be > 0!")
-        return value
-
-    @pydantic.validator("divergence")
-    def divergence_is_not_negative(cls, value: int) -> int:
-        """Negative values are meaningless in this context."""
-        if value < 0:
-            raise ValueError("divergence must be >= 0!")
-        return value
+    minutes: int = Field(ge=1)
+    divergence: int = Field(ge=0)
 
     @override
     @staticmethod
@@ -111,7 +97,7 @@ class UserCheckRequest(BaseRequestUserSpecific):
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[pydantic.BaseModel]:
+    def get_expected_response_type() -> type[BaseModel]:
         return UserCheckResponse
 
 
@@ -130,7 +116,7 @@ class UserRatingsRequest(BaseRequestAuthenticated, ImageRatingsFilterableRequest
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[pydantic.BaseModel]:
+    def get_expected_response_type() -> type[BaseModel]:
         return UserRatingsResponse
 
 
@@ -138,13 +124,10 @@ class UserRatingsRequest(BaseRequestAuthenticated, ImageRatingsFilterableRequest
 
 
 # region Responses
-class BaseImageRatingRecord(pydantic.BaseModel):
+class BaseImageRatingRecord(BaseModel):
     """The information about any image rating result."""
 
-    class Config:
-        """Pydantic config class."""
-
-        allow_mutation = False
+    model_config = {"frozen": True}
 
     image: str
     """The URL to the image."""
@@ -152,32 +135,26 @@ class BaseImageRatingRecord(pydantic.BaseModel):
     """The aesthetic rating the user gave."""
     artifacts: int | None
     """The quality ('artifact') rating the user gave."""
-    average: int
-    """The integer-rounded average rating that all users have given this image."""
+    average: float
+    """The average rating that all users have given this image."""
     times_rated: int
     """The number of total ratings this image has received."""
 
 
-class ImageRatingResponseSubRecord(pydantic.BaseModel):
+class ImageRatingResponseSubRecord(BaseModel):
     """A single sub-record in a response from the `/v1/image/ratings` endpoint."""
 
-    class Config:
-        """Pydantic config class."""
-
-        allow_mutation = False
+    model_config = {"frozen": True}
 
     username: str
     rating: int
     artifacts: int | None
 
 
-class ImageRatingsResponse(pydantic.BaseModel):
+class ImageRatingsResponse(BaseModel):
     """The representation of the full response from `/v1/image/ratings`."""
 
-    class Config:
-        """Pydantic config class."""
-
-        allow_mutation = False
+    model_config = {"frozen": True}
 
     total: int
     image: str
@@ -194,13 +171,10 @@ class UserRatingsResponseSubRecord(BaseImageRatingRecord):
     """The name of the user in format `name#1234`."""
 
 
-class UserRatingsResponse(pydantic.BaseModel):
+class UserRatingsResponse(BaseModel):
     """The representation of the full response from `/v1/user/ratings`."""
 
-    class Config:
-        """Pydantic config class."""
-
-        allow_mutation = False
+    model_config = {"frozen": True}
 
     total: int
     """The total number of records in this response."""
@@ -212,13 +186,10 @@ class UserValidateResponseRecord(BaseImageRatingRecord):
     """A single sub-record in a response from the `/v1/validate/{user_id}` endpoint."""
 
 
-class UserValidateResponse(pydantic.BaseModel):
+class UserValidateResponse(BaseModel):
     """The representation of the full response from `/v1/validate/{user_id}`."""
 
-    class Config:
-        """Pydantic config class."""
-
-        allow_mutation = False
+    model_config = {"frozen": True}
 
     total: int
     """The total number of records in this response."""
@@ -226,21 +197,17 @@ class UserValidateResponse(pydantic.BaseModel):
     """A `list` of all records returned."""
 
 
-class UserCheckResponse(pydantic.BaseModel):
+class UserCheckResponse(BaseModel):
     """A single record from the `/v1/user/check/` endpoint."""
 
-    class Config:
-        """Pydantic config class."""
-
-        allow_mutation = False
-
+    model_config = {"frozen": True}
     ratings_in_timeframe: int
     """The number of ratings this user submitted in the timeframe."""
-    ratings_per_minute_in_timeframe: int
+    ratings_per_minute_in_timeframe: float
     """The average number of ratings per minute."""
     ratings_past_three_hours: int
     """The average number of ratings in the three hours prior to the request."""
-    ratings_per_minute_for_past_three_hours: int
+    ratings_per_minute_for_past_three_hours: float
     """The average number of ratings per minute in the three hours prior to the request."""
     suspect_divergences: int
     """The number of instances of this user's rating not being within the criteria."""

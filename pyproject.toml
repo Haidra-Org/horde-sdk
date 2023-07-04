@@ -3,13 +3,14 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "horde_shared_models"
+name = "horde_sdk"
 version = "0.0.1"
 requires-python = ">=3.10"
 dependencies = [
     "pydantic",
     "requests",
-    "StrEnum"
+    "StrEnum",
+    "loguru",
 ]
 license = {file = "LICENSE"}
 classifiers = [

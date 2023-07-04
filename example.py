@@ -3,7 +3,7 @@
 import argparse
 
 import pydantic
-from horde_shared_models.ratings_api import (
+from horde_sdk.ratings_api import (
     ImageRatingsComparisonTypes,
     RatingsAPIClient,
     SelectableReturnFormats,
@@ -39,11 +39,11 @@ def main() -> None:
         min_ratings=0,
     )
 
-    response: pydantic.BaseModel = ratingsAPIClient.submit_request(userValidateRequest)
+    response: pydantic.BaseModel = ratingsAPIClient.get(userValidateRequest)
     if not isinstance(response, UserValidateResponse):
         raise Exception("The response type doesn't match expected one!")
 
-    responseJson = response.json()
+    responseJson = response.model_dump_json()
     print(responseJson)
 
     print(f"{response.total=}")
@@ -56,7 +56,7 @@ def main() -> None:
     print(f"{first_rating.times_rated=}")
 
     with open(args.file, "w") as fileOutHandle:
-        fileOutHandle.write(first_rating.json())
+        fileOutHandle.write(first_rating.model_dump_json())
 
 
 if __name__ == "__main__":

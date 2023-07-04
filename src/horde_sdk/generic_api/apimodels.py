@@ -2,18 +2,15 @@
 
 import abc
 
-import pydantic
+from pydantic import BaseModel, Field, field_validator
 
 from .metadata import GenericAcceptTypes
 
 
-class BaseRequest(pydantic.BaseModel, abc.ABC):
+class BaseRequest(BaseModel, abc.ABC):
     """Represents any request to any Horde API."""
 
-    class Config:
-        """Pydantic config class."""
-
-        allow_mutation = False
+    model_config = {"frozen": True}
 
     accept: GenericAcceptTypes = GenericAcceptTypes.json
     """The 'accept' header field."""
@@ -26,7 +23,7 @@ class BaseRequest(pydantic.BaseModel, abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
-    def get_expected_response_type() -> type[pydantic.BaseModel]:
+    def get_expected_response_type() -> type[BaseModel]:
         """Return the `type` of the response expected."""
 
 
@@ -43,7 +40,7 @@ class BaseRequestUserSpecific(BaseRequestAuthenticated):
     user_id: str
     """The user's ID, as a `str`, but only containing numeric values."""
 
-    @pydantic.validator("user_id")
+    @field_validator("user_id")
     def user_id_is_numeric(cls, value: str) -> str:
         """The API endpoint expects a string, but the only valid values would be numbers only."""
         if not value.isnumeric():
@@ -54,8 +51,8 @@ class BaseRequestUserSpecific(BaseRequestAuthenticated):
 class BaseRequestWorkerDriven(BaseRequestAuthenticated):
     trusted_workers: bool = False
     slow_workers: bool = False
-    workers: list[str] = pydantic.Field(default_factory=list)
-    worker_blacklist: list[str] = pydantic.Field(default_factory=list)
+    workers: list[str] = Field(default_factory=list)
+    worker_blacklist: list[str] = Field(default_factory=list)
 
     models: list[str]
 

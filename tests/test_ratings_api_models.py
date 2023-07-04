@@ -1,8 +1,8 @@
 """Unit tests for Ratings API models."""
 
 
-import horde_shared_models.generic_api as generic_api
-import horde_shared_models.ratings_api as ratings_api
+import horde_sdk.generic_api as generic_api
+import horde_sdk.ratings_api as ratings_api
 import pydantic
 import pytest
 

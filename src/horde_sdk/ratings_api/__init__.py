@@ -10,7 +10,7 @@ from .apimodels import (
     UserValidateResponse,
     UserValidateResponseRecord,
 )
-from .metadata import RatingsAPIPathData
+from .metadata import RatingsAPIPathFields
 from .ratings_client import RatingsAPIClient
 
 # TODO
@@ -25,6 +25,6 @@ __all__ = [
     "UserValidateRequest",
     "UserValidateResponseRecord",
     "UserValidateResponse",
-    "RatingsAPIPathData",
+    "RatingsAPIPathFields",
     "RatingsAPIClient",
 ]

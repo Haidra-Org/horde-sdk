@@ -5,7 +5,7 @@ from enum import auto
 from strenum import StrEnum
 
 
-class GenericHeaderData(StrEnum):
+class GenericHeaderFields(StrEnum):
     """`StrEnum` for data that is exclusively passed in the header of a request."""
 
     apikey = auto()
@@ -20,5 +20,9 @@ class GenericAcceptTypes(StrEnum):
     # html = "application/html" # TODO?
 
 
-class GenericPathData(StrEnum):
+class GenericPathFields(StrEnum):
     """`StrEnum` for data that is exclusively passed as part of a URL path, and not after the '?' (query)."""
+
+
+class GenericQueryFields(StrEnum):
+    """`StrEnum` for data that is exclusively passed as part of a URL query, and not before the '?' (path)."""

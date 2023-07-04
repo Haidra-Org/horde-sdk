@@ -1,6 +1,6 @@
 """Definitions to help interact with the Ratings API."""
-from ..generic_api import GenericHordeAPIClient
-from .metadata import RatingsAPIPathData
+from horde_sdk.generic_api import GenericHordeAPIClient
+from horde_sdk.ratings_api.metadata import RatingsAPIPathFields, RatingsAPIQueryFields
 
 
 class RatingsAPIClient(GenericHordeAPIClient):
@@ -8,4 +8,7 @@ class RatingsAPIClient(GenericHordeAPIClient):
 
     def __init__(self) -> None:
         """Create a new instance of the RatingsAPIClient."""
-        super().__init__(path_data=RatingsAPIPathData)
+        super().__init__(
+            path_fields=RatingsAPIPathFields,
+            query_fields=RatingsAPIQueryFields,
+        )
