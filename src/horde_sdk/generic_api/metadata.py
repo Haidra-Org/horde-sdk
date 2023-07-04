@@ -21,8 +21,8 @@ class GenericAcceptTypes(StrEnum):
 
 
 class GenericPathFields(StrEnum):
-    """`StrEnum` for data that is exclusively passed as part of a URL path, and not after the '?' (query)."""
+    """`StrEnum` for data that is exclusively passed as part of a URL path (not a query string after the `?`)."""
 
 
 class GenericQueryFields(StrEnum):
-    """`StrEnum` for data that is exclusively passed as part of a URL query, and not before the '?' (path)."""
+    """`StrEnum` for data that is exclusively passed as part of a URL query (after the `?`)"""

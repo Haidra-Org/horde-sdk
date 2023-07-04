@@ -6,6 +6,7 @@ import horde_sdk.generic_api as generic_api
 import horde_sdk.ratings_api as ratings_api
 import pydantic
 from horde_sdk.generic_api._reflection import get_all_request_types
+from horde_sdk.generic_api.apimodels import BaseResponse
 
 RATINGS_SAMPLE_DATA_FOLDER = "tests/test_data/ratings_api"
 AI_HORDE_SAMPLE_DATA_FOLDER = "tests/test_data/ai_horde_api"
@@ -29,7 +30,7 @@ class Test_reflection_and_dynamic:  # noqa: D101
         for requestType in allRequestTypes:
             assert issubclass(requestType, generic_api.BaseRequest)
 
-            responseType: type[pydantic.BaseModel] = requestType.get_expected_response_type()
+            responseType: type[BaseResponse] = requestType.get_expected_response_type()
             assert isinstance(responseType, type)
             assert issubclass(responseType, pydantic.BaseModel)
 

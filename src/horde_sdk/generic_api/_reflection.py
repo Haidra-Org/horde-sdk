@@ -1,7 +1,7 @@
 import inspect
 import sys
 
-from .apimodels import BaseRequest
+from horde_sdk.generic_api.apimodels import BaseRequest
 
 
 def get_all_request_types(module_name: str) -> list[type[BaseRequest]]:

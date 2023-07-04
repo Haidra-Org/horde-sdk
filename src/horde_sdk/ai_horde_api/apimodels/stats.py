@@ -1,9 +1,8 @@
-import pydantic
 from typing_extensions import override
 
-from ...generic_api.apimodels import BaseRequest
-from ...generic_api.endpoints import url_with_path
-from ..endpoints import AI_HORDE_BASE_URL, AI_HORDE_API_URL_Literals
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL, AI_HORDE_API_URL_Literals
+from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
+from horde_sdk.generic_api.endpoints import url_with_path
 
 
 class StatsImageModels(BaseRequest):
@@ -14,11 +13,11 @@ class StatsImageModels(BaseRequest):
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[pydantic.BaseModel]:
+    def get_expected_response_type() -> type[BaseResponse]:
         return StatsModelsResponse
 
 
-class StatsModelsResponse(pydantic.BaseModel):
+class StatsModelsResponse(BaseResponse):
     model_config = {"frozen": True}
 
     day: dict[str, int]

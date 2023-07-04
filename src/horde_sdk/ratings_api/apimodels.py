@@ -7,6 +7,7 @@ from strenum import StrEnum
 from typing_extensions import override
 
 from horde_sdk.generic_api import BaseRequestAuthenticated, BaseRequestUserSpecific
+from horde_sdk.generic_api.apimodels import BaseResponse
 from horde_sdk.generic_api.endpoints import url_with_path
 from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
 
@@ -44,7 +45,7 @@ class ImageRatingsRequest(BaseRequestAuthenticated, BaseSelectableReturnTypeRequ
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[BaseModel]:
+    def get_expected_response_type() -> type[BaseResponse]:
         return ImageRatingsResponse
 
 
@@ -80,7 +81,7 @@ class UserValidateRequest(BaseRequestUserSpecific, ImageRatingsFilterableRequest
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[BaseModel]:
+    def get_expected_response_type() -> type[BaseResponse]:
         return UserValidateResponse
 
 
@@ -97,7 +98,7 @@ class UserCheckRequest(BaseRequestUserSpecific):
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[BaseModel]:
+    def get_expected_response_type() -> type[BaseResponse]:
         return UserCheckResponse
 
 
@@ -116,7 +117,7 @@ class UserRatingsRequest(BaseRequestAuthenticated, ImageRatingsFilterableRequest
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[BaseModel]:
+    def get_expected_response_type() -> type[BaseResponse]:
         return UserRatingsResponse
 
 
@@ -151,7 +152,7 @@ class ImageRatingResponseSubRecord(BaseModel):
     artifacts: int | None
 
 
-class ImageRatingsResponse(BaseModel):
+class ImageRatingsResponse(BaseResponse):
     """The representation of the full response from `/v1/image/ratings`."""
 
     model_config = {"frozen": True}
@@ -171,7 +172,7 @@ class UserRatingsResponseSubRecord(BaseImageRatingRecord):
     """The name of the user in format `name#1234`."""
 
 
-class UserRatingsResponse(BaseModel):
+class UserRatingsResponse(BaseResponse):
     """The representation of the full response from `/v1/user/ratings`."""
 
     model_config = {"frozen": True}
@@ -186,7 +187,7 @@ class UserValidateResponseRecord(BaseImageRatingRecord):
     """A single sub-record in a response from the `/v1/validate/{user_id}` endpoint."""
 
 
-class UserValidateResponse(BaseModel):
+class UserValidateResponse(BaseResponse):
     """The representation of the full response from `/v1/validate/{user_id}`."""
 
     model_config = {"frozen": True}
@@ -197,7 +198,7 @@ class UserValidateResponse(BaseModel):
     """A `list` of all records returned."""
 
 
-class UserCheckResponse(BaseModel):
+class UserCheckResponse(BaseResponse):
     """A single record from the `/v1/user/check/` endpoint."""
 
     model_config = {"frozen": True}

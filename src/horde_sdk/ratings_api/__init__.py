@@ -1,5 +1,5 @@
 """Tools for making or interacting with the horde ratings APIs."""
-from .apimodels import (
+from horde_sdk.ratings_api.apimodels import (
     ImageRatingsComparisonTypes,
     SelectableReturnFormats,
     UserCheckRequest,
@@ -10,8 +10,8 @@ from .apimodels import (
     UserValidateResponse,
     UserValidateResponseRecord,
 )
-from .metadata import RatingsAPIPathFields
-from .ratings_client import RatingsAPIClient
+from horde_sdk.ratings_api.metadata import RatingsAPIPathFields
+from horde_sdk.ratings_api.ratings_client import RatingsAPIClient
 
 # TODO
 # FIXME

@@ -4,7 +4,13 @@ import abc
 
 from pydantic import BaseModel, Field, field_validator
 
-from .metadata import GenericAcceptTypes
+from horde_sdk.generic_api.metadata import GenericAcceptTypes
+
+
+class BaseResponse(BaseModel):
+    """Represents any response from any Horde API."""
+
+    model_config = {"frozen": True}
 
 
 class BaseRequest(BaseModel, abc.ABC):
@@ -19,11 +25,11 @@ class BaseRequest(BaseModel, abc.ABC):
     @staticmethod
     @abc.abstractmethod
     def get_endpoint_url() -> str:
-        """Return the endpoint URL, including the path to the specific API action defined by this object."""
+        """Return the endpoint URL, including the path to the specific API action defined by this object"""
 
     @staticmethod
     @abc.abstractmethod
-    def get_expected_response_type() -> type[BaseModel]:
+    def get_expected_response_type() -> type[BaseResponse]:
         """Return the `type` of the response expected."""
 
 
@@ -49,6 +55,8 @@ class BaseRequestUserSpecific(BaseRequestAuthenticated):
 
 
 class BaseRequestWorkerDriven(BaseRequestAuthenticated):
+    """Represents the minimum for any request which is ultimately backed by a worker (Such as on AI-Horde)."""
+
     trusted_workers: bool = False
     slow_workers: bool = False
     workers: list[str] = Field(default_factory=list)
