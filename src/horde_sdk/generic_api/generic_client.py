@@ -1,6 +1,4 @@
 """The API client which can perform arbitrary horde API requests."""
-from enum import Enum
-import json
 
 import requests
 from pydantic import BaseModel

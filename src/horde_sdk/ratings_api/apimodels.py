@@ -2,7 +2,7 @@
 import uuid
 from enum import auto
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 from strenum import StrEnum
 from typing_extensions import override
 
