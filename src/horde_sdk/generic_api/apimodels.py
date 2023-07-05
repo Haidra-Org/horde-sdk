@@ -1,22 +1,35 @@
 """API data model bases applicable across all (or many) horde APIs."""
 
 import abc
+from collections.abc import Callable
 
 from pydantic import BaseModel, Field, field_validator
 
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
 
-class BaseResponse(BaseModel):
+class HordeAPIMessage(BaseModel):
+    """Represents any request or response from any Horde API."""
+
+    __api_model_name__: str | None
+    """The name of the model as seen in the published swagger doc. If none, there is no payload for this message."""
+
+
+class BaseResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
 
     model_config = {"frozen": True}
 
+    __http_status_codes__: dict[int, Callable]  # TODO: type for Callable
+    """A mapping of HTTP status codes to functions which will be used to determine if the response is valid."""
 
-class BaseRequest(BaseModel, abc.ABC):
+
+class BaseRequest(HordeAPIMessage, abc.ABC):
     """Represents any request to any Horde API."""
 
     model_config = {"frozen": True}
+
+    __http_method__: str
 
     accept: GenericAcceptTypes = GenericAcceptTypes.json
     """The 'accept' header field."""

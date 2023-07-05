@@ -32,7 +32,7 @@ class GenericHordeAPIClient:
     _header_data_keys: list[str]
     """A list of all fields which would appear in the API request header."""
     _path_data_keys: list[str]
-    """A list of all fields which would appear in any API action path (appearing before the '?')"""
+    """A list of all fields which would appear in any API action path (appearing before the '?' as part of the URL)"""
     _query_data_keys: list[str]
     """A list of all fields which would appear in any API action query (appearing after the '?')"""
 

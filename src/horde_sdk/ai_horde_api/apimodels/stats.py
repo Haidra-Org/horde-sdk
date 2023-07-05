@@ -6,6 +6,8 @@ from horde_sdk.generic_api.endpoints import url_with_path
 
 
 class StatsImageModels(BaseRequest):
+    __api_model_name__ = "ImgModelStats"
+
     @override
     @staticmethod
     def get_endpoint_url() -> str:
