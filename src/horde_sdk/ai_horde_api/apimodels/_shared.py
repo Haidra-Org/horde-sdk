@@ -1,9 +1,18 @@
 import pydantic
 from pydantic import Field, field_validator
+from typing_extensions import override
 
 from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS, KNOWN_SOURCE_PROCESSING
-from horde_sdk.generic_api.apimodels import BaseRequestWorkerDriven
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
+from horde_sdk.generic_api.apimodels import BaseRequest, BaseRequestWorkerDriven
 from horde_sdk.utils import seed_to_int
+
+
+class BaseAIHordeRequest(BaseRequest):
+    @override
+    @classmethod
+    def get_api_url(cls) -> str:
+        return AI_HORDE_BASE_URL
 
 
 class LorasPayloadEntry(pydantic.BaseModel):

@@ -2,26 +2,27 @@ from pydantic import Field, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels._shared import (
+    BaseAIHordeRequest,
     BaseImageGenerateParam,
     ImageGenerateImg2ImgData,
 )
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL, AI_HORDE_API_URL_Literals
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.generic_api.apimodels import BaseRequestWorkerDriven, BaseResponse
-from horde_sdk.generic_api.endpoints import url_with_path
 
 
 class ImageGenerationInputPayload(BaseImageGenerateParam):
     n: int = Field(default=1, ge=1)
 
 
-class ImageGenerateAsyncRequest(ImageGenerateImg2ImgData, BaseRequestWorkerDriven):
+class ImageGenerateAsyncRequest(BaseAIHordeRequest, ImageGenerateImg2ImgData, BaseRequestWorkerDriven):
     """Represents the data needed to make a request to the `/v2/generate/async` endpoint.
 
     v2 API Model: `GenerationInputStable`
     """
 
-    __api_model_name__ = "GenerationInputStable"
+    __api_model_name__: str | None = "GenerationInputStable"
+    __http_method__: str = "POST"
 
     prompt: str
     params: ImageGenerationInputPayload | None = None
@@ -43,8 +44,8 @@ class ImageGenerateAsyncRequest(ImageGenerateImg2ImgData, BaseRequestWorkerDrive
 
     @override
     @staticmethod
-    def get_endpoint_url() -> str:
-        return url_with_path(base_url=AI_HORDE_BASE_URL, path=AI_HORDE_API_URL_Literals.v2_generate_async)
+    def get_endpoint_subpath() -> str:
+        return AI_HORDE_API_URL_Literals.v2_generate_async
 
     @override
     @staticmethod

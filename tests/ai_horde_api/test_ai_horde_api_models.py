@@ -50,6 +50,7 @@ def test_ImageGenerateAsyncRequest():
     assert test_async_request.apikey == "000000000"
     assert test_async_request.models == ["Deliberate"]
     assert test_async_request.prompt == "test prompt"
+    assert test_async_request.params is not None
     assert test_async_request.params.sampler_name == "k_lms"
     assert test_async_request.params.cfg_scale == 7.5
     assert test_async_request.params.denoising_strength == 1

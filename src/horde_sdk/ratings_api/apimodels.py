@@ -6,15 +6,23 @@ from pydantic import BaseModel, Field
 from strenum import StrEnum
 from typing_extensions import override
 
+from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api import BaseRequestAuthenticated, BaseRequestUserSpecific
-from horde_sdk.generic_api.apimodels import BaseResponse
-from horde_sdk.generic_api.endpoints import url_with_path
+from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
 from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
+
+
+class BaseRatingsAPIRequest(BaseRequest):
+    @override
+    @classmethod
+    def get_api_url(cls) -> str:
+        return RATING_API_BASE_URL
+
 
 # region Requests
 
 
-class BaseRequestImageSpecific(BaseRequestAuthenticated):
+class BaseRequestImageSpecific(BaseRatingsAPIRequest, BaseRequestAuthenticated):
     """Represents the minimum for any request specifying a specific user to the API."""
 
     image_id: uuid.UUID
@@ -35,13 +43,16 @@ class BaseSelectableReturnTypeRequest(BaseModel):
     """The format to request the response payload in, typically json."""
 
 
-class ImageRatingsRequest(BaseRequestAuthenticated, BaseSelectableReturnTypeRequest):
+class ImageRatingsRequest(BaseRatingsAPIRequest, BaseRequestAuthenticated, BaseSelectableReturnTypeRequest):
     """Represents the data needed to make a request to the `/v1/image/ratings/{image_id}` endpoint."""
+
+    __api_model_name__ = None
+    __http_method__ = HTTPMethod.GET
 
     @override
     @staticmethod
-    def get_endpoint_url() -> str:
-        return url_with_path(base_url=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_image_ratings)
+    def get_endpoint_subpath() -> str:
+        return Rating_API_URL_Literals.v1_image_ratings
 
     @override
     @staticmethod
@@ -71,13 +82,16 @@ class ImageRatingsFilterableRequestBase(BaseSelectableReturnTypeRequest):
     min_ratings: int | None
 
 
-class UserValidateRequest(BaseRequestUserSpecific, ImageRatingsFilterableRequestBase):
+class UserValidateRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific, ImageRatingsFilterableRequestBase):
     """Represents the data needed to make a request to the `/v1/user/validate/{user_id}` endpoint."""
+
+    __api_model_name__ = None
+    __http_method__ = HTTPMethod.GET
 
     @override
     @staticmethod
-    def get_endpoint_url() -> str:
-        return url_with_path(base_url=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_user_validate)
+    def get_endpoint_subpath() -> str:
+        return Rating_API_URL_Literals.v1_user_validate
 
     @override
     @staticmethod
@@ -85,16 +99,19 @@ class UserValidateRequest(BaseRequestUserSpecific, ImageRatingsFilterableRequest
         return UserValidateResponse
 
 
-class UserCheckRequest(BaseRequestUserSpecific):
+class UserCheckRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific):
     """Represents the data needed to make a request to the `/v1/user/check/` endpoint."""
+
+    __api_model_name__: str | None = None
+    __http_method__: str = HTTPMethod.GET
 
     minutes: int = Field(ge=1)
     divergence: int = Field(ge=0)
 
     @override
     @staticmethod
-    def get_endpoint_url() -> str:
-        return url_with_path(base_url=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_user_check)
+    def get_endpoint_subpath() -> str:
+        return Rating_API_URL_Literals.v1_user_check
 
     @override
     @staticmethod
@@ -102,8 +119,11 @@ class UserCheckRequest(BaseRequestUserSpecific):
         return UserCheckResponse
 
 
-class UserRatingsRequest(BaseRequestAuthenticated, ImageRatingsFilterableRequestBase):
+class UserRatingsRequest(BaseRatingsAPIRequest, BaseRequestAuthenticated, ImageRatingsFilterableRequestBase):
     """Represents the data needed to make a request to the `/v1/user/ratings/` endpoint."""
+
+    __api_model_name__ = None
+    __http_method__ = HTTPMethod.GET
 
     limit: int
     offset: int = 0
@@ -112,8 +132,8 @@ class UserRatingsRequest(BaseRequestAuthenticated, ImageRatingsFilterableRequest
 
     @override
     @staticmethod
-    def get_endpoint_url() -> str:
-        return url_with_path(base_url=RATING_API_BASE_URL, path=Rating_API_URL_Literals.v1_user_ratings)
+    def get_endpoint_subpath() -> str:
+        return Rating_API_URL_Literals.v1_user_ratings
 
     @override
     @staticmethod

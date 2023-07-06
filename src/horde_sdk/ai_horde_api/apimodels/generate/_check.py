@@ -1,21 +1,22 @@
-from pydantic import BaseModel
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels._base import BaseImageGenerateJobRequest
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL, AI_HORDE_API_URL_Literals
+from horde_sdk.ai_horde_api.apimodels._shared import BaseAIHordeRequest
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
+from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import BaseResponse
-from horde_sdk.generic_api.endpoints import url_with_path
 
 
-class ImageGenerateCheckRequest(BaseImageGenerateJobRequest):
+class ImageGenerateCheckRequest(BaseAIHordeRequest, BaseImageGenerateJobRequest):
     """Represents a GET request to the `/v2/generate/check/{id}` endpoint."""
 
     __api_model_name__ = None
+    __http_method__ = HTTPMethod.GET
 
     @override
     @staticmethod
-    def get_endpoint_url() -> str:
-        return url_with_path(base_url=AI_HORDE_BASE_URL, path=AI_HORDE_API_URL_Literals.v2_generate_check)
+    def get_endpoint_subpath() -> str:
+        return AI_HORDE_API_URL_Literals.v2_generate_check
 
     @override
     @staticmethod

@@ -2,12 +2,16 @@ import functools
 import urllib.parse
 
 
-def url_with_path(*, base_url: str, path: str) -> str:
+def url_with_path(
+    *,
+    base_url: str,
+    path: str,
+) -> str:
     """Returns the combined baseURL and endpoint path. Cached for a marginal performance boost.
 
     Args:
         path (Rating_API_URL_Literals): The API action path.
-        baseURL (str, optional): The internet location of the API. Defaults to RATING_API_BASE_URL.
+        base_url (str, optional): The internet location of the API. Defaults to RATING_API_BASE_URL.
 
     Raises:
         ValueError: Raised if URL seems to be invalid.

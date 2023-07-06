@@ -35,7 +35,7 @@ class Test_reflection_and_dynamic:  # noqa: D101
                 ), f"Response type is not a subclass of `BaseResponse`: {request_type}"
 
     @staticmethod
-    def dynamic_json_load(module_name: str, sample_data_folder: str) -> None:
+    def dynamic_json_load(module_name: str, sample_data_folder: str | Path) -> None:
         """Attempts to create instances of all non-abstract children of `RequestBase`."""
         # This test does a lot of heavy lifting. If you're looking to make additions/changes.
         # This is probably the first test that will fail if you break something.
@@ -64,7 +64,7 @@ class Test_reflection_and_dynamic:  # noqa: D101
                 response_type(**sample_data_json)
 
     def test_horde_api(self) -> None:
-        self.dynamic_json_load(ai_horde_api.__name__, AI_HORDE_SAMPLE_DATA_FOLDER)
+        self.dynamic_json_load(ai_horde_api.__name__, EXAMPLE_RESPONSES[ai_horde_api])
 
     def test_ratings_api(self) -> None:
-        self.dynamic_json_load(ratings_api.__name__, RATINGS_SAMPLE_DATA_FOLDER)
+        self.dynamic_json_load(ratings_api.__name__, EXAMPLE_RESPONSES[ratings_api])

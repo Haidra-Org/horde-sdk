@@ -5,6 +5,8 @@ from collections.abc import Callable
 
 from pydantic import BaseModel, Field, field_validator
 
+from horde_sdk.consts import HTTPMethod
+from horde_sdk.generic_api.endpoints import url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
 
@@ -12,7 +14,10 @@ class HordeAPIMessage(BaseModel):
     """Represents any request or response from any Horde API."""
 
     __api_model_name__: str | None
-    """The name of the model as seen in the published swagger doc. If none, there is no payload for this message."""
+    """The name of the model as seen in the published swagger doc. If none, there is no payload for this message.
+
+    Note that GET request should have this set to `None` as they do not have a payload.
+    """
 
 
 class BaseResponse(HordeAPIMessage):
@@ -29,20 +34,31 @@ class BaseRequest(HordeAPIMessage, abc.ABC):
 
     model_config = {"frozen": True}
 
-    __http_method__: str
+    __http_method__: HTTPMethod
+    """The HTTP method (verb) this request uses."""
 
     accept: GenericAcceptTypes = GenericAcceptTypes.json
     """The 'accept' header field."""
     # X_Fields # TODO
 
-    @staticmethod
-    @abc.abstractmethod
-    def get_endpoint_url() -> str:
+    @classmethod
+    def get_endpoint_url(cls) -> str:
         """Return the endpoint URL, including the path to the specific API action defined by this object"""
+        return url_with_path(base_url=cls.get_api_url(), path=cls.get_endpoint_subpath())
 
-    @staticmethod
+    @classmethod
     @abc.abstractmethod
-    def get_expected_response_type() -> type[BaseResponse]:
+    def get_api_url(cls) -> str:
+        """Return the base URL for the API this request is for."""
+
+    @classmethod
+    @abc.abstractmethod
+    def get_endpoint_subpath(cls) -> str:
+        """Return the subpath to the specific API action defined by this object"""
+
+    @classmethod
+    @abc.abstractmethod
+    def get_expected_response_type(cls) -> type[BaseResponse]:
         """Return the `type` of the response expected."""
 
 

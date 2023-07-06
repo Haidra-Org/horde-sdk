@@ -2,19 +2,22 @@ import pydantic
 from pydantic import Field, field_validator
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels._shared import BaseImageGenerateParam
+from horde_sdk.ai_horde_api.apimodels._shared import BaseAIHordeRequest, BaseImageGenerateParam
 from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL, AI_HORDE_API_URL_Literals
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import GenerationID
+from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseResponse
-from horde_sdk.generic_api.endpoints import url_with_path
 
 
-class ImageGenerateJobPopRequest(BaseRequestAuthenticated):
+class ImageGenerateJobPopRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
     """Represents the data needed to make a job request from a worker to the /v2/generate/pop endpoint.
 
     v2 API Model: `PopInputStable`
     """
+
+    __api_model_name__ = "PopInputStable"
+    __http_method__ = HTTPMethod.POST
 
     name: str
     priority_usernames: list[str] = Field(default_factory=list)
@@ -35,8 +38,8 @@ class ImageGenerateJobPopRequest(BaseRequestAuthenticated):
 
     @override
     @staticmethod
-    def get_endpoint_url() -> str:
-        return url_with_path(base_url=AI_HORDE_BASE_URL, path=AI_HORDE_API_URL_Literals.v2_generate_pop)
+    def get_endpoint_subpath() -> str:
+        return AI_HORDE_API_URL_Literals.v2_generate_pop
 
     @override
     @staticmethod
