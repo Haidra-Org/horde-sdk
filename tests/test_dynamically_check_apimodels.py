@@ -46,7 +46,7 @@ class Test_reflection_and_dynamic:  # noqa: D101
         all_request_types: list[type[generic_api.BaseRequest]] = get_all_request_types(module_name)
 
         for request_type in all_request_types:
-            print(f"Testing {request_type.__name__}")
+            # print(f"Testing {request_type.__name__}")
             assert issubclass(
                 request_type, generic_api.BaseRequest
             ), f"Request type is not a subclass if `BaseRequest`: {request_type}"
