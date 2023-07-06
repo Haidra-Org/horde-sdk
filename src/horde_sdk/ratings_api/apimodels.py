@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from strenum import StrEnum
 from typing_extensions import override
 
-from horde_sdk.consts import HTTPMethod
+from horde_sdk.consts import _UNDEFINED_MODEL, HTTPMethod
 from horde_sdk.generic_api import BaseRequestAuthenticated, BaseRequestUserSpecific
 from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
 from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
@@ -17,131 +17,6 @@ class BaseRatingsAPIRequest(BaseRequest):
     @classmethod
     def get_api_url(cls) -> str:
         return RATING_API_BASE_URL
-
-
-# region Requests
-
-
-class BaseRequestImageSpecific(BaseRatingsAPIRequest, BaseRequestAuthenticated):
-    """Represents the minimum for any request specifying a specific user to the API."""
-
-    image_id: uuid.UUID
-    """The UUID of the image."""
-
-
-class SelectableReturnFormats(StrEnum):
-    """Formats the API supports returning data."""
-
-    html = auto()
-    json = auto()
-
-
-class BaseSelectableReturnTypeRequest(BaseModel):
-    """Mix-in class to describe an endpoint for which you can select the return data format."""
-
-    format: SelectableReturnFormats  # noqa: A003
-    """The format to request the response payload in, typically json."""
-
-
-class ImageRatingsRequest(BaseRatingsAPIRequest, BaseRequestAuthenticated, BaseSelectableReturnTypeRequest):
-    """Represents the data needed to make a request to the `/v1/image/ratings/{image_id}` endpoint."""
-
-    __api_model_name__ = None
-    __http_method__ = HTTPMethod.GET
-
-    @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
-        return Rating_API_URL_Literals.v1_image_ratings
-
-    @override
-    @staticmethod
-    def get_expected_response_type() -> type[BaseResponse]:
-        return ImageRatingsResponse
-
-
-class ImageRatingsComparisonTypes(StrEnum):
-    """Ways the API supports selecting a rating range."""
-
-    greater_than_equal = "ge"
-    less_than_equal = "le"
-    equal = "eq"
-
-
-class ImageRatingsFilterableRequestBase(BaseSelectableReturnTypeRequest):
-    """Generically, data the API requires to filter results prior and how to return them."""
-
-    rating: int | None
-    """The target rating, which will be compared by `rating_comparison`."""
-    rating_comparison: ImageRatingsComparisonTypes | None
-    """The way the `rating` will be compared. See `ImageRatingsComparisonTypes`."""
-    artifacts: int | None = None
-    """The target artifact rating, which will be compared by `artifacts_comparison`."""
-    artifacts_comparison: ImageRatingsComparisonTypes | None = None
-    """The way the `artifacts` will be compared. See `ImageRatingsComparisonTypes`."""
-    min_ratings: int | None
-
-
-class UserValidateRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific, ImageRatingsFilterableRequestBase):
-    """Represents the data needed to make a request to the `/v1/user/validate/{user_id}` endpoint."""
-
-    __api_model_name__ = None
-    __http_method__ = HTTPMethod.GET
-
-    @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
-        return Rating_API_URL_Literals.v1_user_validate
-
-    @override
-    @staticmethod
-    def get_expected_response_type() -> type[BaseResponse]:
-        return UserValidateResponse
-
-
-class UserCheckRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific):
-    """Represents the data needed to make a request to the `/v1/user/check/` endpoint."""
-
-    __api_model_name__: str | None = None
-    __http_method__: str = HTTPMethod.GET
-
-    minutes: int = Field(ge=1)
-    divergence: int = Field(ge=0)
-
-    @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
-        return Rating_API_URL_Literals.v1_user_check
-
-    @override
-    @staticmethod
-    def get_expected_response_type() -> type[BaseResponse]:
-        return UserCheckResponse
-
-
-class UserRatingsRequest(BaseRatingsAPIRequest, BaseRequestAuthenticated, ImageRatingsFilterableRequestBase):
-    """Represents the data needed to make a request to the `/v1/user/ratings/` endpoint."""
-
-    __api_model_name__ = None
-    __http_method__ = HTTPMethod.GET
-
-    limit: int
-    offset: int = 0
-    diverge: int | None
-    client_agent: str | None
-
-    @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
-        return Rating_API_URL_Literals.v1_user_ratings
-
-    @override
-    @staticmethod
-    def get_expected_response_type() -> type[BaseResponse]:
-        return UserRatingsResponse
-
-
-# endregion
 
 
 # region Responses
@@ -184,6 +59,11 @@ class ImageRatingsResponse(BaseResponse):
     times_rated: int
     ratings: list[ImageRatingResponseSubRecord]
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return _UNDEFINED_MODEL
+
 
 class UserRatingsResponseSubRecord(BaseImageRatingRecord):
     """A single sub-record in a response from the `/v1/user/ratings` endpoint."""
@@ -202,6 +82,11 @@ class UserRatingsResponse(BaseResponse):
     ratings: list[UserRatingsResponseSubRecord]
     """A `list` of all records returned."""
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return _UNDEFINED_MODEL
+
 
 class UserValidateResponseRecord(BaseImageRatingRecord):
     """A single sub-record in a response from the `/v1/validate/{user_id}` endpoint."""
@@ -216,6 +101,11 @@ class UserValidateResponse(BaseResponse):
     """The total number of records in this response."""
     ratings: list[UserValidateResponseRecord]
     """A `list` of all records returned."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return _UNDEFINED_MODEL
 
 
 class UserCheckResponse(BaseResponse):
@@ -234,6 +124,163 @@ class UserCheckResponse(BaseResponse):
     """The number of instances of this user's rating not being within the criteria."""
     captchas_failed: int
     """The number of captchas failed by this user."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return _UNDEFINED_MODEL
+
+
+# endregion
+
+# region Requests
+
+
+class BaseRequestImageSpecific(BaseRatingsAPIRequest, BaseRequestAuthenticated):
+    """Represents the minimum for any request specifying a specific user to the API."""
+
+    image_id: uuid.UUID
+    """The UUID of the image."""
+
+
+class SelectableReturnFormats(StrEnum):
+    """Formats the API supports returning data."""
+
+    html = auto()
+    json = auto()
+
+
+class BaseSelectableReturnTypeRequest(BaseModel):
+    """Mix-in class to describe an endpoint for which you can select the return data format."""
+
+    format: SelectableReturnFormats  # noqa: A003
+    """The format to request the response payload in, typically json."""
+
+
+class ImageRatingsRequest(BaseRatingsAPIRequest, BaseRequestAuthenticated, BaseSelectableReturnTypeRequest):
+    """Represents the data needed to make a request to the `/v1/image/ratings/{image_id}` endpoint."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
+
+    @override
+    @staticmethod
+    def get_endpoint_subpath() -> str:
+        return Rating_API_URL_Literals.v1_image_ratings
+
+    @override
+    @staticmethod
+    def get_expected_response_type() -> type[ImageRatingsResponse]:
+        return ImageRatingsResponse
+
+
+class ImageRatingsComparisonTypes(StrEnum):
+    """Ways the API supports selecting a rating range."""
+
+    greater_than_equal = "ge"
+    less_than_equal = "le"
+    equal = "eq"
+
+
+class ImageRatingsFilterableRequestBase(BaseSelectableReturnTypeRequest):
+    """Generically, data the API requires to filter results prior and how to return them."""
+
+    rating: int | None
+    """The target rating, which will be compared by `rating_comparison`."""
+    rating_comparison: ImageRatingsComparisonTypes | None
+    """The way the `rating` will be compared. See `ImageRatingsComparisonTypes`."""
+    artifacts: int | None = None
+    """The target artifact rating, which will be compared by `artifacts_comparison`."""
+    artifacts_comparison: ImageRatingsComparisonTypes | None = None
+    """The way the `artifacts` will be compared. See `ImageRatingsComparisonTypes`."""
+    min_ratings: int | None
+
+
+class UserValidateRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific, ImageRatingsFilterableRequestBase):
+    """Represents the data needed to make a request to the `/v1/user/validate/{user_id}` endpoint."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
+
+    @override
+    @staticmethod
+    def get_endpoint_subpath() -> str:
+        return Rating_API_URL_Literals.v1_user_validate
+
+    @override
+    @staticmethod
+    def get_expected_response_type() -> type[UserValidateResponse]:
+        return UserValidateResponse
+
+
+class UserCheckRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific):
+    """Represents the data needed to make a request to the `/v1/user/check/` endpoint."""
+
+    minutes: int = Field(ge=1)
+    divergence: int = Field(ge=0)
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
+
+    @override
+    @staticmethod
+    def get_endpoint_subpath() -> str:
+        return Rating_API_URL_Literals.v1_user_check
+
+    @override
+    @staticmethod
+    def get_expected_response_type() -> type[UserCheckResponse]:
+        return UserCheckResponse
+
+
+class UserRatingsRequest(BaseRatingsAPIRequest, BaseRequestAuthenticated, ImageRatingsFilterableRequestBase):
+    """Represents the data needed to make a request to the `/v1/user/ratings/` endpoint."""
+
+    limit: int
+    offset: int = 0
+    diverge: int | None
+    client_agent: str | None
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
+
+    @override
+    @staticmethod
+    def get_endpoint_subpath() -> str:
+        return Rating_API_URL_Literals.v1_user_ratings
+
+    @override
+    @staticmethod
+    def get_expected_response_type() -> type[UserRatingsResponse]:
+        return UserRatingsResponse
 
 
 # endregion

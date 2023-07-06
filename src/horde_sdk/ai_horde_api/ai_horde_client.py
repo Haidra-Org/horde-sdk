@@ -29,7 +29,7 @@ class AIHordeAPIClient(GenericHordeAPIClient):
         Returns:
             ImageGenerateAsyncResponse | RequestErrorResponse: The response from the API.
         """
-        api_response = self.post(api_request)
+        api_response = self.submit_request(api_request)
         if isinstance(api_response, RequestErrorResponse):
             logger.error("Error response received from the AI-Horde API.")
             logger.error(f"Endpoint: {api_request.get_endpoint_url()}")

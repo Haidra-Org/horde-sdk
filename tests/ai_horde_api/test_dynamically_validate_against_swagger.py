@@ -26,18 +26,19 @@ def test_all_ai_horde_model_defs_in_swagger() -> None:
         endpoint_subpath = request_type.get_endpoint_subpath()
         assert endpoint_subpath, f"Failed to get endpoint subpath for {request_type.__name__}"
 
-        print(f"Found VERB: `{request_type.__http_method__}` REQUEST TYPE: `{request_type.__name__}` in swagger")
+        # print(f"Found VERB: `{request_type.get_http_method()}` REQUEST TYPE: `{request_type.__name__}` in swagger")
 
         # Check if the endpoint subpath is defined in the Swagger documentation
         assert endpoint_subpath in swagger_doc.paths, f"Endpoint {endpoint_subpath} not found in the swagger"
         swagger_endpoint: SwaggerEndpoint = swagger_doc.paths[endpoint_subpath]
 
         # Check if the HTTP method used by the request type is defined in the Swagger documentation
-        assert swagger_endpoint.get_endpoint_method_from_http_method(request_type.__http_method__) is not None
+        assert swagger_endpoint.get_endpoint_method_from_http_method(request_type.get_http_method()) is not None
 
-        # If `__api_model_name__` is None, then the request type has no payload, and is supposed to be a GET or DELETE
-        if request_type.__api_model_name__ is None:
-            assert request_type.__http_method__ in [
+        # If `.get_api_model_name()` is None, then the request type has no payload,
+        # and is supposed to be a GET or DELETE
+        if request_type.get_api_model_name() is None:
+            assert request_type.get_http_method() in [
                 HTTPMethod.GET,
                 HTTPMethod.DELETE,
             ], (
@@ -48,7 +49,7 @@ def test_all_ai_horde_model_defs_in_swagger() -> None:
         # a payload
         else:
             assert (
-                request_type.__api_model_name__ in all_swagger_defined_models
-            ), f"Model is defined in horde_sdk, but not in swagger: {request_type.__api_model_name__}"
+                request_type.get_api_model_name() in all_swagger_defined_models
+            ), f"Model is defined in horde_sdk, but not in swagger: {request_type.get_api_model_name()}"
 
             assert endpoint_subpath in swagger_doc.paths, f"Missing {request_type.__name__} in swagger"

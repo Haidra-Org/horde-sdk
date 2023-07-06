@@ -6,24 +6,36 @@ from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import BaseResponse
 
 
-class StatsImageModels(BaseAIHordeRequest):
-    __api_model_name__ = "ImgModelStats"
-    __http_method__ = HTTPMethod.GET
-
-    @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
-        return AI_HORDE_API_URL_Literals.v2_stats_img_models
-
-    @override
-    @staticmethod
-    def get_expected_response_type() -> type[BaseResponse]:
-        return StatsModelsResponse
-
-
 class StatsModelsResponse(BaseResponse):
     model_config = {"frozen": True}
 
     day: dict[str, int]
     month: dict[str, int]
     total: dict[str, int]
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ImgModelStats"
+
+
+class StatsImageModels(BaseAIHordeRequest):
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
+
+    @override
+    @classmethod
+    def get_endpoint_subpath(cls) -> str:
+        return AI_HORDE_API_URL_Literals.v2_stats_img_models
+
+    @override
+    @classmethod
+    def get_expected_response_type(cls) -> type[StatsModelsResponse]:
+        return StatsModelsResponse

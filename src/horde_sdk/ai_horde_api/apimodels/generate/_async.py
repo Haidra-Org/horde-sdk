@@ -8,7 +8,22 @@ from horde_sdk.ai_horde_api.apimodels._shared import (
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import GenerationID
+from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import BaseRequestWorkerDriven, BaseResponse
+
+
+class ImageGenerateAsyncResponse(BaseResponse):
+    """Represents the data returned from the `/v2/generate/async` endpoint."""
+
+    id: str | GenerationID  # noqa: A003
+    """The UUID for this image generation."""
+    kudos: float
+    message: str
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "RequestAsync"
 
 
 class ImageGenerationInputPayload(BaseImageGenerateParam):
@@ -20,9 +35,6 @@ class ImageGenerateAsyncRequest(BaseAIHordeRequest, ImageGenerateImg2ImgData, Ba
 
     v2 API Model: `GenerationInputStable`
     """
-
-    __api_model_name__: str | None = "GenerationInputStable"
-    __http_method__: str = "POST"
 
     prompt: str
     params: ImageGenerationInputPayload | None = None
@@ -43,20 +55,21 @@ class ImageGenerateAsyncRequest(BaseAIHordeRequest, ImageGenerateImg2ImgData, Ba
         return values
 
     @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "GenerationInputStable"
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.POST
+
+    @override
     @staticmethod
     def get_endpoint_subpath() -> str:
         return AI_HORDE_API_URL_Literals.v2_generate_async
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[BaseResponse]:
+    def get_expected_response_type() -> type[ImageGenerateAsyncResponse]:
         return ImageGenerateAsyncResponse
-
-
-class ImageGenerateAsyncResponse(BaseResponse):
-    """Represents the data returned from the `/v2/generate/async` endpoint."""
-
-    id: str | GenerationID  # noqa: A003
-    """The UUID for this image generation."""
-    kudos: float
-    message: str

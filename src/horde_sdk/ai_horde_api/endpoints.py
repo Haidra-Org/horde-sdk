@@ -7,6 +7,8 @@ AI_HORDE_BASE_URL = "http://localhost:9834/api/"
 class AI_HORDE_API_URL_Literals(StrEnum):
     """The URL actions 'paths' to the endpoints. Includes find/replace strings for path (non-query) variables."""
 
+    # Note that the leading slash is included for consistency with the swagger docs,
+    # but it is dropped when the URL is actually constructed (see `url_with_path` in `horde_sdk.generic_api.endpoints`)
     v2_stats_img_models = "/v2/stats/img/models"
     v2_stats_img_totals = "/v2/stats/img/totals"
     v2_stats_text_models = "/v2/stats/text/models"
@@ -38,7 +40,7 @@ class AI_HORDE_API_URL_Literals(StrEnum):
     v2_kudos_transfer = "/v2/kudos/transfer"
 
     v2_sharedkeys_create = "/v2/sharedkeys"
-    v2_sharedkeys = "v2_sharedkeys/{sharedkey_id}"
+    v2_sharedkeys = "/v2_sharedkeys/{sharedkey_id}"
 
     v2_status_heartbeat = "/v2/status/heartbeat"
 

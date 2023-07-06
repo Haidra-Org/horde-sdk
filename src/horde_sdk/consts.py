@@ -2,6 +2,9 @@ from enum import Enum
 
 from strenum import StrEnum
 
+_UNDEFINED_MODEL = "_UNDEFINED_MODEL"
+"""This model is logically present on the API, but not defined in the swagger."""
+
 
 class HTTPMethod(StrEnum):
     """An enum representing all HTTP methods."""
@@ -13,11 +16,11 @@ class HTTPMethod(StrEnum):
     PATCH = "PATCH"
     OPTIONS = "OPTIONS"
     HEAD = "HEAD"
-    # TRACE = "TRACE"
-    # CONNECT = "CONNECT"
+    TRACE = "TRACE"
+    CONNECT = "CONNECT"
 
 
-class HTTPStatusCodes(Enum):
+class HTTPStatusCode(Enum):
     """An enum representing all HTTP status codes."""
 
     OK = 200
@@ -29,9 +32,13 @@ class HTTPStatusCodes(Enum):
     UNAUTHORIZED = 401
     FORBIDDEN = 403
     NOT_FOUND = 404
+    METHOD_NOT_ALLOWED = 405
+    NOT_ACCEPTABLE = 406
+    REQUEST_TIMEOUT = 408
     CONFLICT = 409
     GONE = 410
     UNPROCESSABLE_ENTITY = 422
+    TOO_MANY_REQUESTS = 429
 
     INTERNAL_SERVER_ERROR = 500
     NOT_IMPLEMENTED = 501

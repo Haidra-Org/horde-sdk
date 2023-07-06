@@ -7,30 +7,11 @@ from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import BaseResponse
 
 
-class ImageGenerateCheckRequest(BaseAIHordeRequest, BaseImageGenerateJobRequest):
-    """Represents a GET request to the `/v2/generate/check/{id}` endpoint."""
-
-    __api_model_name__ = None
-    __http_method__ = HTTPMethod.GET
-
-    @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
-        return AI_HORDE_API_URL_Literals.v2_generate_check
-
-    @override
-    @staticmethod
-    def get_expected_response_type() -> type[BaseResponse]:
-        return ImageGenerateCheckResponse
-
-
 class ImageGenerateCheckResponse(BaseResponse):
     """Represents the data returned from the `/v2/generate/check/{id}` endpoint.
 
     v2 API Model: `RequestStatusCheck`
     """
-
-    __api_model_name__ = "RequestStatusCheck"
 
     finished: int
     """The amount of finished jobs in this request."""
@@ -52,3 +33,32 @@ class ImageGenerateCheckResponse(BaseResponse):
     """The amount of total Kudos this request has consumed until now."""
     is_possible: bool = True
     """If False, this request will not be able to be completed with the pool of workers currently available."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "RequestStatusCheck"
+
+
+class ImageGenerateCheckRequest(BaseAIHordeRequest, BaseImageGenerateJobRequest):
+    """Represents a GET request to the `/v2/generate/check/{id}` endpoint."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
+
+    @override
+    @classmethod
+    def get_endpoint_subpath(cls) -> str:
+        return AI_HORDE_API_URL_Literals.v2_generate_check
+
+    @override
+    @classmethod
+    def get_expected_response_type(cls) -> type[ImageGenerateCheckResponse]:
+        return ImageGenerateCheckResponse

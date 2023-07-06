@@ -8,7 +8,6 @@ from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import ImageID, WorkerID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseResponse
 
 
 class ImageGenerateStatusRequest(BaseAIHordeRequest, BaseImageGenerateJobRequest):
@@ -50,12 +49,24 @@ class ImageGenerateStatusResponse(ImageGenerateCheckResponse):
     shared: bool
     """If True, These images have been shared with LAION."""
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "RequestStatusStable"
+
 
 class CancelImageGenerateRequest(BaseAIHordeRequest, BaseImageGenerateJobRequest):
     """Represents a DELETE request to the `/v2/generate/status/{id}` endpoint."""
 
-    __api_model_name__ = None
-    __http_method__ = HTTPMethod.DELETE
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.DELETE
 
     @override
     @staticmethod
@@ -64,5 +75,5 @@ class CancelImageGenerateRequest(BaseAIHordeRequest, BaseImageGenerateJobRequest
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[BaseResponse]:
+    def get_expected_response_type() -> type[ImageGenerateStatusResponse]:
         return ImageGenerateStatusResponse

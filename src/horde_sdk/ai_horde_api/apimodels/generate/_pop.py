@@ -10,57 +10,6 @@ from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseResponse
 
 
-class ImageGenerateJobPopRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
-    """Represents the data needed to make a job request from a worker to the /v2/generate/pop endpoint.
-
-    v2 API Model: `PopInputStable`
-    """
-
-    __api_model_name__ = "PopInputStable"
-    __http_method__ = HTTPMethod.POST
-
-    name: str
-    priority_usernames: list[str] = Field(default_factory=list)
-    nsfw: bool = True
-    models: list[str]
-    bridge_version: int
-    bridge_agent: str
-    threads: int = 1
-    require_upfront_kudos: bool = False
-    max_pixels: int
-    blacklist: list[str] = Field(default_factory=list)
-    allow_img2img: bool = True
-    allow_painting: bool = False
-    allow_unsafe_ipaddr: bool = True
-    allow_post_processing: bool = True
-    allow_controlnet: bool = False
-    allow_lora: bool = False
-
-    @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
-        return AI_HORDE_API_URL_Literals.v2_generate_pop
-
-    @override
-    @staticmethod
-    def get_expected_response_type() -> type[BaseResponse]:
-        return ImageGenerateJobResponse
-
-
-class ImageGenerateJobPopPayload(BaseImageGenerateParam):
-    prompt: str
-
-    @property
-    def ddim_steps(self) -> int:
-        return self.steps
-
-    @ddim_steps.setter
-    def ddim_steps(self, value: int) -> None:
-        if value is None or value < 1:
-            raise ValueError("steps must be a positive integer")
-        self.steps = value
-
-
 class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
     """Represents the data returned from the `/v2/generate/pop` endpoint for why a worker was skipped.
 
@@ -135,3 +84,66 @@ class ImageGenerateJobResponse(BaseResponse):
         if v not in KNOWN_SOURCE_PROCESSING.__members__:
             raise ValueError(f"Unknown source processing {v}")
         return v
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "GenerationPayloadStable"
+
+
+class ImageGenerateJobPopRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
+    """Represents the data needed to make a job request from a worker to the /v2/generate/pop endpoint.
+
+    v2 API Model: `PopInputStable`
+    """
+
+    name: str
+    priority_usernames: list[str] = Field(default_factory=list)
+    nsfw: bool = True
+    models: list[str]
+    bridge_version: int
+    bridge_agent: str
+    threads: int = 1
+    require_upfront_kudos: bool = False
+    max_pixels: int
+    blacklist: list[str] = Field(default_factory=list)
+    allow_img2img: bool = True
+    allow_painting: bool = False
+    allow_unsafe_ipaddr: bool = True
+    allow_post_processing: bool = True
+    allow_controlnet: bool = False
+    allow_lora: bool = False
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "PopInputStable"
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.POST
+
+    @override
+    @staticmethod
+    def get_endpoint_subpath() -> str:
+        return AI_HORDE_API_URL_Literals.v2_generate_pop
+
+    @override
+    @staticmethod
+    def get_expected_response_type() -> type[ImageGenerateJobResponse]:
+        return ImageGenerateJobResponse
+
+
+class ImageGenerateJobPopPayload(BaseImageGenerateParam):
+    prompt: str
+
+    @property
+    def ddim_steps(self) -> int:
+        return self.steps
+
+    @ddim_steps.setter
+    def ddim_steps(self, value: int) -> None:
+        if value is None or value < 1:
+            raise ValueError("steps must be a positive integer")
+        self.steps = value

@@ -22,9 +22,12 @@ def url_with_path(
 
     @functools.cache
     def _shadowed_cached_func(*, base_url: str, path: str) -> str:
-        # TODO why does the decorator break the pylance lang server?
-        # TODO this sub def side steps intellisense not working, but doesn't feel right
+        # This sub def is here to support intellisense for the cached function
+        # VSCode doesn't seem to understand the types/parameters of cached functions
+        # (perhaps for a good reason, I don't know)
         parsedURL = urllib.parse.urlparse(base_url)
+        if path.startswith("/"):
+            path = path[1:]
         if not parsedURL.scheme:
             raise ValueError(f"Missing URL scheme (e.g., http, https)!\n  Is baseURL valid? baseURL: {base_url}")
         return urllib.parse.urljoin(base_url, path)

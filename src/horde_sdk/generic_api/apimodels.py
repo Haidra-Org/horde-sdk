@@ -5,19 +5,22 @@ from collections.abc import Callable
 
 from pydantic import BaseModel, Field, field_validator
 
-from horde_sdk.consts import HTTPMethod
+from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.endpoints import url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
 
-class HordeAPIMessage(BaseModel):
+class HordeAPIMessage(BaseModel, abc.ABC):
     """Represents any request or response from any Horde API."""
 
-    __api_model_name__: str | None
-    """The name of the model as seen in the published swagger doc. If none, there is no payload for this message.
+    @classmethod
+    @abc.abstractmethod
+    def get_api_model_name(cls) -> str | None:
+        """Return the name of the model as seen in the published swagger doc. If none, there is no payload for
+        this message.
 
-    Note that GET request should have this set to `None` as they do not have a payload.
-    """
+        Note that GET request should have this set to `None` as they do not have a payload.
+        """
 
 
 class BaseResponse(HordeAPIMessage):
@@ -25,17 +28,22 @@ class BaseResponse(HordeAPIMessage):
 
     model_config = {"frozen": True}
 
-    __http_status_codes__: dict[int, Callable]  # TODO: type for Callable
-    """A mapping of HTTP status codes to functions which will be used to determine if the response is valid."""
+    @classmethod
+    # @abc.abstractmethod
+    def get_expected_http_status_codes(cls) -> dict[HTTPStatusCode, Callable]:
+        """Return a dict of HTTP status codes to functions which will be used to determine if the response is valid."""
+        return {HTTPStatusCode.OK: lambda x: x}
 
 
-class BaseRequest(HordeAPIMessage, abc.ABC):
+class BaseRequest(HordeAPIMessage):
     """Represents any request to any Horde API."""
 
     model_config = {"frozen": True}
 
-    __http_method__: HTTPMethod
-    """The HTTP method (verb) this request uses."""
+    @classmethod
+    @abc.abstractmethod
+    def get_http_method(cls) -> HTTPMethod:
+        """Return the HTTP method (verb) this request uses."""
 
     accept: GenericAcceptTypes = GenericAcceptTypes.json
     """The 'accept' header field."""

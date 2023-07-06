@@ -3,7 +3,13 @@ from typing_extensions import override
 from horde_sdk.ai_horde_api.apimodels._shared import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import GenerationID
+from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseResponse
+
+
+class ImageGenerationJobSubmitResponse(BaseResponse):
+    reward: float
+    """The amount of kudos gained for submitting this request."""
 
 
 class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
@@ -24,16 +30,21 @@ class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, BaseRequestAuthenticat
     """If True, this resulting image has been censored."""
 
     @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "SubmitInputStable"
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.POST
+
+    @override
     @staticmethod
     def get_endpoint_subpath() -> str:
         return AI_HORDE_API_URL_Literals.v2_generate_submit
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[BaseResponse]:
+    def get_expected_response_type() -> type[ImageGenerationJobSubmitResponse]:
         return ImageGenerationJobSubmitResponse
-
-
-class ImageGenerationJobSubmitResponse(BaseResponse):
-    reward: float
-    """The amount of kudos gained for submitting this request."""
