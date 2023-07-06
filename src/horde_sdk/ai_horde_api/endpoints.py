@@ -1,7 +1,7 @@
 from strenum import StrEnum
 
-# AI_HORDE_BASE_URL = "https://dev.aihorde.net/api/"
-AI_HORDE_BASE_URL = "http://localhost:9834/api/"
+AI_HORDE_BASE_URL = "https://aihorde.net/api/"
+# AI_HORDE_BASE_URL = "http://localhost:9834/api/"
 
 
 class AI_HORDE_API_URL_Literals(StrEnum):
