@@ -1,6 +1,6 @@
 # AI-Horde-Shared-Models
 
-With the power of pydantic, you can simplify interfacing with the [AI-Horde's suite of APIs](https://github.com/db0/AI-Horde). Whether you want to requests your own images, or roll your own worker software, this package may suit your needs for anything horde related.
+With the power of pydantic, you can simplify interfacing with the [AI-Horde's suite of APIs](https://github.com/db0/AI-Horde). Whether you want to request your own images, or roll your own worker software, this package may suit your needs for anything horde related.
 
 ## AI-Horde
 `TODO`
