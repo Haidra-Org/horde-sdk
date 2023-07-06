@@ -7,9 +7,6 @@ AI_HORDE_BASE_URL = "https://aihorde.net/api/"
 if os.environ.get("HORDE_URL", None):
     AI_HORDE_BASE_URL = os.environ["HORDE_URL"]
 
-if __debug__:
-    AI_HORDE_BASE_URL = "http://localhost:7001/api/"
-
 if os.environ.get("HORDE_URL_DEBUG", None):
     AI_HORDE_BASE_URL = os.environ["HORDE_URL_DEBUG"]
 
