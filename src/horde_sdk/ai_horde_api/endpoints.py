@@ -1,11 +1,22 @@
+import os
+
 from strenum import StrEnum
 
 AI_HORDE_BASE_URL = "https://aihorde.net/api/"
-# AI_HORDE_BASE_URL = "http://localhost:9834/api/"
+
+if os.environ.get("HORDE_URL", None):
+    AI_HORDE_BASE_URL = os.environ["HORDE_URL"]
+
+if __debug__:
+    AI_HORDE_BASE_URL = "http://localhost:7001/api/"
+
+if os.environ.get("HORDE_URL_DEBUG", None):
+    AI_HORDE_BASE_URL = os.environ["HORDE_URL_DEBUG"]
 
 
 class AI_HORDE_API_URL_Literals(StrEnum):
-    """The URL actions 'paths' to the endpoints. Includes find/replace strings for path (non-query) variables."""
+    """The URL actions 'paths' to the endpoints. Includes the find/replace strings in brackets for path (non-query)
+    variables."""
 
     # Note that the leading slash is included for consistency with the swagger docs,
     # but it is dropped when the URL is actually constructed (see `url_with_path` in `horde_sdk.generic_api.endpoints`)
