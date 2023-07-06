@@ -38,7 +38,10 @@ def test_all_ai_horde_model_defs_in_swagger() -> None:
         # If `.get_api_model_name()` is None, then the request type has no payload,
         # and is supposed to be a GET or DELETE
         if request_type.get_api_model_name() is None:
-            assert request_type.get_http_method() in [HTTPMethod.GET, HTTPMethod.DELETE,], (
+            assert request_type.get_http_method() in [
+                HTTPMethod.GET,
+                HTTPMethod.DELETE,
+            ], (
                 f"Request type {request_type.__name__} has no model name, but is not a GET or DELETE request. "
                 "It should probably be a POST, PUT, or PATCH request."
             )
