@@ -4,7 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "horde_sdk"
-version = "0.0.1"
+version = "0.1.0"
+description = "A python toolkit for interacting with the horde APIs, services, and ecosystem."
+authors = [
+    {name = "tazlin", email = "tazlin.on.github@gmail.com"},
+    {name = "db0", email = "mail@dbzer0.com"},
+]
 requires-python = ">=3.10"
 dependencies = [
     "pydantic",
@@ -17,7 +22,14 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Development Status :: 2 - Pre-Alpha",
 ]
+
+[project.urls]
+"Homepage" = "https://github.com/Haidra-Org/horde-sdk"
+
+[tool.setuptools.package-data]
+tests = ["*.json"]
 
 [tool.ruff]
 line-length = 119
