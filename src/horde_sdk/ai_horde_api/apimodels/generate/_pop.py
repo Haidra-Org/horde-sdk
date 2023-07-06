@@ -75,7 +75,7 @@ class ImageGenerateJobResponse(BaseResponse):
     """If img_processing is set to 'inpainting' or 'outpainting', this parameter can be optionally provided as the
     mask of the areas to inpaint. If this arg is not passed, the inpainting/outpainting mask has to be embedded as
     alpha channel."""
-    r2_upload: str
+    r2_upload: str | None = None
     """The r2 upload link to use to upload this image."""
 
     @field_validator("source_processing")

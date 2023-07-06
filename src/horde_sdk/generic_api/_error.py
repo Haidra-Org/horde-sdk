@@ -12,7 +12,7 @@ class RequestErrorResponse(BaseResponse):
     v2 API Model: `RequestError`
     """
 
-    message: str
+    message: str = ""
 
     @override
     @classmethod

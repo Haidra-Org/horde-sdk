@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels._base import BaseImageGenerateJobRequest
@@ -44,9 +44,9 @@ class ImageGenerateStatusResponse(ImageGenerateCheckResponse):
     v2 API Model: `RequestStatusStable`
     """
 
-    generations: list[ImageGeneration]
+    generations: list[ImageGeneration] = Field(default_factory=list)
     """The individual image generation responses in this request."""
-    shared: bool
+    shared: bool | None = False
     """If True, These images have been shared with LAION."""
 
     @override

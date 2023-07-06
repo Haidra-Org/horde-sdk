@@ -18,7 +18,7 @@ class ImageGenerateAsyncResponse(BaseResponse):
     id: str | GenerationID  # noqa: A003
     """The UUID for this image generation."""
     kudos: float
-    message: str
+    message: str | None = None
 
     @override
     @classmethod
