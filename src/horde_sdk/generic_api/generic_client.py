@@ -4,7 +4,7 @@ import requests
 from pydantic import BaseModel
 
 from horde_sdk.generic_api._error import RequestErrorResponse
-from horde_sdk.generic_api.apimodels import BaseRequest
+from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
 from horde_sdk.generic_api.metadata import (
     GenericAcceptTypes,
     GenericHeaderFields,
@@ -32,7 +32,7 @@ class GenericHordeAPIClient:
     _header_data_keys: list[str]
     """A list of all fields which would appear in the API request header."""
     _path_data_keys: list[str]
-    """A list of all fields which would appear in any API action path (appearing before the '?')"""
+    """A list of all fields which would appear in any API action path (appearing before the '?' as part of the URL)"""
     _query_data_keys: list[str]
     """A list of all fields which would appear in any API action query (appearing after the '?')"""
 
@@ -146,7 +146,7 @@ class GenericHordeAPIClient:
         self,
         api_request: BaseRequest,
         raw_response: requests.Response,
-    ) -> BaseModel | RequestErrorResponse:
+    ) -> BaseResponse | RequestErrorResponse:
         expected_response_type = api_request.get_expected_response_type()
         raw_response_json = raw_response.json()
 
@@ -164,7 +164,16 @@ class GenericHordeAPIClient:
         # FIXME should be something resembling error handling here
         return expected_response_type(**raw_response_json)
 
-    def get(self, api_request: BaseRequest) -> BaseModel | RequestErrorResponse:
+    def submit_request(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
+        """Submit a request to the API and return the response.
+
+        Automatically determines the correct method to call based on calling `.get_http_method()` on the request.
+        """
+        http_method_name = api_request.get_http_method()._value_.lower()
+        api_client_method = getattr(self, http_method_name)
+        return api_client_method(api_request)
+
+    def get(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
         """Perform a GET request to the API."""
         parsed_request = self._validate_and_prepare_request(api_request)
         if parsed_request.request_body is not None:
@@ -178,7 +187,7 @@ class GenericHordeAPIClient:
 
         return self._after_request_handling(api_request, raw_response)
 
-    def post(self, api_request: BaseRequest) -> BaseModel | RequestErrorResponse:
+    def post(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
         """Perform a POST request to the API."""
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response = requests.post(
@@ -191,7 +200,7 @@ class GenericHordeAPIClient:
 
         return self._after_request_handling(api_request, raw_response)
 
-    def put(self, api_request: BaseRequest) -> BaseModel | RequestErrorResponse:
+    def put(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
         """Perform a PUT request to the API."""
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response = requests.put(
@@ -204,7 +213,7 @@ class GenericHordeAPIClient:
 
         return self._after_request_handling(api_request, raw_response)
 
-    def patch(self, api_request: BaseRequest) -> BaseModel | RequestErrorResponse:
+    def patch(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
         """Perform a PATCH request to the API."""
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response = requests.patch(
@@ -217,7 +226,7 @@ class GenericHordeAPIClient:
 
         return self._after_request_handling(api_request, raw_response)
 
-    def delete(self, api_request: BaseRequest) -> BaseModel | RequestErrorResponse:
+    def delete(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
         """Perform a DELETE request to the API."""
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response = requests.delete(

@@ -1,0 +1,12 @@
+{
+    "finished": 0,
+    "processing": 0,
+    "restarted": 0,
+    "waiting": 0,
+    "done": true,
+    "faulted": false,
+    "wait_time": 0,
+    "queue_position": 0,
+    "kudos": 0,
+    "is_possible": true
+}

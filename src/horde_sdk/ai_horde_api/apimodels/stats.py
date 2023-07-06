@@ -1,20 +1,9 @@
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL, AI_HORDE_API_URL_Literals
-from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
-from horde_sdk.generic_api.endpoints import url_with_path
-
-
-class StatsImageModels(BaseRequest):
-    @override
-    @staticmethod
-    def get_endpoint_url() -> str:
-        return url_with_path(base_url=AI_HORDE_BASE_URL, path=AI_HORDE_API_URL_Literals.v2_stats_img_models)
-
-    @override
-    @staticmethod
-    def get_expected_response_type() -> type[BaseResponse]:
-        return StatsModelsResponse
+from horde_sdk.ai_horde_api.apimodels._shared import BaseAIHordeRequest
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
+from horde_sdk.consts import HTTPMethod
+from horde_sdk.generic_api.apimodels import BaseResponse
 
 
 class StatsModelsResponse(BaseResponse):
@@ -23,3 +12,30 @@ class StatsModelsResponse(BaseResponse):
     day: dict[str, int]
     month: dict[str, int]
     total: dict[str, int]
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ImgModelStats"
+
+
+class StatsImageModels(BaseAIHordeRequest):
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
+
+    @override
+    @classmethod
+    def get_endpoint_subpath(cls) -> str:
+        return AI_HORDE_API_URL_Literals.v2_stats_img_models
+
+    @override
+    @classmethod
+    def get_expected_response_type(cls) -> type[StatsModelsResponse]:
+        return StatsModelsResponse

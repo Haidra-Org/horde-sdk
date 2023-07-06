@@ -8,7 +8,7 @@ import pytest
 
 
 class Test_validators:
-    """If you are unfamiliar with pydantic, this demonstrates some of the validation functionality."""
+    """If you are unfamiliar with pydantic, this may demonstrates some of the validation functionality."""
 
     def test_user_check_request(self) -> None:
         """Shows some of the types of data expected."""
