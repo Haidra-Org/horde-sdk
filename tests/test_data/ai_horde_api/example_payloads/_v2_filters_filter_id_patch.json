@@ -1,0 +1,6 @@
+{
+    "regex": "ac.*",
+    "filter_type": 10,
+    "description": "",
+    "replacement": ""
+}

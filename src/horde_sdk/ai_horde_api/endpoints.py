@@ -2,6 +2,8 @@ import os
 
 from strenum import StrEnum
 
+from horde_sdk.generic_api.endpoints import url_with_path
+
 AI_HORDE_BASE_URL = "https://aihorde.net/api/"
 
 if os.environ.get("HORDE_URL", None):
@@ -14,6 +16,8 @@ if os.environ.get("HORDE_URL_DEBUG", None):
 class AI_HORDE_API_URL_Literals(StrEnum):
     """The URL actions 'paths' to the endpoints. Includes the find/replace strings in brackets for path (non-query)
     variables."""
+
+    swagger = "/swagger.json"
 
     # Note that the leading slash is included for consistency with the swagger docs,
     # but it is dropped when the URL is actually constructed (see `url_with_path` in `horde_sdk.generic_api.endpoints`)
@@ -65,3 +69,10 @@ class AI_HORDE_API_URL_Literals(StrEnum):
 
     v2_workers_all = "/v2/workers"
     v2_workers = "/v2/workers/{worker_id}"
+
+
+def get_ai_horde_swagger_url() -> str:
+    return url_with_path(
+        base_url=AI_HORDE_BASE_URL,
+        path=AI_HORDE_API_URL_Literals.swagger,
+    )

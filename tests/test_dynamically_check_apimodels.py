@@ -6,8 +6,15 @@ from types import ModuleType
 import horde_sdk.ai_horde_api as ai_horde_api
 import horde_sdk.generic_api as generic_api
 import horde_sdk.ratings_api as ratings_api
+from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api._reflection import get_all_request_types
 from horde_sdk.generic_api.apimodels import BaseResponse
+from horde_sdk.generic_api.utils.swagger import SwaggerDoc
+
+EXAMPLE_PAYLOADS: dict[ModuleType, Path] = {
+    ai_horde_api: Path("tests/test_data/ai_horde_api/example_payloads"),
+    ratings_api: Path("tests/test_data/ratings_api/example_payloads"),
+}
 
 EXAMPLE_RESPONSES: dict[ModuleType, Path] = {
     ai_horde_api: Path("tests/test_data/ai_horde_api/example_responses"),
@@ -35,13 +42,17 @@ class Test_reflection_and_dynamic:  # noqa: D101
                 ), f"Response type is not a subclass of `BaseResponse`: {request_type}"
 
     @staticmethod
-    def dynamic_json_load(module_name: str, sample_data_folder: str | Path) -> None:
+    def dynamic_json_load(module: ModuleType) -> None:
         """Attempts to create instances of all non-abstract children of `RequestBase`."""
         # This test does a lot of heavy lifting. If you're looking to make additions/changes.
         # This is probably the first test that will fail if you break something.
         #
         # If you're here because it failed and you're not sure why,
         # check the implementation of `BaseRequestUserSpecific` and `UserRatingsRequest`
+
+        module_name = module.__name__
+        example_payload_folder = EXAMPLE_PAYLOADS[module]
+        example_response_folder = EXAMPLE_RESPONSES[module]
 
         all_request_types: list[type[generic_api.BaseRequest]] = get_all_request_types(module_name)
 
@@ -56,15 +67,24 @@ class Test_reflection_and_dynamic:  # noqa: D101
                 response_type, BaseResponse
             ), f"Response type is not a subclass of `BaseResponse`: {response_type}"
 
-            target_file = f"{sample_data_folder}/{response_type.__name__}.json"
-            assert os.path.exists(target_file), f"Missing sample data file: {target_file}"
+            if request_type.get_http_method() not in [HTTPMethod.GET, HTTPMethod.DELETE]:
+                example_payload_filename = SwaggerDoc.filename_from_endpoint_path(
+                    request_type.get_endpoint_subpath(),
+                    request_type.get_http_method(),
+                )
 
-            with open(target_file) as sample_file_handle:
+                target_payload_file_path = f"{example_payload_folder}/{example_payload_filename}.json"
+                assert os.path.exists(
+                    target_payload_file_path
+                ), f"Missing example payload file: {target_payload_file_path}"
+
+            target_response_file_path = f"{example_response_folder}/{response_type.__name__}.json"
+            with open(target_response_file_path) as sample_file_handle:
                 sample_data_json = json.loads(sample_file_handle.read())
                 response_type(**sample_data_json)
 
     def test_horde_api(self) -> None:
-        self.dynamic_json_load(ai_horde_api.__name__, EXAMPLE_RESPONSES[ai_horde_api])
+        self.dynamic_json_load(ai_horde_api)
 
     def test_ratings_api(self) -> None:
-        self.dynamic_json_load(ratings_api.__name__, EXAMPLE_RESPONSES[ratings_api])
+        self.dynamic_json_load(ratings_api)

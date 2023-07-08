@@ -1,0 +1,8 @@
+{
+    "kudos": 5000,
+    "expiry": 30,
+    "name": "Mutual Aid",
+    "max_image_pixels": -1,
+    "max_image_steps": -1,
+    "max_text_tokens": -1
+}

@@ -1,0 +1,10 @@
+{
+    "prompt": "",
+    "softprompt": "",
+    "trusted_workers": false,
+    "slow_workers": true,
+    "workers": [],
+    "worker_blacklist": false,
+    "models": [],
+    "dry_run": false
+}

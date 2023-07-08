@@ -1,6 +1,6 @@
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels._shared import BaseAIHordeRequest
+from horde_sdk.ai_horde_api.apimodels._base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
@@ -10,6 +10,11 @@ from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseRespon
 class ImageGenerationJobSubmitResponse(BaseResponse):
     reward: float
     """The amount of kudos gained for submitting this request."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "GenerationSubmitted"
 
 
 class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, BaseRequestAuthenticated):

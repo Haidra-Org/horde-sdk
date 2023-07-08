@@ -1,10 +1,10 @@
 from pydantic import Field, model_validator
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels._shared import (
+from horde_sdk.ai_horde_api.apimodels._base import (
     BaseAIHordeRequest,
+    BaseImageGenerateImg2Img,
     BaseImageGenerateParam,
-    ImageGenerateImg2ImgData,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import GenerationID
@@ -13,7 +13,10 @@ from horde_sdk.generic_api.apimodels import BaseRequestWorkerDriven, BaseRespons
 
 
 class ImageGenerateAsyncResponse(BaseResponse):
-    """Represents the data returned from the `/v2/generate/async` endpoint."""
+    """Represents the data returned from the `/v2/generate/async` endpoint.
+
+    v2 API Model: `RequestAsync`
+    """
 
     id: str | GenerationID  # noqa: A003
     """The UUID for this image generation."""
@@ -30,7 +33,7 @@ class ImageGenerationInputPayload(BaseImageGenerateParam):
     n: int = Field(default=1, ge=1)
 
 
-class ImageGenerateAsyncRequest(BaseAIHordeRequest, ImageGenerateImg2ImgData, BaseRequestWorkerDriven):
+class ImageGenerateAsyncRequest(BaseAIHordeRequest, BaseImageGenerateImg2Img, BaseRequestWorkerDriven):
     """Represents the data needed to make a request to the `/v2/generate/async` endpoint.
 
     v2 API Model: `GenerationInputStable`

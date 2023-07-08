@@ -3,14 +3,14 @@
 import requests
 from pydantic import BaseModel
 
-from horde_sdk.generic_api._error import RequestErrorResponse
-from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
-from horde_sdk.generic_api.metadata import (
+from horde_sdk.generic_api import (
     GenericAcceptTypes,
     GenericHeaderFields,
     GenericPathFields,
     GenericQueryFields,
 )
+from horde_sdk.generic_api._error import RequestErrorResponse
+from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
 
 
 class _ParsedRequest(BaseModel):

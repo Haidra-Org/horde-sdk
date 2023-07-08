@@ -20,6 +20,9 @@ class HTTPMethod(StrEnum):
     CONNECT = "CONNECT"
 
 
+PAYLOAD_HTTP_METHODS = {HTTPMethod.POST, HTTPMethod.PUT, HTTPMethod.PATCH}
+
+
 class HTTPStatusCode(Enum):
     """An enum representing all HTTP status codes."""
 

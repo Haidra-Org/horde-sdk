@@ -1,0 +1,17 @@
+{
+    "prompt": "",
+    "nsfw": false,
+    "trusted_workers": false,
+    "slow_workers": true,
+    "censor_nsfw": false,
+    "workers": [],
+    "worker_blacklist": false,
+    "models": [],
+    "source_image": "",
+    "source_processing": "img2img",
+    "source_mask": "",
+    "r2": true,
+    "shared": false,
+    "replacement_filter": true,
+    "dry_run": false
+}

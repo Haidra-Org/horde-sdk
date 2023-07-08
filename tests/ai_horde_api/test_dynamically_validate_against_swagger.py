@@ -1,7 +1,11 @@
 import horde_sdk.ai_horde_api as ai_horde_api
-from horde_sdk.ai_horde_api.utils.swagger import SwaggerEndpoint, SwaggerParser
+from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api._reflection import get_all_request_types
+from horde_sdk.generic_api.utils.swagger import (
+    SwaggerEndpoint,
+    SwaggerParser,
+)
 
 
 def test_all_ai_horde_model_defs_in_swagger() -> None:
@@ -15,12 +19,15 @@ def test_all_ai_horde_model_defs_in_swagger() -> None:
     # Retrieve the swagger doc
     swagger_doc = None
     try:
-        swagger_doc = SwaggerParser().get_swagger_doc()
+        swagger_doc = SwaggerParser(get_ai_horde_swagger_url()).get_swagger_doc()
     except RuntimeError as e:
         raise RuntimeError(f"Failed to get swagger doc: {e}") from e
     assert swagger_doc, "Failed to get SwaggerDoc"
 
-    all_swagger_defined_models = swagger_doc.definitions.keys()
+    swagger_defined_models = swagger_doc.definitions.keys()
+    swagger_defined_examples: dict[
+        str, dict[HTTPMethod, dict[str, object]]
+    ] = swagger_doc.extract_all_payload_examples()
 
     for request_type in all_request_types:
         endpoint_subpath = request_type.get_endpoint_subpath()
@@ -49,7 +56,9 @@ def test_all_ai_horde_model_defs_in_swagger() -> None:
         # a payload
         else:
             assert (
-                request_type.get_api_model_name() in all_swagger_defined_models
+                request_type.get_api_model_name() in swagger_defined_models
             ), f"Model is defined in horde_sdk, but not in swagger: {request_type.get_api_model_name()}"
 
             assert endpoint_subpath in swagger_doc.paths, f"Missing {request_type.__name__} in swagger"
+
+            assert endpoint_subpath in swagger_defined_examples, f"Missing {request_type.__name__} in swagger examples"

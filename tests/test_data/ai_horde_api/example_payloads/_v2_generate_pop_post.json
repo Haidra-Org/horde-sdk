@@ -1,0 +1,18 @@
+{
+    "name": "",
+    "priority_usernames": [],
+    "nsfw": false,
+    "models": [],
+    "bridge_version": 1,
+    "bridge_agent": "AI Horde Worker:11:https://github.com/db0/AI-Horde-Worker",
+    "threads": 1,
+    "require_upfront_kudos": false,
+    "max_pixels": 262144,
+    "blacklist": [],
+    "allow_img2img": true,
+    "allow_painting": true,
+    "allow_unsafe_ipaddr": true,
+    "allow_post_processing": true,
+    "allow_controlnet": true,
+    "allow_lora": true
+}

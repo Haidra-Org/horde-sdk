@@ -6,8 +6,8 @@ from collections.abc import Callable
 from pydantic import BaseModel, Field, field_validator
 
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
+from horde_sdk.generic_api import GenericAcceptTypes
 from horde_sdk.generic_api.endpoints import url_with_path
-from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
 
 class HordeAPIMessage(BaseModel, abc.ABC):
@@ -70,15 +70,15 @@ class BaseRequest(HordeAPIMessage):
         """Return the `type` of the response expected."""
 
 
-class BaseRequestAuthenticated(BaseRequest):
-    """Represents abstractly a authenticated request, IE, using an API key."""
+class BaseRequestAuthenticated(BaseModel):
+    """Mix-in class to describe an endpoint which requires authentication."""
 
     apikey: str  # TODO validator
     """A horde API key."""
 
 
-class BaseRequestUserSpecific(BaseRequestAuthenticated):
-    """Represents the minimum for any request specifying a specific user to the API."""
+class BaseRequestUserSpecific(BaseModel):
+    """Mix-in class to describe an endpoint for which you can specify a user.""" ""
 
     user_id: str
     """The user's ID, as a `str`, but only containing numeric values."""
@@ -91,8 +91,8 @@ class BaseRequestUserSpecific(BaseRequestAuthenticated):
         return value
 
 
-class BaseRequestWorkerDriven(BaseRequestAuthenticated):
-    """Represents the minimum for any request which is ultimately backed by a worker (Such as on AI-Horde)."""
+class BaseRequestWorkerDriven(BaseModel):
+    """ "Mix-in class to describe an endpoint for which you can specify workers."""
 
     trusted_workers: bool = False
     slow_workers: bool = False

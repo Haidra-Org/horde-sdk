@@ -136,7 +136,7 @@ class UserCheckResponse(BaseResponse):
 # region Requests
 
 
-class BaseRequestImageSpecific(BaseRatingsAPIRequest, BaseRequestAuthenticated):
+class BaseRequestImageSpecific(BaseModel):
     """Represents the minimum for any request specifying a specific user to the API."""
 
     image_id: uuid.UUID
@@ -227,7 +227,7 @@ class UserValidateRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific, ImageR
         return UserValidateResponse
 
 
-class UserCheckRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific):
+class UserCheckRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific, BaseRequestAuthenticated):
     """Represents the data needed to make a request to the `/v1/user/check/` endpoint."""
 
     minutes: int = Field(ge=1)

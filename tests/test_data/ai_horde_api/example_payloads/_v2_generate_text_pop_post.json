@@ -1,0 +1,13 @@
+{
+    "name": "",
+    "priority_usernames": [],
+    "nsfw": false,
+    "models": [],
+    "bridge_version": 1,
+    "bridge_agent": "AI Horde Worker:11:https://github.com/db0/AI-Horde-Worker",
+    "threads": 1,
+    "require_upfront_kudos": false,
+    "max_length": 512,
+    "max_context_length": 2048,
+    "softprompts": []
+}
