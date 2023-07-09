@@ -131,7 +131,7 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[ImageGenerateJobResponse]:
+    def get_success_response_type() -> type[ImageGenerateJobResponse]:
         return ImageGenerateJobResponse
 
 

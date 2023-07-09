@@ -8,8 +8,8 @@ from horde_sdk.ai_horde_api.apimodels._base import (
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import GenerationID
-from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseRequestWorkerDriven, BaseResponse
+from horde_sdk.consts import HTTPMethod, HTTPStatusCode
+from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseRequestWorkerDriven, BaseResponse
 
 
 class ImageGenerateAsyncResponse(BaseResponse):
@@ -33,7 +33,12 @@ class ImageGenerationInputPayload(BaseImageGenerateParam):
     n: int = Field(default=1, ge=1)
 
 
-class ImageGenerateAsyncRequest(BaseAIHordeRequest, BaseImageGenerateImg2Img, BaseRequestWorkerDriven):
+class ImageGenerateAsyncRequest(
+    BaseAIHordeRequest,
+    BaseRequestAuthenticated,
+    BaseImageGenerateImg2Img,
+    BaseRequestWorkerDriven,
+):
     """Represents the data needed to make a request to the `/v2/generate/async` endpoint.
 
     v2 API Model: `GenerationInputStable`
@@ -68,11 +73,18 @@ class ImageGenerateAsyncRequest(BaseAIHordeRequest, BaseImageGenerateImg2Img, Ba
         return HTTPMethod.POST
 
     @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
+    @classmethod
+    def get_endpoint_subpath(cls) -> str:
         return AI_HORDE_API_URL_Literals.v2_generate_async
 
     @override
-    @staticmethod
-    def get_expected_response_type() -> type[ImageGenerateAsyncResponse]:
+    @classmethod
+    def get_success_response_type(cls) -> type[ImageGenerateAsyncResponse]:
         return ImageGenerateAsyncResponse
+
+    @override
+    @classmethod
+    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[BaseResponse]]:
+        return {
+            HTTPStatusCode.ACCEPTED: cls.get_success_response_type(),
+        }

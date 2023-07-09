@@ -1,0 +1,39 @@
+{
+    "payload": {
+        "n": 1,
+        "frmtadsnsp": false,
+        "frmtrmblln": false,
+        "frmtrmspch": false,
+        "frmttriminc": false,
+        "max_context_length": 1024,
+        "max_length": 80,
+        "rep_pen": 1.0,
+        "rep_pen_range": 0.0,
+        "rep_pen_slope": 0.0,
+        "singleline": false,
+        "temperature": 0.0,
+        "tfs": 0.0,
+        "top_a": 0.0,
+        "top_k": 0.0,
+        "top_p": 0.001,
+        "typical": 0.0,
+        "sampler_order": [],
+        "prompt": ""
+    },
+    "id": "",
+    "skipped": {
+        "worker_id": 0.0,
+        "performance": 0.0,
+        "nsfw": 0.0,
+        "blacklist": 0.0,
+        "untrusted": 0.0,
+        "models": 0,
+        "bridge_version": 0,
+        "kudos": 0,
+        "max_context_length": 0,
+        "max_length": 0,
+        "matching_softprompt": 0
+    },
+    "softprompt": "",
+    "model": ""
+}

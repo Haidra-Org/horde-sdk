@@ -1,0 +1,24 @@
+{
+    "name": "",
+    "id": "",
+    "info": "Anarchy is emergent order.",
+    "requests_fulfilled": 0,
+    "kudos": 0.0,
+    "uptime": 0,
+    "creator": "db0#1",
+    "worker_count": 10,
+    "workers": [
+        {
+            "type": "image",
+            "name": "",
+            "id": "",
+            "online": false
+        }
+    ],
+    "models": [
+        {
+            "name": "",
+            "count": 0
+        }
+    ]
+}

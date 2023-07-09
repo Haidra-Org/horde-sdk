@@ -44,5 +44,5 @@ class StatsImageModels(BaseAIHordeRequest):
 
     @override
     @classmethod
-    def get_expected_response_type(cls) -> type[StatsModelsResponse]:
+    def get_success_response_type(cls) -> type[StatsModelsResponse]:
         return StatsModelsResponse

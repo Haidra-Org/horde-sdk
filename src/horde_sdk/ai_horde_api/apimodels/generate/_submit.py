@@ -51,5 +51,5 @@ class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, BaseRequestAuthenticat
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[ImageGenerationJobSubmitResponse]:
+    def get_success_response_type() -> type[ImageGenerationJobSubmitResponse]:
         return ImageGenerationJobSubmitResponse

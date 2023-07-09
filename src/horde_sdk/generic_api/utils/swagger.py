@@ -2,17 +2,17 @@ from __future__ import annotations
 
 import json
 import re
-from abc import ABC, abstractmethod
+from abc import ABC
 from pathlib import Path
 
 import requests
-from horde_sdk.consts import PAYLOAD_HTTP_METHODS, HTTPMethod, HTTPStatusCode
+from horde_sdk.consts import PAYLOAD_HTTP_METHODS, HTTPMethod, HTTPStatusCode, is_error_status_code
 from loguru import logger
 from pydantic import BaseModel, Field, model_validator
-from typing_extensions import override
+from strenum import StrEnum
 
 
-class SwaggerModelDefinitionAdditionalProperty(BaseModel):
+class SwaggerModelAdditionalProperty(BaseModel):
     # TODO: Is this actually a recursive SwaggerModelDefinitionProperty?
     model_config = {"extra": "forbid"}
 
@@ -20,7 +20,7 @@ class SwaggerModelDefinitionAdditionalProperty(BaseModel):
     description: str | None = None
 
 
-class SwaggerModelDefinitionProperty(BaseModel):
+class SwaggerModelProperty(BaseModel):
     """A property of a model (data structure) used in the API.
 
     This might also be referred to as a "field" or an "attribute" of the model.
@@ -44,11 +44,11 @@ class SwaggerModelDefinitionProperty(BaseModel):
     maxLength: int | None = None
     multipleOf: float | None = None
     uniqueItems: bool | None = None
-    additionalProperties: SwaggerModelDefinitionAdditionalProperty | None = None
-    items: SwaggerModelDefinitionProperty | list[SwaggerModelDefinitionProperty] | None = None
+    additionalProperties: SwaggerModelAdditionalProperty | None = None
+    items: SwaggerModelProperty | list[SwaggerModelProperty] | None = None
 
 
-class SwaggerModelDefinitionRef(BaseModel):
+class SwaggerModelRef(BaseModel):
     """A reference to a model (data structure) used in the API."""
 
     model_config = {"extra": "forbid"}
@@ -56,32 +56,33 @@ class SwaggerModelDefinitionRef(BaseModel):
     ref: str | None = Field(None, alias="$ref")
 
 
-class SwaggerModelDefinitionEntry(BaseModel, ABC):
+class SwaggerModelEntry(BaseModel, ABC):
     """An entry in the definitions section of the swagger doc. This could be a model definition, or a schema validation
     method object. See `SwaggerModelDefinitionSchemaValidationMethods` for more info."""
 
-    @abstractmethod
-    def get_all_definitions(self) -> list[SwaggerModelDefinition | SwaggerModelDefinitionRef]:
-        """Get all definitions from all validation methods."""
-        raise NotImplementedError
 
-
-class SwaggerModelDefinition(SwaggerModelDefinitionEntry):
+class SwaggerModelDefinition(SwaggerModelEntry):
     """A definition of a model (data structure) used in the API."""
 
     model_config = {"extra": "forbid"}
 
     type_: str | None = Field(None, alias="type")
-    properties: dict[str, SwaggerModelDefinitionProperty] | None = None
+    properties: dict[str, SwaggerModelProperty] | None = None
     required: list[str] | None = None
 
-    @override
-    def get_all_definitions(self) -> list[SwaggerModelDefinition | SwaggerModelDefinitionRef]:
-        """Get all definitions from all validation methods."""
-        return [self]  # This looks odd, but `SwaggerModelDefinitionSchemaValidationMethods` is the wrinkle here.
+
+class SwaggerSchemaValidationMethod(StrEnum):
+    """The type of schema validation method used in the Swagger doc."""
+
+    allOf = "allOf"
+    """The model must match all of the schemas in this list."""
+    oneOf = "oneOf"
+    """The model must match exactly one of the schemas in this list."""
+    anyOf = "anyOf"
+    """The model must match at least one of the schemas in this list."""
 
 
-class SwaggerModelDefinitionSchemaValidationMethods(SwaggerModelDefinitionEntry):
+class SwaggerModelDefinitionSchemaValidation(SwaggerModelEntry):
     """When used instead of a SwaggerModelDefinition, it means that the model is validated against one or more schemas.
 
     See the `allOf`, `oneOf`, and `anyOf` properties of the Swagger spec:
@@ -90,11 +91,11 @@ class SwaggerModelDefinitionSchemaValidationMethods(SwaggerModelDefinitionEntry)
 
     model_config = {"extra": "forbid"}
 
-    allOf: list[SwaggerModelDefinition | SwaggerModelDefinitionRef] | None = None
+    allOf: list[SwaggerModelDefinition | SwaggerModelRef] | None = None
     """The model must match all of the schemas in this list."""
-    oneOf: list[SwaggerModelDefinition | SwaggerModelDefinitionRef] | None = None
+    oneOf: list[SwaggerModelDefinition | SwaggerModelRef] | None = None
     """The model must match exactly one of the schemas in this list."""
-    anyOf: list[SwaggerModelDefinition | SwaggerModelDefinitionRef] | None = None
+    anyOf: list[SwaggerModelDefinition | SwaggerModelRef] | None = None
     """The model must match at least one of the schemas in this list."""
 
     @model_validator(mode="before")
@@ -105,18 +106,29 @@ class SwaggerModelDefinitionSchemaValidationMethods(SwaggerModelDefinitionEntry)
 
         return v
 
-    @override
-    def get_all_definitions(self) -> list[SwaggerModelDefinition | SwaggerModelDefinitionRef]:
-        """Get all definitions from all validation methods."""
-        return_list = []
+    def get_validation_method(self) -> SwaggerSchemaValidationMethod | None:
+        """Get the schema validation method used for this model."""
         if self.allOf:
-            return_list.extend(self.allOf)
+            return SwaggerSchemaValidationMethod.allOf
         if self.oneOf:
-            return_list.extend(self.oneOf)
+            return SwaggerSchemaValidationMethod.oneOf
         if self.anyOf:
-            return_list.extend(self.anyOf)
+            return SwaggerSchemaValidationMethod.anyOf
 
-        return return_list
+        raise RuntimeError("No validation method defined!")
+
+    def get_model_definitions(
+        self,
+    ) -> tuple[SwaggerSchemaValidationMethod, list[SwaggerModelDefinition | SwaggerModelRef]]:
+        """Get the model definitions used for this model."""
+        if self.allOf:
+            return (SwaggerSchemaValidationMethod.allOf, self.allOf)
+        if self.oneOf:
+            return (SwaggerSchemaValidationMethod.oneOf, self.oneOf)
+        if self.anyOf:
+            return (SwaggerSchemaValidationMethod.anyOf, self.anyOf)
+
+        raise RuntimeError("No validation method specified!")
 
 
 class SwaggerDocTagsItem(BaseModel):
@@ -281,66 +293,85 @@ class SwaggerDoc(BaseModel):
     """Metadata about the document."""
     responses: dict[str, SwaggerDocResponseItem] | None = None
     """Unknown"""
-    definitions: dict[str, SwaggerModelDefinition | SwaggerModelDefinitionSchemaValidationMethods]
+    definitions: dict[str, SwaggerModelDefinition | SwaggerModelDefinitionSchemaValidation]
     """The definitions of the models (data structures) used in the API."""
 
-    def extract_all_response_examples(self) -> dict[str, dict[HTTPMethod, dict[HTTPStatusCode, object]]]:
+    def get_all_response_examples(self) -> dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]]:
         """Extract all response examples from the swagger doc.
 
         This in the form of:
         `dict[endpoint_path, dict[http_method, dict[http_status_code, example_response]]]`
         """
-        every_endpoint_example: dict[str, dict[HTTPMethod, dict[HTTPStatusCode, object]]] = {}
+        every_endpoint_example: dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]] = {}
 
         # Iterate through each endpoint in the Swagger documentation
         for endpoint_path, endpoint in self.paths.items():
-            endpoint_examples: dict[HTTPMethod, dict[HTTPStatusCode, object]] = {}
-
-            # Iterate through each HTTP method used by the endpoint
-            for http_method_name, endpoint_method_definition in endpoint.get_defined_endpoints().items():
-                endpoint_method_examples: dict[HTTPStatusCode, object] = {}
-
-                if not endpoint_method_definition.responses:
-                    continue
-
-                logger.debug(f"Found {endpoint_path} {http_method_name.upper()} with response")
-
-                # Iterate through each defined response for the HTTP method
-                for http_status_code_str, response_definition in endpoint_method_definition.responses.items():
-                    http_status_code_object = HTTPStatusCode(int(http_status_code_str))
-
-                    if not response_definition.schema_:
-                        continue
-
-                    # If the response schema is a reference to an API model, resolve the reference and include
-                    # its defaults too
-                    if isinstance(response_definition.schema_, SwaggerEndpointResponseSchema):
-                        logger.debug(f"Resolving {response_definition.schema_.ref}")
-                        example_response = self._resolve_model_ref_defaults(response_definition.schema_.ref)
-                        endpoint_method_examples.update(
-                            {http_status_code_object: example_response},
-                        )
-                    # If there is an explicit, endpoint specific schema, use that too
-                    elif isinstance(response_definition.schema_, SwaggerEndpointResponseSchemaItem):
-                        if not response_definition.schema_.ref:
-                            continue
-                        logger.debug(f"Resolving {response_definition.schema_.ref}")
-                        example_response = self._resolve_model_ref_defaults(response_definition.schema_.ref)
-                        endpoint_method_examples.update(
-                            {http_status_code_object: example_response},
-                        )
-
-                if endpoint_method_examples:
-                    endpoint_examples.update(
-                        {HTTPMethod(http_method_name.upper()): endpoint_method_examples},
-                    )
+            if endpoint_path == "/v2/stats/img/models":
+                pass
+            endpoint_examples = self.get_endpoint_examples(endpoint)
 
             if endpoint_examples:
                 every_endpoint_example[endpoint_path] = endpoint_examples
 
         return every_endpoint_example
 
-    def extract_all_payload_examples(self) -> dict[str, dict[HTTPMethod, dict[str, object]]]:
+    def get_endpoint_examples(
+        self, endpoint: SwaggerEndpoint
+    ) -> dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]:
+        """Extract response examples for a single endpoint."""
+        endpoint_examples: dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]] = {}
+
+        # Iterate through each HTTP method used by the endpoint
+        for http_method_name, endpoint_method_definition in endpoint.get_defined_endpoints().items():
+            endpoint_method_examples = self.get_endpoint_method_examples(endpoint_method_definition)
+
+            if endpoint_method_examples:
+                endpoint_examples[HTTPMethod(http_method_name.upper())] = endpoint_method_examples
+
+        return endpoint_examples
+
+    def get_endpoint_method_examples(
+        self, endpoint_method_definition: SwaggerEndpointMethod
+    ) -> dict[HTTPStatusCode, dict[str, object] | list]:
+        """Extract response examples for a single HTTP method used by an endpoint."""
+        endpoint_method_examples: dict[HTTPStatusCode, dict[str, object] | list] = {}
+
+        if not endpoint_method_definition.responses:
+            return endpoint_method_examples
+
+        # Iterate through each defined response for the HTTP method
+        for http_status_code_str, response_definition in endpoint_method_definition.responses.items():
+            http_status_code_object = HTTPStatusCode(int(http_status_code_str))
+
+            example_response = self.get_response_example(response_definition)
+
+            if example_response:
+                endpoint_method_examples[http_status_code_object] = example_response
+
+        return endpoint_method_examples
+
+    def get_response_example(self, response_definition: SwaggerEndpointResponse) -> dict[str, object] | list:
+        """Extract an example response for a single HTTP response definition."""
+        example_response: dict[str, object] | list = {}
+
+        if not response_definition.schema_:
+            return example_response
+
+        # If the response schema is a reference to an API model, resolve the reference and include its defaults too
+        if isinstance(response_definition.schema_, SwaggerEndpointResponseSchema) and response_definition.schema_.ref:
+            # # logger.debug(f"Resolving {response_definition.schema_.ref}")
+            example_response = self._resolve_model_ref_defaults(response_definition.schema_.ref)
+        if response_definition.schema_.items:
+            # # logger.debug(f"Resolving {response_definition.schema_.items.ref}")
+            example_response = self._resolve_model_ref_defaults(response_definition.schema_.items.ref)
+            if response_definition.schema_.type_ == "array":
+                example_response = [example_response]
+            elif response_definition.schema_.type_ == "object":
+                example_response = {"properties": example_response}
+
+        return example_response
+
+    def get_all_payload_examples(self) -> dict[str, dict[HTTPMethod, dict[str, object]]]:
         """Extract all examples from the swagger doc.
 
         This in the form of:
@@ -349,6 +380,8 @@ class SwaggerDoc(BaseModel):
         every_endpoint_example: dict[str, dict[HTTPMethod, dict[str, object]]] = {}
         for endpoint_path, endpoint in self.paths.items():
             endpoint_examples: dict[HTTPMethod, dict[str, object]] = {}
+            if endpoint_path == "/v2/generate/async":
+                pass
 
             for http_method_name, endpoint_method_definition in endpoint.get_defined_endpoints().items():
                 if http_method_name.upper() not in PAYLOAD_HTTP_METHODS:
@@ -357,7 +390,7 @@ class SwaggerDoc(BaseModel):
                 if not endpoint_method_definition.parameters:
                     continue
 
-                logger.debug(f"Found {endpoint_path} {http_method_name.upper()} with payload")
+                # logger.debug(f"Found {endpoint_path} {http_method_name.upper()} with payload")
                 _payload_definitions = [d for d in endpoint_method_definition.parameters if d.name == "payload"]
 
                 if len(_payload_definitions) != 1:
@@ -373,8 +406,13 @@ class SwaggerDoc(BaseModel):
                     )
 
                 if isinstance(payload_definition.schema_, SwaggerEndpointMethodParameterSchemaRef):
-                    logger.debug(f"Resolving {payload_definition.schema_.ref}")
+                    # logger.debug(f"Resolving {payload_definition.schema_.ref}")
                     example_payload = self._resolve_model_ref_defaults(payload_definition.schema_.ref)
+                    if isinstance(example_payload, list):
+                        raise RuntimeError(
+                            f"Expected to find a dict for {endpoint_path} {http_method_name} payload definition"
+                        )
+
                     endpoint_examples.update(
                         {HTTPMethod(http_method_name.upper()): example_payload},
                     )
@@ -402,15 +440,19 @@ class SwaggerDoc(BaseModel):
         return every_endpoint_example
 
     @staticmethod
-    def filename_from_endpoint_path(endpoint_path: str, http_method: HTTPMethod) -> str:
+    def filename_from_endpoint_path(
+        endpoint_path: str, http_method: HTTPMethod, *, http_status_code: HTTPStatusCode | None = None
+    ) -> str:
         """Get the filename for the given endpoint path."""
         endpoint_path = re.sub(r"\W+", "_", endpoint_path)
         endpoint_path = endpoint_path + "_" + http_method.value.lower()
+        if http_status_code:
+            endpoint_path = endpoint_path + "_" + str(http_status_code.value)
         return re.sub(r"__+", "_", endpoint_path)
 
     def write_all_payload_examples_to_file(self, directory: str | Path) -> bool:
         directory = Path(directory)
-        all_examples = self.extract_all_payload_examples()
+        all_examples = self.get_all_payload_examples()
         for endpoint_path, endpoint_examples_info in all_examples.items():
             for http_method, example_payload in endpoint_examples_info.items():
                 filename = self.filename_from_endpoint_path(endpoint_path, http_method)
@@ -419,10 +461,33 @@ class SwaggerDoc(BaseModel):
                     json.dump(example_payload, f, indent=4)
         return True
 
+    def write_all_response_examples_to_file(
+        self,
+        directory: str | Path,
+        *,
+        error_responses: bool = False,
+    ) -> bool:
+        directory = Path(directory)
+        all_examples = self.get_all_response_examples()
+        for endpoint_path, endpoint_examples_info in all_examples.items():
+            for http_method, http_status_code_examples in endpoint_examples_info.items():
+                for http_status_code, example_response in http_status_code_examples.items():
+                    if not error_responses and is_error_status_code(http_status_code.value):
+                        continue
+                    filename = self.filename_from_endpoint_path(
+                        endpoint_path, http_method, http_status_code=http_status_code
+                    )
+                    filepath = directory / f"{filename}.json"
+                    with open(filepath, "w") as f:
+                        json.dump(example_response, f, indent=4)
+        return True
+
     def _resolve_model_ref_defaults(
         self,
         ref: str | None,
-    ) -> dict[str, object]:
+        *,
+        _recursed_property_name: str | None = None,
+    ) -> dict[str, object] | list[dict[str, object]]:
         """For ref entries, recursively resolve the default values for all properties.
 
         Note that this will combine all properties from all definitions that are referenced.
@@ -434,7 +499,14 @@ class SwaggerDoc(BaseModel):
         if not ref:
             return {}
 
-        return_dict = {}
+        return_dict: dict = {}
+        return_list: list[dict[str, object]] = []
+        # return_list has a nuanced meaning: in the case of the '*' property, the endpoint
+        # accepts or returns N objects of the same type. In this case, this function will
+        # create three dummy entries in `return_list`, which it will recognize on recursion
+        # having this special meaning, and ultimately returns the dict as expected.
+        # At the time of writing, this solution was in response to the SinglePeriodImgModelStats object
+        # in particular, if you're looking for an example.
 
         if ref.startswith("#/definitions/"):
             ref = ref[len("#/definitions/") :]
@@ -443,22 +515,47 @@ class SwaggerDoc(BaseModel):
             raise RuntimeError(f"Failed to find definition for {ref}")
 
         found_def_parent = self.definitions[ref]
+        # logger.debug(f"Found definition for {ref}")
 
-        logger.debug(f"Found definition for {ref}")
+        validation_method: SwaggerSchemaValidationMethod | None = None
+        all_defs: list[SwaggerModelDefinition | SwaggerModelRef] = []
 
-        all_defs = found_def_parent.get_all_definitions()
+        if isinstance(found_def_parent, SwaggerModelDefinitionSchemaValidation):
+            validation_method, all_defs = found_def_parent.get_model_definitions()
+        elif isinstance(found_def_parent, SwaggerModelDefinition):
+            all_defs = [found_def_parent]
+        else:
+            raise RuntimeError(f"Unexpected definition type: {type(found_def_parent)}")
 
         if not all_defs:
             raise RuntimeError(f"Failed to find any definitions for {ref}")
+
+        # if len(all_defs) > 1:
+        # logger.debug(f"Found {len(all_defs)} definitions for {ref}")
+
         for definition in all_defs:
-            if not isinstance(definition, SwaggerModelDefinitionRef):
+            if not isinstance(definition, SwaggerModelRef):
                 continue
 
-            logger.debug(f"Recursing ref: {definition.ref}")
-            return_dict.update(self._resolve_model_ref_defaults(definition.ref))
+            # logger.debug(f"Recursing ref: {definition.ref}")
+            # We recurse here, because the ref might be a reference to another reference
+            resolved_model = self._resolve_model_ref_defaults(definition.ref)
+            if isinstance(resolved_model, dict):
+                if validation_method == SwaggerSchemaValidationMethod.allOf:
+                    return_dict.update(resolved_model)
+                elif (
+                    validation_method == SwaggerSchemaValidationMethod.oneOf
+                    or validation_method == SwaggerSchemaValidationMethod.anyOf
+                ):
+                    logger.warning(
+                        "oneOf and anyOf are not well supported. Yoy may experience unexpected behavior. "
+                        f"ref: {definition.ref}"
+                    )
+                    break
 
-        if len(all_defs) > 1:
-            logger.debug(f"Found {len(all_defs)} definitions for {ref}")
+            elif isinstance(resolved_model, list):
+                # TODO: *Would* this ever happen? It is here as a precaution presently.
+                raise RuntimeError(f"Unexpected list type: {type(resolved_model)}")
 
         for definition in all_defs:
             if not isinstance(definition, SwaggerModelDefinition):
@@ -470,22 +567,76 @@ class SwaggerDoc(BaseModel):
                 continue
 
             for prop_name, prop in definition.properties.items():
-                if prop_name == "models":
-                    pass
                 if prop.ref:
-                    continue
-                if prop.example is not None:
-                    return_dict[prop_name] = prop.example
-                    continue
-                if prop.default is not None:
-                    return_dict[prop_name] = prop.default
+                    # logger.debug(f"Recursing sub-item ref: {prop.ref}")
+                    resolved_model = self._resolve_model_ref_defaults(prop.ref)
+                    if isinstance(resolved_model, dict):
+                        return_dict.update({prop_name: resolved_model})
+                    elif isinstance(resolved_model, list):
+                        return_dict.update({prop_name: resolved_model[0]})
                     continue
 
-                if not prop.type_:
-                    raise RuntimeError(f"Failed to find type for {prop_name} in {ref}")
-                return_dict[prop_name] = default_swagger_value_from_type_name(prop.type_)
+                if prop_name == "*" and prop.additionalProperties:
+                    assert prop.additionalProperties.type_
+                    default = default_swagger_value_from_type_name(prop.additionalProperties.type_)
+                    return_list.append(
+                        {
+                            "additionalProp1": default,
+                            "additionalProp2": default,
+                            "additionalProp3": default,
+                        }
+                    )
+                    continue
 
-        return return_dict
+                if prop.items:
+                    items_as_list = [prop.items] if isinstance(prop.items, SwaggerModelProperty) else prop.items
+                    sub_item_return_list = []
+                    for item in items_as_list:
+                        if item.ref:
+                            # logger.debug(f"Recursing sub-item ref: {item.ref}")
+                            resolved_model = self._resolve_model_ref_defaults(item.ref)
+                            if isinstance(resolved_model, dict):
+                                sub_item_return_list.append(resolved_model)
+                            elif isinstance(resolved_model, list):
+                                sub_item_return_list.append(resolved_model[0])
+                            continue
+
+                    return_dict[prop_name] = sub_item_return_list
+                    continue
+
+                return_dict[prop_name] = self.get_default_with_constraint(prop)
+
+        return return_dict if return_dict else return_list
+
+    def get_default_with_constraint(self, model_property: SwaggerModelProperty) -> object:
+        if model_property.description and "optionally" in model_property.description:
+            pass
+        if model_property.example is not None:
+            return model_property.example
+        if model_property.default is not None:
+            return model_property.default
+
+        if model_property.type_ == "number" or model_property.type_ == "integer":
+            if model_property.minimum is not None:
+                return model_property.minimum
+            if model_property.maximum is not None:
+                return model_property.maximum
+            if model_property.multipleOf is not None:
+                return model_property.multipleOf
+        elif model_property.type_ == "string":
+            if model_property.enum is not None:
+                return model_property.enum[0]
+            if model_property.minLength is not None:
+                return "a" * model_property.minLength
+            if model_property.maxLength is not None:
+                return "a" * model_property.maxLength
+            if model_property.format_ == "date-time":
+                return "2021-01-01T00:00:00Z"
+
+        if model_property.type_ is not None:
+            return default_swagger_value_from_type_name(model_property.type_)
+
+        return None
 
 
 class SwaggerParser:

@@ -1,0 +1,25 @@
+{
+    "finished": 0,
+    "processing": 0,
+    "restarted": 0,
+    "waiting": 0,
+    "done": false,
+    "faulted": false,
+    "wait_time": 0,
+    "queue_position": 0,
+    "kudos": 0.0,
+    "is_possible": true,
+    "generations": [
+        {
+            "worker_id": "",
+            "worker_name": "",
+            "model": "",
+            "state": "ok",
+            "img": "",
+            "seed": "",
+            "id": "",
+            "censored": false
+        }
+    ],
+    "shared": false
+}

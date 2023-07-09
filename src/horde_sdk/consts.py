@@ -47,3 +47,27 @@ class HTTPStatusCode(Enum):
     NOT_IMPLEMENTED = 501
     SERVICE_UNAVAILABLE = 503
     GATEWAY_TIMEOUT = 504
+
+
+def get_all_success_status_codes() -> list[HTTPStatusCode]:
+    """Return a list of all success status codes."""
+    return [status_code for status_code in HTTPStatusCode if is_success_status_code(status_code)]
+
+
+def get_all_error_status_codes() -> list[HTTPStatusCode]:
+    """Return a list of all error status codes."""
+    return [status_code for status_code in HTTPStatusCode if is_error_status_code(status_code)]
+
+
+def is_success_status_code(status_code: HTTPStatusCode | int) -> bool:
+    """Return True if the status code is a success code, False otherwise."""
+    if isinstance(status_code, HTTPStatusCode):
+        status_code = status_code.value
+    return 200 <= status_code < 300
+
+
+def is_error_status_code(status_code: HTTPStatusCode | int) -> bool:
+    """Return True if the status code is an error code, False otherwise."""
+    if isinstance(status_code, HTTPStatusCode):
+        status_code = status_code.value
+    return 400 <= status_code < 600

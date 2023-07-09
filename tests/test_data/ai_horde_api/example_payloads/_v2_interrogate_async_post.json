@@ -1,5 +1,14 @@
 {
-    "forms": [],
+    "forms": [
+        {
+            "name": "caption",
+            "payload": {
+                "additionalProp1": "",
+                "additionalProp2": "",
+                "additionalProp3": ""
+            }
+        }
+    ],
     "source_image": "",
     "slow_workers": true
 }

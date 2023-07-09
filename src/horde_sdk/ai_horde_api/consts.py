@@ -31,3 +31,9 @@ class KNOWN_SOURCE_PROCESSING(StrEnum):
 class GENERATION_STATE(StrEnum):
     ok = auto()
     censored = auto()
+
+
+class WORKER_TYPE(StrEnum):
+    image = auto()
+    text = auto()
+    interrogation = auto()

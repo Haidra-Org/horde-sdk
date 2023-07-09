@@ -177,7 +177,7 @@ class ImageRatingsRequest(BaseRatingsAPIRequest, BaseRequestAuthenticated, BaseS
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[ImageRatingsResponse]:
+    def get_success_response_type() -> type[ImageRatingsResponse]:
         return ImageRatingsResponse
 
 
@@ -223,7 +223,7 @@ class UserValidateRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific, ImageR
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[UserValidateResponse]:
+    def get_success_response_type() -> type[UserValidateResponse]:
         return UserValidateResponse
 
 
@@ -250,7 +250,7 @@ class UserCheckRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific, BaseReque
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[UserCheckResponse]:
+    def get_success_response_type() -> type[UserCheckResponse]:
         return UserCheckResponse
 
 
@@ -279,7 +279,7 @@ class UserRatingsRequest(BaseRatingsAPIRequest, BaseRequestAuthenticated, ImageR
 
     @override
     @staticmethod
-    def get_expected_response_type() -> type[UserRatingsResponse]:
+    def get_success_response_type() -> type[UserRatingsResponse]:
         return UserRatingsResponse
 
 

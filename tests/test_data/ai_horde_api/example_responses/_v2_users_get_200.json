@@ -1,0 +1,60 @@
+{
+    "username": "",
+    "id": 0,
+    "kudos": 0.0,
+    "evaluating_kudos": 0.0,
+    "concurrency": 0,
+    "worker_invited": 0,
+    "moderator": false,
+    "kudos_details": {
+        "accumulated": 0,
+        "gifted": 0,
+        "admin": 0,
+        "received": 0,
+        "recurring": 0,
+        "awarded": 0
+    },
+    "worker_count": 0,
+    "worker_ids": [],
+    "sharedkey_ids": [],
+    "monthly_kudos": {
+        "amount": 0,
+        "last_received": "2021-01-01T00:00:00Z"
+    },
+    "trusted": false,
+    "flagged": false,
+    "vpn": false,
+    "special": false,
+    "suspicious": 0,
+    "pseudonymous": false,
+    "contact": "email@example.com",
+    "account_age": 60,
+    "usage": {
+        "megapixelsteps": 0.0,
+        "requests": 0
+    },
+    "contributions": {
+        "megapixelsteps": 0.0,
+        "fulfillments": 0
+    },
+    "records": {
+        "usage": {
+            "megapixelsteps": 0,
+            "tokens": 0
+        },
+        "contribution": {
+            "megapixelsteps": 0,
+            "tokens": 0
+        },
+        "fulfillment": {
+            "image": 0,
+            "text": 0,
+            "interrogation": 0
+        },
+        "request": {
+            "image": 0,
+            "text": 0,
+            "interrogation": 0
+        }
+    }
+}

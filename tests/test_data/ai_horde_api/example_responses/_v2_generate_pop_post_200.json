@@ -1,0 +1,60 @@
+{
+    "payload": {
+        "sampler_name": "k_lms",
+        "cfg_scale": 7.5,
+        "denoising_strength": 0.75,
+        "seed": "The little seed that could",
+        "height": 512,
+        "width": 512,
+        "seed_variation": 1,
+        "post_processing": [],
+        "karras": false,
+        "tiling": false,
+        "hires_fix": false,
+        "clip_skip": 1,
+        "control_type": "canny",
+        "image_is_control": false,
+        "return_control_map": false,
+        "facefixer_strength": 0.75,
+        "loras": [
+            {
+                "name": "GlowingRunesAIV6",
+                "model": 1.0,
+                "clip": 1.0,
+                "inject_trigger": "a"
+            }
+        ],
+        "special": {
+            "additionalProp1": {},
+            "additionalProp2": {},
+            "additionalProp3": {}
+        },
+        "prompt": "",
+        "ddim_steps": 30,
+        "n_iter": 1,
+        "use_nsfw_censor": false
+    },
+    "id": "",
+    "skipped": {
+        "worker_id": 0.0,
+        "performance": 0.0,
+        "nsfw": 0.0,
+        "blacklist": 0.0,
+        "untrusted": 0.0,
+        "models": 0,
+        "bridge_version": 0,
+        "kudos": 0,
+        "max_pixels": 0,
+        "unsafe_ip": 0,
+        "img2img": 0,
+        "painting": 0,
+        "post-processing": 0,
+        "lora": 0,
+        "controlnet": 0
+    },
+    "model": "",
+    "source_image": "",
+    "source_processing": "img2img",
+    "source_mask": "",
+    "r2_upload": ""
+}

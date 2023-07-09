@@ -1,0 +1,17 @@
+{
+    "new_kudos": 0.0,
+    "concurrency": 30,
+    "usage_multiplier": 1.0,
+    "worker_invited": 1,
+    "moderator": false,
+    "public_workers": false,
+    "username": "username#1",
+    "monthly_kudos": 0,
+    "trusted": false,
+    "flagged": false,
+    "customizer": false,
+    "vpn": false,
+    "special": false,
+    "new_suspicion": 0,
+    "contact": "email@example.com"
+}

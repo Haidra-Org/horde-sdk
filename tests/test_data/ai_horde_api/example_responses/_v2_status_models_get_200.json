@@ -1,0 +1,11 @@
+[
+    {
+        "name": "",
+        "count": 0,
+        "performance": 0.0,
+        "queued": 0.0,
+        "jobs": 0.0,
+        "eta": 0,
+        "type": "image"
+    }
+]

@@ -109,6 +109,8 @@ class GenericHordeAPIClient:
         for pathKey in specified_path_keys:
             endpoint_no_query = endpoint_no_query.format_map({pathKey: str(getattr(api_request, pathKey))})
 
+        extra_header_keys = api_request.get_header_fields()
+
         request_params_dict = {}
         request_headers_dict = {}
         request_queries_dict = {}
@@ -117,6 +119,10 @@ class GenericHordeAPIClient:
                 continue
             if key in specified_header_keys:
                 request_headers_dict[key] = value
+                continue
+            if key in extra_header_keys:
+                request_headers_dict[key] = value
+                specified_header_keys.append(key)
                 continue
             if key in specified_query_keys:
                 request_queries_dict[key] = value
@@ -147,7 +153,7 @@ class GenericHordeAPIClient:
         api_request: BaseRequest,
         raw_response: requests.Response,
     ) -> BaseResponse | RequestErrorResponse:
-        expected_response_type = api_request.get_expected_response_type()
+        expected_response_type = api_request.get_success_response_type()
         raw_response_json = raw_response.json()
 
         # If requests response is a failure code, see if a `message` key exists in the response.
@@ -162,7 +168,7 @@ class GenericHordeAPIClient:
             )
 
         # FIXME should be something resembling error handling here
-        return expected_response_type(**raw_response_json)
+        return expected_response_type.from_dict_or_array(raw_response_json)
 
     def submit_request(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
         """Submit a request to the API and return the response.

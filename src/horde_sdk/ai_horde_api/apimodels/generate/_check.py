@@ -59,5 +59,5 @@ class ImageGenerateCheckRequest(BaseAIHordeRequest, BaseImageGenerateJobRequest)
 
     @override
     @classmethod
-    def get_expected_response_type(cls) -> type[ImageGenerateCheckResponse]:
+    def get_success_response_type(cls) -> type[ImageGenerateCheckResponse]:
         return ImageGenerateCheckResponse

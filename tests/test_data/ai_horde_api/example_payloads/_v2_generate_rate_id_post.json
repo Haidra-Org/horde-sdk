@@ -1,4 +1,10 @@
 {
     "best": "6038971e-f0b0-4fdd-a3bb-148f561f815e",
-    "ratings": []
+    "ratings": [
+        {
+            "id": "6038971e-f0b0-4fdd-a3bb-148f561f815e",
+            "rating": 1.0,
+            "artifacts": 1
+        }
+    ]
 }

@@ -1,6 +1,6 @@
 import horde_sdk.ai_horde_api as ai_horde_api
 from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
-from horde_sdk.consts import HTTPMethod
+from horde_sdk.consts import HTTPMethod, HTTPStatusCode, get_all_success_status_codes
 from horde_sdk.generic_api._reflection import get_all_request_types
 from horde_sdk.generic_api.utils.swagger import (
     SwaggerEndpoint,
@@ -25,9 +25,11 @@ def test_all_ai_horde_model_defs_in_swagger() -> None:
     assert swagger_doc, "Failed to get SwaggerDoc"
 
     swagger_defined_models = swagger_doc.definitions.keys()
-    swagger_defined_examples: dict[
-        str, dict[HTTPMethod, dict[str, object]]
-    ] = swagger_doc.extract_all_payload_examples()
+    swagger_defined_payload_examples: dict[str, dict[HTTPMethod, dict[str, object]]]
+    swagger_defined_payload_examples = swagger_doc.get_all_payload_examples()
+
+    swagger_defined_response_examples: dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]]
+    swagger_defined_response_examples = swagger_doc.get_all_response_examples()
 
     for request_type in all_request_types:
         endpoint_subpath = request_type.get_endpoint_subpath()
@@ -61,4 +63,26 @@ def test_all_ai_horde_model_defs_in_swagger() -> None:
 
             assert endpoint_subpath in swagger_doc.paths, f"Missing {request_type.__name__} in swagger"
 
-            assert endpoint_subpath in swagger_defined_examples, f"Missing {request_type.__name__} in swagger examples"
+            assert (
+                endpoint_subpath in swagger_defined_payload_examples
+            ), f"Missing {request_type.__name__} in swagger examples"
+
+        all_http_method_examples = swagger_defined_response_examples.get(endpoint_subpath)
+        assert all_http_method_examples, f"Failed to get all HTTP method examples for {endpoint_subpath}"
+
+        all_http_status_code_responses = all_http_method_examples.get(request_type.get_http_method())
+        assert all_http_status_code_responses, f"Failed to get example response for {request_type.__name__}"
+
+        success_http_status_codes = [
+            success_code
+            for success_code in get_all_success_status_codes()
+            if success_code in all_http_status_code_responses
+        ]
+        assert (
+            len(success_http_status_codes) > 0
+        ), f"Failed to find any success status codes in {request_type.__name__}"
+
+        for success_code in success_http_status_codes:
+            assert (
+                success_code in request_type.get_success_status_response_pairs()
+            ), f"Missing success response type for {request_type.__name__} with status code {success_code}"

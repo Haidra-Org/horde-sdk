@@ -11,6 +11,7 @@ from horde_sdk.ai_horde_api.apimodels.generate._submit import (
     ImageGenerationJobSubmitRequest,
     ImageGenerationJobSubmitResponse,
 )
+from horde_sdk.ai_horde_api.apimodels.workers._workers_all import AllWorkersDetailsRequest, AllWorkersDetailsResponse
 
 __all__ = [
     "ImageGenerateAsyncRequest",
@@ -26,4 +27,6 @@ __all__ = [
     "StatsModelsResponse",
     "ImageGenerationJobSubmitRequest",
     "ImageGenerationJobSubmitResponse",
+    "AllWorkersDetailsRequest",
+    "AllWorkersDetailsResponse",
 ]

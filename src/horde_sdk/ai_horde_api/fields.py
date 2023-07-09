@@ -48,3 +48,7 @@ class WorkerID(_UUID_Identifier):
 
 class ImageID(_UUID_Identifier):
     """Represents the ID of an image. Instances of this class can be compared with a `str` or a UUID object."""
+
+
+class TeamID(_UUID_Identifier):
+    """Represents the ID of a team. Instances of this class can be compared with a `str` or a UUID object."""

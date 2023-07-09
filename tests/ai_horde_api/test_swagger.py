@@ -34,12 +34,12 @@ def test_get_swagger_doc():
 def test_extract_all_payload_examples() -> None:
     swagger_doc = SwaggerParser(get_ai_horde_swagger_url()).get_swagger_doc()
 
-    all_request_examples = swagger_doc.extract_all_payload_examples()
+    all_request_examples = swagger_doc.get_all_payload_examples()
     assert len(all_request_examples) > 0, "Failed to extract any examples from the swagger doc"
 
 
 def test_extract_all_response_examples() -> None:
     swagger_doc = SwaggerParser(get_ai_horde_swagger_url()).get_swagger_doc()
 
-    all_response_examples = swagger_doc.extract_all_response_examples()
+    all_response_examples = swagger_doc.get_all_response_examples()
     assert len(all_response_examples) > 0, "Failed to extract any examples from the swagger doc"

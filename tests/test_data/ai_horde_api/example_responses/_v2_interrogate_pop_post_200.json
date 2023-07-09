@@ -1,0 +1,20 @@
+{
+    "forms": [
+        {
+            "id": "",
+            "form": "caption",
+            "payload": {
+                "additionalProp1": "",
+                "additionalProp2": "",
+                "additionalProp3": ""
+            },
+            "source_image": "",
+            "r2_upload": ""
+        }
+    ],
+    "skipped": {
+        "worker_id": 0.0,
+        "untrusted": 0.0,
+        "bridge_version": 0
+    }
+}
