@@ -1,11 +1,12 @@
 from pydantic import Field, model_validator
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels._base import (
+from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,
-    BaseImageGenerateImg2Img,
     BaseImageGenerateParam,
 )
+from horde_sdk.ai_horde_api.apimodels.generate._status import DeleteImageGenerateRequest
+from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
@@ -18,7 +19,7 @@ class ImageGenerateAsyncResponse(BaseResponse):
     v2 API Model: `RequestAsync`
     """
 
-    id: str | GenerationID  # noqa: A003
+    id_: str | GenerationID = Field(alias="id")
     """The UUID for this image generation."""
     kudos: float
     message: str | None = None
@@ -36,7 +37,6 @@ class ImageGenerationInputPayload(BaseImageGenerateParam):
 class ImageGenerateAsyncRequest(
     BaseAIHordeRequest,
     BaseRequestAuthenticated,
-    BaseImageGenerateImg2Img,
     BaseRequestWorkerDriven,
 ):
     """Represents the data needed to make a request to the `/v2/generate/async` endpoint.
@@ -55,6 +55,10 @@ class ImageGenerateAsyncRequest(
     shared: bool = False
 
     replacement_filter: bool = True
+
+    source_image: str | None = None
+    source_processing: KNOWN_SOURCE_PROCESSING = KNOWN_SOURCE_PROCESSING.txt2img
+    source_mask: str | None = None
 
     @model_validator(mode="before")
     def validate_censor_nsfw(cls, values: dict) -> dict:
@@ -88,3 +92,11 @@ class ImageGenerateAsyncRequest(
         return {
             HTTPStatusCode.ACCEPTED: cls.get_success_response_type(),
         }
+
+    @override
+    @classmethod
+    def is_recovery_enabled(cls) -> bool:
+        return True
+
+    def get_recovery_request_type(self) -> type[DeleteImageGenerateRequest]:
+        return DeleteImageGenerateRequest

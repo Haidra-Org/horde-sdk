@@ -1,4 +1,5 @@
 """API data model bases applicable across all (or many) horde APIs."""
+from __future__ import annotations
 
 import abc
 import json
@@ -98,6 +99,23 @@ class BaseResponse(HordeAPIMessage):
         return super().to_json_horde_sdk_safe()
 
 
+class RequestErrorResponse(BaseResponse):
+    """The catch all error response for any request to any Horde API.
+
+    v2 API Model: `RequestError`
+    """
+
+    message: str = ""
+
+    object_data: object = None
+    """This is a catch all for any additional data that may be returned by the API relevant to the error."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "RequestError"
+
+
 class BaseRequest(HordeAPIMessage):
     """Represents any request to any Horde API."""
 
@@ -150,6 +168,27 @@ class BaseRequest(HordeAPIMessage):
         """
         return []
 
+    @classmethod
+    def is_recovery_enabled(cls) -> bool:
+        """Return whether this request should attempt to recover from during a client failure.
+
+        This is used in for context management.
+        """
+        return False
+
+    def get_recovery_request_type(self) -> type[BaseRequest]:
+        """Return an instance of the request that should be submitted to clean up after a client failure."""
+        if self.is_recovery_enabled():
+            raise NotImplementedError(
+                (
+                    "This request is configured to support recovery with `is_recovery_enabled`, but does not "
+                    "implement `get_recovery_request`."
+                ),
+            )
+        raise NotImplementedError(
+            "This request does not support recovery. Use `.is_recovery_enabled` to determine this.",
+        )
+
 
 class BaseRequestAuthenticated(BaseModel):
     """Mix-in class to describe an endpoint which may require authentication."""
@@ -183,3 +222,15 @@ class BaseRequestWorkerDriven(BaseModel):
     models: list[str]
 
     dry_run: bool = False
+
+
+__all__ = [
+    "HordeAPIModel",
+    "HordeAPIMessage",
+    "BaseResponse",
+    "BaseRequest",
+    "BaseRequestAuthenticated",
+    "BaseRequestUserSpecific",
+    "BaseRequestWorkerDriven",
+    "RequestErrorResponse",
+]

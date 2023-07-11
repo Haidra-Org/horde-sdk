@@ -1,6 +1,6 @@
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels._base import BaseAIHordeRequest
+from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import BaseResponse

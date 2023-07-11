@@ -5,7 +5,7 @@ from horde_sdk.ai_horde_api.ai_horde_client import AIHordeAPIClient
 from horde_sdk.ai_horde_api.apimodels import (
     AllWorkersDetailsRequest,
     AllWorkersDetailsResponse,
-    CancelImageGenerateRequest,
+    DeleteImageGenerateRequest,
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
     ImageGenerateStatusResponse,
@@ -32,8 +32,9 @@ class TestAIHordeAPIClient:
     def test_generate_async(self, default_image_gen_request: ImageGenerateAsyncRequest) -> None:
         client = AIHordeAPIClient()
 
-        image_async_response: ImageGenerateAsyncResponse | RequestErrorResponse = client.generate_image_async(
-            default_image_gen_request,
+        image_async_response: ImageGenerateAsyncResponse | RequestErrorResponse = client.submit_request(
+            api_request=default_image_gen_request,
+            expected_response_type=default_image_gen_request.get_success_response_type(),
         )
 
         if isinstance(image_async_response, RequestErrorResponse):
@@ -43,16 +44,18 @@ class TestAIHordeAPIClient:
 
         cancel_response: ImageGenerateStatusResponse | RequestErrorResponse = client.delete_pending_image(
             "0000000000",
-            image_async_response.id,
+            image_async_response.id_,
         )
         if isinstance(cancel_response, RequestErrorResponse):
             pytest.fail(
-                f"API Response was an error: {cancel_response.message}"
-                f"Please note that the job ({image_async_response.id}) is orphaned and will continue to run on the "
-                "server until it is finished, it times out or it is cancelled manually.",
+                (
+                    f"API Response was an error: {cancel_response.message}Please note that the job"
+                    f" ({image_async_response.id_}) is orphaned and will continue to run on the server until it is"
+                    " finished, it times out or it is cancelled manually."
+                ),
             )
 
-        assert isinstance(cancel_response, CancelImageGenerateRequest.get_success_response_type())
+        assert isinstance(cancel_response, DeleteImageGenerateRequest.get_success_response_type())
 
     def test_workers_all(self) -> None:
         client = AIHordeAPIClient()

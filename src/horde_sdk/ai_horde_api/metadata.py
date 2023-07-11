@@ -4,7 +4,7 @@ from horde_sdk.generic_api import GenericPathFields
 
 class AIHordePathData(GenericPathFields):
     # TODO docstrings
-    id = "id"  # noqa: A003
+    id_ = "id"
     """A request GUID as a str."""
     user_id = "user_id"
     filter_id = "filter_id"

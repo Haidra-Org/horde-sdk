@@ -1,6 +1,6 @@
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels._base import BaseAIHordeRequest, BaseImageGenerateJobRequest
+from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, BaseImageJobRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import BaseResponse
@@ -39,7 +39,7 @@ class ImageGenerateCheckResponse(BaseResponse):
         return "RequestStatusCheck"
 
 
-class ImageGenerateCheckRequest(BaseAIHordeRequest, BaseImageGenerateJobRequest):
+class ImageGenerateCheckRequest(BaseAIHordeRequest, BaseImageJobRequest):
     """Represents a GET request to the `/v2/generate/check/{id}` endpoint."""
 
     @override

@@ -4,9 +4,10 @@ import urllib.parse
 from loguru import logger
 
 from horde_sdk.ai_horde_api.apimodels import (
-    CancelImageGenerateRequest,
-    ImageGenerateAsyncRequest,
-    ImageGenerateAsyncResponse,
+    DeleteImageGenerateRequest,
+    ImageGenerateCheckRequest,
+    ImageGenerateCheckResponse,
+    ImageGenerateStatusRequest,
     ImageGenerateStatusResponse,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
@@ -47,33 +48,100 @@ class AIHordeAPIClient(GenericHordeAPIClient):
         logger.error(f"Endpoint: {endpoint_url}")
         logger.error(f"Message: {error_response.message}")
 
-    def generate_image_async(
+    def get_generate_check(
         self,
-        api_request: ImageGenerateAsyncRequest,
-    ) -> ImageGenerateAsyncResponse | RequestErrorResponse:
-        """Submit a request to the AI-Horde API to generate an image asynchronously.
-
-        This is a call to the `/v2/generate/async` endpoint.
+        apikey: str,
+        generation_id: GenerationID | str,
+    ) -> ImageGenerateCheckResponse | RequestErrorResponse:
+        """Check if a pending image request has finished generating from the AI-Horde API, and return
+        the status of it. Not to be confused with `get_generate_status` which returns the images too.
 
         Args:
-            api_request (ImageGenerateAsyncRequest): The request to submit.
-
-        Raises:
-            RuntimeError: If the response type is not ImageGenerateAsyncResponse.
+            apikey (str): The API key to use for authentication.
+            generation_id (GenerationID | str): The ID of the request to check.
 
         Returns:
-            ImageGenerateAsyncResponse | RequestErrorResponse: The response from the API.
+            ImageGenerateCheckResponse | RequestErrorResponse: The response from the API.
+        """ """"""
+        api_request = ImageGenerateCheckRequest(id=generation_id)
+
+        api_response = self.submit_request(api_request, api_request.get_success_response_type())
+        if isinstance(api_response, RequestErrorResponse):
+            self._handle_api_error(api_response, api_request.get_endpoint_url())
+
+        return api_response
+
+    async def async_get_generate_check(
+        self,
+        apikey: str,
+        generation_id: GenerationID | str,
+    ) -> ImageGenerateCheckResponse | RequestErrorResponse:
+        """Asynchronously check if a pending image request has finished generating from the AI-Horde API, and return
+        the status of it. Not to be confused with `get_generate_status` which returns the images too.
+
+        Args:
+            apikey (str): The API key to use for authentication.
+            generation_id (GenerationID | str): The ID of the request to check.
+
+        Returns:
+            ImageGenerateCheckResponse | RequestErrorResponse: The response from the API.
         """
+
+        api_request = ImageGenerateCheckRequest(id=generation_id)
+
+        api_response = await self.async_submit_request(api_request, api_request.get_success_response_type())
+        if isinstance(api_response, RequestErrorResponse):
+            self._handle_api_error(api_response, api_request.get_endpoint_url())
+
+        return api_response
+
+    def get_generate_status(
+        self,
+        apikey: str,
+        generation_id: GenerationID | str,
+    ) -> ImageGenerateStatusResponse | RequestErrorResponse:
+        """Get the status and any generated images for a pending image request from the AI-Horde API.
+
+        *Do not use this method more often than is necessary.* The AI-Horde API will rate limit you if you do.
+        Use `get_generate_check` instead to check the status of a pending image request.
+
+        Args:
+            apikey (str): The API key to use for authentication.
+            generation_id (GenerationID): The ID of the request to check.
+        Returns:
+            ImageGenerateStatusResponse | RequestErrorResponse: The response from the API.
+        """
+        api_request = ImageGenerateStatusRequest(id=generation_id)
+
         api_response = self.submit_request(api_request, api_request.get_success_response_type())
         if isinstance(api_response, RequestErrorResponse):
             self._handle_api_error(api_response, api_request.get_endpoint_url())
             return api_response
-        if not isinstance(api_response, ImageGenerateAsyncResponse):
-            logger.error("Failed to generate an image asynchronously.")
-            logger.error(f"Unexpected response type: {type(api_response)}")
-            raise RuntimeError(
-                f"Unexpected response type. Expected ImageGenerateAsyncResponse, got {type(api_response)}",
-            )
+
+        return api_response
+
+    async def async_get_generate_status(
+        self,
+        apikey: str,
+        generation_id: GenerationID | str,
+    ) -> ImageGenerateStatusResponse | RequestErrorResponse:
+        """Asynchronously get the status and any generated images for a pending image request from the AI-Horde API.
+
+        *Do not use this method more often than is necessary.* The AI-Horde API will rate limit you if you do.
+        Use `get_generate_check` instead to check the status of a pending image request.
+
+        Args:
+            apikey (str): The API key to use for authentication.
+            generation_id (GenerationID): The ID of the request to check.
+        Returns:
+            ImageGenerateStatusResponse | RequestErrorResponse: The response from the API.
+        """
+        api_request = ImageGenerateStatusRequest(id=generation_id)
+
+        api_response = await self.async_submit_request(api_request, api_request.get_success_response_type())
+        if isinstance(api_response, RequestErrorResponse):
+            self._handle_api_error(api_response, api_request.get_endpoint_url())
+            return api_response
 
         return api_response
 
@@ -87,9 +155,23 @@ class AIHordeAPIClient(GenericHordeAPIClient):
         Args:
             generation_id (GenerationID): The ID of the request to delete.
         """
-        api_request = CancelImageGenerateRequest(id=generation_id, apikey=apikey)
+        api_request = DeleteImageGenerateRequest(id=generation_id, apikey=apikey)
 
         api_response = self.submit_request(api_request, api_request.get_success_response_type())
+        if isinstance(api_response, RequestErrorResponse):
+            self._handle_api_error(api_response, api_request.get_endpoint_url())
+            return api_response
+
+        return api_response
+
+    async def async_delete_pending_image(
+        self,
+        apikey: str,
+        generation_id: GenerationID | str,
+    ) -> ImageGenerateStatusResponse | RequestErrorResponse:
+        api_request = DeleteImageGenerateRequest(id=generation_id, apikey=apikey)
+
+        api_response = await self.async_submit_request(api_request, api_request.get_success_response_type())
         if isinstance(api_response, RequestErrorResponse):
             self._handle_api_error(api_response, api_request.get_endpoint_url())
             return api_response

@@ -556,8 +556,10 @@ class SwaggerDoc(BaseModel):
                     or validation_method == SwaggerSchemaValidationMethod.anyOf
                 ):
                     logger.warning(
-                        "oneOf and anyOf are not well supported. Yoy may experience unexpected behavior. "
-                        f"ref: {definition.ref}",
+                        (
+                            "oneOf and anyOf are not well supported. Yoy may experience unexpected behavior. "
+                            f"ref: {definition.ref}"
+                        ),
                     )
                     break
 

@@ -1,17 +1,13 @@
 from pydantic import BaseModel, Field
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels._base import BaseAIHordeRequest, BaseImageGenerateJobRequest
+from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, BaseImageJobRequest
 from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckResponse
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import ImageID, WorkerID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated
-
-
-class ImageGenerateStatusRequest(BaseAIHordeRequest, BaseImageGenerateJobRequest):
-    """Represents a GET request to the `/v2/generate/status/{id}` endpoint."""
 
 
 class ImageGeneration(BaseModel):
@@ -55,10 +51,10 @@ class ImageGenerateStatusResponse(ImageGenerateCheckResponse):
         return "RequestStatusStable"
 
 
-class CancelImageGenerateRequest(
+class DeleteImageGenerateRequest(
     BaseAIHordeRequest,
     BaseRequestAuthenticated,
-    BaseImageGenerateJobRequest,
+    BaseImageJobRequest,
 ):
     """Represents a DELETE request to the `/v2/generate/status/{id}` endpoint."""
 
@@ -71,6 +67,30 @@ class CancelImageGenerateRequest(
     @classmethod
     def get_http_method(cls) -> HTTPMethod:
         return HTTPMethod.DELETE
+
+    @override
+    @staticmethod
+    def get_endpoint_subpath() -> str:
+        return AI_HORDE_API_URL_Literals.v2_generate_status
+
+    @override
+    @staticmethod
+    def get_success_response_type() -> type[ImageGenerateStatusResponse]:
+        return ImageGenerateStatusResponse
+
+
+class ImageGenerateStatusRequest(BaseAIHordeRequest, BaseImageJobRequest):
+    """Represents a GET request to the `/v2/generate/status/{id}` endpoint."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
 
     @override
     @staticmethod

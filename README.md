@@ -2,6 +2,9 @@
 
 With the power of pydantic, you can simplify interfacing with the [AI-Horde's suite of APIs](https://github.com/db0/AI-Horde). Whether you want to request your own images, or roll your own worker software, this package may suit your needs for anything horde related.
 
+## General notes
+- Certain API models have attributes which may collide with a python builtin, such as `id` or `type`. In these cases, the attribute has a trailing underscore, as in `id_`. Ingested json still will work with the field 'id' (its a alias).
+
 ## AI-Horde
 `TODO`
 

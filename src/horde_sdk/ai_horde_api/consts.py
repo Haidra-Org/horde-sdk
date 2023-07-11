@@ -37,3 +37,13 @@ class WORKER_TYPE(StrEnum):
     image = auto()
     text = auto()
     interrogation = auto()
+    # alchemist = auto() # TODO
+
+
+class ALCHEMY_FORMS(StrEnum):
+    """Forms for alchemist type workers"""
+
+    nsfw = auto()
+    caption = auto()
+    interrogation = auto()
+    post_process = auto()

@@ -3,7 +3,7 @@ from horde_sdk.ai_horde_api.apimodels.generate._async import ImageGenerateAsyncR
 from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckRequest, ImageGenerateCheckResponse
 from horde_sdk.ai_horde_api.apimodels.generate._pop import ImageGenerateJobPopRequest, ImageGenerateJobResponse
 from horde_sdk.ai_horde_api.apimodels.generate._status import (
-    CancelImageGenerateRequest,
+    DeleteImageGenerateRequest,
     ImageGenerateStatusRequest,
     ImageGenerateStatusResponse,
 )
@@ -22,7 +22,7 @@ __all__ = [
     "ImageGenerateJobResponse",
     "ImageGenerateStatusRequest",
     "ImageGenerateStatusResponse",
-    "CancelImageGenerateRequest",
+    "DeleteImageGenerateRequest",
     "StatsImageModels",
     "StatsModelsResponse",
     "ImageGenerationJobSubmitRequest",

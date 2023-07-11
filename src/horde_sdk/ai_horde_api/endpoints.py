@@ -4,6 +4,7 @@ from strenum import StrEnum
 
 from horde_sdk.generic_api.endpoints import url_with_path
 
+# TODO: Defer setting this?
 AI_HORDE_BASE_URL = "https://aihorde.net/api/"
 
 if os.environ.get("HORDE_URL", None):

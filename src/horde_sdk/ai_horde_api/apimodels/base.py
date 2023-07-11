@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, field_validator
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS, KNOWN_SOURCE_PROCESSING
+from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.fields import GenerationID, WorkerID
 from horde_sdk.generic_api.apimodels import BaseRequest
@@ -15,15 +15,15 @@ class BaseAIHordeRequest(BaseRequest):
         return AI_HORDE_BASE_URL
 
 
-class BaseImageGenerateJobRequest(BaseModel):
-    """Mix-in class for data relating to image generation jobs."""
+class BaseImageJobRequest(BaseModel):
+    """Base class for data relating to image generation jobs."""
 
-    id: str | GenerationID  # noqa: A003
+    id_: str | GenerationID = Field(alias="id")
     """The UUID for this job."""
 
 
 class BaseWorkerRequest(BaseModel):
-    """Mix-in class for data relating to worker requests."""
+    """Base class for data relating to worker requests."""
 
     worker_id: str | WorkerID
     """The UUID of the worker in question for this request."""
@@ -86,11 +86,3 @@ class BaseImageGenerateParam(BaseModel):
     def seed_to_int_if_str(cls, v: str | int) -> str | int:
         """Ensure that the seed is an integer. If it is a string, convert it to an integer."""
         return str(seed_to_int(v))
-
-
-class BaseImageGenerateImg2Img(BaseModel):
-    """Mix-in class for data relating to img2img generation."""
-
-    source_image: str | None = None
-    source_processing: KNOWN_SOURCE_PROCESSING = KNOWN_SOURCE_PROCESSING.txt2img
-    source_mask: str | None = None

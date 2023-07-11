@@ -2,7 +2,7 @@ import pydantic
 from pydantic import Field, field_validator
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels._base import BaseAIHordeRequest, BaseImageGenerateParam
+from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, BaseImageGenerateParam
 from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import GenerationID
