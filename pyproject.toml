@@ -34,7 +34,7 @@ tests = ["*.json"]
 
 [tool.ruff]
 line-length = 119
-select = ["A", "I", "E", "W", "F", "UP", "YTT", "B", "C4", "PIE", "RET", "SIM"] #, "D", "ANN"] # FIXME
+select = ["A", "I", "E", "W", "F", "UP", "YTT", "B", "C4", "PIE", "RET", "SIM", "COM"] #, "D", "ANN"] # FIXME
 ignore = [
   # Ignore D rules for non-google docstring standard
   "D203",
