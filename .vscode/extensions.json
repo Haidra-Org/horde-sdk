@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "matangover.mypy",
+        "ms-python.black-formatter",
+        "njpwerner.autodocstring",
+        "streetsidesoftware.code-spell-checker",
+        "charliermarsh.ruff",
+        "wayou.vscode-todo-highlight",
+        "bungcip.better-toml"
+    ]
+}
