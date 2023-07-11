@@ -1,7 +1,9 @@
 """The API client which can perform arbitrary horde API requests."""
 
+from typing import TypeVar
+
 import requests
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from horde_sdk.generic_api import (
     GenericAcceptTypes,
@@ -11,6 +13,9 @@ from horde_sdk.generic_api import (
 )
 from horde_sdk.generic_api._error import RequestErrorResponse
 from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
+
+HordeRequest = TypeVar("HordeRequest", bound=BaseRequest)
+HordeResponse = TypeVar("HordeResponse", bound=BaseResponse)
 
 
 class _ParsedRequest(BaseModel):
@@ -27,7 +32,10 @@ class _ParsedRequest(BaseModel):
 
 
 class GenericHordeAPIClient:
-    """Interfaces with any flask API the horde provides, intended to be fairly dynamic/flexible."""
+    """Interfaces with any flask API the horde provides, intended to be fairly dynamic/flexible.
+
+    You can use the friendly, typed functions, or if you prefer more control, you can use the `submit_request` method.
+    """
 
     _header_data_keys: list[str]
     """A list of all fields which would appear in the API request header."""
@@ -152,7 +160,8 @@ class GenericHordeAPIClient:
         self,
         api_request: BaseRequest,
         raw_response: requests.Response,
-    ) -> BaseResponse | RequestErrorResponse:
+        expected_response: type[HordeResponse],
+    ) -> HordeResponse | RequestErrorResponse:
         expected_response_type = api_request.get_success_response_type()
         raw_response_json = raw_response.json()
 
@@ -164,22 +173,58 @@ class GenericHordeAPIClient:
 
             raise RuntimeError(
                 "Received a non-200 response code, but no `message` key was found "
-                f"in the response: {raw_response_json}"
+                f"in the response: {raw_response_json}",
             )
 
-        # FIXME should be something resembling error handling here
-        return expected_response_type.from_dict_or_array(raw_response_json)
+        handled_response: HordeResponse | RequestErrorResponse | None = None
+        try:
+            parsed_response = expected_response_type.from_dict_or_array(raw_response_json)
+            if isinstance(parsed_response, expected_response):
+                handled_response = parsed_response
+            else:
+                handled_response = RequestErrorResponse(
+                    message="The response type doesn't match expected one! See `object_data` for the raw response.",
+                    object_data={"raw_response": raw_response_json},
+                )
+        except ValidationError as e:
+            if not isinstance(handled_response, expected_response):
+                error_response = RequestErrorResponse(
+                    message="The response type doesn't match expected one! See `object_data` for the raw response.",
+                    object_data={"exception": e, "raw_response": raw_response_json},
+                )
+                handled_response = error_response
 
-    def submit_request(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
+        return handled_response
+
+    def submit_request(
+        self,
+        api_request: BaseRequest,
+        expected_response: type[HordeResponse],
+    ) -> HordeResponse | RequestErrorResponse:
         """Submit a request to the API and return the response.
 
         Automatically determines the correct method to call based on calling `.get_http_method()` on the request.
+
+        If you are wondering why `expected_response` is a parameter, it is because the API may return different
+        responses depending on the payload or other factors. It is up to you to determine which response type you
+        expect, and pass it in here.
+
+        Args:
+            api_request (BaseRequest): The request to submit.
+            expected_response (type[HordeResponse]): The expected response type.
+
+        Returns:
+            HordeResponse | RequestErrorResponse: The response from the API.
         """
         http_method_name = api_request.get_http_method()._value_.lower()
         api_client_method = getattr(self, http_method_name)
-        return api_client_method(api_request)
+        return api_client_method(api_request, expected_response)
 
-    def get(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
+    def get(
+        self,
+        api_request: BaseRequest,
+        expected_response: type[HordeResponse],
+    ) -> HordeResponse | RequestErrorResponse:
         """Perform a GET request to the API."""
         parsed_request = self._validate_and_prepare_request(api_request)
         if parsed_request.request_body is not None:
@@ -191,9 +236,13 @@ class GenericHordeAPIClient:
             allow_redirects=True,
         )
 
-        return self._after_request_handling(api_request, raw_response)
+        return self._after_request_handling(api_request, raw_response, expected_response)
 
-    def post(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
+    def post(
+        self,
+        api_request: BaseRequest,
+        expected_response: type[HordeResponse],
+    ) -> HordeResponse | RequestErrorResponse:
         """Perform a POST request to the API."""
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response = requests.post(
@@ -204,9 +253,13 @@ class GenericHordeAPIClient:
             allow_redirects=True,
         )
 
-        return self._after_request_handling(api_request, raw_response)
+        return self._after_request_handling(api_request, raw_response, expected_response)
 
-    def put(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
+    def put(
+        self,
+        api_request: BaseRequest,
+        expected_response: type[HordeResponse],
+    ) -> HordeResponse | RequestErrorResponse:
         """Perform a PUT request to the API."""
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response = requests.put(
@@ -217,9 +270,13 @@ class GenericHordeAPIClient:
             allow_redirects=True,
         )
 
-        return self._after_request_handling(api_request, raw_response)
+        return self._after_request_handling(api_request, raw_response, expected_response)
 
-    def patch(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
+    def patch(
+        self,
+        api_request: BaseRequest,
+        expected_response: type[HordeResponse],
+    ) -> HordeResponse | RequestErrorResponse:
         """Perform a PATCH request to the API."""
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response = requests.patch(
@@ -230,9 +287,13 @@ class GenericHordeAPIClient:
             allow_redirects=True,
         )
 
-        return self._after_request_handling(api_request, raw_response)
+        return self._after_request_handling(api_request, raw_response, expected_response)
 
-    def delete(self, api_request: BaseRequest) -> BaseResponse | RequestErrorResponse:
+    def delete(
+        self,
+        api_request: BaseRequest,
+        expected_response: type[HordeResponse],
+    ) -> HordeResponse | RequestErrorResponse:
         """Perform a DELETE request to the API."""
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response = requests.delete(
@@ -243,4 +304,4 @@ class GenericHordeAPIClient:
             allow_redirects=True,
         )
 
-        return self._after_request_handling(api_request, raw_response)
+        return self._after_request_handling(api_request, raw_response, expected_response)

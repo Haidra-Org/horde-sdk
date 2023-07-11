@@ -63,6 +63,17 @@ class BaseResponse(HordeAPIMessage):
 
     @classmethod
     def from_dict_or_array(cls, dict_or_array: dict | list) -> Self:
+        """Create a new pydantic BaseModel as normal if the passed value is a dict, otherwise, use the 'array' method.
+
+        This is useful for handling responses which return a json array instead of a json object.
+        See also `is_array_response` and `get_array_item_type`.
+
+        Args:
+            dict_or_array (dict | list): The dict or array to create the model from.
+
+        Returns:
+            `Self`: The new model instance, of the type which called this method.
+        """
         if not isinstance(dict_or_array, dict):
             if not isinstance(dict_or_array, list):
                 dict_or_array = [dict_or_array]
