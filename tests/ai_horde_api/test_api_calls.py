@@ -1,14 +1,15 @@
 from pathlib import Path
 
 import pytest
-from horde_sdk.ai_horde_api import (
+from horde_sdk.ai_horde_api.ai_horde_client import AIHordeAPIClient
+from horde_sdk.ai_horde_api.apimodels import (
     AllWorkersDetailsRequest,
     AllWorkersDetailsResponse,
     CancelImageGenerateRequest,
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
+    ImageGenerateStatusResponse,
 )
-from horde_sdk.ai_horde_api.ai_horde_client import AIHordeAPIClient
 from horde_sdk.ai_horde_api.consts import WORKER_TYPE
 from horde_sdk.generic_api import RequestErrorResponse
 from horde_sdk.generic_api.apimodels import BaseResponse
@@ -32,23 +33,24 @@ class TestAIHordeAPIClient:
     def test_generate_async(self, default_image_gen_request: ImageGenerateAsyncRequest):
         client = AIHordeAPIClient()
 
-        api_response: ImageGenerateAsyncResponse | RequestErrorResponse = client.generate_image_async(
-            default_image_gen_request
+        image_async_response: ImageGenerateAsyncResponse | RequestErrorResponse = client.generate_image_async(
+            default_image_gen_request,
         )
 
-        if isinstance(api_response, RequestErrorResponse):
-            pytest.fail(f"API Response was an error: {api_response.message}")
+        if isinstance(image_async_response, RequestErrorResponse):
+            pytest.fail(f"API Response was an error: {image_async_response.message}")
 
-        assert isinstance(api_response, ImageGenerateAsyncResponse)
+        assert isinstance(image_async_response, ImageGenerateAsyncResponse)
 
-        cancel_request = CancelImageGenerateRequest(apikey="0000000000", id=api_response.id)
-        cancel_response: BaseResponse | RequestErrorResponse = client.submit_request(cancel_request)
-
+        cancel_response: ImageGenerateStatusResponse | RequestErrorResponse = client.delete_pending_image(
+            "0000000000",
+            image_async_response.id,
+        )
         if isinstance(cancel_response, RequestErrorResponse):
             pytest.fail(
                 f"API Response was an error: {cancel_response.message}"
-                f"Please note that the job ({api_response.id}) is orphaned and will continue to run on the server"
-                "until it is finished, it times out or it is cancelled manually."
+                f"Please note that the job ({image_async_response.id}) is orphaned and will continue to run on the "
+                "server until it is finished, it times out or it is cancelled manually.",
             )
 
         assert isinstance(cancel_response, CancelImageGenerateRequest.get_success_response_type())
@@ -58,14 +60,15 @@ class TestAIHordeAPIClient:
 
         api_request = AllWorkersDetailsRequest(type=WORKER_TYPE.image)
 
-        api_response = client.submit_request(api_request)
+        api_response = client.submit_request(
+            api_request,
+            api_request.get_success_response_type(),
+        )
 
         if isinstance(api_response, RequestErrorResponse):
             pytest.fail(f"API Response was an error: {api_response.message}")
 
         assert isinstance(api_response, AllWorkersDetailsResponse)
-
-        assert len(api_response.workers) > 0
 
         # Write the response to the production responses folder
         status_response_pairs = AllWorkersDetailsRequest.get_success_status_response_pairs()

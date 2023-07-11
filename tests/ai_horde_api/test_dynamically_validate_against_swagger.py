@@ -1,28 +1,21 @@
-import horde_sdk.ai_horde_api as ai_horde_api
+import horde_sdk.ai_horde_api.apimodels
 from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode, get_all_success_status_codes
 from horde_sdk.generic_api._reflection import get_all_request_types
 from horde_sdk.generic_api.utils.swagger import (
+    SwaggerDoc,
     SwaggerEndpoint,
     SwaggerParser,
 )
 
 
-def test_all_ai_horde_model_defs_in_swagger() -> None:
+def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     """Ensure all models defined in ai_horde_api are defined in the swagger doc."""
-    all_request_types = get_all_request_types(ai_horde_api.__name__)
+    all_request_types = get_all_request_types(horde_sdk.ai_horde_api.apimodels.__name__)
     assert len(all_request_types) > 0, (
-        f"Failed to find any request types in {ai_horde_api.__name__}. "
-        "Something is critically wrong. Check `ai_horde_api/__init__.py` imports."
+        f"Failed to find any request types in {horde_sdk.ai_horde_api.apimodels.__name__}. "
+        "Something is critically wrong. Check `ai_horde_api/apimodels/__init__.py` imports."
     )
-
-    # Retrieve the swagger doc
-    swagger_doc = None
-    try:
-        swagger_doc = SwaggerParser(get_ai_horde_swagger_url()).get_swagger_doc()
-    except RuntimeError as e:
-        raise RuntimeError(f"Failed to get swagger doc: {e}") from e
-    assert swagger_doc, "Failed to get SwaggerDoc"
 
     swagger_defined_models = swagger_doc.definitions.keys()
     swagger_defined_payload_examples: dict[str, dict[HTTPMethod, dict[str, object]]]
@@ -86,3 +79,14 @@ def test_all_ai_horde_model_defs_in_swagger() -> None:
             assert (
                 success_code in request_type.get_success_status_response_pairs()
             ), f"Missing success response type for {request_type.__name__} with status code {success_code}"
+
+
+def test_all_ai_horde_model_defs_in_swagger_from_prod_swagger() -> None:
+    swagger_doc: SwaggerDoc | None = None
+    try:
+        swagger_doc = SwaggerParser(swagger_doc_url=get_ai_horde_swagger_url()).get_swagger_doc()
+    except RuntimeError as e:
+        raise RuntimeError(f"Failed to get swagger doc: {e}") from e
+    assert swagger_doc, "Failed to get SwaggerDoc"
+    assert swagger_doc.definitions, "Failed to get SwaggerDoc definitions"
+    all_ai_horde_model_defs_in_swagger(swagger_doc)

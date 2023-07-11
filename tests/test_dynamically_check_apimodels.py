@@ -4,8 +4,10 @@ from pathlib import Path
 from types import ModuleType
 
 import horde_sdk.ai_horde_api as ai_horde_api
+import horde_sdk.ai_horde_api.apimodels
 import horde_sdk.generic_api as generic_api
 import horde_sdk.ratings_api as ratings_api
+import horde_sdk.ratings_api.apimodels
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api._reflection import get_all_request_types
 from horde_sdk.generic_api.apimodels import BaseResponse
@@ -33,17 +35,19 @@ class Test_reflection_and_dynamic:  # noqa: D101
             assert folder.exists(), f"Missing example response folder for {api.__name__}: {folder}"
 
     def test_get_all_request_types(self) -> None:  # noqa: D102
-        supported_apis = [ai_horde_api, ratings_api]
-        for api in supported_apis:
+        supported_apis_models = [horde_sdk.ai_horde_api.apimodels, horde_sdk.ratings_api.apimodels]
+        for api in supported_apis_models:
             all_request_types = get_all_request_types(api.__name__)
             assert len(all_request_types) > 0, f"Failed to find any request types in {api.__name__}"
             for request_type in all_request_types:
                 assert issubclass(
-                    request_type, generic_api.BaseRequest
+                    request_type,
+                    generic_api.BaseRequest,
                 ), f"Request type is not a subclass if `BaseRequest`: {request_type}"
 
                 assert issubclass(
-                    request_type.get_success_response_type(), BaseResponse
+                    request_type.get_success_response_type(),
+                    BaseResponse,
                 ), f"Response type is not a subclass of `BaseResponse`: {request_type}"
 
     @staticmethod
@@ -64,12 +68,14 @@ class Test_reflection_and_dynamic:  # noqa: D101
         for request_type in all_request_types:
             # print(f"Testing {request_type.__name__}")
             assert issubclass(
-                request_type, generic_api.BaseRequest
+                request_type,
+                generic_api.BaseRequest,
             ), f"Request type is not a subclass if `BaseRequest`: {request_type}"
 
             response_type: type[BaseResponse] = request_type.get_success_response_type()
             assert issubclass(
-                response_type, BaseResponse
+                response_type,
+                BaseResponse,
             ), f"Response type is not a subclass of `BaseResponse`: {response_type}"
 
             if request_type.get_http_method() not in [HTTPMethod.GET, HTTPMethod.DELETE]:
@@ -80,7 +86,7 @@ class Test_reflection_and_dynamic:  # noqa: D101
 
                 target_payload_file_path = f"{example_payload_folder}/{example_payload_filename}.json"
                 assert os.path.exists(
-                    target_payload_file_path
+                    target_payload_file_path,
                 ), f"Missing example payload file: {target_payload_file_path}"
 
             success_status_codes = request_type.get_success_status_response_pairs()
@@ -94,9 +100,9 @@ class Test_reflection_and_dynamic:  # noqa: D101
                 with open(target_response_file_path) as sample_file_handle:
                     sample_data_json = json.loads(sample_file_handle.read())
                     if response_type.is_array_response():
-                        _ = success_response_type().set_array(sample_data_json)
+                        success_response_type().set_array(sample_data_json)
                     else:
-                        _ = success_response_type(**sample_data_json)
+                        success_response_type(**sample_data_json)
 
                 example_production_response_file_path = (
                     f"{EXAMPLE_PRODUCTION_RESPONSES[module]}/{example_response_filename}.json"
@@ -105,7 +111,7 @@ class Test_reflection_and_dynamic:  # noqa: D101
                     with open(example_production_response_file_path, encoding="utf8") as sample_file_handle:
                         sample_data_json = json.loads(sample_file_handle.read())
                         if response_type.is_array_response():
-                            _ = success_response_type().set_array(sample_data_json)
+                            success_response_type().set_array(sample_data_json)
                         else:
                             _ = success_response_type(**sample_data_json)
 
