@@ -179,7 +179,8 @@ class SwaggerEndpointMethodParameter(BaseModel):
     description: str | None = None
     required: bool | None = None
     schema_: SwaggerEndpointMethodParameterSchema | SwaggerEndpointMethodParameterSchemaRef | None = Field(
-        None, alias="schema"
+        None,
+        alias="schema",
     )
     default: object | None = None
     type_: str | None = Field(None, alias="type")
@@ -267,7 +268,7 @@ class SwaggerEndpoint(BaseModel):
                 v.get("patch"),
                 v.get("options"),
                 v.get("head"),
-            ]
+            ],
         ):
             raise ValueError("At least one method must be specified.")
 
@@ -316,7 +317,8 @@ class SwaggerDoc(BaseModel):
         return every_endpoint_example
 
     def get_endpoint_examples(
-        self, endpoint: SwaggerEndpoint
+        self,
+        endpoint: SwaggerEndpoint,
     ) -> dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]:
         """Extract response examples for a single endpoint."""
         endpoint_examples: dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]] = {}
@@ -331,7 +333,8 @@ class SwaggerDoc(BaseModel):
         return endpoint_examples
 
     def get_endpoint_method_examples(
-        self, endpoint_method_definition: SwaggerEndpointMethod
+        self,
+        endpoint_method_definition: SwaggerEndpointMethod,
     ) -> dict[HTTPStatusCode, dict[str, object] | list]:
         """Extract response examples for a single HTTP method used by an endpoint."""
         endpoint_method_examples: dict[HTTPStatusCode, dict[str, object] | list] = {}
@@ -395,14 +398,14 @@ class SwaggerDoc(BaseModel):
 
                 if len(_payload_definitions) != 1:
                     raise RuntimeError(
-                        f"Expected to find exactly one payload definition for {endpoint_path} {http_method_name}"
+                        f"Expected to find exactly one payload definition for {endpoint_path} {http_method_name}",
                     )
 
                 payload_definition = _payload_definitions[0]
 
                 if not payload_definition.schema_:
                     raise RuntimeError(
-                        f"Expected to find a schema for {endpoint_path} {http_method_name} payload definition"
+                        f"Expected to find a schema for {endpoint_path} {http_method_name} payload definition",
                     )
 
                 if isinstance(payload_definition.schema_, SwaggerEndpointMethodParameterSchemaRef):
@@ -410,7 +413,7 @@ class SwaggerDoc(BaseModel):
                     example_payload = self._resolve_model_ref_defaults(payload_definition.schema_.ref)
                     if isinstance(example_payload, list):
                         raise RuntimeError(
-                            f"Expected to find a dict for {endpoint_path} {http_method_name} payload definition"
+                            f"Expected to find a dict for {endpoint_path} {http_method_name} payload definition",
                         )
 
                     endpoint_examples.update(
@@ -426,7 +429,7 @@ class SwaggerDoc(BaseModel):
                     for prop_name, prop in payload_definition.schema_.properties.items():
                         if not prop.type_:
                             raise RuntimeError(
-                                f"Expected to find a type for {endpoint_path} {http_method_name} payload definition"
+                                f"Expected to find a type for {endpoint_path} {http_method_name} payload definition",
                             )
                         endpoint_specific_schema[prop_name] = default_swagger_value_from_type_name(prop.type_)
 
@@ -441,7 +444,10 @@ class SwaggerDoc(BaseModel):
 
     @staticmethod
     def filename_from_endpoint_path(
-        endpoint_path: str, http_method: HTTPMethod, *, http_status_code: HTTPStatusCode | None = None
+        endpoint_path: str,
+        http_method: HTTPMethod,
+        *,
+        http_status_code: HTTPStatusCode | None = None,
     ) -> str:
         """Get the filename for the given endpoint path."""
         endpoint_path = re.sub(r"\W+", "_", endpoint_path)
@@ -475,7 +481,9 @@ class SwaggerDoc(BaseModel):
                     if not error_responses and is_error_status_code(http_status_code.value):
                         continue
                     filename = self.filename_from_endpoint_path(
-                        endpoint_path, http_method, http_status_code=http_status_code
+                        endpoint_path,
+                        http_method,
+                        http_status_code=http_status_code,
                     )
                     filepath = directory / f"{filename}.json"
                     with open(filepath, "w") as f:
@@ -549,7 +557,7 @@ class SwaggerDoc(BaseModel):
                 ):
                     logger.warning(
                         "oneOf and anyOf are not well supported. Yoy may experience unexpected behavior. "
-                        f"ref: {definition.ref}"
+                        f"ref: {definition.ref}",
                     )
                     break
 
@@ -584,7 +592,7 @@ class SwaggerDoc(BaseModel):
                             "additionalProp1": default,
                             "additionalProp2": default,
                             "additionalProp3": default,
-                        }
+                        },
                     )
                     continue
 
@@ -642,14 +650,26 @@ class SwaggerDoc(BaseModel):
 class SwaggerParser:
     _swagger_json: dict
 
-    def __init__(self, swagger_doc_url: str) -> None:
-        # Try to get the swagger.json from the server
-        try:
-            response = requests.get(swagger_doc_url)
-            response.raise_for_status()
-            self._swagger_json = response.json()
-        except requests.exceptions.HTTPError as e:
-            raise RuntimeError(f"Failed to get swagger.json from server: {e.response.text}") from e
+    def __init__(
+        self,
+        *,
+        swagger_doc_url: str | None = None,
+        swagger_doc_path: str | Path | None = None,
+    ) -> None:
+        if swagger_doc_path:
+            swagger_doc_path = Path(swagger_doc_path)
+            if swagger_doc_path.exists():
+                with open(swagger_doc_path) as f:
+                    self._swagger_json = json.load(f)
+            else:
+                raise RuntimeError(f"Failed to find swagger.json at {swagger_doc_path}")
+        elif swagger_doc_url:
+            try:
+                response = requests.get(swagger_doc_url)
+                response.raise_for_status()
+                self._swagger_json = response.json()
+            except requests.exceptions.HTTPError as e:
+                raise RuntimeError(f"Failed to get swagger.json from server: {e.response.text}") from e
 
     def get_swagger_doc(self) -> SwaggerDoc:
         return SwaggerDoc.model_validate(self._swagger_json)
