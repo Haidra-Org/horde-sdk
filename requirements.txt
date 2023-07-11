@@ -2,3 +2,5 @@ pydantic
 requests
 StrEnum
 loguru
+aiohttp
+aiodns
