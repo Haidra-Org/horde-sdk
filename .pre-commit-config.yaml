@@ -13,3 +13,8 @@ repos:
     rev: v0.0.275
     hooks:
     -    id: ruff
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: '6e63c9e9c65e1df04465cdcda0f2490e89291f58'
+    hooks:
+    -   id: mypy
+        additional_dependencies: [pydantic, types-requests, types-pytz, types-setuptools, types-urllib3, StrEnum]
