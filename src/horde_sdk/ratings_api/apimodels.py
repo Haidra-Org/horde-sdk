@@ -157,7 +157,11 @@ class BaseSelectableReturnTypeRequest(BaseModel):
     """The format to request the response payload in, typically json."""
 
 
-class ImageRatingsRequest(BaseRatingsAPIRequest, BaseRequestAuthenticated, BaseSelectableReturnTypeRequest):
+class ImageRatingsRequest(
+    BaseRatingsAPIRequest,
+    BaseRequestAuthenticated,
+    BaseSelectableReturnTypeRequest,
+):
     """Represents the data needed to make a request to the `/v1/image/ratings/{image_id}` endpoint."""
 
     @override
@@ -203,7 +207,12 @@ class ImageRatingsFilterableRequestBase(BaseSelectableReturnTypeRequest):
     min_ratings: int | None
 
 
-class UserValidateRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific, ImageRatingsFilterableRequestBase):
+class UserValidateRequest(
+    BaseRatingsAPIRequest,
+    BaseRequestAuthenticated,
+    BaseRequestUserSpecific,
+    ImageRatingsFilterableRequestBase,
+):
     """Represents the data needed to make a request to the `/v1/user/validate/{user_id}` endpoint."""
 
     @override
@@ -227,7 +236,11 @@ class UserValidateRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific, ImageR
         return UserValidateResponse
 
 
-class UserCheckRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific, BaseRequestAuthenticated):
+class UserCheckRequest(
+    BaseRatingsAPIRequest,
+    BaseRequestAuthenticated,
+    BaseRequestUserSpecific,
+):
     """Represents the data needed to make a request to the `/v1/user/check/` endpoint."""
 
     minutes: int = Field(ge=1)
@@ -254,7 +267,11 @@ class UserCheckRequest(BaseRatingsAPIRequest, BaseRequestUserSpecific, BaseReque
         return UserCheckResponse
 
 
-class UserRatingsRequest(BaseRatingsAPIRequest, BaseRequestAuthenticated, ImageRatingsFilterableRequestBase):
+class UserRatingsRequest(
+    BaseRatingsAPIRequest,
+    BaseRequestAuthenticated,
+    ImageRatingsFilterableRequestBase,
+):
     """Represents the data needed to make a request to the `/v1/user/ratings/` endpoint."""
 
     limit: int
