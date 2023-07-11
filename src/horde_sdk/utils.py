@@ -1,8 +1,8 @@
 import random
 
 
-def seed_to_int(self, s=None):
-    if type(s) is int:
+def seed_to_int(s: int | str | None = None) -> int:
+    if isinstance(s, int):
         return s
     if s is None or s == "":
         # return a random int

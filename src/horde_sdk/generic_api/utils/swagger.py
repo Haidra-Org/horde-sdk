@@ -99,7 +99,7 @@ class SwaggerModelDefinitionSchemaValidation(SwaggerModelEntry):
     """The model must match at least one of the schemas in this list."""
 
     @model_validator(mode="before")
-    def one_method_specified(cls, v):
+    def one_method_specified(cls, v: dict) -> dict:
         """Ensure at least one of the validation methods is specified."""
         if not any([v.get("allOf"), v.get("oneOf"), v.get("anyOf")]):
             raise ValueError("At least one of allOf, oneOf, or anyOf must be specified.")
@@ -257,7 +257,7 @@ class SwaggerEndpoint(BaseModel):
         return return_dict
 
     @model_validator(mode="before")
-    def at_least_one_method_specified(cls, v):
+    def at_least_one_method_specified(cls, v: dict) -> dict:
         """Ensure at least one method is specified."""
         if not any(
             [

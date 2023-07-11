@@ -76,14 +76,14 @@ class BaseImageGenerateParam(BaseModel):
     use_nsfw_censor: bool = False
 
     @field_validator("sampler_name")
-    def sampler_name_must_be_known(cls, v):
+    def sampler_name_must_be_known(cls, v: str | KNOWN_SAMPLERS) -> str | KNOWN_SAMPLERS:
         """Ensure that the sampler name is in this list of supported samplers."""
         if v not in KNOWN_SAMPLERS.__members__:
             raise ValueError(f"Unknown sampler name {v}")
         return v
 
     @field_validator("seed")
-    def seed_to_int_if_str(cls, v):
+    def seed_to_int_if_str(cls, v: str | int) -> str | int:
         """Ensure that the seed is an integer. If it is a string, convert it to an integer."""
         return str(seed_to_int(v))
 

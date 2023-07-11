@@ -17,8 +17,11 @@ class _UUID_Identifier(BaseModel):
         return uuid.UUID(str(self.id), version=4)
 
     @field_validator("id")
-    def id_must_be_uuid(cls, v):
+    def id_must_be_uuid(cls, v: str | uuid.UUID) -> str | uuid.UUID:
         """Ensure that the ID is a valid UUID."""
+        if isinstance(v, uuid.UUID):
+            return v
+
         try:
             uuid.UUID(v, version=4)
         except ValueError as e:

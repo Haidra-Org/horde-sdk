@@ -26,10 +26,10 @@ class TestAIHordeAPIClient:
             models=["Deliberate"],
         )
 
-    def test_AIHordeAPIClient_init(self):
+    def test_AIHordeAPIClient_init(self) -> None:
         AIHordeAPIClient()
 
-    def test_generate_async(self, default_image_gen_request: ImageGenerateAsyncRequest):
+    def test_generate_async(self, default_image_gen_request: ImageGenerateAsyncRequest) -> None:
         client = AIHordeAPIClient()
 
         image_async_response: ImageGenerateAsyncResponse | RequestErrorResponse = client.generate_image_async(
@@ -54,7 +54,7 @@ class TestAIHordeAPIClient:
 
         assert isinstance(cancel_response, CancelImageGenerateRequest.get_success_response_type())
 
-    def test_workers_all(self):
+    def test_workers_all(self) -> None:
         client = AIHordeAPIClient()
 
         api_request = AllWorkersDetailsRequest(type=WORKER_TYPE.image)

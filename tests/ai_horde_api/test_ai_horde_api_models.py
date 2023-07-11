@@ -6,13 +6,13 @@ from horde_sdk.ai_horde_api.apimodels.generate._async import (
 from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS, KNOWN_SOURCE_PROCESSING
 
 
-def test_api_endpoint():
+def test_api_endpoint() -> None:
     ImageGenerateAsyncRequest.get_api_url()
     ImageGenerateAsyncRequest.get_endpoint_subpath()
     ImageGenerateAsyncRequest.get_endpoint_url()
 
 
-def test_ImageGenerateAsyncRequest():
+def test_ImageGenerateAsyncRequest() -> None:
     test_async_request = ImageGenerateAsyncRequest(
         apikey="000000000",
         models=["Deliberate"],

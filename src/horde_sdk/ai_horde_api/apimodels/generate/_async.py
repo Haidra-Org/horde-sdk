@@ -57,7 +57,7 @@ class ImageGenerateAsyncRequest(
     replacement_filter: bool = True
 
     @model_validator(mode="before")
-    def validate_censor_nsfw(cls, values):
+    def validate_censor_nsfw(cls, values: dict) -> dict:
         if values.get("censor_nsfw", None) and values.get("nsfw", None):
             raise ValueError("censor_nsfw is only valid when nsfw is False")
         return values

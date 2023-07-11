@@ -2,11 +2,11 @@ from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
 from horde_sdk.generic_api.utils.swagger import SwaggerDoc, SwaggerParser
 
 
-def test_swagger_parser_init():
+def test_swagger_parser_init() -> None:
     SwaggerParser(swagger_doc_url=get_ai_horde_swagger_url())
 
 
-def test_get_swagger_doc():
+def test_get_swagger_doc() -> None:
     parser = SwaggerParser(swagger_doc_url=get_ai_horde_swagger_url())
     doc = parser.get_swagger_doc()
     assert isinstance(doc, SwaggerDoc)

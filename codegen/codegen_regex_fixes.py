@@ -4,7 +4,7 @@ import re
 import sys
 
 
-def main(path):
+def main(path: str) -> None:
     print(f"Processing {path}")
     with open(path) as f:
         contents = f.read()

@@ -21,7 +21,7 @@ class HordeAPIModel(BaseModel, abc.ABC):
         such as for a GET request.
         """
 
-    def to_json_horde_sdk_safe(self):
+    def to_json_horde_sdk_safe(self) -> str:
         """Return the model as a JSON string, taking into account the paradigms of the horde_sdk.
 
         If you use the default json dumping behavior, you will find some rough edges, such as alias
@@ -85,7 +85,7 @@ class BaseResponse(HordeAPIMessage):
         return cls(**dict_or_array)
 
     @override
-    def to_json_horde_sdk_safe(self):
+    def to_json_horde_sdk_safe(self) -> str:
         # TODO: Is there a more pydantic way to do this?
         if self.is_array_response():
             self_array = self.get_array()

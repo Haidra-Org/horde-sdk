@@ -1,4 +1,4 @@
-def pytest_collection_modifyitems(items):
+def pytest_collection_modifyitems(items: list) -> None:
     """Modifies test items in place to ensure test modules run in a given order."""
     MODULE_ORDER = ["tests_generic", "test_utils", "test_dynamically_check_apimodels"]
     # `test.scripts` must run first because it downloads the legacy database

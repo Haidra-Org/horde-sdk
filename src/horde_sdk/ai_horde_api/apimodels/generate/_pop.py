@@ -79,7 +79,7 @@ class ImageGenerateJobResponse(BaseResponse):
     """The r2 upload link to use to upload this image."""
 
     @field_validator("source_processing")
-    def source_processing_must_be_known(cls, v):
+    def source_processing_must_be_known(cls, v: str | KNOWN_SOURCE_PROCESSING) -> str | KNOWN_SOURCE_PROCESSING:
         """Ensure that the source processing is in this list of supported source processing."""
         if v not in KNOWN_SOURCE_PROCESSING.__members__:
             raise ValueError(f"Unknown source processing {v}")

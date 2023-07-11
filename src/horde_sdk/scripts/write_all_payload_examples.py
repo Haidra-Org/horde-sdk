@@ -4,7 +4,7 @@ from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
 from horde_sdk.generic_api.utils.swagger import SwaggerParser
 
 
-def main(*, test_data_path: Path | None = None):
+def main(*, test_data_path: Path | None = None) -> None:
     ai_horde_swagger_doc = SwaggerParser(
         swagger_doc_url=get_ai_horde_swagger_url(),
     ).get_swagger_doc()
