@@ -1,5 +1,5 @@
 """Definitions to help interact with the Ratings API."""
-from horde_sdk.generic_api import GenericHordeAPIClient
+from horde_sdk.generic_api.generic_client import GenericHordeAPIClient
 from horde_sdk.ratings_api.metadata import RatingsAPIPathFields, RatingsAPIQueryFields
 
 

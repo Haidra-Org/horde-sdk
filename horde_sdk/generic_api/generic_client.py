@@ -7,12 +7,6 @@ import requests
 from pydantic import BaseModel, ValidationError
 from strenum import StrEnum
 
-from horde_sdk.generic_api import (
-    GenericAcceptTypes,
-    GenericHeaderFields,
-    GenericPathFields,
-    GenericQueryFields,
-)
 from horde_sdk.generic_api.apimodels import (
     BaseRequest,
     BaseRequestAuthenticated,
@@ -21,9 +15,17 @@ from horde_sdk.generic_api.apimodels import (
     BaseResponse,
     RequestErrorResponse,
 )
+from horde_sdk.generic_api.metadata import (
+    GenericAcceptTypes,
+    GenericHeaderFields,
+    GenericPathFields,
+    GenericQueryFields,
+)
 
 HordeRequest = TypeVar("HordeRequest", bound=BaseRequest)
+"""TypeVar for the request type."""
 HordeResponse = TypeVar("HordeResponse", bound=BaseResponse)
+"""TypeVar for the response type."""
 
 
 class _ParsedRequest(BaseModel):

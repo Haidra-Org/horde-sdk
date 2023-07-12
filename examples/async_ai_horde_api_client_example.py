@@ -4,7 +4,7 @@ import asyncio
 
 from horde_sdk.ai_horde_api import AIHordeAPIClient
 from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest
-from horde_sdk.generic_api import RequestErrorResponse
+from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 
 async def main() -> None:

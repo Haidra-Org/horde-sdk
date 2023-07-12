@@ -5,12 +5,11 @@ from types import ModuleType
 
 import horde_sdk.ai_horde_api as ai_horde_api
 import horde_sdk.ai_horde_api.apimodels
-import horde_sdk.generic_api as generic_api
 import horde_sdk.ratings_api as ratings_api
 import horde_sdk.ratings_api.apimodels
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api._reflection import get_all_request_types
-from horde_sdk.generic_api.apimodels import BaseResponse
+from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
 from horde_sdk.generic_api.utils.swagger import SwaggerDoc
 
 EXAMPLE_PAYLOADS: dict[ModuleType, Path] = {
@@ -42,7 +41,7 @@ class Test_reflection_and_dynamic:  # noqa: D101
             for request_type in all_request_types:
                 assert issubclass(
                     request_type,
-                    generic_api.BaseRequest,
+                    BaseRequest,
                 ), f"Request type is not a subclass if `BaseRequest`: {request_type}"
 
                 assert issubclass(
@@ -63,13 +62,13 @@ class Test_reflection_and_dynamic:  # noqa: D101
         example_payload_folder = EXAMPLE_PAYLOADS[module]
         example_response_folder = EXAMPLE_RESPONSES[module]
 
-        all_request_types: list[type[generic_api.BaseRequest]] = get_all_request_types(module_name)
+        all_request_types: list[type[BaseRequest]] = get_all_request_types(module_name)
 
         for request_type in all_request_types:
             # print(f"Testing {request_type.__name__}")
             assert issubclass(
                 request_type,
-                generic_api.BaseRequest,
+                BaseRequest,
             ), f"Request type is not a subclass if `BaseRequest`: {request_type}"
 
             response_type: type[BaseResponse] = request_type.get_success_response_type()

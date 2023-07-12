@@ -1,11 +1,12 @@
+from pydantic import BaseModel, Field
+from typing_extensions import override
+
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.consts import WORKER_TYPE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import TeamID, WorkerID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseResponse, HordeAPIModel
-from pydantic import BaseModel, Field
-from typing_extensions import override
 
 
 class TeamDetailsLite(HordeAPIModel):

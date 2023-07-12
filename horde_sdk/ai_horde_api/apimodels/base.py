@@ -9,6 +9,8 @@ from horde_sdk.utils import seed_to_int
 
 
 class BaseAIHordeRequest(BaseRequest):
+    """Base class for all AI Horde API requests."""
+
     @override
     @classmethod
     def get_api_url(cls) -> str:

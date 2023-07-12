@@ -4,14 +4,15 @@ import argparse
 import os
 
 import pydantic
-from horde_sdk.ratings_api import (
+
+from horde_sdk.ratings_api.apimodels import (
     ImageRatingsComparisonTypes,
-    RatingsAPIClient,
     SelectableReturnFormats,
     UserValidateRequest,
     UserValidateResponse,
     UserValidateResponseRecord,
 )
+from horde_sdk.ratings_api.ratings_client import RatingsAPIClient
 
 # See also in horde_sdk.ratings_api:
 # UserCheckRequest,

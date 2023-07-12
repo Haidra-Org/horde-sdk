@@ -1,7 +1,7 @@
 """Request metadata specific to the Ratings API."""
 from enum import auto
 
-from horde_sdk.generic_api import GenericPathFields, GenericQueryFields
+from horde_sdk.generic_api.metadata import GenericPathFields, GenericQueryFields
 
 
 class RatingsAPIPathFields(GenericPathFields):

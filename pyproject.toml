@@ -17,6 +17,9 @@ dependencies = [
     "requests",
     "StrEnum",
     "loguru",
+    "babel",
+    "aiohttp",
+    "aiodns",
 ]
 license = {file = "LICENSE"}
 classifiers = [
@@ -25,6 +28,10 @@ classifiers = [
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Development Status :: 2 - Pre-Alpha",
 ]
+
+
+[tool.setuptools.packages.find]
+include = ["hordesdk*", "horde_sdk.*"]
 
 [project.urls]
 "Homepage" = "https://github.com/Haidra-Org/horde-sdk"

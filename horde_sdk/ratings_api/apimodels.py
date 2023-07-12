@@ -7,8 +7,12 @@ from strenum import StrEnum
 from typing_extensions import override
 
 from horde_sdk.consts import _UNDEFINED_MODEL, HTTPMethod
-from horde_sdk.generic_api import BaseRequestAuthenticated, BaseRequestUserSpecific
-from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
+from horde_sdk.generic_api.apimodels import (
+    BaseRequest,
+    BaseRequestAuthenticated,
+    BaseRequestUserSpecific,
+    BaseResponse,
+)
 from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
 
 
@@ -22,8 +26,6 @@ class BaseRatingsAPIRequest(BaseRequest):
 # region Responses
 class BaseImageRatingRecord(BaseModel):
     """The information about any image rating result."""
-
-    model_config = {"frozen": True}
 
     image: str
     """The URL to the image."""
@@ -40,8 +42,6 @@ class BaseImageRatingRecord(BaseModel):
 class ImageRatingResponseSubRecord(BaseModel):
     """A single sub-record in a response from the `/v1/image/ratings` endpoint."""
 
-    model_config = {"frozen": True}
-
     username: str
     rating: int
     artifacts: int | None
@@ -49,8 +49,6 @@ class ImageRatingResponseSubRecord(BaseModel):
 
 class ImageRatingsResponse(BaseResponse):
     """The representation of the full response from `/v1/image/ratings`."""
-
-    model_config = {"frozen": True}
 
     total: int
     image: str
@@ -75,8 +73,6 @@ class UserRatingsResponseSubRecord(BaseImageRatingRecord):
 class UserRatingsResponse(BaseResponse):
     """The representation of the full response from `/v1/user/ratings`."""
 
-    model_config = {"frozen": True}
-
     total: int
     """The total number of records in this response."""
     ratings: list[UserRatingsResponseSubRecord]
@@ -95,8 +91,6 @@ class UserValidateResponseRecord(BaseImageRatingRecord):
 class UserValidateResponse(BaseResponse):
     """The representation of the full response from `/v1/validate/{user_id}`."""
 
-    model_config = {"frozen": True}
-
     total: int
     """The total number of records in this response."""
     ratings: list[UserValidateResponseRecord]
@@ -111,7 +105,6 @@ class UserValidateResponse(BaseResponse):
 class UserCheckResponse(BaseResponse):
     """A single record from the `/v1/user/check/` endpoint."""
 
-    model_config = {"frozen": True}
     ratings_in_timeframe: int
     """The number of ratings this user submitted in the timeframe."""
     ratings_per_minute_in_timeframe: float

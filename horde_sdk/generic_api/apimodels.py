@@ -4,16 +4,18 @@ from __future__ import annotations
 import abc
 import json
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing_extensions import Self, override
 
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
-from horde_sdk.generic_api import GenericAcceptTypes
 from horde_sdk.generic_api.endpoints import url_with_path
+from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
 
 class HordeAPIModel(BaseModel, abc.ABC):
     """Base class for all Horde API data models, requests, or responses."""
+
+    model_config = ConfigDict(frozen=True)
 
     @classmethod
     @abc.abstractmethod
@@ -38,8 +40,6 @@ class HordeAPIMessage(HordeAPIModel):
 
 class BaseResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
-
-    model_config = {"frozen": True}
 
     @classmethod
     def is_array_response(cls) -> bool:
@@ -119,8 +119,6 @@ class RequestErrorResponse(BaseResponse):
 class BaseRequest(HordeAPIMessage):
     """Represents any request to any Horde API."""
 
-    model_config = {"frozen": True}
-
     @classmethod
     @abc.abstractmethod
     def get_http_method(cls) -> HTTPMethod:
@@ -161,7 +159,7 @@ class BaseRequest(HordeAPIMessage):
 
     @classmethod
     def get_header_fields(cls) -> list[str]:
-        """Return a dict of field names from this request that should be sent as header fields.
+        """Return a list of field names from this request object that should be sent as header fields.
 
         This is in addition to `GenericHeaderFields`'s values, and possibly the API specific class
         which inherits from `GenericHeaderFields`, typically found in `horde_sdk.<api_name>_api.metadata`.

@@ -6,10 +6,11 @@ from abc import ABC
 from pathlib import Path
 
 import requests
-from horde_sdk.consts import PAYLOAD_HTTP_METHODS, HTTPMethod, HTTPStatusCode, is_error_status_code
 from loguru import logger
 from pydantic import BaseModel, Field, model_validator
 from strenum import StrEnum
+
+from horde_sdk.consts import PAYLOAD_HTTP_METHODS, HTTPMethod, HTTPStatusCode, is_error_status_code
 
 
 class SwaggerModelAdditionalProperty(BaseModel):

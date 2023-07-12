@@ -12,8 +12,6 @@ class StatsModelsResponse(BaseResponse):
     v2 API Model: `ImgModelStats`
     """
 
-    model_config = {"frozen": True}
-
     day: dict[str, int]
     month: dict[str, int]
     total: dict[str, int]
@@ -24,7 +22,7 @@ class StatsModelsResponse(BaseResponse):
         return "ImgModelStats"
 
 
-class StatsImageModels(BaseAIHordeRequest):
+class StatsImageModelsRequest(BaseAIHordeRequest):
     """Represents the data needed to make a request to the `/v2/stats/img/models` endpoint."""
 
     @override

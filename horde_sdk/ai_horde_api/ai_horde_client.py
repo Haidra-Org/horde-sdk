@@ -13,7 +13,8 @@ from horde_sdk.ai_horde_api.apimodels import (
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.ai_horde_api.metadata import AIHordePathData
-from horde_sdk.generic_api import GenericHordeAPIClient, RequestErrorResponse
+from horde_sdk.generic_api.apimodels import RequestErrorResponse
+from horde_sdk.generic_api.generic_client import GenericHordeAPIClient
 
 
 class AIHordeAPIClient(GenericHordeAPIClient):

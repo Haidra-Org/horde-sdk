@@ -1,6 +1,6 @@
 import json
 
-from horde_sdk.generic_api import RequestErrorResponse
+from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 
 def test_error_response() -> None:

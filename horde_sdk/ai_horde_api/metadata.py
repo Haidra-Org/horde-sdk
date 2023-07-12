@@ -1,5 +1,5 @@
 """Request metadata specific to the AI-Horde API."""
-from horde_sdk.generic_api import GenericPathFields
+from horde_sdk.generic_api.metadata import GenericPathFields
 
 
 class AIHordePathData(GenericPathFields):
