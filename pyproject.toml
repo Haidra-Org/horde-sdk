@@ -29,9 +29,8 @@ classifiers = [
     "Development Status :: 2 - Pre-Alpha",
 ]
 
-
-[tool.setuptools.packages.find]
-include = ["hordesdk*", "horde_sdk.*"]
+[tool.setuptools.package-dir]
+horde_sdk = "horde_sdk"
 
 [project.urls]
 "Homepage" = "https://github.com/Haidra-Org/horde-sdk"

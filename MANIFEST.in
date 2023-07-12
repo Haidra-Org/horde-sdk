@@ -1,5 +1,5 @@
 include *.md
-recursive-include src/horde_sdk *.md
+recursive-include horde_sdk *.md
 
 recursive-include tests *.py
 recursive-include tests *.json
