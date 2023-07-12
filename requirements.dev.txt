@@ -10,6 +10,3 @@ tox==4.6.3
 pre-commit==3.3.3
 pytest-cov
 babel
-mkdocstrings
-mkdocstrings-python
-mkgendocs
