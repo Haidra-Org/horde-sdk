@@ -1,0 +1,7 @@
+nav:
+    - index.md
+    - getting_started.md
+    - faq.md
+    - horde_sdk
+
+order: asc
