@@ -65,3 +65,31 @@ code {
 .md-nav__item--nested label {
     font-style: italic;
 }
+
+
+.note {
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    padding: 10px;
+    margin-bottom: 20px;
+  }
+
+  .note .title {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .warning {
+    border: 1px solid #f0ad4e;
+    background-color: #fcf8e3;
+    color: #8a6d3b;
+    padding: 10px;
+    margin-bottom: 20px;
+    max-width: 600px; /* set a maximum width for the warning */
+    word-wrap: break-word; /* break long words to fit the container */
+  }
+
+  .warning .title {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
