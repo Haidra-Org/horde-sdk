@@ -42,6 +42,48 @@ class BaseResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
 
     @classmethod
+    def is_requiring_follow_up(cls) -> bool:
+        """Return whether this response requires a follow up request of some kind."""
+        return False
+
+    def get_follow_up_data(self) -> dict[str, object]:
+        """Return the information required from this response to submit a follow up request.
+
+        Note that this dict uses the alias field names (as seen on the API), not the python field names.
+        GenerationIDs will be returned as `{"id": "00000000-0000-0000-0000-000000000000"}` instead of
+        `{"id_": "00000000-0000-0000-0000-000000000000"}`.
+
+        This means it is suitable for passing directly
+        to a constructor, such as `ImageGenerateStatusRequest(**response.get_follow_up_required_info())`.
+        """
+        raise NotImplementedError("This response does not require a follow up request")
+
+    @classmethod
+    def get_follow_up_default_request(cls) -> type[BaseRequest]:
+        raise NotImplementedError("This response does not require a follow up request")
+
+    @classmethod
+    def get_follow_up_request_types(cls) -> list[type]:  # TODO type hint???
+        """Return a list of all the possible follow up request types for this response"""
+        return [cls.get_follow_up_default_request()]
+
+    _follow_up_handled: bool = False
+
+    def set_follow_up_handled(self) -> None:
+        """Set this response as having had its follow up request handled.
+
+        This is used for context management.
+        """
+        self._follow_up_handled = True
+
+    def is_follow_up_handled(self) -> bool:
+        """Return whether this response has had its follow up request handled.
+
+        This is used for context management.
+        """
+        return self._follow_up_handled
+
+    @classmethod
     def is_array_response(cls) -> bool:
         """Return whether this response is an array of an internal type."""
         return False
@@ -128,6 +170,11 @@ class BaseRequest(HordeAPIMessage):
     """The 'accept' header field."""
     # X_Fields # TODO
 
+    client_agent: str = Field(
+        default="horde_sdk:0.2.0:https://githib.com/haidra-org/horde-sdk",
+        alias="Client-Agent",
+    )
+
     @classmethod
     def get_endpoint_url(cls) -> str:
         """Return the endpoint URL, including the path to the specific API action defined by this object"""
@@ -168,7 +215,8 @@ class BaseRequest(HordeAPIMessage):
 
     @classmethod
     def is_recovery_enabled(cls) -> bool:
-        """Return whether this request should attempt to recover from during a client failure.
+        """Return whether this request should attempt to recover from a client failure by submitting a request
+        specified by `get_recovery_request_type`.
 
         This is used in for context management.
         """

@@ -5,12 +5,17 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,
     BaseImageGenerateParam,
 )
-from horde_sdk.ai_horde_api.apimodels.generate._status import DeleteImageGenerateRequest
+from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckRequest
+from horde_sdk.ai_horde_api.apimodels.generate._status import DeleteImageGenerateRequest, ImageGenerateStatusRequest
 from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
-from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseRequestWorkerDriven, BaseResponse
+from horde_sdk.generic_api.apimodels import (
+    BaseRequestAuthenticated,
+    BaseRequestWorkerDriven,
+    BaseResponse,
+)
 
 
 class ImageGenerateAsyncResponse(BaseResponse):
@@ -19,10 +24,30 @@ class ImageGenerateAsyncResponse(BaseResponse):
     v2 API Model: `RequestAsync`
     """
 
-    id_: str | GenerationID = Field(alias="id")
+    id_: str | GenerationID = Field(alias="id")  # TODO: Remove `str`?
     """The UUID for this image generation."""
     kudos: float
     message: str | None = None
+
+    @override
+    @classmethod
+    def is_requiring_follow_up(cls) -> bool:
+        return True
+
+    @override
+    def get_follow_up_data(self) -> dict[str, object]:
+        return {"id": self.id_}
+
+    @classmethod
+    def get_follow_up_default_request(cls) -> type[ImageGenerateCheckRequest]:
+        return ImageGenerateCheckRequest
+
+    @override
+    @classmethod
+    def get_follow_up_request_types(
+        cls,
+    ) -> list[type[ImageGenerateCheckRequest | ImageGenerateStatusRequest]]:
+        return [ImageGenerateCheckRequest, ImageGenerateStatusRequest]
 
     @override
     @classmethod

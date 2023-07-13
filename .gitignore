@@ -138,3 +138,5 @@ dmypy.json
 out.json
 .vscode/launch.json
 .vscode/settings.json
+
+examples/requested_images/*.*

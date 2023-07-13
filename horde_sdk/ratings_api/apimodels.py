@@ -270,7 +270,6 @@ class UserRatingsRequest(
     limit: int
     offset: int = 0
     diverge: int | None
-    client_agent: str | None
 
     @override
     @classmethod

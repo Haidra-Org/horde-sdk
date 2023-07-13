@@ -1,16 +1,16 @@
-from horde_sdk.ai_horde_api import AIHordeAPIClient
+from horde_sdk.ai_horde_api import AIHordeAPISimpleClient
 from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 
-def do_generate_check(ai_horde_api_client: AIHordeAPIClient) -> None:
+def do_generate_check(ai_horde_api_client: AIHordeAPISimpleClient) -> None:
     pass
 
 
 def main() -> None:
     """Just a proof of concept - but several other pieces of functionality exist."""
 
-    ai_horde_api_client = AIHordeAPIClient()
+    ai_horde_api_client = AIHordeAPISimpleClient()
 
     image_generate_async_request = ImageGenerateAsyncRequest(
         apikey="0000000000",

@@ -1,8 +1,9 @@
+import asyncio
 from pathlib import Path
 
 import pytest
 
-from horde_sdk.ai_horde_api.ai_horde_client import AIHordeAPIClient
+from horde_sdk.ai_horde_api.ai_horde_client import AIHordeAPISession, AIHordeAPISimpleClient
 from horde_sdk.ai_horde_api.apimodels import (
     AllWorkersDetailsRequest,
     AllWorkersDetailsResponse,
@@ -28,10 +29,10 @@ class TestAIHordeAPIClient:
         )
 
     def test_AIHordeAPIClient_init(self) -> None:
-        AIHordeAPIClient()
+        AIHordeAPISimpleClient()
 
     def test_generate_async(self, default_image_gen_request: ImageGenerateAsyncRequest) -> None:
-        client = AIHordeAPIClient()
+        client = AIHordeAPISimpleClient()
 
         image_async_response: ImageGenerateAsyncResponse | RequestErrorResponse = client.submit_request(
             api_request=default_image_gen_request,
@@ -59,7 +60,7 @@ class TestAIHordeAPIClient:
         assert isinstance(cancel_response, DeleteImageGenerateRequest.get_success_response_type())
 
     def test_workers_all(self) -> None:
-        client = AIHordeAPIClient()
+        client = AIHordeAPISimpleClient()
 
         api_request = AllWorkersDetailsRequest(type=WORKER_TYPE.image)
 
@@ -91,3 +92,50 @@ class TestAIHordeAPIClient:
         _PRODUCTION_RESPONSES_FOLDER.mkdir(parents=True, exist_ok=True)
         with open(_PRODUCTION_RESPONSES_FOLDER / filename, "w") as f:
             f.write(api_response.to_json_horde_sdk_safe())
+
+
+class HordeTestException(Exception):
+    pass
+
+
+def test_HordeRequestSession(simple_image_gen_request: ImageGenerateAsyncRequest) -> None:
+    with pytest.raises(HordeTestException), AIHordeAPISession() as horde_session:
+        api_response = horde_session.submit_request(  # noqa: F841
+            simple_image_gen_request,
+            simple_image_gen_request.get_success_response_type(),
+        )
+        raise HordeTestException("This tests the context manager, not the request/response.")
+
+
+@pytest.mark.asyncio
+async def test_HordeRequestSession_async(simple_image_gen_request: ImageGenerateAsyncRequest) -> None:
+    with AIHordeAPISession() as horde_session:
+        api_response = await horde_session.async_submit_request(  # noqa: F841
+            simple_image_gen_request,
+            simple_image_gen_request.get_success_response_type(),
+        )
+
+
+@pytest.mark.asyncio
+async def test_HordeRequestSession_async_exception_raised(simple_image_gen_request: ImageGenerateAsyncRequest) -> None:
+    with pytest.raises(HordeTestException), AIHordeAPISession() as horde_session:
+        api_response = await horde_session.async_submit_request(  # noqa: F841
+            simple_image_gen_request,
+            simple_image_gen_request.get_success_response_type(),
+        )
+        raise HordeTestException("This tests the context manager, not the request/response.")
+
+
+@pytest.mark.asyncio
+async def test_multiple_concurrent_async_requests(simple_image_gen_request: ImageGenerateAsyncRequest) -> None:
+    async def submit_request() -> None:
+        async with AIHordeAPISession() as horde_session:
+            api_response: ImageGenerateAsyncResponse | RequestErrorResponse = (  # noqa: F841
+                await horde_session.async_submit_request(
+                    simple_image_gen_request,
+                    simple_image_gen_request.get_success_response_type(),
+                )
+            )
+
+    # Run 5 concurrent requests using asyncio
+    await asyncio.gather(*[asyncio.create_task(submit_request()) for _ in range(5)])
