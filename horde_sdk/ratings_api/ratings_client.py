@@ -1,9 +1,9 @@
 """Definitions to help interact with the Ratings API."""
-from horde_sdk.generic_api.generic_client import GenericHordeAPISimpleClient
+from horde_sdk.generic_api.generic_clients import GenericHordeAPIManualClient
 from horde_sdk.ratings_api.metadata import RatingsAPIPathFields, RatingsAPIQueryFields
 
 
-class RatingsAPIClient(GenericHordeAPISimpleClient):
+class RatingsAPIClient(GenericHordeAPIManualClient):
     """Represent a client specifically configured for the Ratings APi."""
 
     def __init__(self) -> None:

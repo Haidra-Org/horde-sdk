@@ -44,7 +44,7 @@ HordeResponse = TypeVar("HordeResponse", bound=BaseResponse)
 """TypeVar for the response type."""
 
 
-class GenericHordeAPISimpleClient:
+class GenericHordeAPIManualClient:
     """Interfaces with any flask API the horde provides, but provides little error handling.
 
     This is the no-frills, simple version of the client if you want to have more control over the request process.
@@ -609,7 +609,7 @@ class GenericHordeAPISimpleClient:
         )
 
 
-class GenericHordeAPISession(GenericHordeAPISimpleClient):
+class GenericHordeAPISession(GenericHordeAPIManualClient):
     """A client which can perform arbitrary horde API requests, but also keeps track of requests' responses which
     need follow up. Use `submit_request` for synchronous requests, and `async_submit_request` for asynchronous
     requests.
@@ -683,6 +683,11 @@ class GenericHordeAPISession(GenericHordeAPISimpleClient):
             self._handle_exit(request_to_follow_up, response_to_follow_up)
 
     def _handle_exit(self, request_to_follow_up: BaseRequest, response_to_follow_up: BaseResponse) -> None:
+        if isinstance(response_to_follow_up, RequestErrorResponse):
+            return
+        if not request_to_follow_up.is_recovery_enabled():
+            return
+
         recovery_request_type: type[BaseRequest] = request_to_follow_up.get_recovery_request_type()
 
         request_params: dict[str, object] = response_to_follow_up.get_follow_up_data()
@@ -733,6 +738,11 @@ class GenericHordeAPISession(GenericHordeAPISimpleClient):
         )
 
     async def _handle_exit_async(self, request_to_follow_up: BaseRequest, response_to_follow_up: BaseResponse) -> None:
+        if isinstance(response_to_follow_up, RequestErrorResponse):
+            return
+        if not request_to_follow_up.is_recovery_enabled():
+            return
+
         recovery_request_type: type[BaseRequest] = request_to_follow_up.get_recovery_request_type()
 
         request_params: dict[str, object] = response_to_follow_up.get_follow_up_data()

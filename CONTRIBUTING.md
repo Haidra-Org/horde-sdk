@@ -1,6 +1,6 @@
 # Contributing to horde_sdk
 
-Here are a list of code quality tools this project uses:
+## Code Quality Tools
 
 * [tox](https://tox.wiki/)
   - Creates virtual environments for CI or local pytest runs.
@@ -19,3 +19,7 @@ Here are a list of code quality tools this project uses:
   - Static type safety
   - I recommending using the [mypy daemon](https://mypy.readthedocs.io/en/stable/mypy_daemon.html).
     - If you are using VSCode, I recommend the `matangover.mypy` extension, which implements this nicely.
+
+## Things to know
+
+  * The `AI_HORDE_DEV_URL` environment variable overrides `AI_HORDE_URL`. This is useful for testing changes.

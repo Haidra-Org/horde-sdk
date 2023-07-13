@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from horde_sdk.ai_horde_api.ai_horde_client import AIHordeAPISession, AIHordeAPISimpleClient
+from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient, AIHordeAPISession, AIHordeAPISimpleClient
 from horde_sdk.ai_horde_api.apimodels import (
     AllWorkersDetailsRequest,
     AllWorkersDetailsResponse,
@@ -11,6 +11,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
     ImageGenerateStatusResponse,
+    ImageGeneration,
 )
 from horde_sdk.ai_horde_api.consts import WORKER_TYPE
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
@@ -29,10 +30,10 @@ class TestAIHordeAPIClient:
         )
 
     def test_AIHordeAPIClient_init(self) -> None:
-        AIHordeAPISimpleClient()
+        AIHordeAPIManualClient()
 
     def test_generate_async(self, default_image_gen_request: ImageGenerateAsyncRequest) -> None:
-        client = AIHordeAPISimpleClient()
+        client = AIHordeAPIManualClient()
 
         image_async_response: ImageGenerateAsyncResponse | RequestErrorResponse = client.submit_request(
             api_request=default_image_gen_request,
@@ -60,7 +61,7 @@ class TestAIHordeAPIClient:
         assert isinstance(cancel_response, DeleteImageGenerateRequest.get_success_response_type())
 
     def test_workers_all(self) -> None:
-        client = AIHordeAPISimpleClient()
+        client = AIHordeAPIManualClient()
 
         api_request = AllWorkersDetailsRequest(type=WORKER_TYPE.image)
 
@@ -139,3 +140,28 @@ async def test_multiple_concurrent_async_requests(simple_image_gen_request: Imag
 
     # Run 5 concurrent requests using asyncio
     await asyncio.gather(*[asyncio.create_task(submit_request()) for _ in range(5)])
+
+
+def test_simple_client_image_generate(simple_image_gen_request: ImageGenerateAsyncRequest) -> None:
+    simple_client = AIHordeAPISimpleClient()
+
+    generations: list[ImageGeneration] = simple_client.image_generate_request(simple_image_gen_request)
+
+    assert len(generations) == 1
+
+    image = simple_client.generation_to_image(generations[0])
+
+    assert image is not None
+
+
+@pytest.mark.asyncio
+async def test_simple_client_async_image_generate(simple_image_gen_request: ImageGenerateAsyncRequest) -> None:
+    simple_client = AIHordeAPISimpleClient()
+
+    generations: list[ImageGeneration] = await simple_client.async_image_generate_request(simple_image_gen_request)
+
+    assert len(generations) == 1
+
+    image = await simple_client.async_generation_to_image(generations[0])
+
+    assert image is not None
