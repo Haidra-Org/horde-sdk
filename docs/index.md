@@ -8,7 +8,7 @@ horde_sdk is in alpha. Everything is subject to change. Please feel free to repo
 </div>
 
 This library simplifies interfacing with any API created by [Haidra](https://github.com/Haidra-Org) - the community organization
-behind products such as AI-Horde ([homepage](https://aihorde.net/), [github](https://github.com/db0/AI-Horde)).
+behind the free projects such as AI-Horde ([homepage](https://aihorde.net/), [github](https://github.com/db0/AI-Horde)).
 The goal is to minimize the amount of time it takes to develop applications in python that use our free, volunteer driven, services which include:
 
 - Stable Diffusion Image Generation (driven by [ComfyUI](https://github.com/comfyanonymous/ComfyUI))
