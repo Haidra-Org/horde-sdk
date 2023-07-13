@@ -1,17 +1,19 @@
 """The API client which can perform arbitrary horde API requests."""
 
-from typing import Generic, TypeVar
+from __future__ import annotations
+
+import asyncio
+from typing import TypeVar
 
 import aiohttp
 import requests
+from loguru import logger
 from pydantic import BaseModel, ValidationError
 from strenum import StrEnum
+from typing_extensions import override
 
 from horde_sdk.generic_api.apimodels import (
     BaseRequest,
-    BaseRequestAuthenticated,
-    BaseRequestUserSpecific,
-    BaseRequestWorkerDriven,
     BaseResponse,
     RequestErrorResponse,
 )
@@ -21,11 +23,6 @@ from horde_sdk.generic_api.metadata import (
     GenericPathFields,
     GenericQueryFields,
 )
-
-HordeRequest = TypeVar("HordeRequest", bound=BaseRequest)
-"""TypeVar for the request type."""
-HordeResponse = TypeVar("HordeResponse", bound=BaseResponse)
-"""TypeVar for the response type."""
 
 
 class _ParsedRequest(BaseModel):
@@ -41,10 +38,16 @@ class _ParsedRequest(BaseModel):
     """The body to be sent with the request, or `None` if no body should be sent."""
 
 
-class GenericHordeAPIClient:
-    """Interfaces with any flask API the horde provides, intended to be fairly dynamic/flexible.
+HordeRequest = TypeVar("HordeRequest", bound=BaseRequest)
+"""TypeVar for the request type."""
+HordeResponse = TypeVar("HordeResponse", bound=BaseResponse)
+"""TypeVar for the response type."""
 
-    You can use the friendly, typed functions, or if you prefer more control, you can use the `submit_request` method.
+
+class GenericHordeAPISimpleClient:
+    """Interfaces with any flask API the horde provides, but provides little error handling.
+
+    This is the no-frills, simple version of the client if you want to have more control over the request process.
     """
 
     _header_data_keys: type[GenericHeaderFields] = GenericHeaderFields
@@ -174,16 +177,17 @@ class GenericHordeAPIClient:
 
     def _after_request_handling(
         self,
+        *,
         api_request: BaseRequest,
-        raw_response: requests.Response,
+        raw_response_json: dict,
+        returned_status_code: int,
         expected_response: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
         expected_response_type = api_request.get_success_response_type()
-        raw_response_json = raw_response.json()
 
         # If requests response is a failure code, see if a `message` key exists in the response.
         # If so, return a RequestErrorResponse
-        if raw_response.status_code >= 400:
+        if returned_status_code >= 400:
             if len(raw_response_json) == 1 and "message" in raw_response_json:
                 return RequestErrorResponse(**raw_response_json)
 
@@ -288,7 +292,12 @@ class GenericHordeAPIClient:
             allow_redirects=True,
         )
 
-        return self._after_request_handling(api_request, raw_response, expected_response)
+        return self._after_request_handling(
+            api_request=api_request,
+            raw_response_json=raw_response.json(),
+            returned_status_code=raw_response.status_code,
+            expected_response=expected_response,
+        )
 
     async def async_get(
         self,
@@ -305,8 +314,12 @@ class GenericHordeAPIClient:
             HordeResponse | RequestErrorResponse: The response from the API.
         """
         parsed_request = self._validate_and_prepare_request(api_request)
+
         if parsed_request.request_body is not None:
             raise RuntimeError("GET requests cannot have a body!")
+
+        raw_response_json: dict = {}
+        response_status: int = 599
 
         async with (
             aiohttp.ClientSession() as session,
@@ -317,9 +330,15 @@ class GenericHordeAPIClient:
                 allow_redirects=True,
             ) as response,
         ):
-            raw_response = await response.json()
+            raw_response_json = await response.json()
+            response_status = response.status
 
-        return self._after_request_handling(api_request, raw_response, expected_response)
+        return self._after_request_handling(
+            api_request=api_request,
+            raw_response_json=raw_response_json,
+            returned_status_code=response_status,
+            expected_response=expected_response,
+        )
 
     def post(
         self,
@@ -344,7 +363,12 @@ class GenericHordeAPIClient:
             allow_redirects=True,
         )
 
-        return self._after_request_handling(api_request, raw_response, expected_response)
+        return self._after_request_handling(
+            api_request=api_request,
+            raw_response_json=raw_response.json(),
+            returned_status_code=raw_response.status_code,
+            expected_response=expected_response,
+        )
 
     async def async_post(
         self,
@@ -361,7 +385,8 @@ class GenericHordeAPIClient:
             HordeResponse | RequestErrorResponse: The response from the API.
         """
         parsed_request = self._validate_and_prepare_request(api_request)
-
+        raw_response_json: dict = {}
+        response_status: int = 599
         async with (
             aiohttp.ClientSession() as session,
             session.post(
@@ -372,9 +397,15 @@ class GenericHordeAPIClient:
                 allow_redirects=True,
             ) as response,
         ):
-            raw_response = await response.json()
+            raw_response_json = await response.json()
+            response_status = response.status
 
-        return self._after_request_handling(api_request, raw_response, expected_response)
+        return self._after_request_handling(
+            api_request=api_request,
+            raw_response_json=raw_response_json,
+            returned_status_code=response_status,
+            expected_response=expected_response,
+        )
 
     def put(
         self,
@@ -399,7 +430,12 @@ class GenericHordeAPIClient:
             allow_redirects=True,
         )
 
-        return self._after_request_handling(api_request, raw_response, expected_response)
+        return self._after_request_handling(
+            api_request=api_request,
+            raw_response_json=raw_response.json(),
+            returned_status_code=raw_response.status_code,
+            expected_response=expected_response,
+        )
 
     async def async_put(
         self,
@@ -416,7 +452,8 @@ class GenericHordeAPIClient:
             HordeResponse | RequestErrorResponse: The response from the API.
         """
         parsed_request = self._validate_and_prepare_request(api_request)
-
+        raw_response_json: dict = {}
+        response_status: int = 599
         async with (
             aiohttp.ClientSession() as session,
             session.put(
@@ -427,9 +464,15 @@ class GenericHordeAPIClient:
                 allow_redirects=True,
             ) as response,
         ):
-            raw_response = await response.json()
+            raw_response_json = await response.json()
+            response_status = response.status
 
-        return self._after_request_handling(api_request, raw_response, expected_response)
+        return self._after_request_handling(
+            api_request=api_request,
+            raw_response_json=raw_response_json,
+            returned_status_code=response_status,
+            expected_response=expected_response,
+        )
 
     def patch(
         self,
@@ -454,7 +497,12 @@ class GenericHordeAPIClient:
             allow_redirects=True,
         )
 
-        return self._after_request_handling(api_request, raw_response, expected_response)
+        return self._after_request_handling(
+            api_request=api_request,
+            raw_response_json=raw_response.json(),
+            returned_status_code=raw_response.status_code,
+            expected_response=expected_response,
+        )
 
     async def async_patch(
         self,
@@ -471,7 +519,8 @@ class GenericHordeAPIClient:
             HordeResponse | RequestErrorResponse: The response from the API.
         """
         parsed_request = self._validate_and_prepare_request(api_request)
-
+        raw_response_json: dict = {}
+        response_status: int = 599
         async with (
             aiohttp.ClientSession() as session,
             session.patch(
@@ -482,9 +531,15 @@ class GenericHordeAPIClient:
                 allow_redirects=True,
             ) as response,
         ):
-            raw_response = await response.json()
+            raw_response_json = await response.json()
+            response_status = response.status
 
-        return self._after_request_handling(api_request, raw_response, expected_response)
+        return self._after_request_handling(
+            api_request=api_request,
+            raw_response_json=raw_response_json,
+            returned_status_code=response_status,
+            expected_response=expected_response,
+        )
 
     def delete(
         self,
@@ -509,7 +564,12 @@ class GenericHordeAPIClient:
             allow_redirects=True,
         )
 
-        return self._after_request_handling(api_request, raw_response, expected_response)
+        return self._after_request_handling(
+            api_request=api_request,
+            raw_response_json=raw_response.json(),
+            returned_status_code=raw_response.status_code,
+            expected_response=expected_response,
+        )
 
     async def async_delete(
         self,
@@ -526,7 +586,8 @@ class GenericHordeAPIClient:
             HordeResponse | RequestErrorResponse: The response from the API.
         """
         parsed_request = self._validate_and_prepare_request(api_request)
-
+        raw_response_json: dict = {}
+        response_status: int = 599
         async with (
             aiohttp.ClientSession() as session,
             session.delete(
@@ -537,47 +598,159 @@ class GenericHordeAPIClient:
                 allow_redirects=True,
             ) as response,
         ):
-            raw_response = await response.json()
+            raw_response_json = await response.json()
+            response_status = response.status
 
-        return self._after_request_handling(api_request, raw_response, expected_response)
+        return self._after_request_handling(
+            api_request=api_request,
+            raw_response_json=raw_response_json,
+            returned_status_code=response_status,
+            expected_response=expected_response,
+        )
 
 
-class HordeRequestHandler(Generic[HordeRequest, HordeResponse]):
-    request: HordeRequest
-    """The request to be handled."""
+class GenericHordeAPISession(GenericHordeAPISimpleClient):
+    """A client which can perform arbitrary horde API requests, but also keeps track of requests' responses which
+    need follow up. Use `submit_request` for synchronous requests, and `async_submit_request` for asynchronous
+    requests.
 
-    response: HordeResponse | RequestErrorResponse
-    """The response from the API."""
+    This typically is the better class if you do not want to worry about handling any outstanding requests
+    if your program crashes. This would be the case with most non-atomic requests, such as generation requests
+    or anything labeled as `async` on the API.
+    """
 
-    def __init__(self, request: HordeRequest) -> None:
-        self.request = request
+    _awaiting_requests: list[BaseRequest]
+    _awaiting_requests_lock: asyncio.Lock = asyncio.Lock()
 
-    def __enter__(self) -> HordeRequest:
-        return self.request
+    _pending_follow_ups: list[tuple[BaseRequest, BaseResponse]]
+    _pending_follow_ups_lock: asyncio.Lock = asyncio.Lock()
+
+    def __init__(
+        self,
+        *,
+        header_fields: type[GenericHeaderFields] = GenericHeaderFields,
+        path_fields: type[GenericPathFields] = GenericPathFields,
+        query_fields: type[GenericQueryFields] = GenericQueryFields,
+        accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
+    ) -> None:
+        super().__init__(
+            header_fields=header_fields,
+            path_fields=path_fields,
+            query_fields=query_fields,
+            accept_types=accept_types,
+        )
+        self._awaiting_requests = []
+        self._pending_follow_ups = []
+
+    @override
+    def submit_request(
+        self,
+        api_request: BaseRequest,
+        expected_response_type: type[HordeResponse],
+    ) -> HordeResponse | RequestErrorResponse:
+        response = super().submit_request(api_request, expected_response_type)
+        self._pending_follow_ups.append((api_request, response))
+        return response
+
+    @override
+    async def async_submit_request(
+        self,
+        api_request: BaseRequest,
+        expected_response_type: type[HordeResponse],
+    ) -> HordeResponse | RequestErrorResponse:
+        async with self._awaiting_requests_lock:
+            self._awaiting_requests.append(api_request)
+
+        response = await super().async_submit_request(api_request, expected_response_type)
+
+        async with self._awaiting_requests_lock, self._pending_follow_ups_lock:
+            self._awaiting_requests.remove(api_request)
+            self._pending_follow_ups.append((api_request, response))
+
+        return response
+
+    def __enter__(self) -> GenericHordeAPISession:
+        return self
 
     def __exit__(self, exc_type: type[Exception], exc_val: Exception, exc_tb: object) -> None:
         if exc_type is not None:
-            print(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
-            if not self.request.is_recovery_enabled():
-                return
+            logger.error(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
 
-            recovery_request_type = self.request.get_recovery_request_type()
+        if not self._pending_follow_ups:
+            return
 
-            request_params = {}
+        for request_to_follow_up, response_to_follow_up in self._pending_follow_ups:
+            self._handle_exit(request_to_follow_up, response_to_follow_up)
 
-            mappable_base_types: list[type[BaseModel]] = [
-                BaseRequestAuthenticated,
-                BaseRequestUserSpecific,
-                BaseRequestWorkerDriven,
-            ]
+    def _handle_exit(self, request_to_follow_up: BaseRequest, response_to_follow_up: BaseResponse) -> None:
+        recovery_request_type: type[BaseRequest] = request_to_follow_up.get_recovery_request_type()
 
-            # If it any of the base types are a subclass of the recovery request type, then we can map the request
-            # parameters to the recovery request.
-            #
-            # For example, if the recovery request type is `DeleteImageGenerateRequest`, and the request is
-            # `ImageGenerateAsyncRequest`, then we can map the `id` parameter from the request to the `id` parameter
-            # of the recovery request.
-            for base_type in mappable_base_types:
-                if issubclass(recovery_request_type, base_type):
-                    for key in base_type.model_fields:
-                        request_params[key] = getattr(self.request, key)
+        request_params: dict[str, object] = response_to_follow_up.get_follow_up_data()
+
+        message = (
+            "An exception occurred while trying to create a recovery request! "
+            "This is a bug in the SDK, please report it!"
+        )
+        try:
+            recovery_request = recovery_request_type.model_validate(request_params)
+
+            recovery_response = super().submit_request(
+                recovery_request,
+                recovery_request.get_success_response_type(),
+            )
+            logger.info("Recovery request submitted!")
+            logger.debug(f"Recovery response: {recovery_response}")
+
+        except Exception:
+            logger.critical(message)
+            logger.critical(f"{request_to_follow_up}")
+
+    async def __aenter__(self) -> GenericHordeAPISession:
+        return self
+
+    async def __aexit__(self, exc_type: type[Exception], exc_val: Exception, exc_tb: object) -> None:
+        if exc_type is not None:
+            logger.error(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
+
+        if self._awaiting_requests:
+            logger.warning(
+                (
+                    "This session was used to submit asynchronous requests, but the context manager was exited "
+                    "before all requests were returned! This may result in requests not being handled properly."
+                ),
+            )
+            for request in self._awaiting_requests:
+                logger.warning(f"Request Unhandled: {request}")
+
+        if not self._pending_follow_ups:
+            return
+
+        await asyncio.gather(
+            *[
+                self._handle_exit_async(request_to_follow_up, response_to_follow_up)
+                for request_to_follow_up, response_to_follow_up in self._pending_follow_ups
+            ],
+        )
+
+    async def _handle_exit_async(self, request_to_follow_up: BaseRequest, response_to_follow_up: BaseResponse) -> None:
+        recovery_request_type: type[BaseRequest] = request_to_follow_up.get_recovery_request_type()
+
+        request_params: dict[str, object] = response_to_follow_up.get_follow_up_data()
+
+        message = (
+            "An exception occurred while trying to create a recovery request! "
+            "This is a bug in the SDK, please report it!"
+        )
+        try:
+            recovery_request = recovery_request_type.model_validate(request_params)
+
+            recovery_response = await super().async_submit_request(
+                recovery_request,
+                recovery_request.get_success_response_type(),
+            )
+            logger.info("Recovery request submitted!")
+            logger.debug(f"Recovery response: {recovery_response}")
+
+        except Exception:
+            logger.critical(message)
+            logger.critical(f"{request_to_follow_up}")

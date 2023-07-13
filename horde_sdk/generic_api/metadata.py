@@ -11,6 +11,7 @@ class GenericHeaderFields(StrEnum):
     apikey = auto()
     accept = auto()
     # X_Fields = "X-Fields" # TODO?
+    client_agent = auto()
 
 
 class GenericAcceptTypes(StrEnum):

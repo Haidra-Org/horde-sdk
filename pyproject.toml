@@ -20,6 +20,7 @@ dependencies = [
     "babel",
     "aiohttp",
     "aiodns",
+    "pillow",
 ]
 license = {file = "LICENSE"}
 classifiers = [

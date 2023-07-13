@@ -7,7 +7,6 @@ from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import ImageID, WorkerID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated
 
 
 class ImageGeneration(BaseModel):
@@ -53,7 +52,6 @@ class ImageGenerateStatusResponse(ImageGenerateCheckResponse):
 
 class DeleteImageGenerateRequest(
     BaseAIHordeRequest,
-    BaseRequestAuthenticated,
     BaseImageJobRequest,
 ):
     """Represents a DELETE request to the `/v2/generate/status/{id}` endpoint."""

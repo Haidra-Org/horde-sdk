@@ -1,8 +1,10 @@
 pytest==7.4.0
+pytest-asyncio
 mypy==1.4.1
 black==23.3.0
 ruff==0.0.275
 types-requests==2.31.0.1
+types-Pillow
 types-pytz
 types-setuptools
 types-urllib3

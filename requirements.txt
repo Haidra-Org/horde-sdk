@@ -4,3 +4,4 @@ StrEnum
 loguru
 aiohttp
 aiodns
+pillow

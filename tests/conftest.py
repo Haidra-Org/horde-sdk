@@ -1,3 +1,19 @@
+import pytest
+
+from horde_sdk.ai_horde_api.apimodels import (
+    ImageGenerateAsyncRequest,
+)
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_request() -> ImageGenerateAsyncRequest:
+    return ImageGenerateAsyncRequest(
+        apikey="0000000000",
+        prompt="a cat in a hat",
+        models=["Deliberate"],
+    )
+
+
 def pytest_collection_modifyitems(items: list) -> None:
     """Modifies test items in place to ensure test modules run in a given order."""
     MODULE_ORDER = ["tests_generic", "test_utils", "test_dynamically_check_apimodels"]
