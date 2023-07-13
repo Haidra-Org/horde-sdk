@@ -1,5 +1,6 @@
 nav:
     - index.md
+    - installation.md
     - getting_started.md
     - faq.md
     - horde_sdk
