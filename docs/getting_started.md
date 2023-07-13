@@ -10,7 +10,7 @@ pip install horde_sdk
     <div class="title" markdown="1">
     Note
     </div>
-    This library requires python >3.10
+    This library requires python >=3.10
 </div>
 
 ## First steps
