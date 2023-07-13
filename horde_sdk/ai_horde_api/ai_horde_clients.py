@@ -1,30 +1,37 @@
 """Definitions to help interact with the AI-Horde API."""
 from __future__ import annotations
 
+import asyncio
+import base64
+import io
+import time
 import urllib.parse
 
+import aiohttp
+import PIL.Image
+import requests
 from loguru import logger
 
 from horde_sdk.ai_horde_api.apimodels import (
     DeleteImageGenerateRequest,
     ImageGenerateAsyncRequest,
-    ImageGenerateAsyncResponse,
     ImageGenerateCheckRequest,
     ImageGenerateCheckResponse,
     ImageGenerateStatusRequest,
     ImageGenerateStatusResponse,
+    ImageGeneration,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.ai_horde_api.metadata import AIHordePathData
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
-from horde_sdk.generic_api.generic_client import (
+from horde_sdk.generic_api.generic_clients import (
+    GenericHordeAPIManualClient,
     GenericHordeAPISession,
-    GenericHordeAPISimpleClient,
 )
 
 
-class AIHordeAPISimpleClient(GenericHordeAPISimpleClient):
+class AIHordeAPIManualClient(GenericHordeAPIManualClient):
     """Represent an API client specifically configured for the AI-Horde API."""
 
     def __init__(self) -> None:
@@ -187,11 +194,12 @@ class AIHordeAPISimpleClient(GenericHordeAPISimpleClient):
         return api_response
 
 
-class AIHordeAPISession(AIHordeAPISimpleClient, GenericHordeAPISession):
-    """Represent an API session specifically configured for the AI-Horde API.
+class AIHordeAPISession(AIHordeAPIManualClient, GenericHordeAPISession):
+    """Context handler representing an API session specifically configured for the AI-Horde API.
 
     If you make a request which requires follow up (such as a request to generate an image), this will delete the
-    generation in progress when the context manager exits. If you do not want this to happen, use `AIHordeAPIClient`.
+    generation in progress when the context manager exits. If you want to control this yourself, use
+    `AIHordeAPIManualClient` instead.
     """
 
     def __enter__(self) -> AIHordeAPISession:
@@ -209,10 +217,74 @@ class AIHordeAPISession(AIHordeAPISimpleClient, GenericHordeAPISession):
         return _self
 
 
-class AIHordeAPIClient:
-    async def image_generate_request(self, image_gen_request: ImageGenerateAsyncRequest) -> ImageGenerateAsyncResponse:
-        async with AIHordeAPISession() as image_gen_client:
-            response = await image_gen_client.async_submit_request(
+class AIHordeAPISimpleClient:
+    def generation_to_image(self, generation: ImageGeneration) -> PIL.Image.Image:
+        """Convert an image generation to a PIL image.
+
+        Args:
+            generation (ImageGeneration): The image generation to convert.
+
+        Returns:
+            PIL.Image.Image: The converted image.
+
+        Raises:
+            ValueError: If the generation has no image, or the image could not be downloaded or parsed.
+
+        """
+
+        if generation.img is None:
+            raise ValueError("Generation has no image")
+
+        image_bytes: bytes | None = None
+        if urllib.parse.urlparse(generation.img).scheme in ["http", "https"]:
+            response = requests.get(generation.img)
+            if response.status_code != 200:
+                raise RuntimeError(f"Error downloading image: {response.status_code}")
+
+            image_bytes = response.content
+        else:
+            image_bytes = base64.b64decode(generation.img)
+
+        if image_bytes is None:
+            raise RuntimeError("Error downloading or parsing image")
+
+        return PIL.Image.open(io.BytesIO(image_bytes))
+
+    async def async_generation_to_image(self, generation: ImageGeneration) -> PIL.Image.Image:
+        """Convert an image generation to a PIL image.
+
+        Args:
+            generation (ImageGeneration): The image generation to convert.
+
+        Returns:
+            PIL.Image.Image: The converted image.
+
+        Raises:
+            ValueError: If the generation has no image, or the image could not be downloaded or parsed.
+
+        """
+
+        if generation.img is None:
+            raise ValueError("Generation has no image")
+
+        image_bytes: bytes | None = None
+        if urllib.parse.urlparse(generation.img).scheme in ["http", "https"]:
+            async with aiohttp.ClientSession() as session, session.get(generation.img) as response:
+                if response.status != 200:
+                    raise RuntimeError(f"Error downloading image: {response.status}")
+
+                image_bytes = await response.read()
+        else:
+            image_bytes = base64.b64decode(generation.img)
+
+        if image_bytes is None:
+            raise RuntimeError("Error downloading or parsing image")
+
+        return PIL.Image.open(io.BytesIO(image_bytes))
+
+    def image_generate_request(self, image_gen_request: ImageGenerateAsyncRequest) -> list[ImageGeneration]:
+        with AIHordeAPISession() as image_gen_client:
+            response = image_gen_client.submit_request(
                 api_request=image_gen_request,
                 expected_response_type=image_gen_request.get_success_response_type(),
             )
@@ -223,12 +295,70 @@ class AIHordeAPIClient:
             check_request_type = response.get_follow_up_default_request()
             follow_up_data = response.get_follow_up_data()
             check_request = check_request_type.model_validate(follow_up_data)
-            async with AIHordeAPISession() as check_client:
+            with AIHordeAPISession() as check_client:
                 while True:
-                    check_response = await check_client.async_submit_request(
+                    check_response = check_client.submit_request(
                         api_request=check_request,
                         expected_response_type=check_request.get_success_response_type(),
                     )
 
                     if isinstance(check_response, RequestErrorResponse):
                         raise RuntimeError(f"Error response received: {check_response.message}")
+
+                    if check_response.done:
+                        break
+
+                    time.sleep(5)
+
+            status_request = ImageGenerateStatusRequest(id=response.id_)
+            with AIHordeAPISession() as status_client:
+                status_response = status_client.submit_request(
+                    api_request=status_request,
+                    expected_response_type=status_request.get_success_response_type(),
+                )
+
+                if isinstance(status_response, RequestErrorResponse):
+                    raise RuntimeError(f"Error response received: {status_response.message}")
+
+                return status_response.generations
+
+    async def async_image_generate_request(
+        self,
+        image_gen_request: ImageGenerateAsyncRequest,
+    ) -> list[ImageGeneration]:
+        async with AIHordeAPISession() as ai_horde_session:
+            response = await ai_horde_session.async_submit_request(
+                api_request=image_gen_request,
+                expected_response_type=image_gen_request.get_success_response_type(),
+            )
+
+            if isinstance(response, RequestErrorResponse):
+                raise RuntimeError(f"Error response received: {response.message}")
+
+            check_request_type = response.get_follow_up_default_request()
+            follow_up_data = response.get_follow_up_data()
+            check_request = check_request_type.model_validate(follow_up_data)
+            while True:
+                check_response = await ai_horde_session.async_submit_request(
+                    api_request=check_request,
+                    expected_response_type=check_request.get_success_response_type(),
+                )
+
+                if isinstance(check_response, RequestErrorResponse):
+                    raise RuntimeError(f"Error response received: {check_response.message}")
+
+                if check_response.done:
+                    break
+
+                await asyncio.sleep(5)
+
+            status_request = ImageGenerateStatusRequest(id=response.id_)
+            status_response = await ai_horde_session.async_submit_request(
+                api_request=status_request,
+                expected_response_type=status_request.get_success_response_type(),
+            )
+
+            if isinstance(status_response, RequestErrorResponse):
+                raise RuntimeError(f"Error response received: {status_response.message}")
+
+            return status_response.generations

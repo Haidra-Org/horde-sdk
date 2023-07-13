@@ -1,5 +1,5 @@
-from horde_sdk.ai_horde_api.ai_horde_client import (
-    AIHordeAPISimpleClient,
+from horde_sdk.ai_horde_api.ai_horde_clients import (
+    AIHordeAPIManualClient,
 )
 from horde_sdk.ai_horde_api.consts import (
     ALCHEMY_FORMS,
@@ -14,7 +14,7 @@ from horde_sdk.ai_horde_api.endpoints import (
 )
 
 __all__ = [
-    "AIHordeAPISimpleClient",
+    "AIHordeAPIManualClient",
     "AI_HORDE_BASE_URL",
     "AI_HORDE_API_URL_Literals",
     "ALCHEMY_FORMS",
