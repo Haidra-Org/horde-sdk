@@ -15,7 +15,7 @@ def do_generate_check(ai_horde_api_client: AIHordeAPIManualClient) -> None:
 def main() -> None:
     print("Starting...")
 
-    ai_horde_api_client = AIHordeAPIManualClient()
+    manual_client = AIHordeAPIManualClient()
 
     image_generate_async_request = ImageGenerateAsyncRequest(
         apikey="0000000000",
@@ -25,7 +25,7 @@ def main() -> None:
 
     print("Submitting image generation request...")
 
-    response = ai_horde_api_client.submit_request(
+    response = manual_client.submit_request(
         image_generate_async_request,
         image_generate_async_request.get_success_response_type(),
     )
@@ -45,7 +45,7 @@ def main() -> None:
             start_time = time.time()
 
         check_counter += 1
-        check_response = ai_horde_api_client.get_generate_check(
+        check_response = manual_client.get_generate_check(
             apikey="0000000000",
             generation_id=response.id_,
         )
@@ -66,7 +66,7 @@ def main() -> None:
         id=response.id_,
     )
 
-    status_response = ai_horde_api_client.submit_request(
+    status_response = manual_client.submit_request(
         image_generate_status_request,
         image_generate_status_request.get_success_response_type(),
     )

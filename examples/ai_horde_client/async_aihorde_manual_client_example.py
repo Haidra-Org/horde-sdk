@@ -11,7 +11,7 @@ from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 async def main() -> None:
     print("Starting...")
-    ai_horde_api_client = AIHordeAPIManualClient()
+    manual_client = AIHordeAPIManualClient()
 
     image_generate_async_request = ImageGenerateAsyncRequest(
         apikey="0000000000",
@@ -19,7 +19,7 @@ async def main() -> None:
         models=["Deliberate"],
     )
     print("Submitting image generation request...")
-    response = await ai_horde_api_client.async_submit_request(
+    response = await manual_client.async_submit_request(
         image_generate_async_request,
         image_generate_async_request.get_success_response_type(),
     )
@@ -39,7 +39,7 @@ async def main() -> None:
             start_time = time.time()
 
         check_counter += 1
-        check_response = await ai_horde_api_client.async_get_generate_check(
+        check_response = await manual_client.async_get_generate_check(
             apikey="0000000000",
             generation_id=response.id_,
         )
@@ -60,7 +60,7 @@ async def main() -> None:
         id=response.id_,
     )
 
-    status_response = await ai_horde_api_client.async_submit_request(
+    status_response = await manual_client.async_submit_request(
         image_generate_status_request,
         image_generate_status_request.get_success_response_type(),
     )

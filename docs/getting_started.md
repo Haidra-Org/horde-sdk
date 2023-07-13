@@ -1,8 +1,99 @@
 # Getting Started
 
-See `installation` for installation instructions.
+To get started, you need to install the package into your project:
+
+``` console
+pip install horde_sdk
+```
+
+<div class="note" markdown="1">
+    <div class="title" markdown="1">
+    Note
+    </div>
+    This library requires python >3.10
+</div>
+
+## First steps
+
+1. Choose a client for the API you wish to consume:
+    - For AI Horde, this is either:
+        - [AIHordeAPISimpleClient](../horde_sdk/ai_horde_api/ai_horde_clients/#horde_sdk.ai_horde_api.ai_horde_clients.AIHordeAPISimpleClient) (easier, more safeties)
+
+        - [AIHordeAPIManualClient](../horde_sdk/ai_horde_api/ai_horde_clients/#horde_sdk.ai_horde_api.ai_horde_clients.AIHordeAPIManualClient) (more control, manual cleanup required)
+
+2. Find the `*Request` object type appropriate to what you want to do. (see also: [naming](../getting_started/#naming))
+    - These objects types are always found in the `apimodels` namespace of the `*_api` sub package.
+    - e.g., [ImageGenerateAsyncRequest](../horde_sdk/ai_horde_api/apimodels/generate/_async/#horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest)
+    - **Note** that there is always one or more response types mapped to a request. You can get the default success response `type` like so:
+
+
+    ```python
+    >>> ImageGenerateAsyncRequest.get_success_response_type()
+    <class 'horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse'>
+
+    # Alternatively:
+    >>> image_gen_request = ImageGenerateAsyncRequest( ... ) # Removed for brevity
+    >>> image_gen_request.get_success_response_type()
+    <class 'horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse'>
+    ```
+    Accordingly, the [ImageGenerateAsyncResponse](../horde_sdk/ai_horde_api/apimodels/generate/_async/#horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse) type is expected to be the return type from the API.
+
+    <div class="warning" markdown="1">
+        <div class="title" markdown="1">
+        Warning
+        </div>
+        <a href="../horde_sdk/generic_api/apimodels/#horde_sdk.generic_api.apimodels.RequestErrorResponse"> RequestErrorResponse </a> may be also returned depending on the client you are using. Check the <a href="../horde_sdk/generic_api/apimodels/#horde_sdk.generic_api.apimodels.RequestErrorResponse.message"> RequestErrorResponse.message </a> attribute for info on the error encountered.
+    </div>
+
+3. Construct the request as appropriate:
+``` python
+image_generate_async_request = ImageGenerateAsyncRequest(
+    apikey="0000000000",
+    prompt="A cat in a hat",
+    models=["Deliberate"],
+    params=ImageGenerationInputPayload(
+        width=512,
+        height=768,
+        sampler_name=KNOWN_SAMPLERS.k_euler_a,
+        clip_skip=1,
+        n=2,
+    ),
+)
+```
+
+4. Submit the request:
+
+    Simple Client:
+    ``` python
+    simple_client = AIHordeAPISimpleClient()
+    generations: list[ImageGeneration] = simple_client.image_generate_request(
+        image_generate_async_request,
+    )
+    ```
+
+    Manual Client:
+    ``` python
+    manual_client = AIHordeAPIManualClient()
+
+    response = manual_client.submit_request(
+        image_generate_async_request,
+        image_generate_async_request.get_success_response_type(),
+    )
+    ```
+    <div class="warning" markdown="1">
+        <div class="title" markdown="1">
+        Warning
+        </div>
+        Manual clients may leave server resources tied up if you do not implement handling. See the <a href="#important-note-about-manual-clients"> important note about manual clients </a> for more info.
+    </div>
+
+
 
 ## General Notes and Guidance
+
+### API Expectations
+#### Important note about manual clients
+A few endpoints, such as `/v2/generate/async` ([ImageGenerateAsyncRequest](../horde_sdk/ai_horde_api/apimodels/generate/_async/#horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest)), will have their operations live on the API server until they are retrieved or cancelled (in this case, with either a [ImageGenerateStatusRequest](../horde_sdk/ai_horde_api/apimodels/generate/_status/#horde_sdk.ai_horde_api.apimodels.generate._status.ImageGenerateStatusRequest) or [DeleteImageGenerateRequest](../horde_sdk/ai_horde_api/apimodels/generate/_status/#horde_sdk.ai_horde_api.apimodels.generate._status.DeleteImageGenerateRequest)). If you use a manual client, you are assuming responsibility for making a best-effort for cleaning up errant requests, especially if your implementation crashes. If you use a simple client, you do not have to worry about this, as [context handlers](../horde_sdk/generic_api/generic_clients/#horde_sdk.generic_api.generic_clients.GenericHordeAPISession) take care of this.
 
 ### Typing
 
@@ -31,15 +122,6 @@ See `installation` for installation instructions.
         or
         [model_validate_json](https://docs.pydantic.dev/2.0/api/main/#pydantic.main.BaseModel.model_validate_json)
 
-### Inheritance
-
--   At first glance, the hierarchy of classes may seem a bit confusing.
-    Rest assured, however, that these very docs are very helpful here.
-    All relevant inherited attributes and functions are included in the
-    child class documentation. Accordingly if you are looking at the
-    code, and don't want to go up the hierarchy and figure out the
-    inheritance, use these docs to see the resolved attributes and
-    functions.
 
 ### Naming
 
@@ -67,17 +149,3 @@ See `installation` for installation instructions.
     docs](https://docs.pydantic.dev/2.0/usage/validation_errors/#frozen_instance)
     for more information. See a
 -   See also `faq` for more information.
-
-# Examples
-
-<div class="note" markdown="1">
-
-<div class="title" markdown="1">
-
-Note
-
-</div>
-
-TODO: Add examples
-
-</div>

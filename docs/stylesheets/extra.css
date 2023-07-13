@@ -63,7 +63,15 @@ code {
 
 
 .md-nav__item--nested label {
-    font-style: italic;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+    background-color: #f8f8f8;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px;
+    overflow-x: auto;
 }
 
 
