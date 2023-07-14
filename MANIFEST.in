@@ -1,6 +1,7 @@
 include *.md
 recursive-include horde_sdk *.py
 recursive-include horde_sdk *.md
+recursive-include horde_sdk *.typed
 
 recursive-include tests *.py
 recursive-include tests *.json
