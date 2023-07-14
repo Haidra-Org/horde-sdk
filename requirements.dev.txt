@@ -3,12 +3,16 @@ pytest-asyncio
 mypy==1.4.1
 black==23.3.0
 ruff==0.0.275
+types-colorama
 types-requests==2.31.0.1
 types-Pillow
+types-PyYAML
+types-Pygments
 types-pytz
 types-setuptools
 types-urllib3
 tox==4.6.3
 pre-commit==3.3.3
+coverage>=7.2.7
 pytest-cov
 babel
