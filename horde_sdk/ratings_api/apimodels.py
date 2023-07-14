@@ -168,13 +168,13 @@ class ImageRatingsRequest(
         return HTTPMethod.GET
 
     @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
+    @classmethod
+    def get_endpoint_subpath(cls) -> str:
         return Rating_API_URL_Literals.v1_image_ratings
 
     @override
-    @staticmethod
-    def get_success_response_type() -> type[ImageRatingsResponse]:
+    @classmethod
+    def get_success_response_type(cls) -> type[ImageRatingsResponse]:
         return ImageRatingsResponse
 
 
@@ -219,13 +219,13 @@ class UserValidateRequest(
         return HTTPMethod.GET
 
     @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
+    @classmethod
+    def get_endpoint_subpath(cls) -> str:
         return Rating_API_URL_Literals.v1_user_validate
 
     @override
-    @staticmethod
-    def get_success_response_type() -> type[UserValidateResponse]:
+    @classmethod
+    def get_success_response_type(cls) -> type[UserValidateResponse]:
         return UserValidateResponse
 
 
@@ -250,13 +250,13 @@ class UserCheckRequest(
         return HTTPMethod.GET
 
     @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
+    @classmethod
+    def get_endpoint_subpath(cls) -> str:
         return Rating_API_URL_Literals.v1_user_check
 
     @override
-    @staticmethod
-    def get_success_response_type() -> type[UserCheckResponse]:
+    @classmethod
+    def get_success_response_type(cls) -> type[UserCheckResponse]:
         return UserCheckResponse
 
 
@@ -282,13 +282,13 @@ class UserRatingsRequest(
         return HTTPMethod.GET
 
     @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
+    @classmethod
+    def get_endpoint_subpath(cls) -> str:
         return Rating_API_URL_Literals.v1_user_ratings
 
     @override
-    @staticmethod
-    def get_success_response_type() -> type[UserRatingsResponse]:
+    @classmethod
+    def get_success_response_type(cls) -> type[UserRatingsResponse]:
         return UserRatingsResponse
 
 
