@@ -19,5 +19,5 @@ The goal is to minimize the amount of time it takes to develop applications in p
 
 From anything to requesting your own images, or rolling your own [worker](https://github.com/Haidra-Org/AI-Horde-Worker) software, this package may suit your needs.
 
-## Documentation 
+## Documentation
 See the complete documentation at https://horde-sdk.readthedocs.io/en/latest/.

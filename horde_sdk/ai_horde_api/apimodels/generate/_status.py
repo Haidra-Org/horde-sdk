@@ -67,13 +67,13 @@ class DeleteImageGenerateRequest(
         return HTTPMethod.DELETE
 
     @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
+    @classmethod
+    def get_endpoint_subpath(cls) -> str:
         return AI_HORDE_API_URL_Literals.v2_generate_status
 
     @override
-    @staticmethod
-    def get_success_response_type() -> type[ImageGenerateStatusResponse]:
+    @classmethod
+    def get_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
         return ImageGenerateStatusResponse
 
 
@@ -91,11 +91,11 @@ class ImageGenerateStatusRequest(BaseAIHordeRequest, BaseImageJobRequest):
         return HTTPMethod.GET
 
     @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
+    @classmethod
+    def get_endpoint_subpath(cls) -> str:
         return AI_HORDE_API_URL_Literals.v2_generate_status
 
     @override
-    @staticmethod
-    def get_success_response_type() -> type[ImageGenerateStatusResponse]:
+    @classmethod
+    def get_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
         return ImageGenerateStatusResponse

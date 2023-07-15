@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "horde_sdk"
-version = "0.4.0"
+version = "0.5.2"
 description = "A python toolkit for interacting with the horde APIs, services, and ecosystem."
 authors = [
     {name = "tazlin", email = "tazlin.on.github@gmail.com"},
@@ -21,6 +21,7 @@ dependencies = [
     "aiohttp",
     "aiodns",
     "pillow",
+    "python-dotenv",
 ]
 license = {file = "LICENSE"}
 classifiers = [
@@ -37,6 +38,7 @@ horde_sdk = "horde_sdk"
 "Homepage" = "https://github.com/Haidra-Org/horde-sdk"
 
 [tool.setuptools.package-data]
+horde_sdk = ["py.typed", "lib.pyi"]
 tests = ["*.json"]
 
 [tool.ruff]

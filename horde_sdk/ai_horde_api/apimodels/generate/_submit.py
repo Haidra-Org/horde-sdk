@@ -45,11 +45,11 @@ class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, BaseRequestAuthenticat
         return HTTPMethod.POST
 
     @override
-    @staticmethod
-    def get_endpoint_subpath() -> str:
+    @classmethod
+    def get_endpoint_subpath(cls) -> str:
         return AI_HORDE_API_URL_Literals.v2_generate_submit
 
     @override
-    @staticmethod
-    def get_success_response_type() -> type[ImageGenerationJobSubmitResponse]:
+    @classmethod
+    def get_success_response_type(cls) -> type[ImageGenerationJobSubmitResponse]:
         return ImageGenerationJobSubmitResponse
