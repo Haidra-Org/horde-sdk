@@ -4,7 +4,7 @@
 <div class="title" markdown="1">
 Warning
 </div>
-horde_sdk is in alpha. Everything is subject to change. Please feel free to report bugs or make suggestions on our <a href="(https://https//github.com/Haidra-Org/horde-sdk">github issue page</a>
+horde_sdk is in alpha. Everything is subject to change. Please feel free to report bugs or make suggestions on our <a href="https://github.com/Haidra-Org/horde-sdk">github issue page</a>
 </div>
 
 This library simplifies interfacing with any API created by [Haidra](https://github.com/Haidra-Org) - the community organization
