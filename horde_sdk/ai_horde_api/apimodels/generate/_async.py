@@ -15,10 +15,11 @@ from horde_sdk.generic_api.apimodels import (
     BaseRequestAuthenticated,
     BaseRequestWorkerDriven,
     BaseResponse,
+    BaseResponseNeedsFollowUp,
 )
 
 
-class ImageGenerateAsyncResponse(BaseResponse):
+class ImageGenerateAsyncResponse(BaseResponseNeedsFollowUp):
     """Represents the data returned from the `/v2/generate/async` endpoint.
 
     v2 API Model: `RequestAsync`
@@ -35,7 +36,7 @@ class ImageGenerateAsyncResponse(BaseResponse):
         return True
 
     @override
-    def get_follow_up_data(self) -> dict[str, object]:
+    def get_follow_up_returned_params(self) -> dict[str, object]:
         return {"id": self.id_}
 
     @classmethod
@@ -48,6 +49,11 @@ class ImageGenerateAsyncResponse(BaseResponse):
         cls,
     ) -> list[type[ImageGenerateCheckRequest | ImageGenerateStatusRequest]]:
         return [ImageGenerateCheckRequest, ImageGenerateStatusRequest]
+
+    @override
+    @classmethod
+    def get_follow_up_failure_cleanup_request(cls) -> type[DeleteImageGenerateRequest] | None:
+        return DeleteImageGenerateRequest
 
     @override
     @classmethod
@@ -117,11 +123,3 @@ class ImageGenerateAsyncRequest(
         return {
             HTTPStatusCode.ACCEPTED: cls.get_success_response_type(),
         }
-
-    @override
-    @classmethod
-    def is_recovery_enabled(cls) -> bool:
-        return True
-
-    def get_recovery_request_type(self) -> type[DeleteImageGenerateRequest]:
-        return DeleteImageGenerateRequest

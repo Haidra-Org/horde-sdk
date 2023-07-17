@@ -2,6 +2,7 @@ from horde_sdk.ai_horde_api.apimodels._stats import StatsImageModelsRequest, Sta
 from horde_sdk.ai_horde_api.apimodels.generate._async import (
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
+    ImageGenerationInputPayload,
 )
 from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckRequest, ImageGenerateCheckResponse
 from horde_sdk.ai_horde_api.apimodels.generate._pop import ImageGenerateJobPopRequest, ImageGenerateJobResponse
@@ -20,6 +21,7 @@ from horde_sdk.ai_horde_api.apimodels.workers._workers_all import AllWorkersDeta
 __all__ = [
     "ImageGenerateAsyncRequest",
     "ImageGenerateAsyncResponse",
+    "ImageGenerationInputPayload",
     "ImageGenerateCheckRequest",
     "ImageGenerateCheckResponse",
     "ImageGenerateJobPopRequest",

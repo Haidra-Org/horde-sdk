@@ -4,6 +4,7 @@ from horde_sdk.ai_horde_api.apimodels.generate._async import (
     ImageGenerationInputPayload,
 )
 from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS, KNOWN_SOURCE_PROCESSING
+from horde_sdk.generic_api.consts import ANON_API_KEY
 
 
 def test_api_endpoint() -> None:
@@ -14,7 +15,7 @@ def test_api_endpoint() -> None:
 
 def test_ImageGenerateAsyncRequest() -> None:
     test_async_request = ImageGenerateAsyncRequest(
-        apikey="000000000",
+        apikey=ANON_API_KEY,
         models=["Deliberate"],
         prompt="test prompt",
         params=ImageGenerationInputPayload(
@@ -53,7 +54,7 @@ def test_ImageGenerateAsyncRequest() -> None:
         replacement_filter=True,
         dry_run=False,
     )
-    assert test_async_request.apikey == "000000000"
+    assert test_async_request.apikey == ANON_API_KEY
     assert test_async_request.models == ["Deliberate"]
     assert test_async_request.prompt == "test prompt"
     assert test_async_request.params is not None
