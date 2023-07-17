@@ -14,9 +14,12 @@ from typing_extensions import override
 
 from horde_sdk.generic_api.apimodels import (
     BaseRequest,
+    BaseRequestAuthenticated,
     BaseResponse,
+    BaseResponseNeedsFollowUp,
     RequestErrorResponse,
 )
+from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.generic_api.metadata import (
     GenericAcceptTypes,
     GenericHeaderFields,
@@ -50,6 +53,13 @@ class GenericHordeAPIManualClient:
     This is the no-frills, simple version of the client if you want to have more control over the request process.
     """
 
+    # region
+    _aiohttp_session: aiohttp.ClientSession | None
+    _session_create_lock: asyncio.Lock = asyncio.Lock()
+    """A lock to ensure that only one session is created"""
+
+    _apikey: str | None
+
     _header_data_keys: type[GenericHeaderFields] = GenericHeaderFields
     """A list of all fields which would appear in the API request header."""
     _path_data_keys: type[GenericPathFields] = GenericPathFields
@@ -60,9 +70,13 @@ class GenericHordeAPIManualClient:
     _accept_types: type[GenericAcceptTypes] = GenericAcceptTypes
     """A list of all valid values for the header key 'accept'."""
 
+    # endregion
+
     def __init__(
         self,
         *,
+        apikey: str | None = None,
+        aiohttp_session: aiohttp.ClientSession | None = None,
         header_fields: type[GenericHeaderFields] = GenericHeaderFields,
         path_fields: type[GenericPathFields] = GenericPathFields,
         query_fields: type[GenericQueryFields] = GenericQueryFields,
@@ -71,6 +85,8 @@ class GenericHordeAPIManualClient:
         """Initializes a new `GenericHordeAPIClient` instance.
 
         Args:
+            aiohttp_session (aiohttp.ClientSession, optional): Pass this to use an existing aiohttp session.
+
             header_fields (type[GenericHeaderFields], optional): Pass this to define the API's Header fields.
             Defaults to GenericHeaderFields.
 
@@ -85,7 +101,15 @@ class GenericHordeAPIManualClient:
 
         Raises:
             TypeError: If any of the passed types are not subclasses of their respective `Generic*` class.
-        """ """"""
+        """
+
+        self._aiohttp_session = aiohttp_session
+
+        self._apikey = apikey
+
+        if not self._apikey:
+            self._apikey = ANON_API_KEY
+
         if not issubclass(header_fields, GenericHeaderFields):
             raise TypeError("`headerData` must be of type `GenericHeaderData` or a subclass of it!")
         if not issubclass(path_fields, GenericPathFields):
@@ -166,6 +190,10 @@ class GenericHordeAPIManualClient:
 
         if request_body_data_dict == {}:
             request_body_data_dict = None
+
+        if isinstance(api_request, BaseRequestAuthenticated) and self._apikey:
+            request_headers_dict["apikey"] = self._apikey
+            logger.debug("No API key was provided, using the anonymous API key.")
 
         return _ParsedRequest(
             endpoint_no_query=endpoint_url,
@@ -321,9 +349,11 @@ class GenericHordeAPIManualClient:
         raw_response_json: dict = {}
         response_status: int = 599
 
+        if not self._aiohttp_session:
+            raise RuntimeError("No aiohttp session was provided but an async method was called!")
+
         async with (
-            aiohttp.ClientSession() as session,
-            session.get(
+            self._aiohttp_session.get(
                 parsed_request.endpoint_no_query,
                 headers=parsed_request.request_headers,
                 params=parsed_request.request_queries,
@@ -387,9 +417,12 @@ class GenericHordeAPIManualClient:
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response_json: dict = {}
         response_status: int = 599
+
+        if not self._aiohttp_session:
+            raise RuntimeError("No aiohttp session was provided but an async method was called!")
+
         async with (
-            aiohttp.ClientSession() as session,
-            session.post(
+            self._aiohttp_session.post(
                 parsed_request.endpoint_no_query,
                 headers=parsed_request.request_headers,
                 params=parsed_request.request_queries,
@@ -451,12 +484,16 @@ class GenericHordeAPIManualClient:
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
         """
+
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response_json: dict = {}
         response_status: int = 599
+
+        if not self._aiohttp_session:
+            raise RuntimeError("No aiohttp session was provided but an async method was called!")
+
         async with (
-            aiohttp.ClientSession() as session,
-            session.put(
+            self._aiohttp_session.put(
                 parsed_request.endpoint_no_query,
                 headers=parsed_request.request_headers,
                 params=parsed_request.request_queries,
@@ -518,12 +555,16 @@ class GenericHordeAPIManualClient:
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
         """
+
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response_json: dict = {}
         response_status: int = 599
+
+        if not self._aiohttp_session:
+            raise RuntimeError("No aiohttp session was provided but an async method was called!")
+
         async with (
-            aiohttp.ClientSession() as session,
-            session.patch(
+            self._aiohttp_session.patch(
                 parsed_request.endpoint_no_query,
                 headers=parsed_request.request_headers,
                 params=parsed_request.request_queries,
@@ -585,12 +626,16 @@ class GenericHordeAPIManualClient:
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
         """
+
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response_json: dict = {}
         response_status: int = 599
+
+        if not self._aiohttp_session:
+            raise RuntimeError("No aiohttp session was provided but an async method was called!")
+
         async with (
-            aiohttp.ClientSession() as session,
-            session.delete(
+            self._aiohttp_session.delete(
                 parsed_request.endpoint_no_query,
                 headers=parsed_request.request_headers,
                 params=parsed_request.request_queries,
@@ -628,12 +673,14 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
     def __init__(
         self,
         *,
+        aiohttp_session: aiohttp.ClientSession | None,
         header_fields: type[GenericHeaderFields] = GenericHeaderFields,
         path_fields: type[GenericPathFields] = GenericPathFields,
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
     ) -> None:
         super().__init__(
+            aiohttp_session=aiohttp_session,
             header_fields=header_fields,
             path_fields=path_fields,
             query_fields=query_fields,
@@ -685,12 +732,16 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
     def _handle_exit(self, request_to_follow_up: BaseRequest, response_to_follow_up: BaseResponse) -> None:
         if isinstance(response_to_follow_up, RequestErrorResponse):
             return
-        if not request_to_follow_up.is_recovery_enabled():
+        if not isinstance(response_to_follow_up, BaseResponseNeedsFollowUp):
             return
 
-        recovery_request_type: type[BaseRequest] = request_to_follow_up.get_recovery_request_type()
+        recovery_request_type: type[BaseRequest] | None = response_to_follow_up.get_follow_up_failure_cleanup_request()
 
-        request_params: dict[str, object] = response_to_follow_up.get_follow_up_data()
+        if recovery_request_type is None:
+            return
+
+        request_params: dict[str, object] = response_to_follow_up.get_follow_up_all_params()
+        request_params.update(response_to_follow_up.get_follow_up_failure_cleanup_params())
 
         message = (
             "An exception occurred while trying to create a recovery request! "
@@ -706,7 +757,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
             logger.info("Recovery request submitted!")
             logger.debug(f"Recovery response: {recovery_response}")
 
-        except Exception:
+        except Exception:  # If we don't blanket catch here, other requests could end up dangling
             logger.critical(message)
             logger.critical(f"{request_to_follow_up}")
 
@@ -740,12 +791,16 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
     async def _handle_exit_async(self, request_to_follow_up: BaseRequest, response_to_follow_up: BaseResponse) -> None:
         if isinstance(response_to_follow_up, RequestErrorResponse):
             return
-        if not request_to_follow_up.is_recovery_enabled():
+        if not isinstance(response_to_follow_up, BaseResponseNeedsFollowUp):
             return
 
-        recovery_request_type: type[BaseRequest] = request_to_follow_up.get_recovery_request_type()
+        recovery_request_type: type[BaseRequest] | None = response_to_follow_up.get_follow_up_failure_cleanup_request()
 
-        request_params: dict[str, object] = response_to_follow_up.get_follow_up_data()
+        if recovery_request_type is None:
+            return
+
+        request_params: dict[str, object] = response_to_follow_up.get_follow_up_all_params()
+        request_params.update(response_to_follow_up.get_follow_up_failure_cleanup_params())
 
         message = (
             "An exception occurred while trying to create a recovery request! "
@@ -761,6 +816,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
             logger.info("Recovery request submitted!")
             logger.debug(f"Recovery response: {recovery_response}")
 
-        except Exception:
+        except Exception as e:  # If we don't blanket catch here, other requests could end up dangling
+            logger.exception(e)
             logger.critical(message)
             logger.critical(f"{request_to_follow_up}")

@@ -3,11 +3,11 @@ from pydantic import Field, field_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, BaseImageGenerateParam
-from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
+from horde_sdk.ai_horde_api.consts import GENERATION_STATE, KNOWN_SOURCE_PROCESSING
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseResponse
+from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseResponseNeedsFollowUp
 
 
 class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
@@ -53,13 +53,13 @@ class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
     """How many waiting requests were skipped because they requested a controlnet."""
 
 
-class ImageGenerateJobResponse(BaseResponse):
+class ImageGenerateJobResponse(BaseResponseNeedsFollowUp):
     """Represents the data returned from the `/v2/generate/pop` endpoint.
 
     v2 API Model: `GenerationPayloadStable`
     """
 
-    id: str | GenerationID  # noqa: A003
+    id_: str | GenerationID = Field(alias="id")
     """The UUID for this image generation."""
     payload: BaseImageGenerateParam
     """The parameters used to generate this image."""
@@ -89,6 +89,14 @@ class ImageGenerateJobResponse(BaseResponse):
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "GenerationPayloadStable"
+
+    @override
+    def get_follow_up_returned_params(self) -> dict[str, object]:
+        return {"id": self.id_}
+
+    @override
+    def get_follow_up_failure_cleanup_params(self) -> dict[str, object]:
+        return {"state": GENERATION_STATE.faulted}  # TODO: One day, could I do away with the magic string?
 
 
 class ImageGenerateJobPopRequest(BaseAIHordeRequest, BaseRequestAuthenticated):

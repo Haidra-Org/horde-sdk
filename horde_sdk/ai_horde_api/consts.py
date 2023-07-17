@@ -31,6 +31,8 @@ class KNOWN_SOURCE_PROCESSING(StrEnum):
 class GENERATION_STATE(StrEnum):
     ok = auto()
     censored = auto()
+    faulted = auto()
+    csam = auto()
 
 
 class WORKER_TYPE(StrEnum):

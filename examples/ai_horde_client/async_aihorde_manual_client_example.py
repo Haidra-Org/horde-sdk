@@ -40,7 +40,6 @@ async def main() -> None:
 
         check_counter += 1
         check_response = await manual_client.async_get_generate_check(
-            apikey="0000000000",
             generation_id=response.id_,
         )
 

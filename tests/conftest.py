@@ -1,8 +1,6 @@
 import pytest
 
-from horde_sdk.ai_horde_api.apimodels import (
-    ImageGenerateAsyncRequest,
-)
+from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest, ImageGenerationInputPayload
 
 
 @pytest.fixture(scope="function")
@@ -11,6 +9,18 @@ def simple_image_gen_request() -> ImageGenerateAsyncRequest:
         apikey="0000000000",
         prompt="a cat in a hat",
         models=["Deliberate"],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_n_requests() -> ImageGenerateAsyncRequest:
+    return ImageGenerateAsyncRequest(
+        apikey="0000000000",
+        prompt="a cat in a hat",
+        models=["Deliberate"],
+        params=ImageGenerationInputPayload(
+            n=3,
+        ),
     )
 
 
