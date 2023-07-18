@@ -1,5 +1,9 @@
-"""This file contains the descriptions for the fields in the bridge data file. This is used to generate, among other
-things, the bridge data config and the webui. The _L function is used to mark strings for translation."""
+"""This file contains the descriptions for the fields in the bridge data file.
+
+This is used to generate, among other things, the bridge data config and the webui. The _L function is used to mark
+strings for translation.
+"""
+
 from horde_sdk.localize import _L
 
 BRIDGE_DATA_FIELD_DESCRIPTIONS = {

@@ -1,3 +1,4 @@
+"""The base classes for all AI Horde API requests/responses."""
 from pydantic import BaseModel, Field, field_validator
 from typing_extensions import override
 

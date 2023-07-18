@@ -68,6 +68,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient):
 
         Args:
             error_response (RequestErrorResponse): The error response to handle.
+            endpoint_url (str): The URL of the endpoint that was called.
         """
         logger.error("Error response received from the AI-Horde API.")
         logger.error(f"Endpoint: {endpoint_url}")
@@ -99,8 +100,9 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient):
         self,
         generation_id: GenerationID | str,
     ) -> ImageGenerateCheckResponse | RequestErrorResponse:
-        """Asynchronously check if a pending image request has finished generating from the AI-Horde API, and return
-        the status of it. Not to be confused with `get_generate_status` which returns the images too.
+        """Asynchronously check if a pending image request has finished generating and return the status of it.
+
+        Not to be confused with `get_generate_status` which returns the images too.
 
         Args:
             apikey (str): The API key to use for authentication.
@@ -109,7 +111,6 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient):
         Returns:
             ImageGenerateCheckResponse | RequestErrorResponse: The response from the API.
         """
-
         api_request = ImageGenerateCheckRequest(id=generation_id)
 
         api_response = await self.async_submit_request(api_request, api_request.get_success_response_type())
@@ -130,6 +131,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient):
         Args:
             apikey (str): The API key to use for authentication.
             generation_id (GenerationID): The ID of the request to check.
+
         Returns:
             ImageGenerateStatusResponse | RequestErrorResponse: The response from the API.
         """
@@ -154,6 +156,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient):
         Args:
             apikey (str): The API key to use for authentication.
             generation_id (GenerationID): The ID of the request to check.
+
         Returns:
             ImageGenerateStatusResponse | RequestErrorResponse: The response from the API.
         """
@@ -188,6 +191,14 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient):
         self,
         generation_id: GenerationID | str,
     ) -> ImageGenerateStatusResponse | RequestErrorResponse:
+        """Asynchronously delete a pending image request from the AI-Horde API.
+
+        Args:
+            generation_id (GenerationID | str): The ID of the request to delete.
+
+        Returns:
+            ImageGenerateStatusResponse | RequestErrorResponse: The response from the API.
+        """
         api_request = DeleteImageGenerateRequest(id=generation_id)
 
         api_response = await self.async_submit_request(api_request, api_request.get_success_response_type())
@@ -207,6 +218,7 @@ class AIHordeAPISession(AIHordeAPIManualClient, GenericHordeAPISession):
     """
 
     def __enter__(self) -> AIHordeAPISession:
+        """Enter the context manager."""
         _self = super().__enter__()
         if not isinstance(_self, AIHordeAPISession):
             raise TypeError("Unexpected type returned from super().__enter__()")
@@ -214,6 +226,7 @@ class AIHordeAPISession(AIHordeAPIManualClient, GenericHordeAPISession):
         return _self
 
     async def __aenter__(self) -> AIHordeAPISession:
+        """Enter the context manager asynchronously."""
         _self = await super().__aenter__()
         if not isinstance(_self, AIHordeAPISession):
             raise TypeError("Unexpected type returned from super().__aenter__()")
@@ -222,9 +235,12 @@ class AIHordeAPISession(AIHordeAPIManualClient, GenericHordeAPISession):
 
 
 class AIHordeAPISimpleClient:
+    """A simple client for the AI-Horde API which does not require an API key."""
+
     _aiohttp_session: aiohttp.ClientSession | None
 
     def __init__(self, aiohttp_session: aiohttp.ClientSession | None = None) -> None:
+        """Create a new instance of the AIHordeAPISimpleClient."""
         self._aiohttp_session = aiohttp_session
 
     def generation_to_image(self, generation: ImageGeneration) -> PIL.Image.Image:
@@ -240,7 +256,6 @@ class AIHordeAPISimpleClient:
             ValueError: If the generation has no image, or the image could not be downloaded or parsed.
 
         """
-
         if generation.img is None:
             raise ValueError("Generation has no image")
 
@@ -272,7 +287,6 @@ class AIHordeAPISimpleClient:
             ValueError: If the generation has no image, or the image could not be downloaded or parsed.
 
         """
-
         if generation.img is None:
             raise ValueError("Generation has no image")
 
@@ -381,7 +395,6 @@ class AIHordeAPISimpleClient:
         Returns:
             list[ImageGeneration]: The completed images.
         """
-
         if timeout is not None and timeout != -1 and timeout <= 5:
             logger.warning("Timeout is less than 5 seconds, this may cause unexpected behavior.")
 

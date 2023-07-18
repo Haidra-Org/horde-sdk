@@ -1,3 +1,4 @@
+"""All requests, responses and API models defined for the AI Horde API."""
 from horde_sdk.ai_horde_api.apimodels._stats import StatsImageModelsRequest, StatsModelsResponse
 from horde_sdk.ai_horde_api.apimodels.generate._async import (
     ImageGenerateAsyncRequest,

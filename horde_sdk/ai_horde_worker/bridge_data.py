@@ -1,3 +1,5 @@
+"""The bridge data file definitions and functions for any horde worker type."""
+
 from __future__ import annotations
 
 import pathlib
@@ -15,10 +17,13 @@ _UNREASONABLE_NUMBER_OF_MODELS = 1000
 
 
 class BaseHordeBridgeData(BaseModel):
+    """The base bridge data file for all worker types."""
+
     model_config = ConfigDict(extra="allow")
 
     @model_validator(mode="after")  # type: ignore # FIXME: https://github.com/python/mypy/issues/15620
     def validate_extra_params_warning(self) -> BaseHordeBridgeData:
+        """Warn on extra parameters being passed."""
         if not self.model_extra:
             return self
 
@@ -77,6 +82,7 @@ class SharedHordeBridgeData(BaseHordeBridgeData):
 
     @field_validator("horde_url")
     def validate_url(cls, v: str) -> str:
+        """Validate the URL is valid."""
         parsed_url = urllib.parse.urlparse(v)
         if not parsed_url.scheme or not parsed_url.netloc:
             raise ValueError(f"Invalid URL: {v}")
@@ -84,7 +90,8 @@ class SharedHordeBridgeData(BaseHordeBridgeData):
 
     @field_validator("api_key")
     def validate_api_key_length(cls, v: str) -> str:
-        if v == "0000000000":
+        """Validate that the API key is the correct length."""
+        if v == ANON_API_KEY:
             return v
         if len(v) != 22:
             raise ValueError("API key must be 22 characters long")
@@ -92,6 +99,7 @@ class SharedHordeBridgeData(BaseHordeBridgeData):
 
     @field_validator("models_folder_parent", "temp_dir")
     def validate_is_dir(cls, v: str) -> str:
+        """Validate that the path is a directory."""
         paths_list = []
         # Does it specific multiple directories?
         if ";" in v:
@@ -246,6 +254,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
 
     @model_validator(mode="after")  # type: ignore # FIXME: https://github.com/python/mypy/issues/15620
     def validate_param_conflict(self) -> ImageWorkerBridgeData:
+        """Validate that the parameters are not conflicting."""
         if not self.allow_img2img and self.allow_controlnet:
             logger.warning(
                 (
@@ -258,6 +267,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
 
     @field_validator("image_models_to_load")
     def validate_models_to_load(cls, v: list) -> list:
+        """Validate and parse the models to load."""
         if not isinstance(v, list):
             v = [v]
         if not v:
@@ -267,6 +277,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
 
     @field_validator("ram_to_leave_free", "vram_to_leave_free")
     def validate_ram_to_leave_free(cls, v: str | int | float) -> str | int | float:
+        """Validate VRAM/RAM to leave free."""
         if isinstance(v, str):
             if v.isdigit():
                 v = int(v)
@@ -281,6 +292,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
 
     @field_validator("forms")
     def validate_alchemy_forms(cls, v: list) -> list:
+        """Validate the alchemy forms (services offered)."""
         if not isinstance(v, list):
             raise ValueError("forms must be a list")
         validated_forms = []
@@ -294,6 +306,8 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
 
 
 class ScribeBridgeData(SharedHordeBridgeData):
+    """The bridge data file subset for a Scribe worker."""
+
     # Scribe Settings
     kai_url: str = "http://localhost:5000"
     """The URL of the KoboldAI API to use. Defaults to the official API."""

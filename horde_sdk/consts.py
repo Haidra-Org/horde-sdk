@@ -1,3 +1,5 @@
+"""Constants used by the SDK."""
+
 from enum import Enum
 
 from strenum import StrEnum

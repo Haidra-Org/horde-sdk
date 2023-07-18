@@ -3,10 +3,12 @@ from horde_sdk.generic_api.utils.swagger import SwaggerDoc, SwaggerParser
 
 
 def test_swagger_parser_init() -> None:
+    """Test that the SwaggerParser can be initialized with a swagger doc url."""
     SwaggerParser(swagger_doc_url=get_ai_horde_swagger_url())
 
 
 def test_get_swagger_doc() -> None:
+    """Test that the SwaggerParser can be initialized and that the swagger doc is parsed correctly."""
     parser = SwaggerParser(swagger_doc_url=get_ai_horde_swagger_url())
     doc = parser.get_swagger_doc()
     assert isinstance(doc, SwaggerDoc)
@@ -32,6 +34,7 @@ def test_get_swagger_doc() -> None:
 
 
 def test_extract_all_payload_examples() -> None:
+    """Test that the payload examples can be extracted from the swagger doc."""
     swagger_doc = SwaggerParser(swagger_doc_url=get_ai_horde_swagger_url()).get_swagger_doc()
 
     all_request_examples = swagger_doc.get_all_payload_examples()
@@ -39,6 +42,7 @@ def test_extract_all_payload_examples() -> None:
 
 
 def test_extract_all_response_examples() -> None:
+    """Test that the response examples can be extracted from the swagger doc."""
     swagger_doc = SwaggerParser(swagger_doc_url=get_ai_horde_swagger_url()).get_swagger_doc()
 
     all_response_examples = swagger_doc.get_all_response_examples()

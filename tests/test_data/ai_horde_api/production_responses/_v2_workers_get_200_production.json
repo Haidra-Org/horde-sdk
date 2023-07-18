@@ -1,1 +1,32 @@
-{}
+[
+    {
+        "type": "image",
+        "name": "tazlin-development-testing",
+        "id": "373853ac-4fa1-4c3a-a66f-6e4365b8aee6",
+        "online": true,
+        "requests_fulfilled": 167,
+        "kudos_rewards": 19051.0,
+        "kudos_details": {
+            "generated": 1503.0,
+            "uptime": 17548
+        },
+        "performance": "0.7 megapixelsteps per second",
+        "threads": 1,
+        "uptime": 130027,
+        "maintenance_mode": false,
+        "nsfw": true,
+        "trusted": false,
+        "flagged": false,
+        "uncompleted_jobs": 0,
+        "models": [
+            "Deliberate"
+        ],
+        "team": {},
+        "bridge_agent": "AI Horde Worker:23:https://github.com/db0/AI-Horde-Worker",
+        "max_pixels": 1048576,
+        "megapixelsteps_generated": 1336,
+        "img2img": true,
+        "painting": true,
+        "lora": true
+    }
+]

@@ -1,3 +1,5 @@
+"""Definitions for the AI Horde API."""
+
 from horde_sdk.ai_horde_api.ai_horde_clients import (
     AIHordeAPIManualClient,
 )

@@ -1,10 +1,12 @@
+"""Write all example payloads to a file in the test_data directory."""
 from pathlib import Path
 
 from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
 from horde_sdk.generic_api.utils.swagger import SwaggerParser
 
 
-def main(*, test_data_path: Path | None = None) -> None:
+def write_example_payloads(*, test_data_path: Path | None = None) -> None:
+    """Write all example payloads to a file in the test_data directory."""
     ai_horde_swagger_doc = SwaggerParser(
         swagger_doc_url=get_ai_horde_swagger_url(),
     ).get_swagger_doc()
@@ -16,4 +18,4 @@ def main(*, test_data_path: Path | None = None) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    write_example_payloads()
