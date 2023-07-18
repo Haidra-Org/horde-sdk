@@ -1,3 +1,5 @@
+"""This module contains functions for generating API endpoints urls."""
+
 import functools
 import urllib.parse
 

@@ -1,4 +1,9 @@
-"""Metadata specific shared across all horde APIs."""
+"""Metadata specific shared across all horde APIs.
+
+These classes can be inherited and new values added to them to support new APIs' metadata.
+See the `horde_sdk.generic_api.generic_clients` module for more information.
+
+"""
 
 from enum import auto
 
@@ -26,4 +31,4 @@ class GenericPathFields(StrEnum):
 
 
 class GenericQueryFields(StrEnum):
-    """`StrEnum` for data that is exclusively passed as part of a URL query (after the `?`)"""
+    """`StrEnum` for data that is exclusively passed as part of a URL query (after the `?`)."""

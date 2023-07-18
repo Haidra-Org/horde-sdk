@@ -85,6 +85,8 @@ class GenericHordeAPIManualClient:
         """Initializes a new `GenericHordeAPIClient` instance.
 
         Args:
+            apikey (str, optional): The API key to use for authenticated requests. Defaults to None, which will use the
+            anonymous API key.
             aiohttp_session (aiohttp.ClientSession, optional): Pass this to use an existing aiohttp session.
 
             header_fields (type[GenericHeaderFields], optional): Pass this to define the API's Header fields.
@@ -102,7 +104,6 @@ class GenericHordeAPIManualClient:
         Raises:
             TypeError: If any of the passed types are not subclasses of their respective `Generic*` class.
         """
-
         self._aiohttp_session = aiohttp_session
 
         self._apikey = apikey
@@ -127,23 +128,39 @@ class GenericHordeAPIManualClient:
     def _validate_and_prepare_request(self, api_request: BaseRequest) -> _ParsedRequest:
         """Validates the given `api_request` and returns a `_ParsedRequest` instance with the data to be sent.
 
-        The thrust of the method is to convert a `BaseRequest` instance into the data needed to make a request with
-        `requests`.
+        This method converts a `BaseRequest` instance into the data needed to make a request with `requests`. It
+        validates the request and extracts the specified headers, paths, and queries from the request. It also extracts
+        any extra header fields and the request body data from the request. Finally, it returns a `_ParsedRequest`
+        instance with the extracted data.
+
+        Args:
+            api_request (BaseRequest): The `BaseRequest` instance to be validated and prepared.
+
+        Returns:
+            _ParsedRequest: A `_ParsedRequest` instance with the extracted data to be sent in the request.
+
+        Raises:
+            TypeError: If `api_request` is not of type `BaseRequest` or a subclass of it.
         """
         if not issubclass(api_request.__class__, BaseRequest):
             raise TypeError("`request` must be of type `BaseRequest` or a subclass of it!")
 
+        # Define a helper function to extract specified data keys from the request
         def get_specified_data_keys(data_keys: type[StrEnum], api_request: BaseRequest) -> dict[str, str]:
+            """Extracts the specified data keys from the request and returns them as a dictionary."""
             return {
                 py_field_name: str(api_field_name)
                 for py_field_name, api_field_name in data_keys._member_map_.items()
                 if hasattr(api_request, py_field_name) and getattr(api_request, py_field_name) is not None
             }
 
+        # Extract the specified headers, paths, and queries from the request, so they don't end up in
+        # a request (payload) body
         specified_headers = get_specified_data_keys(self._header_data_keys, api_request)
         specified_paths = get_specified_data_keys(self._path_data_keys, api_request)
         specified_queries = get_specified_data_keys(self._query_data_keys, api_request)
 
+        # Get the endpoint URL from the request and replace any path keys with their corresponding values
         endpoint_url: str = api_request.get_endpoint_url()
 
         for py_field_name, api_field_name in specified_paths.items():
@@ -151,12 +168,15 @@ class GenericHordeAPIManualClient:
             # IE: /v2/ratings/{id} -> /v2/ratings/123
             endpoint_url = endpoint_url.format_map({api_field_name: str(getattr(api_request, py_field_name))})
 
+        # Extract any extra header fields and the request body data from the request
         extra_header_keys: list[str] = api_request.get_header_fields()
 
         request_params_dict: dict[str, object] = {}
         request_headers_dict: dict[str, object] = {}
         request_queries_dict: dict[str, object] = {}
 
+        # Extract all fields from the request which are not specified headers, paths, or queries
+        # Note: __dict__ allows access to all attributes of an instance
         for request_key, request_value in api_request.__dict__.items():
             if request_key in specified_paths:
                 continue
@@ -176,12 +196,15 @@ class GenericHordeAPIManualClient:
 
             request_params_dict[request_key] = request_value
 
+        # Exclude specified fields from the request (payload) body data
         all_fields_to_exclude_from_body = set(
             list(specified_headers.keys())
             + list(specified_paths.keys())
             + list(specified_queries.keys())
             + extra_header_keys,
         )
+
+        # Convert the request body data to a dictionary
         request_body_data_dict: dict | None = api_request.model_dump(
             exclude_none=True,
             exclude_unset=True,
@@ -191,6 +214,7 @@ class GenericHordeAPIManualClient:
         if request_body_data_dict == {}:
             request_body_data_dict = None
 
+        # Add the API key to the request headers if the request is authenticated and an API key is provided
         if isinstance(api_request, BaseRequestAuthenticated) and self._apikey:
             request_headers_dict["apikey"] = self._apikey
             logger.debug("No API key was provided, using the anonymous API key.")
@@ -209,10 +233,8 @@ class GenericHordeAPIManualClient:
         api_request: BaseRequest,
         raw_response_json: dict,
         returned_status_code: int,
-        expected_response: type[HordeResponse],
+        expected_response_type: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
-        expected_response_type = api_request.get_success_response_type()
-
         # If requests response is a failure code, see if a `message` key exists in the response.
         # If so, return a RequestErrorResponse
         if returned_status_code >= 400:
@@ -229,7 +251,7 @@ class GenericHordeAPIManualClient:
         handled_response: HordeResponse | RequestErrorResponse | None = None
         try:
             parsed_response = expected_response_type.from_dict_or_array(raw_response_json)
-            if isinstance(parsed_response, expected_response):
+            if isinstance(parsed_response, expected_response_type):
                 handled_response = parsed_response
             else:
                 handled_response = RequestErrorResponse(
@@ -237,7 +259,7 @@ class GenericHordeAPIManualClient:
                     object_data={"raw_response": raw_response_json},
                 )
         except ValidationError as e:
-            if not isinstance(handled_response, expected_response):
+            if not isinstance(handled_response, expected_response_type):
                 error_response = RequestErrorResponse(
                     message="The response type doesn't match expected one! See `object_data` for the raw response.",
                     object_data={"exception": e, "raw_response": raw_response_json},
@@ -255,13 +277,13 @@ class GenericHordeAPIManualClient:
 
         Automatically determines the correct method to call based on calling `.get_http_method()` on the request.
 
-        If you are wondering why `expected_response` is a parameter, it is because the API may return different
+        If you are wondering why `expected_response_type` is a parameter, it is because the API may return different
         responses depending on the payload or other factors. It is up to you to determine which response type you
         expect, and pass it in here.
 
         Args:
             api_request (BaseRequest): The request to submit.
-            expected_response (type[HordeResponse]): The expected response type.
+            expected_response_type (type[HordeResponse]): The expected response type.
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
@@ -279,13 +301,13 @@ class GenericHordeAPIManualClient:
 
         Automatically determines the correct method to call based on calling `.get_http_method()` on the request.
 
-        If you are wondering why `expected_response` is a parameter, it is because the API may return different
+        If you are wondering why `expected_response_type` is a parameter, it is because the API may return different
         responses depending on the payload or other factors. It is up to you to determine which response type you
         expect, and pass it in here.
 
         Args:
             api_request (BaseRequest): The request to submit.
-            expected_response (type[HordeResponse]): The expected response type.
+            expected_response_type (type[HordeResponse]): The expected response type.
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
@@ -297,13 +319,13 @@ class GenericHordeAPIManualClient:
     def get(
         self,
         api_request: BaseRequest,
-        expected_response: type[HordeResponse],
+        expected_response_type: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
         """Perform a GET request to the API.
 
         Args:
             api_request (BaseRequest): The request to submit.
-            expected_response (type[HordeResponse]): The expected response type.
+            expected_response_type(type[HordeResponse]): The expected response type.
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
@@ -324,19 +346,19 @@ class GenericHordeAPIManualClient:
             api_request=api_request,
             raw_response_json=raw_response.json(),
             returned_status_code=raw_response.status_code,
-            expected_response=expected_response,
+            expected_response_type=expected_response_type,
         )
 
     async def async_get(
         self,
         api_request: BaseRequest,
-        expected_response: type[HordeResponse],
+        expected_response_type: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
         """Perform a GET request to the API asynchronously.
 
         Args:
             api_request (BaseRequest): The request to submit.
-            expected_response (type[HordeResponse]): The expected response type.
+            expected_response_type(type[HordeResponse]): The expected response type.
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
@@ -367,19 +389,19 @@ class GenericHordeAPIManualClient:
             api_request=api_request,
             raw_response_json=raw_response_json,
             returned_status_code=response_status,
-            expected_response=expected_response,
+            expected_response_type=expected_response_type,
         )
 
     def post(
         self,
         api_request: BaseRequest,
-        expected_response: type[HordeResponse],
+        expected_response_type: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
         """Perform a POST request to the API.
 
         Args:
             api_request (BaseRequest): The request to submit.
-            expected_response (type[HordeResponse]): The expected response type.
+            expected_response_type(type[HordeResponse]): The expected response type.
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
@@ -397,19 +419,19 @@ class GenericHordeAPIManualClient:
             api_request=api_request,
             raw_response_json=raw_response.json(),
             returned_status_code=raw_response.status_code,
-            expected_response=expected_response,
+            expected_response_type=expected_response_type,
         )
 
     async def async_post(
         self,
         api_request: BaseRequest,
-        expected_response: type[HordeResponse],
+        expected_response_type: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
         """Perform a POST request to the API asynchronously.
 
         Args:
             api_request (BaseRequest): The request to submit.
-            expected_response (type[HordeResponse]): The expected response type.
+            expected_response_type(type[HordeResponse]): The expected response type.
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
@@ -437,19 +459,19 @@ class GenericHordeAPIManualClient:
             api_request=api_request,
             raw_response_json=raw_response_json,
             returned_status_code=response_status,
-            expected_response=expected_response,
+            expected_response_type=expected_response_type,
         )
 
     def put(
         self,
         api_request: BaseRequest,
-        expected_response: type[HordeResponse],
+        expected_response_type: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
         """Perform a PUT request to the API.
 
         Args:
             api_request (BaseRequest): The request to submit.
-            expected_response (type[HordeResponse]): The expected response type.
+            expected_response_type(type[HordeResponse]): The expected response type.
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
@@ -467,24 +489,23 @@ class GenericHordeAPIManualClient:
             api_request=api_request,
             raw_response_json=raw_response.json(),
             returned_status_code=raw_response.status_code,
-            expected_response=expected_response,
+            expected_response_type=expected_response_type,
         )
 
     async def async_put(
         self,
         api_request: BaseRequest,
-        expected_response: type[HordeResponse],
+        expected_response_type: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
         """Perform a PUT request to the API asynchronously.
 
         Args:
             api_request (BaseRequest): The request to submit.
-            expected_response (type[HordeResponse]): The expected response type.
+            expected_response_type(type[HordeResponse]): The expected response type.
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
         """
-
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response_json: dict = {}
         response_status: int = 599
@@ -508,19 +529,19 @@ class GenericHordeAPIManualClient:
             api_request=api_request,
             raw_response_json=raw_response_json,
             returned_status_code=response_status,
-            expected_response=expected_response,
+            expected_response_type=expected_response_type,
         )
 
     def patch(
         self,
         api_request: BaseRequest,
-        expected_response: type[HordeResponse],
+        expected_response_type: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
         """Perform a PATCH request to the API.
 
         Args:
             api_request (BaseRequest): The request to submit.
-            expected_response (type[HordeResponse]): The expected response type.
+            expected_response_type(type[HordeResponse]): The expected response type.
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
@@ -538,24 +559,23 @@ class GenericHordeAPIManualClient:
             api_request=api_request,
             raw_response_json=raw_response.json(),
             returned_status_code=raw_response.status_code,
-            expected_response=expected_response,
+            expected_response_type=expected_response_type,
         )
 
     async def async_patch(
         self,
         api_request: BaseRequest,
-        expected_response: type[HordeResponse],
+        expected_response_type: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
         """Perform a PATCH request to the API asynchronously.
 
         Args:
             api_request (BaseRequest): The request to submit.
-            expected_response (type[HordeResponse]): The expected response type.
+            expected_response_type(type[HordeResponse]): The expected response type.
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
         """
-
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response_json: dict = {}
         response_status: int = 599
@@ -579,19 +599,19 @@ class GenericHordeAPIManualClient:
             api_request=api_request,
             raw_response_json=raw_response_json,
             returned_status_code=response_status,
-            expected_response=expected_response,
+            expected_response_type=expected_response_type,
         )
 
     def delete(
         self,
         api_request: BaseRequest,
-        expected_response: type[HordeResponse],
+        expected_response_type: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
         """Perform a DELETE request to the API.
 
         Args:
             api_request (BaseRequest): The request to submit.
-            expected_response (type[HordeResponse]): The expected response type.
+            expected_response_type(type[HordeResponse]): The expected response type.
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
@@ -609,24 +629,23 @@ class GenericHordeAPIManualClient:
             api_request=api_request,
             raw_response_json=raw_response.json(),
             returned_status_code=raw_response.status_code,
-            expected_response=expected_response,
+            expected_response_type=expected_response_type,
         )
 
     async def async_delete(
         self,
         api_request: BaseRequest,
-        expected_response: type[HordeResponse],
+        expected_response_type: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
         """Perform a DELETE request to the API asynchronously.
 
         Args:
             api_request (BaseRequest): The request to submit.
-            expected_response (type[HordeResponse]): The expected response type.
+            expected_response_type(type[HordeResponse]): The expected response type.
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
         """
-
         parsed_request = self._validate_and_prepare_request(api_request)
         raw_response_json: dict = {}
         response_status: int = 599
@@ -650,13 +669,14 @@ class GenericHordeAPIManualClient:
             api_request=api_request,
             raw_response_json=raw_response_json,
             returned_status_code=response_status,
-            expected_response=expected_response,
+            expected_response_type=expected_response_type,
         )
 
 
 class GenericHordeAPISession(GenericHordeAPIManualClient):
-    """A client which can perform arbitrary horde API requests, but also keeps track of requests' responses which
-    need follow up. Use `submit_request` for synchronous requests, and `async_submit_request` for asynchronous
+    """A client which can perform arbitrary horde API requests, but also keeps track of reponses requiring follow up.
+
+    Use `submit_request` for synchronous requests, and `async_submit_request` for asynchronous
     requests.
 
     This typically is the better class if you do not want to worry about handling any outstanding requests
@@ -679,6 +699,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
     ) -> None:
+        """Initializes a new `GenericHordeAPISession` instance."""
         super().__init__(
             aiohttp_session=aiohttp_session,
             header_fields=header_fields,
@@ -717,9 +738,11 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         return response
 
     def __enter__(self) -> GenericHordeAPISession:
+        """Enter the context manager."""
         return self
 
     def __exit__(self, exc_type: type[Exception], exc_val: Exception, exc_tb: object) -> None:
+        """Exit the context manager."""
         if exc_type is not None:
             logger.error(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
 
@@ -762,9 +785,11 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
             logger.critical(f"{request_to_follow_up}")
 
     async def __aenter__(self) -> GenericHordeAPISession:
+        """Enter the context manager asynchronously."""
         return self
 
     async def __aexit__(self, exc_type: type[Exception], exc_val: Exception, exc_tb: object) -> None:
+        """Exit the context manager asynchronously."""
         if exc_type is not None:
             logger.error(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
 

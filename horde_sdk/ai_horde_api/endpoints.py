@@ -1,3 +1,5 @@
+"""This module contains the URL endpoints for the AI Horde API."""
+
 import os
 
 from strenum import StrEnum
@@ -15,8 +17,10 @@ if os.environ.get("AI_HORDE_DEV_URL", None):
 
 
 class AI_HORDE_API_URL_Literals(StrEnum):
-    """The URL actions 'paths' to the endpoints. Includes the find/replace strings in brackets for path (non-query)
-    variables."""
+    """The URL actions 'paths' to the endpoints.
+
+    Includes the find/replace strings in brackets for path (non-query) variables.
+    """
 
     swagger = "/swagger.json"
 
@@ -73,6 +77,7 @@ class AI_HORDE_API_URL_Literals(StrEnum):
 
 
 def get_ai_horde_swagger_url() -> str:
+    """Get the URL for the AI Horde API swagger docs."""
     return url_with_path(
         base_url=AI_HORDE_BASE_URL,
         path=AI_HORDE_API_URL_Literals.swagger,

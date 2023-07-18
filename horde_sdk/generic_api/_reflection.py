@@ -8,7 +8,7 @@ def get_all_request_types(module_name: str) -> list[type[BaseRequest]]:
     """Returns all non-abstract class types inheriting from `BaseRequest`.
 
     Args:
-        moduleName (str): The target module name to reflect.
+        module_name (str): The target module name to reflect.
 
     Returns:
         list[type[BaseRequest]]: All types inheriting from `BaseRequest`.

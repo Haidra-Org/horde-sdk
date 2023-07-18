@@ -1,4 +1,9 @@
+"""Contains the definitions and functions for dealing with kudos."""
+
+
 class KudosInfo:
+    """Defines how kudos are calculated."""
+
     uptime_reward_per_tick = 50
     uptime_frequency_per_hour = 6
     uptime_frequency_per_day = uptime_frequency_per_hour * 24

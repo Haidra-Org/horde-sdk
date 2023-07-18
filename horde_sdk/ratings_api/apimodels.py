@@ -17,6 +17,8 @@ from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_
 
 
 class BaseRatingsAPIRequest(BaseRequest):
+    """Base class for all requests to the AI Horde Ratings API."""
+
     @override
     @classmethod
     def get_api_url(cls) -> str:

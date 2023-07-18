@@ -21,8 +21,9 @@ class HordeAPIModel(BaseModel, abc.ABC):
     @classmethod
     @abc.abstractmethod
     def get_api_model_name(cls) -> str | None:
-        """Return the name of the model as seen in the published swagger doc. If none, there is no payload,
-        such as for a GET request.
+        """Return the name of the model as seen in the published swagger doc.
+
+        If none, there is no payload, such as for a GET request.
         """
 
     def to_json_horde_sdk_safe(self) -> str:
@@ -165,24 +166,8 @@ class BaseResponseNeedsFollowUp(BaseResponse):
 
     @classmethod
     def get_follow_up_request_types(cls) -> list[type]:  # TODO type hint???
-        """Return a list of all the possible follow up request types for this response"""
+        """Return a list of all the possible follow up request types for this response."""
         return [cls.get_follow_up_default_request()]
-
-    _follow_up_handled: bool = False  # FIXME
-
-    def set_follow_up_handled(self) -> None:  # FIXME
-        """Set this response as having had its follow up request handled.
-
-        This is used for context management.
-        """
-        self._follow_up_handled = True
-
-    def is_follow_up_handled(self) -> bool:  # FIXME
-        """Return whether this response has had its follow up request handled.
-
-        This is used for context management.
-        """
-        return self._follow_up_handled
 
 
 class RequestErrorResponse(BaseResponse):
@@ -221,7 +206,7 @@ class BaseRequest(HordeAPIMessage):
 
     @classmethod
     def get_endpoint_url(cls) -> str:
-        """Return the endpoint URL, including the path to the specific API action defined by this object"""
+        """Return the endpoint URL, including the path to the specific API action defined by this object."""
         return url_with_path(base_url=cls.get_api_url(), path=cls.get_endpoint_subpath())
 
     @classmethod
@@ -232,7 +217,7 @@ class BaseRequest(HordeAPIMessage):
     @classmethod
     @abc.abstractmethod
     def get_endpoint_subpath(cls) -> str:
-        """Return the subpath to the specific API action defined by this object"""
+        """Return the subpath to the specific API action defined by this object."""
 
     @classmethod
     @abc.abstractmethod
@@ -266,6 +251,7 @@ class BaseRequestAuthenticated(BaseModel):
 
     @field_validator("apikey")
     def validate_api_key_length(cls, v: str) -> str:
+        """Validate that the API key is the correct length, or is the special ANON_API_KEY."""
         if v is None:
             return v
         if v == ANON_API_KEY:
@@ -276,7 +262,7 @@ class BaseRequestAuthenticated(BaseModel):
 
 
 class BaseRequestUserSpecific(BaseModel):
-    """Mix-in class to describe an endpoint for which you can specify a user.""" ""
+    """Mix-in class to describe an endpoint for which you can specify a user."""
 
     user_id: str
     """The user's ID, as a `str`, but only containing numeric values."""
@@ -290,7 +276,7 @@ class BaseRequestUserSpecific(BaseModel):
 
 
 class BaseRequestWorkerDriven(BaseModel):
-    """ "Mix-in class to describe an endpoint for which you can specify workers."""
+    """Mix-in class to describe an endpoint for which you can specify workers."""
 
     trusted_workers: bool = False
     slow_workers: bool = False

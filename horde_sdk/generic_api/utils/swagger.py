@@ -1,3 +1,5 @@
+"""Utilities for parsing a swagger doc."""
+
 from __future__ import annotations
 
 import json
@@ -14,6 +16,8 @@ from horde_sdk.consts import PAYLOAD_HTTP_METHODS, HTTPMethod, HTTPStatusCode, i
 
 
 class SwaggerModelAdditionalProperty(BaseModel):
+    """An additional property of a model (data structure) used in the API."""
+
     # TODO: Is this actually a recursive SwaggerModelDefinitionProperty?
     model_config = {"extra": "forbid"}
 
@@ -58,8 +62,11 @@ class SwaggerModelRef(BaseModel):
 
 
 class SwaggerModelEntry(BaseModel, ABC):
-    """An entry in the definitions section of the swagger doc. This could be a model definition, or a schema validation
-    method object. See `SwaggerModelDefinitionSchemaValidationMethods` for more info."""
+    """An entry in the definitions section of the swagger doc.
+
+    This could be a model definition, or a schema validation method object.
+    See `SwaggerModelDefinitionSchemaValidationMethods` for more info.
+    """
 
 
 class SwaggerModelDefinition(SwaggerModelEntry):
@@ -133,6 +140,8 @@ class SwaggerModelDefinitionSchemaValidation(SwaggerModelEntry):
 
 
 class SwaggerDocTagsItem(BaseModel):
+    """A description of a tag in the swagger doc."""
+
     model_config = {"extra": "forbid"}
 
     name: str | None = None
@@ -140,12 +149,16 @@ class SwaggerDocTagsItem(BaseModel):
 
 
 class SwaggerDocResponseItem(BaseModel):
+    """A description of a response in the swagger doc."""
+
     model_config = {"extra": "forbid"}
 
     description: str | None = None
 
 
 class SwaggerDocInfo(BaseModel):
+    """The info section of the swagger doc."""
+
     model_config = {"extra": "forbid"}
 
     title: str | None = None
@@ -154,11 +167,15 @@ class SwaggerDocInfo(BaseModel):
 
 
 class SwaggerEndpointMethodParameterSchemaRef(BaseModel):
+    """A schema definition of an endpoint method parameter that is a reference to another model."""
+
     model_config = {"extra": "forbid"}
     ref: str | None = Field(alias="$ref")
 
 
 class SwaggerEndpointMethodParameterSchemaProperty(BaseModel):
+    """A property definition of an endpoint method parameter schema."""
+
     model_config = {"extra": "forbid"}
 
     type_: str | None = Field(None, alias="type")
@@ -166,6 +183,8 @@ class SwaggerEndpointMethodParameterSchemaProperty(BaseModel):
 
 
 class SwaggerEndpointMethodParameterSchema(BaseModel):
+    """A schema definition of an endpoint method parameter."""
+
     model_config = {"extra": "forbid"}
 
     type_: str | None = Field(None, alias="type")
@@ -173,6 +192,8 @@ class SwaggerEndpointMethodParameterSchema(BaseModel):
 
 
 class SwaggerEndpointMethodParameter(BaseModel):
+    """A parameter definition of an endpoint method."""
+
     model_config = {"extra": "forbid"}
 
     name: str | None = None
@@ -189,12 +210,16 @@ class SwaggerEndpointMethodParameter(BaseModel):
 
 
 class SwaggerEndpointResponseSchemaItem(BaseModel):
+    """A response item definition pointing to a schema ("$ref")."""
+
     # model_config = {"extra": "forbid"}
 
     ref: str | None = Field(None, alias="$ref")
 
 
 class SwaggerEndpointResponseSchema(BaseModel):
+    """A response schema definition of an endpoint."""
+
     # model_config = {"extra": "forbid"}
 
     ref: str | None = Field(None, alias="$ref")
@@ -203,6 +228,8 @@ class SwaggerEndpointResponseSchema(BaseModel):
 
 
 class SwaggerEndpointResponse(BaseModel):
+    """A response definition of an endpoint."""
+
     model_config = {"extra": "forbid"}
 
     description: str
@@ -210,6 +237,8 @@ class SwaggerEndpointResponse(BaseModel):
 
 
 class SwaggerEndpointMethod(BaseModel):
+    """A method definition of an endpoint."""
+
     model_config = {"extra": "forbid"}
 
     summary: str | None = None
@@ -221,6 +250,8 @@ class SwaggerEndpointMethod(BaseModel):
 
 
 class SwaggerEndpointParameter(BaseModel):
+    """A parameter definition of an endpoint."""
+
     model_config = {"extra": "forbid"}
 
     name: str | None = None
@@ -231,6 +262,8 @@ class SwaggerEndpointParameter(BaseModel):
 
 
 class SwaggerEndpoint(BaseModel):
+    """An endpoint definition of the API."""
+
     model_config = {"extra": "forbid"}
 
     parameters: list[SwaggerEndpointParameter] | None = None
@@ -277,6 +310,8 @@ class SwaggerEndpoint(BaseModel):
 
 
 class SwaggerDoc(BaseModel):
+    """The swagger doc for an API, represented as an object."""
+
     model_config = {"extra": "forbid"}
 
     swagger: str
@@ -458,6 +493,14 @@ class SwaggerDoc(BaseModel):
         return re.sub(r"__+", "_", endpoint_path)
 
     def write_all_payload_examples_to_file(self, directory: str | Path) -> bool:
+        """Write all example payloads to a file in the test_data directory.
+
+        Args:
+            directory (str | Path): The directory to write the files to.
+
+        Returns:
+            bool: If succeeded, true.
+        """
         directory = Path(directory)
         all_examples = self.get_all_payload_examples()
         for endpoint_path, endpoint_examples_info in all_examples.items():
@@ -474,6 +517,15 @@ class SwaggerDoc(BaseModel):
         *,
         error_responses: bool = False,
     ) -> bool:
+        """Write all example responses to a file in the test_data directory.
+
+        Args:
+            directory (str | Path): The directory to write the files to.
+            error_responses (bool, optional): Whether to include error responses. Defaults to False.
+
+        Returns:
+            bool: _description_
+        """
         directory = Path(directory)
         all_examples = self.get_all_response_examples()
         for endpoint_path, endpoint_examples_info in all_examples.items():
@@ -620,6 +672,7 @@ class SwaggerDoc(BaseModel):
         return return_dict if return_dict else return_list
 
     def get_default_with_constraint(self, model_property: SwaggerModelProperty) -> object:
+        """Get the default value for a given model property, with any constraints applied."""
         if model_property.description and "optionally" in model_property.description:
             pass
         if model_property.example is not None:
@@ -651,6 +704,8 @@ class SwaggerDoc(BaseModel):
 
 
 class SwaggerParser:
+    """Parse a swagger doc from a URL or a local file."""
+
     _swagger_json: dict
 
     def __init__(
@@ -659,6 +714,12 @@ class SwaggerParser:
         swagger_doc_url: str | None = None,
         swagger_doc_path: str | Path | None = None,
     ) -> None:
+        """Parse a swagger doc from a URL or a local file.
+
+        Args:
+            swagger_doc_url (str | None, optional): Defaults to None.
+            swagger_doc_path (str | Path | None, optional): Defaults to None.
+        """
         if swagger_doc_path:
             swagger_doc_path = Path(swagger_doc_path)
             if swagger_doc_path.exists():
@@ -675,10 +736,12 @@ class SwaggerParser:
                 raise RuntimeError(f"Failed to get swagger.json from server: {e.response.text}") from e
 
     def get_swagger_doc(self) -> SwaggerDoc:
+        """Get the swagger doc as a SwaggerDoc object."""
         return SwaggerDoc.model_validate(self._swagger_json)
 
     def get_all_examples(self) -> dict[str, dict[str, object]]:
-        return {}
+        """Get all examples from the swagger doc."""
+        return {}  # TODO: Implement this
 
 
 _SWAGGER_TYPE_TO_PYTHON_TYPE = {
@@ -697,4 +760,5 @@ def resolve_swagger_type_name(type_name: str) -> type:
 
 
 def default_swagger_value_from_type_name(type_name: str) -> object:
+    """Get the default value for a given swagger type name."""
     return resolve_swagger_type_name(type_name)()
