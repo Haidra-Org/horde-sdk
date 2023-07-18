@@ -147,5 +147,5 @@ A few endpoints, such as `/v2/generate/async` ([ImageGenerateAsyncRequest](../ho
 -   This is to prevent you from side stepping any validation.
 -   See [pydantic's
     docs](https://docs.pydantic.dev/2.0/usage/validation_errors/#frozen_instance)
-    for more information. See a
--   See also `faq` for more information.
+    for more information.
+-   See also [FAQ](faq.md) for more information.
