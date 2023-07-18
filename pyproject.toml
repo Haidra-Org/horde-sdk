@@ -45,6 +45,8 @@ tests = ["*.json"]
 line-length = 119
 select = ["A", "I", "E", "W", "F", "UP", "YTT", "B", "C4", "PIE", "RET", "SIM", "COM"] #, "D", "ANN"] # FIXME
 ignore = [
+  "ANN101",
+  "ANN102",
   # Ignore D rules for non-google docstring standard
   "D203",
   "D204",
@@ -58,10 +60,11 @@ ignore = [
   "D408",
   "D409",
   "D413",]
-
+exclude = ["codegen"]
 [tool.ruff.per-file-ignores]
 "apimodels.py" = ["A003"]
 # A003 - in dataclasses/pydantic, shadowing python builtin fields is OK for this project
+
 
 [tool.black]
 line-length = 119
