@@ -10,8 +10,8 @@ from horde_sdk.consts import _UNDEFINED_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     BaseRequest,
     BaseResponse,
-    RequestMayUseAPIKey,
-    RequestSpecifiesUserID,
+    MayUseAPIKeyInRequestMixin,
+    RequestSpecifiesUserIDMixin,
 )
 from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
 
@@ -154,7 +154,7 @@ class BaseSelectableReturnTypeRequest(BaseModel):
 
 class ImageRatingsRequest(
     BaseRatingsAPIRequest,
-    RequestMayUseAPIKey,
+    MayUseAPIKeyInRequestMixin,
     BaseSelectableReturnTypeRequest,
 ):
     """Represents the data needed to make a request to the `/v1/image/ratings/{image_id}` endpoint."""
@@ -204,8 +204,8 @@ class ImageRatingsFilterableRequestBase(BaseSelectableReturnTypeRequest):
 
 class UserValidateRequest(
     BaseRatingsAPIRequest,
-    RequestMayUseAPIKey,
-    RequestSpecifiesUserID,
+    MayUseAPIKeyInRequestMixin,
+    RequestSpecifiesUserIDMixin,
     ImageRatingsFilterableRequestBase,
 ):
     """Represents the data needed to make a request to the `/v1/user/validate/{user_id}` endpoint."""
@@ -233,8 +233,8 @@ class UserValidateRequest(
 
 class UserCheckRequest(
     BaseRatingsAPIRequest,
-    RequestMayUseAPIKey,
-    RequestSpecifiesUserID,
+    MayUseAPIKeyInRequestMixin,
+    RequestSpecifiesUserIDMixin,
 ):
     """Represents the data needed to make a request to the `/v1/user/check/` endpoint."""
 
@@ -264,7 +264,7 @@ class UserCheckRequest(
 
 class UserRatingsRequest(
     BaseRatingsAPIRequest,
-    RequestMayUseAPIKey,
+    MayUseAPIKeyInRequestMixin,
     ImageRatingsFilterableRequestBase,
 ):
     """Represents the data needed to make a request to the `/v1/user/ratings/` endpoint."""

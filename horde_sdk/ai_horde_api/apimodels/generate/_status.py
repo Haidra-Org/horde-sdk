@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, BaseImageJobRequest
+from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
 from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckResponse
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
@@ -15,8 +15,9 @@ class ImageGeneration(BaseModel):
     v2 API Model: `GenerationStable`
     """
 
-    id: str | ImageID  # noqa: A003
+    id_: str | ImageID = Field(alias="id")
     """The UUID of this image. Is always returned as a `ImageID`, but can initialized from a `str`."""
+    # todo: remove `str`?
     worker_id: str | WorkerID
     """The UUID of the worker which generated this image."""
     worker_name: str
@@ -52,7 +53,7 @@ class ImageGenerateStatusResponse(ImageGenerateCheckResponse):
 
 class DeleteImageGenerateRequest(
     BaseAIHordeRequest,
-    BaseImageJobRequest,
+    JobRequestMixin,
 ):
     """Represents a DELETE request to the `/v2/generate/status/{id}` endpoint."""
 
@@ -77,7 +78,7 @@ class DeleteImageGenerateRequest(
         return ImageGenerateStatusResponse
 
 
-class ImageGenerateStatusRequest(BaseAIHordeRequest, BaseImageJobRequest):
+class ImageGenerateStatusRequest(BaseAIHordeRequest, JobRequestMixin):
     """Represents a GET request to the `/v2/generate/status/{id}` endpoint."""
 
     @override
