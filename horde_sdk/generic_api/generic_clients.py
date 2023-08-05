@@ -16,9 +16,9 @@ from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     BaseRequest,
     BaseResponse,
+    MayUseAPIKeyInRequestMixin,
     RequestErrorResponse,
-    RequestMayUseAPIKey,
-    ResponseNeedingFollowUp,
+    ResponseNeedingFollowUpMixin,
 )
 from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.generic_api.metadata import (
@@ -216,7 +216,7 @@ class GenericHordeAPIManualClient:
             request_body_data_dict = None
 
         # Add the API key to the request headers if the request is authenticated and an API key is provided
-        if isinstance(api_request, RequestMayUseAPIKey) and self._apikey:
+        if isinstance(api_request, MayUseAPIKeyInRequestMixin) and self._apikey:
             request_headers_dict["apikey"] = self._apikey
             logger.debug("No API key was provided, using the anonymous API key.")
 
@@ -452,7 +452,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
                 self._pending_follow_ups.pop(index)
                 break
 
-        if isinstance(response, ResponseNeedingFollowUp):
+        if isinstance(response, ResponseNeedingFollowUpMixin):
             # Check if this request is a cleanup request for another request in self._pending_follow_ups
             # If so, remove the request from self._pending_follow_ups as its been handled
 
@@ -480,7 +480,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
                     self._pending_follow_ups.pop(index)
                     break
 
-            if isinstance(response, ResponseNeedingFollowUp):
+            if isinstance(response, ResponseNeedingFollowUpMixin):
                 self._pending_follow_ups.append(
                     (api_request, response, response.get_follow_up_failure_cleanup_request()),
                 )
@@ -528,7 +528,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         """
         if isinstance(response_to_follow_up, RequestErrorResponse):
             return True
-        if not isinstance(response_to_follow_up, ResponseNeedingFollowUp):
+        if not isinstance(response_to_follow_up, ResponseNeedingFollowUpMixin):
             return True
 
         message = (
@@ -602,7 +602,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
     ) -> bool:
         if isinstance(response_to_follow_up, RequestErrorResponse):
             return True
-        if not isinstance(response_to_follow_up, ResponseNeedingFollowUp):
+        if not isinstance(response_to_follow_up, ResponseNeedingFollowUpMixin):
             return True
 
         message = (

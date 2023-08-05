@@ -6,7 +6,7 @@ from typing_extensions import override
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseResponse, RequestMayUseAPIKey
+from horde_sdk.generic_api.apimodels import BaseResponse, MayUseAPIKeyInRequestMixin
 
 
 class ContributionsDetails(BaseModel):
@@ -175,7 +175,7 @@ class FindUserResponse(BaseResponse):
     When 0, this user cannot add (new) workers to the horde."""
 
 
-class FindUserRequest(BaseAIHordeRequest, RequestMayUseAPIKey):
+class FindUserRequest(BaseAIHordeRequest, MayUseAPIKeyInRequestMixin):
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:

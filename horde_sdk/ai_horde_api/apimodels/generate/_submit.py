@@ -1,10 +1,9 @@
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
+from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
-from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseResponse, RequestMayUseAPIKey
+from horde_sdk.generic_api.apimodels import BaseResponse, MayUseAPIKeyInRequestMixin
 
 
 class ImageGenerationJobSubmitResponse(BaseResponse):
@@ -17,14 +16,12 @@ class ImageGenerationJobSubmitResponse(BaseResponse):
         return "GenerationSubmitted"
 
 
-class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, RequestMayUseAPIKey):
+class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, JobRequestMixin, MayUseAPIKeyInRequestMixin):
     """Represents the data needed to make a job submit 'request' from a worker to the /v2/generate/submit endpoint.
 
     v2 API Model: `SubmitInputStable`
     """
 
-    id: str | GenerationID  # noqa: A003
-    """The UUID for this image generation."""
     generation: str
     """R2 result was uploaded to R2, else the string of the result."""
     state: str

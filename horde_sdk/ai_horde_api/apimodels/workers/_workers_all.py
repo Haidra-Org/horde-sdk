@@ -8,7 +8,7 @@ from horde_sdk.ai_horde_api.consts import WORKER_TYPE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
 from horde_sdk.ai_horde_api.fields import TeamID, WorkerID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseResponse, HordeAPIObject, RequestMayUseAPIKey
+from horde_sdk.generic_api.apimodels import BaseResponse, HordeAPIObject, MayUseAPIKeyInRequestMixin
 
 
 class TeamDetailsLite(HordeAPIObject):
@@ -93,7 +93,7 @@ class AllWorkersDetailsResponse(RootModel[list[WorkerDetailItem]], BaseResponse)
         return "WorkerDetails"
 
 
-class AllWorkersDetailsRequest(BaseAIHordeRequest, RequestMayUseAPIKey):
+class AllWorkersDetailsRequest(BaseAIHordeRequest, MayUseAPIKeyInRequestMixin):
     """Returns information on all works. If a moderator API key is specified, it will return additional information."""
 
     type_: WORKER_TYPE = Field(alias="type")

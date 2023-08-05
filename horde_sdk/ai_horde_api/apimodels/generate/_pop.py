@@ -2,12 +2,15 @@ import pydantic
 from pydantic import Field, field_validator
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, BaseImageGenerateParam
+from horde_sdk.ai_horde_api.apimodels.base import (
+    BaseAIHordeRequest,
+    ImageGenerateParamMixin,
+    JobResponseMixin,
+)
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE, KNOWN_SOURCE_PROCESSING
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
-from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseResponse, RequestMayUseAPIKey, ResponseNeedingFollowUp
+from horde_sdk.generic_api.apimodels import BaseResponse, MayUseAPIKeyInRequestMixin, ResponseNeedingFollowUpMixin
 
 
 class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
@@ -53,15 +56,13 @@ class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
     """How many waiting requests were skipped because they requested a controlnet."""
 
 
-class ImageGenerateJobResponse(BaseResponse, ResponseNeedingFollowUp):
+class ImageGenerateJobResponse(BaseResponse, JobResponseMixin, ResponseNeedingFollowUpMixin):
     """Represents the data returned from the `/v2/generate/pop` endpoint.
 
     v2 API Model: `GenerationPayloadStable`
     """
 
-    id_: str | GenerationID = Field(alias="id")
-    """The UUID for this image generation."""
-    payload: BaseImageGenerateParam
+    payload: ImageGenerateParamMixin
     """The parameters used to generate this image."""
     skipped: ImageGenerateJobPopSkippedStatus
     """The reasons this worker was not issued certain jobs, and the number of jobs for each reason."""
@@ -99,7 +100,7 @@ class ImageGenerateJobResponse(BaseResponse, ResponseNeedingFollowUp):
         return {"state": GENERATION_STATE.faulted}  # TODO: One day, could I do away with the magic string?
 
 
-class ImageGenerateJobPopRequest(BaseAIHordeRequest, RequestMayUseAPIKey):
+class ImageGenerateJobPopRequest(BaseAIHordeRequest, MayUseAPIKeyInRequestMixin):
     """Represents the data needed to make a job request from a worker to the /v2/generate/pop endpoint.
 
     v2 API Model: `PopInputStable`
@@ -143,7 +144,7 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, RequestMayUseAPIKey):
         return ImageGenerateJobResponse
 
 
-class ImageGenerateJobPopPayload(BaseImageGenerateParam):
+class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
     prompt: str
 
     @property

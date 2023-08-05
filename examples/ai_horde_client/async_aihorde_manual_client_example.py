@@ -70,7 +70,7 @@ async def main() -> None:
 
     for image_gen in status_response.generations:
         print("Image generation:")
-        print(f"ID: {image_gen.id}")
+        print(f"ID: {image_gen.id_}")
         print(f"URL: {image_gen.img}")
         #  debug(image_gen)
         print("Downloading image...")
@@ -87,7 +87,7 @@ async def main() -> None:
         # Open a file in write mode and write the image bytes to it.
         dir_to_write_to = Path("examples/requested_images/")
         dir_to_write_to.mkdir(parents=True, exist_ok=True)
-        filepath_to_write_to = dir_to_write_to / f"{image_gen.id}.webp"
+        filepath_to_write_to = dir_to_write_to / f"{image_gen.id_}.webp"
         with open(filepath_to_write_to, "wb") as image_file:
             image_file.write(image_bytes)
 

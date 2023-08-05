@@ -59,7 +59,7 @@ class WORKER_TYPE(StrEnum):
     image = auto()
     text = auto()
     interrogation = auto()
-    # alchemist = auto() # TODO
+    alchemist = "interrogation"  # TODO
 
 
 class ALCHEMY_FORMS(StrEnum):
@@ -72,3 +72,17 @@ class ALCHEMY_FORMS(StrEnum):
     caption = auto()
     interrogation = auto()
     post_process = auto()
+
+
+class KNOWN_ALCHEMY_TYPES(StrEnum):
+    caption = auto()
+    interrogation = auto()
+    nsfw = auto()
+    GFPGAN = auto()
+    RealESRGAN_x4plus = auto()
+    RealESRGAN_x2plus = auto()
+    RealESRGAN_x4plus_anime_6B = auto()
+    NMKD_Siax = auto()
+    fourx_AnimeSharp = "4x_AnimeSharp"
+    CodeFormers = auto()
+    strip_background = auto()

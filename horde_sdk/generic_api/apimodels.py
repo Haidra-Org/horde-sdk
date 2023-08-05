@@ -34,7 +34,7 @@ class BaseResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
 
 
-class ResponseNeedingFollowUp(abc.ABC):
+class ResponseNeedingFollowUpMixin(abc.ABC):
     """Represents any response from any Horde API which requires a follow up request of some kind."""
 
     @abc.abstractmethod
@@ -111,13 +111,17 @@ class ResponseNeedingFollowUp(abc.ABC):
         return [cls.get_follow_up_default_request()]
 
 
-class RequestErrorResponse(BaseResponse):
+class ContainsMessageResponseMixin(BaseModel):
+    """Represents any response from any Horde API which contains a message."""
+
+    message: str = ""
+
+
+class RequestErrorResponse(BaseResponse, ContainsMessageResponseMixin):
     """The catch all error response for any request to any Horde API.
 
     v2 API Model: `RequestError`
     """
-
-    message: str = ""
 
     object_data: object = None
     """This is a catch all for any additional data that may be returned by the API relevant to the error."""
@@ -184,7 +188,7 @@ class BaseRequest(HordeAPIMessage):
         return []
 
 
-class RequestMayUseAPIKey(BaseRequest):
+class MayUseAPIKeyInRequestMixin(BaseModel):
     """Mix-in class to describe an endpoint which may require authentication."""
 
     apikey: str | None = None
@@ -207,7 +211,7 @@ class RequestMayUseAPIKey(BaseRequest):
         return v
 
 
-class RequestSpecifiesUserID(BaseRequest):
+class RequestSpecifiesUserIDMixin(BaseModel):
     """Mix-in class to describe an endpoint for which you can specify a user."""
 
     user_id: str
@@ -221,7 +225,7 @@ class RequestSpecifiesUserID(BaseRequest):
         return value
 
 
-class RequestUsesWorker(BaseRequest):
+class RequestUsesImageWorkerMixin(BaseModel):
     """Mix-in class to describe an endpoint for which you can specify workers."""
 
     trusted_workers: bool = False
@@ -239,8 +243,8 @@ __all__ = [
     "HordeAPIMessage",
     "BaseResponse",
     "BaseRequest",
-    "RequestMayUseAPIKey",
-    "RequestSpecifiesUserID",
-    "RequestUsesWorker",
+    "MayUseAPIKeyInRequestMixin",
+    "RequestSpecifiesUserIDMixin",
+    "RequestUsesImageWorkerMixin",
     "RequestErrorResponse",
 ]

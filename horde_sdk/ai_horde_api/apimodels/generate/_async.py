@@ -3,32 +3,36 @@ from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,
-    BaseImageGenerateParam,
+    ImageGenerateParamMixin,
+    JobResponseMixin,
 )
 from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckRequest
 from horde_sdk.ai_horde_api.apimodels.generate._status import DeleteImageGenerateRequest, ImageGenerateStatusRequest
 from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
-from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
     BaseResponse,
-    RequestMayUseAPIKey,
-    RequestUsesWorker,
-    ResponseNeedingFollowUp,
+    ContainsMessageResponseMixin,
+    MayUseAPIKeyInRequestMixin,
+    RequestUsesImageWorkerMixin,
+    ResponseNeedingFollowUpMixin,
 )
 
 
-class ImageGenerateAsyncResponse(BaseResponse, ResponseNeedingFollowUp):
+class ImageGenerateAsyncResponse(
+    BaseResponse,
+    JobResponseMixin,
+    ResponseNeedingFollowUpMixin,
+    ContainsMessageResponseMixin,
+):
     """Represents the data returned from the `/v2/generate/async` endpoint.
 
     v2 API Model: `RequestAsync`
     """
 
-    id_: str | GenerationID = Field(alias="id")  # TODO: Remove `str`?
     """The UUID for this image generation."""
     kudos: float
-    message: str | None = None
 
     @override
     def get_follow_up_returned_params(self) -> dict[str, object]:
@@ -56,14 +60,14 @@ class ImageGenerateAsyncResponse(BaseResponse, ResponseNeedingFollowUp):
         return "RequestAsync"
 
 
-class ImageGenerationInputPayload(BaseImageGenerateParam):
+class ImageGenerationInputPayload(ImageGenerateParamMixin):
     n: int = Field(default=1, ge=1)
 
 
 class ImageGenerateAsyncRequest(
     BaseAIHordeRequest,
-    RequestMayUseAPIKey,
-    RequestUsesWorker,
+    MayUseAPIKeyInRequestMixin,
+    RequestUsesImageWorkerMixin,
 ):
     """Represents the data needed to make a request to the `/v2/generate/async` endpoint.
 

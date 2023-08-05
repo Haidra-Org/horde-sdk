@@ -18,15 +18,22 @@ class BaseAIHordeRequest(BaseRequest):
         return AI_HORDE_BASE_URL
 
 
-class BaseImageJobRequest(BaseModel):
-    """Base class for data relating to image generation jobs."""
+class JobRequestMixin(BaseModel):
+    """Mix-in class for data relating to any generation jobs."""
 
     id_: str | GenerationID = Field(alias="id")
     """The UUID for this job."""
 
 
-class BaseWorkerRequest(BaseModel):
-    """Base class for data relating to worker requests."""
+class JobResponseMixin(BaseModel):
+    """Mix-in class for data relating to any generation jobs."""
+
+    id_: str | GenerationID = Field(alias="id")
+    """The UUID for this job."""
+
+
+class WorkerRequestMixin(BaseModel):
+    """Mix-in class for data relating to worker requests."""
 
     worker_id: str | WorkerID
     """The UUID of the worker in question for this request."""
@@ -48,8 +55,8 @@ class LorasPayloadEntry(BaseModel):
     """Any trigger required to activate the LoRa model."""
 
 
-class BaseImageGenerateParam(BaseModel):
-    """Represents some of the data included in a request to the `/v2/generate/async` endpoint.
+class ImageGenerateParamMixin(BaseModel):
+    """Mix-in class of some of the data included in a request to the `/v2/generate/async` endpoint.
 
     Also is the corresponding information returned on a job pop to the `/v2/generate/pop` endpoint.
     v2 API Model: `ModelPayloadStable`
