@@ -5,9 +5,13 @@ class KudosInfo:
     """Defines how kudos are calculated."""
 
     uptime_reward_per_tick = 50
+    """The amount of kudos earned per tick."""
     uptime_frequency_per_hour = 6
+    """The number of ticks per hour."""
     uptime_frequency_per_day = uptime_frequency_per_hour * 24
+    """The number of ticks per day. (calculated))"""
     per_model_bonus_per_tick = 2
+    """The amount of kudos earned per tick per model."""
 
     def get_uptime_reward_per_tick(self, number_of_models: int | None = None) -> int:
         """Return the amount of kudos earned per tick.

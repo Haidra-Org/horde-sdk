@@ -12,12 +12,13 @@ from pydantic import BaseModel, ValidationError
 from strenum import StrEnum
 from typing_extensions import override
 
+from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     BaseRequest,
-    BaseRequestAuthenticated,
     BaseResponse,
-    BaseResponseNeedsFollowUp,
     RequestErrorResponse,
+    RequestMayUseAPIKey,
+    ResponseNeedingFollowUp,
 )
 from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.generic_api.metadata import (
@@ -161,7 +162,7 @@ class GenericHordeAPIManualClient:
         specified_queries = get_specified_data_keys(self._query_data_keys, api_request)
 
         # Get the endpoint URL from the request and replace any path keys with their corresponding values
-        endpoint_url: str = api_request.get_endpoint_url()
+        endpoint_url: str = api_request.get_api_endpoint_url()
 
         for py_field_name, api_field_name in specified_paths.items():
             # Replace the path key with the value from the request
@@ -215,7 +216,7 @@ class GenericHordeAPIManualClient:
             request_body_data_dict = None
 
         # Add the API key to the request headers if the request is authenticated and an API key is provided
-        if isinstance(api_request, BaseRequestAuthenticated) and self._apikey:
+        if isinstance(api_request, RequestMayUseAPIKey) and self._apikey:
             request_headers_dict["apikey"] = self._apikey
             logger.debug("No API key was provided, using the anonymous API key.")
 
@@ -244,13 +245,13 @@ class GenericHordeAPIManualClient:
             raise RuntimeError(
                 (
                     "Received a non-200 response code, but no `message` key was found "
-                    f"in the response: {raw_response_json}"
+                    f"in the response: {raw_response_json}. Something may be wrong with the API itself."
                 ),
             )
 
         handled_response: HordeResponse | RequestErrorResponse | None = None
         try:
-            parsed_response = expected_response_type.from_dict_or_array(raw_response_json)
+            parsed_response = expected_response_type.model_validate(raw_response_json)
             if isinstance(parsed_response, expected_response_type):
                 handled_response = parsed_response
             else:
@@ -275,8 +276,6 @@ class GenericHordeAPIManualClient:
     ) -> HordeResponse | RequestErrorResponse:
         """Submit a request to the API and return the response.
 
-        Automatically determines the correct method to call based on calling `.get_http_method()` on the request.
-
         If you are wondering why `expected_response_type` is a parameter, it is because the API may return different
         responses depending on the payload or other factors. It is up to you to determine which response type you
         expect, and pass it in here.
@@ -288,9 +287,64 @@ class GenericHordeAPIManualClient:
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
         """
-        http_method_name = api_request.get_http_method()._value_.lower()
-        api_client_method = getattr(self, http_method_name)
-        return api_client_method(api_request, expected_response_type)
+        http_method_name = api_request.get_http_method()
+
+        parsed_request = self._validate_and_prepare_request(api_request)
+
+        raw_response: requests.Response | None = None
+
+        if http_method_name == HTTPMethod.GET:
+            if parsed_request.request_body is not None:
+                raise RuntimeError(
+                    "GET requests cannot have a body! This may mean you forgot to override `get_header_fields()`",
+                )
+            raw_response = requests.get(
+                parsed_request.endpoint_no_query,
+                headers=parsed_request.request_headers,
+                params=parsed_request.request_queries,
+                allow_redirects=True,
+            )
+        elif http_method_name == HTTPMethod.POST:
+            raw_response = requests.post(
+                parsed_request.endpoint_no_query,
+                headers=parsed_request.request_headers,
+                params=parsed_request.request_queries,
+                json=parsed_request.request_body,
+                allow_redirects=True,
+            )
+        elif http_method_name == HTTPMethod.PUT:
+            raw_response = requests.put(
+                parsed_request.endpoint_no_query,
+                headers=parsed_request.request_headers,
+                params=parsed_request.request_queries,
+                json=parsed_request.request_body,
+                allow_redirects=True,
+            )
+        elif http_method_name == HTTPMethod.PATCH:
+            raw_response = requests.patch(
+                parsed_request.endpoint_no_query,
+                headers=parsed_request.request_headers,
+                params=parsed_request.request_queries,
+                json=parsed_request.request_body,
+                allow_redirects=True,
+            )
+        elif http_method_name == HTTPMethod.DELETE:
+            raw_response = requests.delete(
+                parsed_request.endpoint_no_query,
+                headers=parsed_request.request_headers,
+                params=parsed_request.request_queries,
+                json=parsed_request.request_body,
+                allow_redirects=True,
+            )
+        else:
+            raise RuntimeError(f"Unknown HTTP method: {http_method_name}")
+
+        return self._after_request_handling(
+            api_request=api_request,
+            raw_response_json=raw_response.json(),
+            returned_status_code=raw_response.status_code,
+            expected_response_type=expected_response_type,
+        )
 
     async def async_submit_request(
         self,
@@ -299,8 +353,6 @@ class GenericHordeAPIManualClient:
     ) -> HordeResponse | RequestErrorResponse:
         """Submit a request to the API asynchronously and return the response.
 
-        Automatically determines the correct method to call based on calling `.get_http_method()` on the request.
-
         If you are wondering why `expected_response_type` is a parameter, it is because the API may return different
         responses depending on the payload or other factors. It is up to you to determine which response type you
         expect, and pass it in here.
@@ -311,62 +363,13 @@ class GenericHordeAPIManualClient:
 
         Returns:
             HordeResponse | RequestErrorResponse: The response from the API.
+
+        Raises:
+            ClientResponseError: If a network problem occurred.
         """
-        http_method_name = api_request.get_http_method()._value_.lower()
-        api_client_method = getattr(self, f"async_{http_method_name}")
-        return await api_client_method(api_request, expected_response_type)
+        http_method_name = api_request.get_http_method()
 
-    def get(
-        self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
-        """Perform a GET request to the API.
-
-        Args:
-            api_request (BaseRequest): The request to submit.
-            expected_response_type(type[HordeResponse]): The expected response type.
-
-        Returns:
-            HordeResponse | RequestErrorResponse: The response from the API.
-        """
         parsed_request = self._validate_and_prepare_request(api_request)
-        if parsed_request.request_body is not None:
-            raise RuntimeError(
-                "GET requests cannot have a body! This probably means you forgot to override `get_header_fields()`",
-            )
-        raw_response = requests.get(
-            parsed_request.endpoint_no_query,
-            headers=parsed_request.request_headers,
-            params=parsed_request.request_queries,
-            allow_redirects=True,
-        )
-
-        return self._after_request_handling(
-            api_request=api_request,
-            raw_response_json=raw_response.json(),
-            returned_status_code=raw_response.status_code,
-            expected_response_type=expected_response_type,
-        )
-
-    async def async_get(
-        self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
-        """Perform a GET request to the API asynchronously.
-
-        Args:
-            api_request (BaseRequest): The request to submit.
-            expected_response_type(type[HordeResponse]): The expected response type.
-
-        Returns:
-            HordeResponse | RequestErrorResponse: The response from the API.
-        """
-        parsed_request = self._validate_and_prepare_request(api_request)
-
-        if parsed_request.request_body is not None:
-            raise RuntimeError("GET requests cannot have a body!")
 
         raw_response_json: dict = {}
         response_status: int = 599
@@ -375,286 +378,8 @@ class GenericHordeAPIManualClient:
             raise RuntimeError("No aiohttp session was provided but an async method was called!")
 
         async with (
-            self._aiohttp_session.get(
-                parsed_request.endpoint_no_query,
-                headers=parsed_request.request_headers,
-                params=parsed_request.request_queries,
-                allow_redirects=True,
-            ) as response,
-        ):
-            raw_response_json = await response.json()
-            response_status = response.status
-
-        return self._after_request_handling(
-            api_request=api_request,
-            raw_response_json=raw_response_json,
-            returned_status_code=response_status,
-            expected_response_type=expected_response_type,
-        )
-
-    def post(
-        self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
-        """Perform a POST request to the API.
-
-        Args:
-            api_request (BaseRequest): The request to submit.
-            expected_response_type(type[HordeResponse]): The expected response type.
-
-        Returns:
-            HordeResponse | RequestErrorResponse: The response from the API.
-        """
-        parsed_request = self._validate_and_prepare_request(api_request)
-        raw_response = requests.post(
-            parsed_request.endpoint_no_query,
-            headers=parsed_request.request_headers,
-            params=parsed_request.request_queries,
-            json=parsed_request.request_body,
-            allow_redirects=True,
-        )
-
-        return self._after_request_handling(
-            api_request=api_request,
-            raw_response_json=raw_response.json(),
-            returned_status_code=raw_response.status_code,
-            expected_response_type=expected_response_type,
-        )
-
-    async def async_post(
-        self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
-        """Perform a POST request to the API asynchronously.
-
-        Args:
-            api_request (BaseRequest): The request to submit.
-            expected_response_type(type[HordeResponse]): The expected response type.
-
-        Returns:
-            HordeResponse | RequestErrorResponse: The response from the API.
-        """
-        parsed_request = self._validate_and_prepare_request(api_request)
-        raw_response_json: dict = {}
-        response_status: int = 599
-
-        if not self._aiohttp_session:
-            raise RuntimeError("No aiohttp session was provided but an async method was called!")
-
-        async with (
-            self._aiohttp_session.post(
-                parsed_request.endpoint_no_query,
-                headers=parsed_request.request_headers,
-                params=parsed_request.request_queries,
-                json=parsed_request.request_body,
-                allow_redirects=True,
-            ) as response,
-        ):
-            raw_response_json = await response.json()
-            response_status = response.status
-
-        return self._after_request_handling(
-            api_request=api_request,
-            raw_response_json=raw_response_json,
-            returned_status_code=response_status,
-            expected_response_type=expected_response_type,
-        )
-
-    def put(
-        self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
-        """Perform a PUT request to the API.
-
-        Args:
-            api_request (BaseRequest): The request to submit.
-            expected_response_type(type[HordeResponse]): The expected response type.
-
-        Returns:
-            HordeResponse | RequestErrorResponse: The response from the API.
-        """
-        parsed_request = self._validate_and_prepare_request(api_request)
-        raw_response = requests.put(
-            parsed_request.endpoint_no_query,
-            headers=parsed_request.request_headers,
-            params=parsed_request.request_queries,
-            json=parsed_request.request_body,
-            allow_redirects=True,
-        )
-
-        return self._after_request_handling(
-            api_request=api_request,
-            raw_response_json=raw_response.json(),
-            returned_status_code=raw_response.status_code,
-            expected_response_type=expected_response_type,
-        )
-
-    async def async_put(
-        self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
-        """Perform a PUT request to the API asynchronously.
-
-        Args:
-            api_request (BaseRequest): The request to submit.
-            expected_response_type(type[HordeResponse]): The expected response type.
-
-        Returns:
-            HordeResponse | RequestErrorResponse: The response from the API.
-        """
-        parsed_request = self._validate_and_prepare_request(api_request)
-        raw_response_json: dict = {}
-        response_status: int = 599
-
-        if not self._aiohttp_session:
-            raise RuntimeError("No aiohttp session was provided but an async method was called!")
-
-        async with (
-            self._aiohttp_session.put(
-                parsed_request.endpoint_no_query,
-                headers=parsed_request.request_headers,
-                params=parsed_request.request_queries,
-                json=parsed_request.request_body,
-                allow_redirects=True,
-            ) as response,
-        ):
-            raw_response_json = await response.json()
-            response_status = response.status
-
-        return self._after_request_handling(
-            api_request=api_request,
-            raw_response_json=raw_response_json,
-            returned_status_code=response_status,
-            expected_response_type=expected_response_type,
-        )
-
-    def patch(
-        self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
-        """Perform a PATCH request to the API.
-
-        Args:
-            api_request (BaseRequest): The request to submit.
-            expected_response_type(type[HordeResponse]): The expected response type.
-
-        Returns:
-            HordeResponse | RequestErrorResponse: The response from the API.
-        """
-        parsed_request = self._validate_and_prepare_request(api_request)
-        raw_response = requests.patch(
-            parsed_request.endpoint_no_query,
-            headers=parsed_request.request_headers,
-            params=parsed_request.request_queries,
-            json=parsed_request.request_body,
-            allow_redirects=True,
-        )
-
-        return self._after_request_handling(
-            api_request=api_request,
-            raw_response_json=raw_response.json(),
-            returned_status_code=raw_response.status_code,
-            expected_response_type=expected_response_type,
-        )
-
-    async def async_patch(
-        self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
-        """Perform a PATCH request to the API asynchronously.
-
-        Args:
-            api_request (BaseRequest): The request to submit.
-            expected_response_type(type[HordeResponse]): The expected response type.
-
-        Returns:
-            HordeResponse | RequestErrorResponse: The response from the API.
-        """
-        parsed_request = self._validate_and_prepare_request(api_request)
-        raw_response_json: dict = {}
-        response_status: int = 599
-
-        if not self._aiohttp_session:
-            raise RuntimeError("No aiohttp session was provided but an async method was called!")
-
-        async with (
-            self._aiohttp_session.patch(
-                parsed_request.endpoint_no_query,
-                headers=parsed_request.request_headers,
-                params=parsed_request.request_queries,
-                json=parsed_request.request_body,
-                allow_redirects=True,
-            ) as response,
-        ):
-            raw_response_json = await response.json()
-            response_status = response.status
-
-        return self._after_request_handling(
-            api_request=api_request,
-            raw_response_json=raw_response_json,
-            returned_status_code=response_status,
-            expected_response_type=expected_response_type,
-        )
-
-    def delete(
-        self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
-        """Perform a DELETE request to the API.
-
-        Args:
-            api_request (BaseRequest): The request to submit.
-            expected_response_type(type[HordeResponse]): The expected response type.
-
-        Returns:
-            HordeResponse | RequestErrorResponse: The response from the API.
-        """
-        parsed_request = self._validate_and_prepare_request(api_request)
-        raw_response = requests.delete(
-            parsed_request.endpoint_no_query,
-            headers=parsed_request.request_headers,
-            params=parsed_request.request_queries,
-            json=parsed_request.request_body,
-            allow_redirects=True,
-        )
-
-        return self._after_request_handling(
-            api_request=api_request,
-            raw_response_json=raw_response.json(),
-            returned_status_code=raw_response.status_code,
-            expected_response_type=expected_response_type,
-        )
-
-    async def async_delete(
-        self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
-        """Perform a DELETE request to the API asynchronously.
-
-        Args:
-            api_request (BaseRequest): The request to submit.
-            expected_response_type(type[HordeResponse]): The expected response type.
-
-        Returns:
-            HordeResponse | RequestErrorResponse: The response from the API.
-        """
-        parsed_request = self._validate_and_prepare_request(api_request)
-        raw_response_json: dict = {}
-        response_status: int = 599
-
-        if not self._aiohttp_session:
-            raise RuntimeError("No aiohttp session was provided but an async method was called!")
-
-        async with (
-            self._aiohttp_session.delete(
+            self._aiohttp_session.request(
+                http_method_name.value,
                 parsed_request.endpoint_no_query,
                 headers=parsed_request.request_headers,
                 params=parsed_request.request_queries,
@@ -685,9 +410,12 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
     """
 
     _awaiting_requests: list[BaseRequest]
+    """A `list` of `BaseRequest` instances which are being `await`ed on asynchronously."""
     _awaiting_requests_lock: asyncio.Lock = asyncio.Lock()
 
-    _pending_follow_ups: list[tuple[BaseRequest, BaseResponse]]
+    _pending_follow_ups: list[tuple[BaseRequest, BaseResponse, BaseRequest | None]]
+    """A `list` of 3-tuples containing the request, response, and a clean-up request for any requests which might need
+    it."""
     _pending_follow_ups_lock: asyncio.Lock = asyncio.Lock()
 
     def __init__(
@@ -717,7 +445,19 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         expected_response_type: type[HordeResponse],
     ) -> HordeResponse | RequestErrorResponse:
         response = super().submit_request(api_request, expected_response_type)
-        self._pending_follow_ups.append((api_request, response))
+
+        for index, (_, _, cleanup_request) in enumerate(self._pending_follow_ups):
+            # The response stores the reference to this cleanup request internally, so we can match by identity
+            if api_request is cleanup_request:
+                self._pending_follow_ups.pop(index)
+                break
+
+        if isinstance(response, ResponseNeedingFollowUp):
+            # Check if this request is a cleanup request for another request in self._pending_follow_ups
+            # If so, remove the request from self._pending_follow_ups as its been handled
+
+            self._pending_follow_ups.append((api_request, response, response.get_follow_up_failure_cleanup_request()))
+
         return response
 
     @override
@@ -733,7 +473,17 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
 
         async with self._awaiting_requests_lock, self._pending_follow_ups_lock:
             self._awaiting_requests.remove(api_request)
-            self._pending_follow_ups.append((api_request, response))
+
+            for index, (_, _, cleanup_request) in enumerate(self._pending_follow_ups):
+                # The response stores the reference to this cleanup request internally, so we can match by identity
+                if api_request is cleanup_request:
+                    self._pending_follow_ups.pop(index)
+                    break
+
+            if isinstance(response, ResponseNeedingFollowUp):
+                self._pending_follow_ups.append(
+                    (api_request, response, response.get_follow_up_failure_cleanup_request()),
+                )
 
         return response
 
@@ -741,57 +491,77 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         """Enter the context manager."""
         return self
 
-    def __exit__(self, exc_type: type[Exception], exc_val: Exception, exc_tb: object) -> None:
+    def __exit__(self, exc_type: type[Exception], exc_val: Exception, exc_tb: object) -> bool:
         """Exit the context manager."""
-        if exc_type is not None:
-            logger.error(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
+        if exc_type is None:
+            return True
+
+        logger.error(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
 
         if not self._pending_follow_ups:
-            return
+            return exc_type is asyncio.CancelledError
 
-        for request_to_follow_up, response_to_follow_up in self._pending_follow_ups:
-            self._handle_exit(request_to_follow_up, response_to_follow_up)
+        all_handled = True
+        for request_to_follow_up, response_to_follow_up, cleanup_request in self._pending_follow_ups:
+            handled = self._handle_exit(request_to_follow_up, response_to_follow_up, cleanup_request)
+            all_handled = all_handled and handled
 
-    def _handle_exit(self, request_to_follow_up: BaseRequest, response_to_follow_up: BaseResponse) -> None:
+        is_cancelled = exc_type is asyncio.CancelledError
+
+        # If we cancelled the task and everything cleaned up ok, we don't want to raise an exception
+        return all_handled and is_cancelled  # Returns True if everything was handled and we cancelled the task
+
+    def _handle_exit(
+        self,
+        request_to_follow_up: BaseRequest,
+        response_to_follow_up: BaseResponse,
+        cleanup_request: BaseRequest | None,
+    ) -> bool:
+        """Sends any follow up requests needed to clean up after a request which is ending prematurely.
+
+        Args:
+            request_to_follow_up (BaseRequest): The request which is ending prematurely.
+            response_to_follow_up (BaseResponse): The response to the request which is ending prematurely.
+
+        Returns:
+            bool: True if the request was handled successfully, False otherwise.
+        """
         if isinstance(response_to_follow_up, RequestErrorResponse):
-            return
-        if not isinstance(response_to_follow_up, BaseResponseNeedsFollowUp):
-            return
-
-        recovery_request_type: type[BaseRequest] | None = response_to_follow_up.get_follow_up_failure_cleanup_request()
-
-        if recovery_request_type is None:
-            return
-
-        request_params: dict[str, object] = response_to_follow_up.get_follow_up_all_params()
-        request_params.update(response_to_follow_up.get_follow_up_failure_cleanup_params())
+            return True
+        if not isinstance(response_to_follow_up, ResponseNeedingFollowUp):
+            return True
 
         message = (
             "An exception occurred while trying to create a recovery request! "
             "This is a bug in the SDK, please report it!"
         )
         try:
-            recovery_request = recovery_request_type.model_validate(request_params)
+            if cleanup_request is None:
+                logger.debug("No recovery request was provided, but the class said it needed one!")
+                return True
 
-            recovery_response = super().submit_request(
-                recovery_request,
-                recovery_request.get_success_response_type(),
+            logger.debug("Recovery request created!")
+            logger.debug(f"{cleanup_request}")
+            recovery_response = self.submit_request(
+                cleanup_request,
+                cleanup_request.get_success_response_type(),
             )
-            logger.info("Recovery request submitted!")
+            logger.debug("Recovery request submitted!")
             logger.debug(f"Recovery response: {recovery_response}")
+
+            return True
 
         except Exception:  # If we don't blanket catch here, other requests could end up dangling
             logger.critical(message)
             logger.critical(f"{request_to_follow_up}")
+            return False
 
     async def __aenter__(self) -> GenericHordeAPISession:
         """Enter the context manager asynchronously."""
         return self
 
-    async def __aexit__(self, exc_type: type[Exception], exc_val: Exception, exc_tb: object) -> None:
+    async def __aexit__(self, exc_type: type[Exception], exc_val: Exception, exc_tb: object) -> bool:
         """Exit the context manager asynchronously."""
-        if exc_type is not None:
-            logger.error(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
 
         if self._awaiting_requests:
             logger.warning(
@@ -803,45 +573,58 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
             for request in self._awaiting_requests:
                 logger.warning(f"Request Unhandled: {request}")
 
+        if exc_type is not None:
+            logger.debug(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
+
         if not self._pending_follow_ups:
-            return
+            return exc_type is asyncio.CancelledError
 
-        await asyncio.gather(
-            *[
-                self._handle_exit_async(request_to_follow_up, response_to_follow_up)
-                for request_to_follow_up, response_to_follow_up in self._pending_follow_ups
-            ],
-        )
+        try:
+            await asyncio.gather(
+                *[
+                    self._handle_exit_async(request_to_follow_up, response_to_follow_up, cleanup_request)
+                    for request_to_follow_up, response_to_follow_up, cleanup_request in self._pending_follow_ups
+                ],
+            )
 
-    async def _handle_exit_async(self, request_to_follow_up: BaseRequest, response_to_follow_up: BaseResponse) -> None:
+            # Return True if everything was handled and the task was cancelled deliberately,
+            # False otherwise (which will reraise the exception)
+            return exc_type is asyncio.CancelledError
+        except Exception as e:
+            logger.exception(e)
+            return False
+
+    async def _handle_exit_async(
+        self,
+        request_to_follow_up: BaseRequest,
+        response_to_follow_up: BaseResponse,
+        cleanup_request: BaseRequest | None,
+    ) -> bool:
         if isinstance(response_to_follow_up, RequestErrorResponse):
-            return
-        if not isinstance(response_to_follow_up, BaseResponseNeedsFollowUp):
-            return
-
-        recovery_request_type: type[BaseRequest] | None = response_to_follow_up.get_follow_up_failure_cleanup_request()
-
-        if recovery_request_type is None:
-            return
-
-        request_params: dict[str, object] = response_to_follow_up.get_follow_up_all_params()
-        request_params.update(response_to_follow_up.get_follow_up_failure_cleanup_params())
+            return True
+        if not isinstance(response_to_follow_up, ResponseNeedingFollowUp):
+            return True
 
         message = (
             "An exception occurred while trying to create a recovery request! "
             "This is a bug in the SDK, please report it!"
         )
         try:
-            recovery_request = recovery_request_type.model_validate(request_params)
+            if cleanup_request is None:
+                return True
 
-            recovery_response = await super().async_submit_request(
-                recovery_request,
-                recovery_request.get_success_response_type(),
+            recovery_response = await self.async_submit_request(
+                cleanup_request,
+                cleanup_request.get_success_response_type(),
             )
             logger.info("Recovery request submitted!")
             logger.debug(f"Recovery response: {recovery_response}")
+
+            return True
 
         except Exception as e:  # If we don't blanket catch here, other requests could end up dangling
             logger.exception(e)
             logger.critical(message)
             logger.critical(f"{request_to_follow_up}")
+
+            return False

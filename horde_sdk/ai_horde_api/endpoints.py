@@ -16,7 +16,7 @@ if os.environ.get("AI_HORDE_DEV_URL", None):
     AI_HORDE_BASE_URL = os.environ["AI_HORDE_DEV_URL"]
 
 
-class AI_HORDE_API_URL_Literals(StrEnum):
+class AI_HORDE_API_ENDPOINT_SUBPATHS(StrEnum):
     """The URL actions 'paths' to the endpoints.
 
     Includes the find/replace strings in brackets for path (non-query) variables.
@@ -69,6 +69,9 @@ class AI_HORDE_API_URL_Literals(StrEnum):
     v2_teams_all = "/v2/teams"
     v2_teams = "/v2/teams/{team_id}"
 
+    v2_find_user = "/v2/find_user"
+    """Note that this is an API key lookup, not a user ID lookup."""
+
     v2_users_all = "/v2/users"
     v2_users = "/v2/users/{user_id}"
 
@@ -80,5 +83,5 @@ def get_ai_horde_swagger_url() -> str:
     """Get the URL for the AI Horde API swagger docs."""
     return url_with_path(
         base_url=AI_HORDE_BASE_URL,
-        path=AI_HORDE_API_URL_Literals.swagger,
+        path=AI_HORDE_API_ENDPOINT_SUBPATHS.swagger,
     )

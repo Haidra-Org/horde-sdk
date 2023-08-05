@@ -25,7 +25,7 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     swagger_defined_response_examples = swagger_doc.get_all_response_examples()
 
     for request_type in all_request_types:
-        endpoint_subpath = request_type.get_endpoint_subpath()
+        endpoint_subpath = request_type.get_api_endpoint_subpath()
         assert endpoint_subpath, f"Failed to get endpoint subpath for {request_type.__name__}"
 
         # print(f"Found VERB: `{request_type.get_http_method()}` REQUEST TYPE: `{request_type.__name__}` in swagger")

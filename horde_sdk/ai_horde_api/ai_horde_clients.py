@@ -92,7 +92,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient):
 
         api_response = self.submit_request(api_request, api_request.get_success_response_type())
         if isinstance(api_response, RequestErrorResponse):
-            self._handle_api_error(api_response, api_request.get_endpoint_url())
+            self._handle_api_error(api_response, api_request.get_api_endpoint_url())
 
         return api_response
 
@@ -115,7 +115,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient):
 
         api_response = await self.async_submit_request(api_request, api_request.get_success_response_type())
         if isinstance(api_response, RequestErrorResponse):
-            self._handle_api_error(api_response, api_request.get_endpoint_url())
+            self._handle_api_error(api_response, api_request.get_api_endpoint_url())
 
         return api_response
 
@@ -139,7 +139,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient):
 
         api_response = self.submit_request(api_request, api_request.get_success_response_type())
         if isinstance(api_response, RequestErrorResponse):
-            self._handle_api_error(api_response, api_request.get_endpoint_url())
+            self._handle_api_error(api_response, api_request.get_api_endpoint_url())
             return api_response
 
         return api_response
@@ -164,7 +164,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient):
 
         api_response = await self.async_submit_request(api_request, api_request.get_success_response_type())
         if isinstance(api_response, RequestErrorResponse):
-            self._handle_api_error(api_response, api_request.get_endpoint_url())
+            self._handle_api_error(api_response, api_request.get_api_endpoint_url())
             return api_response
 
         return api_response
@@ -182,7 +182,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient):
 
         api_response = self.submit_request(api_request, api_request.get_success_response_type())
         if isinstance(api_response, RequestErrorResponse):
-            self._handle_api_error(api_response, api_request.get_endpoint_url())
+            self._handle_api_error(api_response, api_request.get_api_endpoint_url())
             return api_response
 
         return api_response
@@ -203,7 +203,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient):
 
         api_response = await self.async_submit_request(api_request, api_request.get_success_response_type())
         if isinstance(api_response, RequestErrorResponse):
-            self._handle_api_error(api_response, api_request.get_endpoint_url())
+            self._handle_api_error(api_response, api_request.get_api_endpoint_url())
             return api_response
 
         return api_response
@@ -216,22 +216,6 @@ class AIHordeAPISession(AIHordeAPIManualClient, GenericHordeAPISession):
     generation in progress when the context manager exits. If you want to control this yourself, use
     `AIHordeAPIManualClient` instead.
     """
-
-    def __enter__(self) -> AIHordeAPISession:
-        """Enter the context manager."""
-        _self = super().__enter__()
-        if not isinstance(_self, AIHordeAPISession):
-            raise TypeError("Unexpected type returned from super().__enter__()")
-
-        return _self
-
-    async def __aenter__(self) -> AIHordeAPISession:
-        """Enter the context manager asynchronously."""
-        _self = await super().__aenter__()
-        if not isinstance(_self, AIHordeAPISession):
-            raise TypeError("Unexpected type returned from super().__aenter__()")
-
-        return _self
 
 
 class AIHordeAPISimpleClient:
@@ -253,7 +237,9 @@ class AIHordeAPISimpleClient:
             PIL.Image.Image: The converted image.
 
         Raises:
-            ValueError: If the generation has no image, or the image could not be downloaded or parsed.
+            ClientResponseError: If the generation couldn't be downloaded.
+            binascii.Error: If the image couldn't be parsed from base 64.
+            RuntimeError: If the image couldn't be downloaded or parsed for any other reason.
 
         """
         if generation.img is None:
@@ -263,7 +249,8 @@ class AIHordeAPISimpleClient:
         if urllib.parse.urlparse(generation.img).scheme in ["http", "https"]:
             response = requests.get(generation.img)
             if response.status_code != 200:
-                raise RuntimeError(f"Error downloading image: {response.status_code}")
+                logger.error(f"Error downloading image: {response.status_code}")
+                response.raise_for_status()
 
             image_bytes = response.content
         else:
@@ -284,7 +271,9 @@ class AIHordeAPISimpleClient:
             PIL.Image.Image: The converted image.
 
         Raises:
-            ValueError: If the generation has no image, or the image could not be downloaded or parsed.
+            ClientResponseError: If the generation couldn't be downloaded.
+            binascii.Error: If the image couldn't be parsed from base 64.
+            RuntimeError: If the image couldn't be downloaded or parsed for any other reason.
 
         """
         if generation.img is None:
@@ -297,11 +286,16 @@ class AIHordeAPISimpleClient:
         if urllib.parse.urlparse(generation.img).scheme in ["http", "https"]:
             async with self._aiohttp_session.get(generation.img) as response:
                 if response.status != 200:
-                    raise RuntimeError(f"Error downloading image: {response.status}")
+                    logger.error(f"Error downloading image: {response.status}")
+                    response.raise_for_status()
 
                 image_bytes = await response.read()
         else:
-            image_bytes = base64.b64decode(generation.img)
+            try:
+                image_bytes = base64.b64decode(generation.img)
+            except Exception as e:
+                logger.error(f"Error parsing image: {e}")
+                raise e
 
         if image_bytes is None:
             raise RuntimeError("Error downloading or parsing image")
@@ -322,6 +316,11 @@ class AIHordeAPISimpleClient:
 
         Returns:
             list[ImageGeneration]: The completed images.
+
+        Raises:
+            ClientResponseError: If the generation couldn't be downloaded.
+            binascii.Error: If the image couldn't be parsed from base 64.
+            RuntimeError: If the image couldn't be downloaded or parsed for any other reason.
         """
         if timeout is not None and timeout != -1 and timeout <= 5:
             logger.warning("Timeout is less than 5 seconds, this may cause unexpected behavior.")
@@ -377,6 +376,10 @@ class AIHordeAPISimpleClient:
 
             return status_response.generations
 
+        logger.error("Something went wrong with the request:")
+        logger.error(f"Request: {image_gen_request}")
+        return []
+
     async def async_image_generate_request(
         self,
         image_gen_request: ImageGenerateAsyncRequest,
@@ -390,7 +393,8 @@ class AIHordeAPISimpleClient:
         Args:
             image_gen_request (ImageGenerateAsyncRequest): The request to submit.
             timeout (int, optional): The number of seconds to wait before aborting.
-            returns any completed images at the end of the timeout. Defaults to -1.
+            returns any completed images at the end of the timeout. Any value 0 or less will wait indefinitely.
+            Defaults to -1.
 
         Returns:
             list[ImageGeneration]: The completed images.
@@ -447,3 +451,7 @@ class AIHordeAPISimpleClient:
                 raise RuntimeError(f"Error response received: {status_response.message}")
 
             return status_response.generations
+
+        logger.error("Something went wrong with the request:")
+        logger.error(f"Request: {image_gen_request}")
+        return []

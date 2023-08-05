@@ -8,18 +8,18 @@ from horde_sdk.ai_horde_api.apimodels.base import (
 from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckRequest
 from horde_sdk.ai_horde_api.apimodels.generate._status import DeleteImageGenerateRequest, ImageGenerateStatusRequest
 from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
-    BaseRequestAuthenticated,
-    BaseRequestWorkerDriven,
     BaseResponse,
-    BaseResponseNeedsFollowUp,
+    RequestMayUseAPIKey,
+    RequestUsesWorker,
+    ResponseNeedingFollowUp,
 )
 
 
-class ImageGenerateAsyncResponse(BaseResponseNeedsFollowUp):
+class ImageGenerateAsyncResponse(BaseResponse, ResponseNeedingFollowUp):
     """Represents the data returned from the `/v2/generate/async` endpoint.
 
     v2 API Model: `RequestAsync`
@@ -29,11 +29,6 @@ class ImageGenerateAsyncResponse(BaseResponseNeedsFollowUp):
     """The UUID for this image generation."""
     kudos: float
     message: str | None = None
-
-    @override
-    @classmethod
-    def is_requiring_follow_up(cls) -> bool:
-        return True
 
     @override
     def get_follow_up_returned_params(self) -> dict[str, object]:
@@ -52,7 +47,7 @@ class ImageGenerateAsyncResponse(BaseResponseNeedsFollowUp):
 
     @override
     @classmethod
-    def get_follow_up_failure_cleanup_request(cls) -> type[DeleteImageGenerateRequest] | None:
+    def get_follow_up_failure_cleanup_request_type(cls) -> type[DeleteImageGenerateRequest] | None:
         return DeleteImageGenerateRequest
 
     @override
@@ -67,8 +62,8 @@ class ImageGenerationInputPayload(BaseImageGenerateParam):
 
 class ImageGenerateAsyncRequest(
     BaseAIHordeRequest,
-    BaseRequestAuthenticated,
-    BaseRequestWorkerDriven,
+    RequestMayUseAPIKey,
+    RequestUsesWorker,
 ):
     """Represents the data needed to make a request to the `/v2/generate/async` endpoint.
 
@@ -109,8 +104,8 @@ class ImageGenerateAsyncRequest(
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_URL_Literals.v2_generate_async
+    def get_api_endpoint_subpath(cls) -> str:
+        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_generate_async
 
     @override
     @classmethod

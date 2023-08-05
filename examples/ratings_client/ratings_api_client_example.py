@@ -49,7 +49,7 @@ def main() -> None:
     )
 
     print("Request URL:")
-    print(user_validate_request.get_endpoint_url())
+    print(user_validate_request.get_api_endpoint_url())
     print()
     print("Request Body JSON:")
     print(user_validate_request.model_dump_json())
