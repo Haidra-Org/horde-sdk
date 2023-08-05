@@ -1,10 +1,10 @@
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseResponse
+from horde_sdk.generic_api.apimodels import BaseResponse, RequestMayUseAPIKey
 
 
 class ImageGenerationJobSubmitResponse(BaseResponse):
@@ -17,7 +17,7 @@ class ImageGenerationJobSubmitResponse(BaseResponse):
         return "GenerationSubmitted"
 
 
-class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
+class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, RequestMayUseAPIKey):
     """Represents the data needed to make a job submit 'request' from a worker to the /v2/generate/submit endpoint.
 
     v2 API Model: `SubmitInputStable`
@@ -46,8 +46,8 @@ class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, BaseRequestAuthenticat
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_URL_Literals.v2_generate_submit
+    def get_api_endpoint_subpath(cls) -> str:
+        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_generate_submit
 
     @override
     @classmethod

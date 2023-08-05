@@ -1,7 +1,7 @@
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, BaseImageJobRequest
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import BaseResponse
 
@@ -54,8 +54,8 @@ class ImageGenerateCheckRequest(BaseAIHordeRequest, BaseImageJobRequest):
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_URL_Literals.v2_generate_check
+    def get_api_endpoint_subpath(cls) -> str:
+        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_generate_check
 
     @override
     @classmethod

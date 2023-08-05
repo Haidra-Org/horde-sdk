@@ -6,6 +6,6 @@
         "streetsidesoftware.code-spell-checker",
         "charliermarsh.ruff",
         "wayou.vscode-todo-highlight",
-        "bungcip.better-toml"
+        "tamasfe.even-better-toml"
     ]
 }

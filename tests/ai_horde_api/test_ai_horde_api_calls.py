@@ -1,12 +1,11 @@
 """Tests which actually call the (or a testing) AI Horde API."""
 
-import asyncio
 from pathlib import Path
 
 import aiohttp
 import pytest
 
-from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient, AIHordeAPISession, AIHordeAPISimpleClient
+from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient, AIHordeAPISession
 from horde_sdk.ai_horde_api.apimodels import (
     AllWorkersDetailsRequest,
     AllWorkersDetailsResponse,
@@ -14,8 +13,6 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
     ImageGenerateStatusResponse,
-    ImageGeneration,
-    ImageGenerationInputPayload,
 )
 from horde_sdk.ai_horde_api.consts import WORKER_TYPE
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
@@ -91,15 +88,14 @@ class TestAIHordeAPIClients:
         status_code, _ = status_response_pairs.popitem()
 
         filename = SwaggerDoc.filename_from_endpoint_path(
-            endpoint_path=AllWorkersDetailsRequest.get_endpoint_subpath(),
+            endpoint_path=AllWorkersDetailsRequest.get_api_endpoint_subpath(),
             http_method=AllWorkersDetailsRequest.get_http_method(),
             http_status_code=status_code,
         )
-        filename = filename + "_production.json"
 
         _PRODUCTION_RESPONSES_FOLDER.mkdir(parents=True, exist_ok=True)
-        with open(_PRODUCTION_RESPONSES_FOLDER / filename, "w") as f:
-            f.write(api_response.to_json_horde_sdk_safe())
+        with open(_PRODUCTION_RESPONSES_FOLDER / Path(filename + "_production.json"), "w") as f:
+            f.write(api_response.model_dump_json())
 
     def test_HordeRequestSession_cleanup(self, simple_image_gen_request: ImageGenerateAsyncRequest) -> None:
         """Test that the context manager cleans up correctly."""
@@ -132,135 +128,3 @@ class TestAIHordeAPIClients:
                     simple_image_gen_request.get_success_response_type(),
                 )
                 raise HordeTestException("This tests the context manager, not the request/response.")
-
-    @pytest.mark.asyncio
-    async def test_multiple_concurrent_async_requests(
-        self,
-        simple_image_gen_request: ImageGenerateAsyncRequest,
-    ) -> None:
-        """Test that multiple concurrent requests can be made."""
-        async with aiohttp.ClientSession() as aiohttp_session:
-
-            async def submit_request(aiohttp_session: aiohttp.ClientSession) -> None:
-                async with AIHordeAPISession(aiohttp_session) as horde_session:
-                    api_response: ImageGenerateAsyncResponse | RequestErrorResponse = (  # noqa: F841
-                        await horde_session.async_submit_request(
-                            simple_image_gen_request,
-                            simple_image_gen_request.get_success_response_type(),
-                        )
-                    )
-
-            # Run 5 concurrent requests using asyncio
-            await asyncio.gather(*[asyncio.create_task(submit_request(aiohttp_session)) for _ in range(5)])
-
-    def test_simple_client_image_generate(
-        self,
-        simple_image_gen_request: ImageGenerateAsyncRequest,
-    ) -> None:
-        """Test that a simple image generation request can be submitted and cancelled."""
-        simple_client = AIHordeAPISimpleClient()
-
-        generations: list[ImageGeneration] = simple_client.image_generate_request(simple_image_gen_request)
-
-        assert len(generations) == 1
-
-        image = simple_client.generation_to_image(generations[0])
-
-        assert image is not None
-
-    def test_simple_client_image_generate_no_apikey_specified(
-        self,
-    ) -> None:
-        """Test that a simple image generation request can be submitted and cancelled when no API key is specified."""
-        simple_client = AIHordeAPISimpleClient()
-
-        generations = simple_client.image_generate_request(
-            ImageGenerateAsyncRequest(
-                prompt="a cat in a hat",
-                params=ImageGenerationInputPayload(
-                    seed="1234",
-                    n=1,
-                ),
-                models=["Deliberate"],
-            ),
-        )
-
-        assert len(generations) == 1
-
-        image = simple_client.generation_to_image(generations[0])
-
-        assert image is not None
-
-    @pytest.mark.asyncio
-    async def test_simple_client_async_image_generate(
-        self,
-        simple_image_gen_request: ImageGenerateAsyncRequest,
-    ) -> None:
-        """Test that a simple image generation request can be submitted and cancelled asynchronously."""
-        async with aiohttp.ClientSession() as aiohttp_session:
-            simple_client = AIHordeAPISimpleClient(aiohttp_session)
-
-            generations: list[ImageGeneration] = await simple_client.async_image_generate_request(
-                simple_image_gen_request,
-            )
-
-            assert len(generations) == 1
-
-            image = await simple_client.async_generation_to_image(generations[0])
-
-            assert image is not None
-
-    def test_simple_client_image_generate_multiple(
-        self,
-        simple_image_gen_n_requests: ImageGenerateAsyncRequest,
-    ) -> None:
-        """Test that a batch of image generation requests can be submitted and cancelled."""
-        simple_client = AIHordeAPISimpleClient()
-
-        generations: list[ImageGeneration] = simple_client.image_generate_request(simple_image_gen_n_requests)
-
-        assert simple_image_gen_n_requests.params is not None
-        assert len(generations) == simple_image_gen_n_requests.params.n
-
-        for generation in generations:
-            image = simple_client.generation_to_image(generation)
-
-            assert image is not None
-
-    @pytest.mark.asyncio
-    async def test_simple_client_async_image_generate_multiple(
-        self,
-        simple_image_gen_n_requests: ImageGenerateAsyncRequest,
-    ) -> None:
-        """Test that a batch of image generation requests can be submitted and retrieved asynchronously."""
-        async with aiohttp.ClientSession() as aiohttp_session:
-            simple_client = AIHordeAPISimpleClient(aiohttp_session)
-
-            generations: list[ImageGeneration] = await simple_client.async_image_generate_request(
-                simple_image_gen_n_requests,
-            )
-
-            assert simple_image_gen_n_requests.params is not None
-            assert len(generations) == simple_image_gen_n_requests.params.n
-
-            for generation in generations:
-                image = await simple_client.async_generation_to_image(generation)
-
-                assert image is not None
-
-    @pytest.mark.asyncio
-    async def test_simple_client_async_image_generate_multiple_with_timeout(
-        self,
-        simple_image_gen_n_requests: ImageGenerateAsyncRequest,
-    ) -> None:
-        """Test a batch of image generation requests can be submitted and cancelled asynchronously with a timeout."""
-        async with aiohttp.ClientSession() as aiohttp_session:
-            simple_client = AIHordeAPISimpleClient(aiohttp_session)
-
-            generations: list[ImageGeneration] = await simple_client.async_image_generate_request(
-                simple_image_gen_n_requests,
-                timeout=7,  # 7 seconds isn't (generally) going to be enough time for 3 generations to complete
-            )
-
-            assert simple_image_gen_n_requests.params is not None
-            assert len(generations) < simple_image_gen_n_requests.params.n

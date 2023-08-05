@@ -9,6 +9,10 @@ def simple_image_gen_request() -> ImageGenerateAsyncRequest:
         apikey="0000000000",
         prompt="a cat in a hat",
         models=["Deliberate"],
+        params=ImageGenerationInputPayload(
+            steps=1,
+            n=1,
+        ),
     )
 
 
@@ -19,6 +23,7 @@ def simple_image_gen_n_requests() -> ImageGenerateAsyncRequest:
         prompt="a cat in a hat",
         models=["Deliberate"],
         params=ImageGenerationInputPayload(
+            steps=1,
             n=3,
         ),
     )
@@ -30,6 +35,7 @@ def pytest_collection_modifyitems(items):  # type: ignore
 
     MODULES_TO_RUN_LAST = [
         "tests.ai_horde_api.test_ai_horde_api_calls",
+        "test.ai_horde_api.test_ai_horde_generate_api_calls",
     ]
     module_mapping = {item: item.module.__name__ for item in items}
 

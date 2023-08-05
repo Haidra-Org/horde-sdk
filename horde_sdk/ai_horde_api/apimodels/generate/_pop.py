@@ -4,10 +4,10 @@ from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, BaseImageGenerateParam
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE, KNOWN_SOURCE_PROCESSING
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseResponseNeedsFollowUp
+from horde_sdk.generic_api.apimodels import BaseResponse, RequestMayUseAPIKey, ResponseNeedingFollowUp
 
 
 class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
@@ -53,7 +53,7 @@ class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
     """How many waiting requests were skipped because they requested a controlnet."""
 
 
-class ImageGenerateJobResponse(BaseResponseNeedsFollowUp):
+class ImageGenerateJobResponse(BaseResponse, ResponseNeedingFollowUp):
     """Represents the data returned from the `/v2/generate/pop` endpoint.
 
     v2 API Model: `GenerationPayloadStable`
@@ -99,7 +99,7 @@ class ImageGenerateJobResponse(BaseResponseNeedsFollowUp):
         return {"state": GENERATION_STATE.faulted}  # TODO: One day, could I do away with the magic string?
 
 
-class ImageGenerateJobPopRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
+class ImageGenerateJobPopRequest(BaseAIHordeRequest, RequestMayUseAPIKey):
     """Represents the data needed to make a job request from a worker to the /v2/generate/pop endpoint.
 
     v2 API Model: `PopInputStable`
@@ -134,8 +134,8 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_URL_Literals.v2_generate_pop
+    def get_api_endpoint_subpath(cls) -> str:
+        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_generate_pop
 
     @override
     @classmethod

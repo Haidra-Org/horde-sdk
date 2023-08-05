@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import abc
-import json
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from typing_extensions import Self, override
+from typing_extensions import override
 
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.consts import ANON_API_KEY
@@ -13,7 +12,7 @@ from horde_sdk.generic_api.endpoints import url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
 
-class HordeAPIModel(BaseModel, abc.ABC):
+class HordeAPIObject(BaseModel, abc.ABC):
     """Base class for all Horde API data models, requests, or responses."""
 
     model_config = ConfigDict(frozen=True)
@@ -26,94 +25,17 @@ class HordeAPIModel(BaseModel, abc.ABC):
         If none, there is no payload, such as for a GET request.
         """
 
-    def to_json_horde_sdk_safe(self) -> str:
-        """Return the model as a JSON string, taking into account the paradigms of the horde_sdk.
 
-        If you use the default json dumping behavior, you will find some rough edges, such as alias
-        field names not being used, `None` values being included, and responses which return arrays
-        not being handled correctly (returning `{}` instead of the object)
-        """
-        return self.model_dump_json(by_alias=True, exclude_none=True)
-
-
-class HordeAPIMessage(HordeAPIModel):
+class HordeAPIMessage(HordeAPIObject):
     """Represents any request or response from any Horde API."""
 
 
 class BaseResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
 
-    @classmethod
-    def is_array_response(cls) -> bool:
-        """Return whether this response is an array of an internal type."""
-        return False
 
-    @classmethod
-    def get_array_item_type(cls) -> type[BaseModel]:
-        """If this is an array response, return the type of the internal array elements.
-
-        Check `is_array_response` first if you are not sure if this is an array response.
-        """
-        raise NotImplementedError("This is not an array response")
-
-    def set_array(self, list_: list[HordeAPIModel]) -> None:
-        """Set this response's internal array to the passed value."""
-        raise NotImplementedError("This is not an array response")
-
-    def get_array(self) -> list[HordeAPIModel]:
-        """Get this response's internal array."""
-        raise NotImplementedError("This is not an array response")
-
-    @classmethod
-    def from_dict_or_array(cls, dict_or_array: dict | list) -> Self:
-        """Create a new pydantic BaseModel as normal if the passed value is a dict, otherwise, use the 'array' method.
-
-        This is useful for handling responses which return a json array instead of a json object.
-        See also `is_array_response` and `get_array_item_type`.
-
-        Args:
-            dict_or_array (dict | list): The dict or array to create the model from.
-
-        Returns:
-            `Self`: The new model instance, of the type which called this method.
-        """
-        if not isinstance(dict_or_array, dict):
-            if not isinstance(dict_or_array, list):
-                dict_or_array = [dict_or_array]
-
-            new_instance = cls()
-            new_instance.set_array(dict_or_array)
-            return new_instance
-
-        return cls(**dict_or_array)
-
-    @override
-    def to_json_horde_sdk_safe(self) -> str:
-        # TODO: Is there a more pydantic way to do this?
-        if self.is_array_response():
-            self_array = self.get_array()
-
-            if not self_array:
-                return "{}"
-
-            return json.dumps(self_array, default=lambda o: o.model_dump(by_alias=True, exclude_none=True), indent=4)
-
-        return super().to_json_horde_sdk_safe()
-
-    @classmethod
-    def is_requiring_follow_up(cls) -> bool:
-        """Return whether this response requires a follow up request of some kind."""
-        return False
-
-
-class BaseResponseNeedsFollowUp(BaseResponse):
+class ResponseNeedingFollowUp(abc.ABC):
     """Represents any response from any Horde API which requires a follow up request of some kind."""
-
-    @override
-    @classmethod
-    def is_requiring_follow_up(cls) -> bool:
-        """Return whether this response requires a follow up request of some kind."""
-        return True
 
     @abc.abstractmethod
     def get_follow_up_returned_params(self) -> dict[str, object]:
@@ -157,12 +79,31 @@ class BaseResponseNeedsFollowUp(BaseResponse):
         """Return the default request type for this response."""
 
     @classmethod
-    def get_follow_up_failure_cleanup_request(cls) -> type[BaseRequest] | None:
+    def get_follow_up_failure_cleanup_request_type(cls) -> type[BaseRequest] | None:
         """Return the request type for this response to clean up after a failed follow up request.
 
         Defaults to `None`, meaning no cleanup request is needed.
         """
         return None
+
+    _cleanup_request: BaseRequest | None = None
+
+    def get_follow_up_failure_cleanup_request(self) -> BaseRequest | None:
+        """Return the request for this response to clean up after a failed follow up request.
+
+        Defaults to `None`, meaning no cleanup request is needed.
+        """
+        if self._cleanup_request is not None:
+            return self._cleanup_request
+
+        cleanup_request_type = self.get_follow_up_failure_cleanup_request_type()
+        if not cleanup_request_type:
+            return None
+
+        all_cleanup_params: dict[str, object] = self.get_follow_up_all_params()
+        all_cleanup_params.update(self.get_follow_up_failure_cleanup_params())
+        self._cleanup_request = cleanup_request_type.model_validate(all_cleanup_params)
+        return self._cleanup_request
 
     @classmethod
     def get_follow_up_request_types(cls) -> list[type]:  # TODO type hint???
@@ -205,9 +146,9 @@ class BaseRequest(HordeAPIMessage):
     )
 
     @classmethod
-    def get_endpoint_url(cls) -> str:
+    def get_api_endpoint_url(cls) -> str:
         """Return the endpoint URL, including the path to the specific API action defined by this object."""
-        return url_with_path(base_url=cls.get_api_url(), path=cls.get_endpoint_subpath())
+        return url_with_path(base_url=cls.get_api_url(), path=cls.get_api_endpoint_subpath())
 
     @classmethod
     @abc.abstractmethod
@@ -216,7 +157,7 @@ class BaseRequest(HordeAPIMessage):
 
     @classmethod
     @abc.abstractmethod
-    def get_endpoint_subpath(cls) -> str:
+    def get_api_endpoint_subpath(cls) -> str:
         """Return the subpath to the specific API action defined by this object."""
 
     @classmethod
@@ -243,17 +184,22 @@ class BaseRequest(HordeAPIMessage):
         return []
 
 
-class BaseRequestAuthenticated(BaseModel):
+class RequestMayUseAPIKey(BaseRequest):
     """Mix-in class to describe an endpoint which may require authentication."""
 
     apikey: str | None = None
-    """A horde API key."""
+    """Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"""
 
-    @field_validator("apikey")
+    @classmethod
+    def is_api_key_required(cls) -> bool:
+        """Return whether this endpoint requires an API key."""
+        return True
+
+    @field_validator("apikey", mode="before")
     def validate_api_key_length(cls, v: str) -> str:
         """Validate that the API key is the correct length, or is the special ANON_API_KEY."""
         if v is None:
-            return v
+            return ANON_API_KEY
         if v == ANON_API_KEY:
             return v
         if len(v) != 22:
@@ -261,7 +207,7 @@ class BaseRequestAuthenticated(BaseModel):
         return v
 
 
-class BaseRequestUserSpecific(BaseModel):
+class RequestSpecifiesUserID(BaseRequest):
     """Mix-in class to describe an endpoint for which you can specify a user."""
 
     user_id: str
@@ -275,7 +221,7 @@ class BaseRequestUserSpecific(BaseModel):
         return value
 
 
-class BaseRequestWorkerDriven(BaseModel):
+class RequestUsesWorker(BaseRequest):
     """Mix-in class to describe an endpoint for which you can specify workers."""
 
     trusted_workers: bool = False
@@ -289,12 +235,12 @@ class BaseRequestWorkerDriven(BaseModel):
 
 
 __all__ = [
-    "HordeAPIModel",
+    "HordeAPIObject",
     "HordeAPIMessage",
     "BaseResponse",
     "BaseRequest",
-    "BaseRequestAuthenticated",
-    "BaseRequestUserSpecific",
-    "BaseRequestWorkerDriven",
+    "RequestMayUseAPIKey",
+    "RequestSpecifiesUserID",
+    "RequestUsesWorker",
     "RequestErrorResponse",
 ]

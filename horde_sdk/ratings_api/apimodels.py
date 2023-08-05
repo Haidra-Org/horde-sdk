@@ -9,9 +9,9 @@ from typing_extensions import override
 from horde_sdk.consts import _UNDEFINED_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     BaseRequest,
-    BaseRequestAuthenticated,
-    BaseRequestUserSpecific,
     BaseResponse,
+    RequestMayUseAPIKey,
+    RequestSpecifiesUserID,
 )
 from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
 
@@ -154,7 +154,7 @@ class BaseSelectableReturnTypeRequest(BaseModel):
 
 class ImageRatingsRequest(
     BaseRatingsAPIRequest,
-    BaseRequestAuthenticated,
+    RequestMayUseAPIKey,
     BaseSelectableReturnTypeRequest,
 ):
     """Represents the data needed to make a request to the `/v1/image/ratings/{image_id}` endpoint."""
@@ -171,7 +171,7 @@ class ImageRatingsRequest(
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
+    def get_api_endpoint_subpath(cls) -> str:
         return Rating_API_URL_Literals.v1_image_ratings
 
     @override
@@ -204,8 +204,8 @@ class ImageRatingsFilterableRequestBase(BaseSelectableReturnTypeRequest):
 
 class UserValidateRequest(
     BaseRatingsAPIRequest,
-    BaseRequestAuthenticated,
-    BaseRequestUserSpecific,
+    RequestMayUseAPIKey,
+    RequestSpecifiesUserID,
     ImageRatingsFilterableRequestBase,
 ):
     """Represents the data needed to make a request to the `/v1/user/validate/{user_id}` endpoint."""
@@ -222,7 +222,7 @@ class UserValidateRequest(
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
+    def get_api_endpoint_subpath(cls) -> str:
         return Rating_API_URL_Literals.v1_user_validate
 
     @override
@@ -233,8 +233,8 @@ class UserValidateRequest(
 
 class UserCheckRequest(
     BaseRatingsAPIRequest,
-    BaseRequestAuthenticated,
-    BaseRequestUserSpecific,
+    RequestMayUseAPIKey,
+    RequestSpecifiesUserID,
 ):
     """Represents the data needed to make a request to the `/v1/user/check/` endpoint."""
 
@@ -253,7 +253,7 @@ class UserCheckRequest(
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
+    def get_api_endpoint_subpath(cls) -> str:
         return Rating_API_URL_Literals.v1_user_check
 
     @override
@@ -264,7 +264,7 @@ class UserCheckRequest(
 
 class UserRatingsRequest(
     BaseRatingsAPIRequest,
-    BaseRequestAuthenticated,
+    RequestMayUseAPIKey,
     ImageRatingsFilterableRequestBase,
 ):
     """Represents the data needed to make a request to the `/v1/user/ratings/` endpoint."""
@@ -285,7 +285,7 @@ class UserRatingsRequest(
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
+    def get_api_endpoint_subpath(cls) -> str:
         return Rating_API_URL_Literals.v1_user_ratings
 
     @override

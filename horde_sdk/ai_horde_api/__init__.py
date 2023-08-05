@@ -11,14 +11,14 @@ from horde_sdk.ai_horde_api.consts import (
     WORKER_TYPE,
 )
 from horde_sdk.ai_horde_api.endpoints import (
+    AI_HORDE_API_ENDPOINT_SUBPATHS,
     AI_HORDE_BASE_URL,
-    AI_HORDE_API_URL_Literals,
 )
 
 __all__ = [
     "AIHordeAPIManualClient",
     "AI_HORDE_BASE_URL",
-    "AI_HORDE_API_URL_Literals",
+    "AI_HORDE_API_ENDPOINT_SUBPATHS",
     "ALCHEMY_FORMS",
     "GENERATION_STATE",
     "KNOWN_SAMPLERS",

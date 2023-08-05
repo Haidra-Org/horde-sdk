@@ -4,7 +4,7 @@ from typing_extensions import override
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, BaseImageJobRequest
 from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckResponse
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
 from horde_sdk.ai_horde_api.fields import ImageID, WorkerID
 from horde_sdk.consts import HTTPMethod
 
@@ -68,8 +68,8 @@ class DeleteImageGenerateRequest(
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_URL_Literals.v2_generate_status
+    def get_api_endpoint_subpath(cls) -> str:
+        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_generate_status
 
     @override
     @classmethod
@@ -92,8 +92,8 @@ class ImageGenerateStatusRequest(BaseAIHordeRequest, BaseImageJobRequest):
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_URL_Literals.v2_generate_status
+    def get_api_endpoint_subpath(cls) -> str:
+        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_generate_status
 
     @override
     @classmethod
