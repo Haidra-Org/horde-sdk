@@ -18,13 +18,19 @@
         "top_k": 0.0,
         "top_p": 0.001,
         "typical": 0.0,
-        "sampler_order": []
+        "sampler_order": [
+            0
+        ]
     },
     "softprompt": "a",
     "trusted_workers": false,
     "slow_workers": true,
-    "workers": [],
+    "workers": [
+        ""
+    ],
     "worker_blacklist": false,
-    "models": [],
+    "models": [
+        ""
+    ],
     "dry_run": false
 }

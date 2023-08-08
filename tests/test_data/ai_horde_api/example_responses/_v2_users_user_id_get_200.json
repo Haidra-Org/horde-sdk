@@ -15,8 +15,12 @@
         "awarded": 0
     },
     "worker_count": 0,
-    "worker_ids": [],
-    "sharedkey_ids": [],
+    "worker_ids": [
+        "00000000-0000-0000-0000-000000000000"
+    ],
+    "sharedkey_ids": [
+        "00000000-0000-0000-0000-000000000000"
+    ],
     "monthly_kudos": {
         "amount": 0,
         "last_received": "2021-01-01T00:00:00Z"
