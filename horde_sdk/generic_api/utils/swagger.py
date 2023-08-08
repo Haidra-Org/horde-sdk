@@ -339,75 +339,124 @@ class SwaggerDoc(BaseModel):
         This in the form of:
         `dict[endpoint_path, dict[http_method, dict[http_status_code, example_response]]]`
         """
+
+        # Create an empty dictionary to hold all endpoint examples.
         every_endpoint_example: dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]] = {}
 
-        # Iterate through each endpoint in the Swagger documentation
+        # Iterate through each endpoint in the Swagger documentation.
         for endpoint_path, endpoint in self.paths.items():
+            # Skip the "/v2/stats/img/models" endpoint.
             if endpoint_path == "/v2/stats/img/models":
                 pass
+
+            # Get the response examples for this endpoint.
             endpoint_examples = self.get_endpoint_examples(endpoint)
 
+            # If there are any response examples for this endpoint, add them to the dictionary of all endpoint examples
             if endpoint_examples:
                 every_endpoint_example[endpoint_path] = endpoint_examples
 
+        # Return the dictionary of all endpoint examples.
         return every_endpoint_example
 
     def get_endpoint_examples(
         self,
         endpoint: SwaggerEndpoint,
     ) -> dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]:
-        """Extract response examples for a single endpoint."""
+        """Extract response examples for a single endpoint.
+
+        Args:
+            endpoint: The SwaggerEndpoint object to extract response examples from.
+
+        Returns:
+            A dictionary of response examples for the endpoint in the form of:
+            `dict[http_method, dict[http_status_code, example_response]]`
+        """
+
+        # Create an empty dictionary to hold the response examples for each HTTP method used by the endpoint.
         endpoint_examples: dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]] = {}
 
-        # Iterate through each HTTP method used by the endpoint
+        # Iterate through each HTTP method used by the endpoint.
         for http_method_name, endpoint_method_definition in endpoint.get_defined_endpoints().items():
+            # Get the response examples for this HTTP method.
             endpoint_method_examples = self.get_endpoint_method_examples(endpoint_method_definition)
 
+            # If there are any response examples for this HTTP method, add them to the dictionary of endpoint examples.
             if endpoint_method_examples:
                 endpoint_examples[HTTPMethod(http_method_name.upper())] = endpoint_method_examples
 
+        # Return the dictionary of response examples for the endpoint.
         return endpoint_examples
 
     def get_endpoint_method_examples(
         self,
         endpoint_method_definition: SwaggerEndpointMethod,
     ) -> dict[HTTPStatusCode, dict[str, object] | list]:
-        """Extract response examples for a single HTTP method used by an endpoint."""
+        """Extract response examples for a single HTTP method used by an endpoint.
+
+        Args:
+            endpoint_method_definition: The SwaggerEndpointMethod object to extract response examples from.
+
+        Returns:
+            A dictionary of response examples for the HTTP method in the form of:
+            `dict[http_status_code, example_response]`
+        """
+
+        # Create an empty dictionary to hold the response examples for each HTTP status code used by the HTTP method.
         endpoint_method_examples: dict[HTTPStatusCode, dict[str, object] | list] = {}
 
+        # If there are no defined responses for the HTTP method, return the empty dictionary of response examples.
         if not endpoint_method_definition.responses:
             return endpoint_method_examples
 
-        # Iterate through each defined response for the HTTP method
+        # Iterate through each defined response for the HTTP method.
         for http_status_code_str, response_definition in endpoint_method_definition.responses.items():
+            # Convert the HTTP status code string to an HTTPStatusCode object.
             http_status_code_object = HTTPStatusCode(int(http_status_code_str))
 
+            # Get the response example for this HTTP status code.
             example_response = self.get_response_example(response_definition)
 
+            # If there is a response example for this HTTP status code, add it to the dictionary of endpoint method
+            # examples.
             if example_response:
                 endpoint_method_examples[http_status_code_object] = example_response
 
+        # Return the dictionary of response examples for the HTTP method.
         return endpoint_method_examples
 
     def get_response_example(self, response_definition: SwaggerEndpointResponse) -> dict[str, object] | list:
-        """Extract an example response for a single HTTP response definition."""
+        """Extract an example response for a single HTTP response definition.
+
+        Args:
+            response_definition: The SwaggerEndpointResponse object to extract an example response from.
+
+        Returns:
+            A dictionary or list representing an example response for the HTTP response definition.
+        """
+
+        # Create an empty dictionary or list to hold the example response.
         example_response: dict[str, object] | list = {}
 
+        # If there is no response schema, return the empty dictionary or list of example response.
         if not response_definition.schema_:
             return example_response
 
-        # If the response schema is a reference to an API model, resolve the reference and include its defaults too
+        # If the response schema is a reference to an API model, resolve the reference and include its defaults too.
         if isinstance(response_definition.schema_, SwaggerEndpointResponseSchema) and response_definition.schema_.ref:
-            # # logger.debug(f"Resolving {response_definition.schema_.ref}")
             example_response = self._resolve_model_ref_defaults(response_definition.schema_.ref)
+
+        # If the response schema is an array, get the example response for the array items and return it as a list.
         if response_definition.schema_.items:
-            # # logger.debug(f"Resolving {response_definition.schema_.items.ref}")
             example_response = self._resolve_model_ref_defaults(response_definition.schema_.items.ref)
             if response_definition.schema_.type_ == "array":
                 example_response = [example_response]
-            elif response_definition.schema_.type_ == "object":
-                example_response = {"properties": example_response}
 
+        # If the response schema is an object, return the example response as a dictionary with a "properties" key.
+        elif response_definition.schema_.type_ == "object":
+            example_response = {"properties": example_response}
+
+        # Return the dictionary or list representing the example response for the HTTP response definition.
         return example_response
 
     def get_all_payload_examples(self) -> dict[str, dict[HTTPMethod, dict[str, object]]]:
@@ -416,46 +465,57 @@ class SwaggerDoc(BaseModel):
         This in the form of:
         `dict[endpoint_path, dict[param_name, param_example_value]]]`
         """
+
+        # Create an empty dictionary to hold all endpoint examples.
         every_endpoint_example: dict[str, dict[HTTPMethod, dict[str, object]]] = {}
+
+        # Loop through each endpoint in the Swagger doc.
         for endpoint_path, endpoint in self.paths.items():
+            # Create an empty dictionary to hold the examples for this endpoint.
             endpoint_examples: dict[HTTPMethod, dict[str, object]] = {}
+
+            # Skip the "/v2/generate/async" endpoint.
             if endpoint_path == "/v2/generate/async":
                 pass
 
+            # Loop through each HTTP method defined for this endpoint.
             for http_method_name, endpoint_method_definition in endpoint.get_defined_endpoints().items():
+                # Skip HTTP methods that do not have a payload.
                 if http_method_name.upper() not in PAYLOAD_HTTP_METHODS:
                     continue
 
+                # Skip HTTP methods that do not have any parameters.
                 if not endpoint_method_definition.parameters:
                     continue
 
-                # logger.debug(f"Found {endpoint_path} {http_method_name.upper()} with payload")
+                # Get the payload definition for this HTTP method.
                 _payload_definitions = [d for d in endpoint_method_definition.parameters if d.name == "payload"]
-
                 if len(_payload_definitions) != 1:
                     raise RuntimeError(
                         f"Expected to find exactly one payload definition for {endpoint_path} {http_method_name}",
                     )
-
                 payload_definition = _payload_definitions[0]
 
+                # Check that the payload definition has a schema.
                 if not payload_definition.schema_:
                     raise RuntimeError(
                         f"Expected to find a schema for {endpoint_path} {http_method_name} payload definition",
                     )
 
+                # If the payload definition is a reference to another model, resolve the reference and use its defaults
+                # as the example payload.
                 if isinstance(payload_definition.schema_, SwaggerEndpointMethodParameterSchemaRef):
-                    # logger.debug(f"Resolving {payload_definition.schema_.ref}")
                     example_payload = self._resolve_model_ref_defaults(payload_definition.schema_.ref)
                     if isinstance(example_payload, list):
                         raise RuntimeError(
                             f"Expected to find a dict for {endpoint_path} {http_method_name} payload definition",
                         )
-
                     endpoint_examples.update(
                         {HTTPMethod(http_method_name.upper()): example_payload},
                     )
 
+                # If the payload definition is a direct schema, create an example payload using the schema's
+                # properties and types.
                 elif isinstance(payload_definition.schema_, SwaggerEndpointMethodParameterSchema):
                     if not payload_definition.schema_.properties:
                         continue
@@ -468,14 +528,15 @@ class SwaggerDoc(BaseModel):
                                 f"Expected to find a type for {endpoint_path} {http_method_name} payload definition",
                             )
                         endpoint_specific_schema[prop_name] = default_swagger_value_from_type_name(prop.type_)
-
                     endpoint_examples.update(
                         {HTTPMethod(http_method_name.upper()): endpoint_specific_schema},
                     )
 
+            # If there are any examples for this endpoint, add them to the dictionary of all endpoint examples.
             if endpoint_examples:
                 every_endpoint_example[endpoint_path] = endpoint_examples
 
+        # Return the dictionary of all endpoint examples.
         return every_endpoint_example
 
     @staticmethod
@@ -485,30 +546,64 @@ class SwaggerDoc(BaseModel):
         *,
         http_status_code: HTTPStatusCode | None = None,
     ) -> str:
-        """Get the filename for the given endpoint path."""
+        """Get the filename for the given endpoint path.
+
+        Args:
+            endpoint_path: The path of the endpoint.
+            http_method: The HTTP method used by the endpoint.
+            http_status_code: The HTTP status code of the response (optional).
+
+        Returns:
+            A string representing the filename for the given endpoint path.
+        """
+
+        # Replace any non-alphanumeric characters in the endpoint path with underscores.
         endpoint_path = re.sub(r"\W+", "_", endpoint_path)
+
+        # Append the HTTP method to the endpoint path, separated by an underscore.
         endpoint_path = endpoint_path + "_" + http_method.value.lower()
+
+        # If an HTTP status code is provided, append it to the endpoint path, separated by an underscore.
         if http_status_code:
             endpoint_path = endpoint_path + "_" + str(http_status_code.value)
+
+        # Replace any consecutive underscores with a single underscore.
         return re.sub(r"__+", "_", endpoint_path)
 
     def write_all_payload_examples_to_file(self, directory: str | Path) -> bool:
         """Write all example payloads to a file in the test_data directory.
 
         Args:
-            directory (str | Path): The directory to write the files to.
+            directory: The directory to write the files to.
 
         Returns:
-            bool: If succeeded, true.
+            A boolean indicating whether the operation succeeded.
         """
+
+        # Convert the directory path to a Path object.
         directory = Path(directory)
+
+        # Get all payload examples for all endpoints.
         all_examples = self.get_all_payload_examples()
+
+        # Iterate through each endpoint and its associated HTTP methods and example payloads.
         for endpoint_path, endpoint_examples_info in all_examples.items():
             for http_method, example_payload in endpoint_examples_info.items():
+                # Generate a filename for the example payload based on the endpoint path and HTTP method.
                 filename = self.filename_from_endpoint_path(endpoint_path, http_method)
+
+                # If an HTTP status code is provided, append it to the filename.
+                if isinstance(example_payload, dict) and "status_code" in example_payload:
+                    filename = filename + "_" + str(example_payload["status_code"])
+
+                # Create a filepath for the example payload based on the directory and filename.
                 filepath = directory / f"{filename}.json"
+
+                # Write the example payload to the filepath as a JSON file.
                 with open(filepath, "w") as f:
                     json.dump(example_payload, f, indent=4)
+
+        # Return True to indicate that the operation succeeded.
         return True
 
     def write_all_response_examples_to_file(
@@ -520,27 +615,43 @@ class SwaggerDoc(BaseModel):
         """Write all example responses to a file in the test_data directory.
 
         Args:
-            directory (str | Path): The directory to write the files to.
-            error_responses (bool, optional): Whether to include error responses. Defaults to False.
+            directory: The directory to write the files to.
+            error_responses: Whether to include error responses. Defaults to False.
 
         Returns:
-            bool: _description_
+            A boolean indicating whether the operation succeeded.
         """
+
+        # Convert the directory path to a Path object.
         directory = Path(directory)
+
+        # Get all response examples for all endpoints.
         all_examples = self.get_all_response_examples()
+
+        # Iterate through each endpoint and its associated HTTP methods and example responses.
         for endpoint_path, endpoint_examples_info in all_examples.items():
             for http_method, http_status_code_examples in endpoint_examples_info.items():
                 for http_status_code, example_response in http_status_code_examples.items():
+                    # If error responses are not included and this is an error status code, skip this example.
                     if not error_responses and is_error_status_code(http_status_code.value):
                         continue
+
+                    # Generate a filename for the example response based on the endpoint path, HTTP method, and
+                    # status code.
                     filename = self.filename_from_endpoint_path(
                         endpoint_path,
                         http_method,
                         http_status_code=http_status_code,
                     )
+
+                    # Create a filepath for the example response based on the directory and filename.
                     filepath = directory / f"{filename}.json"
+
+                    # Write the example response to the filepath as a JSON file.
                     with open(filepath, "w") as f:
                         json.dump(example_response, f, indent=4)
+
+        # Return True to indicate that the operation succeeded.
         return True
 
     def _resolve_model_ref_defaults(
@@ -560,15 +671,14 @@ class SwaggerDoc(BaseModel):
         if not ref:
             return {}
 
+        # `return_list` has a special specifically for the "*" property, where the endpoint accepts or returns N
+        # objects of the same type. In this case, three dummy entries are created in `return_list`, which are
+        # recognized on recursion and ultimately returned as a dict.
+        # This solution was implemented in response to the SinglePeriodImgModelStats model, see it for an example.
         return_dict: dict = {}
         return_list: list[dict[str, object]] = []
-        # return_list has a nuanced meaning: in the case of the '*' property, the endpoint
-        # accepts or returns N objects of the same type. In this case, this function will
-        # create three dummy entries in `return_list`, which it will recognize on recursion
-        # having this special meaning, and ultimately returns the dict as expected.
-        # At the time of writing, this solution was in response to the SinglePeriodImgModelStats object
-        # in particular, if you're looking for an example.
 
+        # Remove the "#/definitions/" prefix from the ref as it is fixed for all refs and not needed
         if ref.startswith("#/definitions/"):
             ref = ref[len("#/definitions/") :]
 
@@ -588,19 +698,15 @@ class SwaggerDoc(BaseModel):
         else:
             raise RuntimeError(f"Unexpected definition type: {type(found_def_parent)}")
 
-        if not all_defs:
-            raise RuntimeError(f"Failed to find any definitions for {ref}")
-
-        # if len(all_defs) > 1:
-        # logger.debug(f"Found {len(all_defs)} definitions for {ref}")
-
         for definition in all_defs:
+            # If the definition is not a SwaggerModelRef, skip it
             if not isinstance(definition, SwaggerModelRef):
                 continue
 
-            # logger.debug(f"Recursing ref: {definition.ref}")
-            # We recurse here, because the ref might be a reference to another reference
+            # Recursively resolve the reference
             resolved_model = self._resolve_model_ref_defaults(definition.ref)
+
+            # If the resolved model is a dictionary, update the return dictionary
             if isinstance(resolved_model, dict):
                 if validation_method == SwaggerSchemaValidationMethod.allOf:
                     return_dict.update(resolved_model)
@@ -608,37 +714,47 @@ class SwaggerDoc(BaseModel):
                     validation_method == SwaggerSchemaValidationMethod.oneOf
                     or validation_method == SwaggerSchemaValidationMethod.anyOf
                 ):
+                    # Warn the user that oneOf and anyOf are not well supported
                     logger.warning(
                         (
-                            "oneOf and anyOf are not well supported. Yoy may experience unexpected behavior. "
+                            "oneOf and anyOf are not well supported. You may experience unexpected behavior. "
                             f"ref: {definition.ref}"
                         ),
                     )
                     break
 
+            # If the resolved model is a list, raise an error (this should not happen)
             elif isinstance(resolved_model, list):
-                # TODO: *Would* this ever happen? It is here as a precaution presently.
                 raise RuntimeError(f"Unexpected list type: {type(resolved_model)}")
 
         for definition in all_defs:
+            # If the definition is not a SwaggerModelDefinition, skip it
             if not isinstance(definition, SwaggerModelDefinition):
+                # If the definition is a SwaggerModelRef, continue to the next iteration
                 if definition.ref:
                     continue
+                # Otherwise, raise an error
                 raise RuntimeError(f"Unexpected definition type: {type(definition)}")
 
+            # If the definition has no properties, skip it
             if not definition.properties:
                 continue
 
+            # Iterate over each property in the definition
             for prop_name, prop in definition.properties.items():
+                # If the property is a reference to another model, recursively resolve the reference
                 if prop.ref:
-                    # logger.debug(f"Recursing sub-item ref: {prop.ref}")
                     resolved_model = self._resolve_model_ref_defaults(prop.ref)
+                    # If the resolved model is a dictionary, add it to the return dictionary
                     if isinstance(resolved_model, dict):
                         return_dict.update({prop_name: resolved_model})
+                    # If the resolved model is a list, add the first item to the return dictionary
                     elif isinstance(resolved_model, list):
                         return_dict.update({prop_name: resolved_model[0]})
                     continue
 
+                # If the property is a wildcard property with additionalProperties, add default values for
+                # three additional properties
                 if prop_name == "*" and prop.additionalProperties:
                     assert prop.additionalProperties.type_
                     default = default_swagger_value_from_type_name(prop.additionalProperties.type_)
@@ -651,35 +767,48 @@ class SwaggerDoc(BaseModel):
                     )
                     continue
 
+                # If the property is an array, recursively resolve any references in the items property
                 if prop.items:
                     items_as_list = [prop.items] if isinstance(prop.items, SwaggerModelProperty) else prop.items
                     sub_item_return_list = []
                     for item in items_as_list:
                         if item.ref:
-                            # logger.debug(f"Recursing sub-item ref: {item.ref}")
+                            # This is were the recursion happens
                             resolved_model = self._resolve_model_ref_defaults(item.ref)
+                            # If the resolved model is a dictionary, add it to the sub-item return list
                             if isinstance(resolved_model, dict):
                                 sub_item_return_list.append(resolved_model)
+                            # If the resolved model is a list, add the first item to the sub-item return list
                             elif isinstance(resolved_model, list):
                                 sub_item_return_list.append(resolved_model[0])
                             continue
 
+                    # Add the sub-item return list to the return dictionary
                     return_dict[prop_name] = sub_item_return_list
                     continue
 
+                # Otherwise, get the default value for the property and add it to the return dictionary
                 return_dict[prop_name] = self.get_default_with_constraint(prop)
 
         return return_dict if return_dict else return_list
 
     def get_default_with_constraint(self, model_property: SwaggerModelProperty) -> object:
-        """Get the default value for a given model property, with any constraints applied."""
+        """Get the example value, defaulting to a a value appropriate to the type with any constraints applied."""
+
+        # If the model property has a description that includes the word "optionally", do nothing
         if model_property.description and "optionally" in model_property.description:
             pass
+
+        # If the model property has an example value, return it
         if model_property.example is not None:
             return model_property.example
+
+        # If the model property has a default value, return it
         if model_property.default is not None:
             return model_property.default
 
+        # If the model property is a number or integer type, check for minimum, maximum, and multipleOf properties and
+        # return a constrained value based on it
         if model_property.type_ == "number" or model_property.type_ == "integer":
             if model_property.minimum is not None:
                 return model_property.minimum
@@ -687,6 +816,9 @@ class SwaggerDoc(BaseModel):
                 return model_property.maximum
             if model_property.multipleOf is not None:
                 return model_property.multipleOf
+
+        # If the model property is a string type, check for enum, minLength, maxLength, and format properties and
+        # return a constrained value based on it
         elif model_property.type_ == "string":
             if model_property.enum is not None:
                 return model_property.enum[0]
@@ -697,9 +829,11 @@ class SwaggerDoc(BaseModel):
             if model_property.format_ == "date-time":
                 return "2021-01-01T00:00:00Z"
 
+        # If the model property has a type property, return the default value for that type
         if model_property.type_ is not None:
             return default_swagger_value_from_type_name(model_property.type_)
 
+        # If none of the above conditions are met, return None
         return None
 
 
@@ -717,9 +851,13 @@ class SwaggerParser:
         """Parse a swagger doc from a URL or a local file.
 
         Args:
-            swagger_doc_url (str | None, optional): Defaults to None.
-            swagger_doc_path (str | Path | None, optional): Defaults to None.
+            swagger_doc_url (str | None, optional): The URL of the Swagger doc to parse. Defaults to None.
+            swagger_doc_path (str | Path | None, optional): The path to the Swagger doc to parse. Defaults to None.
+
+        Raises:
+            RuntimeError: If the Swagger doc cannot be found or loaded.
         """
+        # If a local Swagger doc path is provided, load the JSON from the file
         if swagger_doc_path:
             swagger_doc_path = Path(swagger_doc_path)
             if swagger_doc_path.exists():
@@ -727,6 +865,7 @@ class SwaggerParser:
                     self._swagger_json = json.load(f)
             else:
                 raise RuntimeError(f"Failed to find swagger.json at {swagger_doc_path}")
+        # If a Swagger doc URL is provided, get the JSON from the URL
         elif swagger_doc_url:
             try:
                 response = requests.get(swagger_doc_url)

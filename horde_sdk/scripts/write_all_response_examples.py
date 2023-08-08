@@ -12,7 +12,7 @@ def write_all_example_responses(*, test_data_path: Path | None = None) -> None:
     ).get_swagger_doc()
     if not test_data_path:
         test_data_path = (
-            Path(__file__).parent.parent.parent.parent / "tests" / "test_data" / "ai_horde_api" / "example_responses"
+            Path(__file__).parent.parent.parent / "tests" / "test_data" / "ai_horde_api" / "example_responses"
         )
     ai_horde_swagger_doc.write_all_response_examples_to_file(test_data_path)
 
