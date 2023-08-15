@@ -340,6 +340,7 @@ class ScribeBridgeData(SharedHordeBridgeData):
     """The bridge data file subset for a Scribe worker."""
 
     # Scribe Settings
+    scribe_name: str = "An Awesome Scribe"
     kai_url: str = "http://localhost:5000"
     """The URL of the KoboldAI API to use. Defaults to the official API."""
 
