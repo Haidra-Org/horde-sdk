@@ -1,7 +1,12 @@
 """Definitions for the AI Horde API."""
 
 from horde_sdk.ai_horde_api.ai_horde_clients import (
+    AIHordeAPIAsyncClientSession,
+    AIHordeAPIAsyncManualClient,
+    AIHordeAPIAsyncSimpleClient,
+    AIHordeAPIClientSession,
     AIHordeAPIManualClient,
+    AIHordeAPISimpleClient,
 )
 from horde_sdk.ai_horde_api.consts import (
     ALCHEMY_FORMS,
@@ -17,6 +22,11 @@ from horde_sdk.ai_horde_api.endpoints import (
 
 __all__ = [
     "AIHordeAPIManualClient",
+    "AIHordeAPIClientSession",
+    "AIHordeAPIAsyncManualClient",
+    "AIHordeAPIAsyncClientSession",
+    "AIHordeAPISimpleClient",
+    "AIHordeAPIAsyncSimpleClient",
     "AI_HORDE_BASE_URL",
     "AI_HORDE_API_ENDPOINT_SUBPATHS",
     "ALCHEMY_FORMS",

@@ -9,7 +9,9 @@ import uuid
 from pydantic import BaseModel, field_validator
 
 
-class _UUID_Identifier(BaseModel):
+class UUID_Identifier(BaseModel):
+    """Represents a UUID type identifier used by the API."""
+
     model_config = {"frozen": True}
 
     id: str | uuid.UUID  # noqa: A003
@@ -47,17 +49,17 @@ class _UUID_Identifier(BaseModel):
         return hash(str(self))
 
 
-class GenerationID(_UUID_Identifier):
+class GenerationID(UUID_Identifier):
     """Represents the ID of a generation job. Instances of this class can be compared with a `str` or a UUID object."""
 
 
-class WorkerID(_UUID_Identifier):
+class WorkerID(UUID_Identifier):
     """Represents the ID of a worker. Instances of this class can be compared with a `str` or a UUID object."""
 
 
-class ImageID(_UUID_Identifier):
+class ImageID(UUID_Identifier):
     """Represents the ID of an image. Instances of this class can be compared with a `str` or a UUID object."""
 
 
-class TeamID(_UUID_Identifier):
+class TeamID(UUID_Identifier):
     """Represents the ID of a team. Instances of this class can be compared with a `str` or a UUID object."""

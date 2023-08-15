@@ -221,7 +221,7 @@ def test_FindUserResponse() -> None:
         evaluating_kudos=1.0,
         flagged=True,
         kudos=1,
-        id_=1,
+        id=1,
         moderator=False,
         pseudonymous=False,
         special=False,

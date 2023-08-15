@@ -5,7 +5,7 @@ from typing_extensions import override
 from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.fields import GenerationID, WorkerID
-from horde_sdk.generic_api.apimodels import BaseRequest
+from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
 from horde_sdk.utils import seed_to_int
 
 
@@ -22,10 +22,10 @@ class JobRequestMixin(BaseModel):
     """Mix-in class for data relating to any generation jobs."""
 
     id_: str | GenerationID = Field(alias="id")
-    """The UUID for this job."""
+    """The UUID for this job. Use this to post the results in the future."""
 
 
-class JobResponseMixin(BaseModel):
+class JobResponseMixin(BaseModel):  # TODO: this model may not actually exist as such in the API
     """Mix-in class for data relating to any generation jobs."""
 
     id_: str | GenerationID = Field(alias="id")
@@ -93,6 +93,21 @@ class ImageGenerateParamMixin(BaseModel):
         return v
 
     @field_validator("seed")
-    def seed_to_int_if_str(cls, v: str | int) -> str | int:
+    def seed_to_int_if_str(cls, v: str | int) -> str:
         """Ensure that the seed is an integer. If it is a string, convert it to an integer."""
         return str(seed_to_int(v))
+
+
+class JobSubmitResponse(BaseResponse):
+    """The response to a job submission request, indicating the number of kudos gained.
+
+    v2 API Model: `GenerationSubmitted`
+    """
+
+    reward: float
+    """The amount of kudos gained for submitting this request."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "GenerationSubmitted"

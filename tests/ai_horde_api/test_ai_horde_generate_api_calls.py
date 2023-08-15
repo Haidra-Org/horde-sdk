@@ -3,8 +3,15 @@ import asyncio
 import aiohttp
 import pytest
 
-from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPISession, AIHordeAPISimpleClient
+from horde_sdk.ai_horde_api.ai_horde_clients import (
+    AIHordeAPIAsyncClientSession,
+    AIHordeAPIAsyncSimpleClient,
+    AIHordeAPISimpleClient,
+)
 from horde_sdk.ai_horde_api.apimodels import (
+    KNOWN_ALCHEMY_TYPES,
+    AlchemyAsyncRequest,
+    AlchemyAsyncRequestFormItem,
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
     ImageGeneration,
@@ -26,11 +33,11 @@ class TestAIHordeGenerate:
             async def submit_request(
                 aiohttp_session: aiohttp.ClientSession,
             ) -> ImageGenerateAsyncResponse | RequestErrorResponse | None:
-                async with AIHordeAPISession(aiohttp_session) as horde_session:
+                async with AIHordeAPIAsyncClientSession(aiohttp_session) as horde_session:
                     api_response: ImageGenerateAsyncResponse | RequestErrorResponse = (
-                        await horde_session.async_submit_request(  # noqa: F841
+                        await horde_session.submit_request(  # noqa: F841
                             simple_image_gen_request,
-                            simple_image_gen_request.get_success_response_type(),
+                            simple_image_gen_request.get_default_success_response_type(),
                         )
                     )
                     return api_response
@@ -88,7 +95,6 @@ class TestAIHordeGenerate:
         self,
     ) -> None:
         """Test that a simple image generation with loras is successful."""
-
         lora_image_gen_request = ImageGenerateAsyncRequest(
             prompt="a cat in a hat",
             params=ImageGenerationInputPayload(
@@ -116,15 +122,15 @@ class TestAIHordeGenerate:
     ) -> None:
         """Test that a simple image generation request can be submitted and cancelled asynchronously."""
         async with aiohttp.ClientSession() as aiohttp_session:
-            simple_client = AIHordeAPISimpleClient(aiohttp_session)
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            generations: list[ImageGeneration] = await simple_client.async_image_generate_request(
+            generations: list[ImageGeneration] = await simple_client.image_generate_request(
                 simple_image_gen_request,
             )
 
             assert len(generations) == 1
 
-            image = await simple_client.async_generation_to_image(generations[0])
+            image = await simple_client.generation_to_image(generations[0])
 
             assert image is not None
 
@@ -160,6 +166,23 @@ class TestAIHordeGenerate:
 
             assert image is not None
 
+    def test_simple_client_alchemy_basic(
+        self,
+        default_testing_image_base64: str,
+    ) -> None:
+        simple_client = AIHordeAPISimpleClient()
+
+        simple_client.alchemy_request(
+            alchemy_request=AlchemyAsyncRequest(
+                forms=[
+                    AlchemyAsyncRequestFormItem(
+                        name=KNOWN_ALCHEMY_TYPES.caption,
+                    ),
+                ],
+                source_image=default_testing_image_base64,
+            ),
+        )
+
     @pytest.mark.asyncio
     async def test_simple_client_async_image_generate_multiple(
         self,
@@ -167,9 +190,9 @@ class TestAIHordeGenerate:
     ) -> None:
         """Test that a batch of image generation requests can be submitted and retrieved asynchronously."""
         async with aiohttp.ClientSession() as aiohttp_session:
-            simple_client = AIHordeAPISimpleClient(aiohttp_session)
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            generations: list[ImageGeneration] = await simple_client.async_image_generate_request(
+            generations: list[ImageGeneration] = await simple_client.image_generate_request(
                 simple_image_gen_n_requests,
             )
 
@@ -177,7 +200,7 @@ class TestAIHordeGenerate:
             assert len(generations) == simple_image_gen_n_requests.params.n
 
             for generation in generations:
-                image = await simple_client.async_generation_to_image(generation)
+                image = await simple_client.generation_to_image(generation)
 
                 assert image is not None
 
@@ -188,9 +211,9 @@ class TestAIHordeGenerate:
     ) -> None:
         """Test a batch of image generation requests can be submitted and cancelled asynchronously with a timeout."""
         async with aiohttp.ClientSession() as aiohttp_session:
-            simple_client = AIHordeAPISimpleClient(aiohttp_session)
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            generations: list[ImageGeneration] = await simple_client.async_image_generate_request(
+            generations: list[ImageGeneration] = await simple_client.image_generate_request(
                 simple_image_gen_n_requests,
                 timeout=7,  # 7 seconds isn't (generally) going to be enough time for 3 generations to complete
             )
@@ -209,10 +232,10 @@ class TestAIHordeGenerate:
         simple_image_gen_request: ImageGenerateAsyncRequest,
     ) -> None:
         async with aiohttp.ClientSession() as aiohttp_session:
-            simple_client = AIHordeAPISimpleClient(aiohttp_session)
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
             async def submit_request() -> list[ImageGeneration]:
-                generations: list[ImageGeneration] = await simple_client.async_image_generate_request(
+                generations: list[ImageGeneration] = await simple_client.image_generate_request(
                     simple_image_gen_request,
                     timeout=-1,
                 )
@@ -231,10 +254,10 @@ class TestAIHordeGenerate:
         simple_image_gen_request: ImageGenerateAsyncRequest,
     ) -> None:
         async with aiohttp.ClientSession() as aiohttp_session:
-            simple_client = AIHordeAPISimpleClient(aiohttp_session)
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
             async def submit_request() -> list[ImageGeneration]:
-                generations: list[ImageGeneration] = await simple_client.async_image_generate_request(
+                generations: list[ImageGeneration] = await simple_client.image_generate_request(
                     simple_image_gen_request,
                     timeout=-1,
                 )

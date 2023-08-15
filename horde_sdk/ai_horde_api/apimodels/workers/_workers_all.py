@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from pydantic import Field, RootModel
+from pydantic import AliasChoices, Field, RootModel
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
@@ -8,7 +8,7 @@ from horde_sdk.ai_horde_api.consts import WORKER_TYPE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
 from horde_sdk.ai_horde_api.fields import TeamID, WorkerID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseResponse, HordeAPIObject, MayUseAPIKeyInRequestMixin
+from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, BaseResponse, HordeAPIObject
 
 
 class TeamDetailsLite(HordeAPIObject):
@@ -64,7 +64,11 @@ class WorkerDetailItem(HordeAPIObject):
     megapixelsteps_generated: int | None = None
     img2img: bool | None = None
     painting: bool | None = None
-    post_processing: bool | None = None
+    post_processing: bool | None = Field(
+        None,
+        validation_alias=AliasChoices("post_processing", "post-processing"),
+        serialization_alias="post-processing",
+    )
     lora: bool | None = None
     max_length: int | None = None
     max_context_length: int | None = None
@@ -93,7 +97,7 @@ class AllWorkersDetailsResponse(RootModel[list[WorkerDetailItem]], BaseResponse)
         return "WorkerDetails"
 
 
-class AllWorkersDetailsRequest(BaseAIHordeRequest, MayUseAPIKeyInRequestMixin):
+class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     """Returns information on all works. If a moderator API key is specified, it will return additional information."""
 
     type_: WORKER_TYPE = Field(alias="type")
@@ -115,7 +119,7 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, MayUseAPIKeyInRequestMixin):
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[BaseResponse]:
+    def get_default_success_response_type(cls) -> type[BaseResponse]:
         return AllWorkersDetailsResponse
 
     @override

@@ -8,9 +8,9 @@ from typing_extensions import override
 
 from horde_sdk.consts import _UNDEFINED_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
+    APIKeyAllowedInRequestMixin,
     BaseRequest,
     BaseResponse,
-    MayUseAPIKeyInRequestMixin,
     RequestSpecifiesUserIDMixin,
 )
 from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
@@ -154,7 +154,7 @@ class BaseSelectableReturnTypeRequest(BaseModel):
 
 class ImageRatingsRequest(
     BaseRatingsAPIRequest,
-    MayUseAPIKeyInRequestMixin,
+    APIKeyAllowedInRequestMixin,
     BaseSelectableReturnTypeRequest,
 ):
     """Represents the data needed to make a request to the `/v1/image/ratings/{image_id}` endpoint."""
@@ -176,7 +176,7 @@ class ImageRatingsRequest(
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[ImageRatingsResponse]:
+    def get_default_success_response_type(cls) -> type[ImageRatingsResponse]:
         return ImageRatingsResponse
 
 
@@ -204,7 +204,7 @@ class ImageRatingsFilterableRequestBase(BaseSelectableReturnTypeRequest):
 
 class UserValidateRequest(
     BaseRatingsAPIRequest,
-    MayUseAPIKeyInRequestMixin,
+    APIKeyAllowedInRequestMixin,
     RequestSpecifiesUserIDMixin,
     ImageRatingsFilterableRequestBase,
 ):
@@ -227,13 +227,13 @@ class UserValidateRequest(
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[UserValidateResponse]:
+    def get_default_success_response_type(cls) -> type[UserValidateResponse]:
         return UserValidateResponse
 
 
 class UserCheckRequest(
     BaseRatingsAPIRequest,
-    MayUseAPIKeyInRequestMixin,
+    APIKeyAllowedInRequestMixin,
     RequestSpecifiesUserIDMixin,
 ):
     """Represents the data needed to make a request to the `/v1/user/check/` endpoint."""
@@ -258,13 +258,13 @@ class UserCheckRequest(
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[UserCheckResponse]:
+    def get_default_success_response_type(cls) -> type[UserCheckResponse]:
         return UserCheckResponse
 
 
 class UserRatingsRequest(
     BaseRatingsAPIRequest,
-    MayUseAPIKeyInRequestMixin,
+    APIKeyAllowedInRequestMixin,
     ImageRatingsFilterableRequestBase,
 ):
     """Represents the data needed to make a request to the `/v1/user/ratings/` endpoint."""
@@ -290,7 +290,7 @@ class UserRatingsRequest(
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[UserRatingsResponse]:
+    def get_default_success_response_type(cls) -> type[UserRatingsResponse]:
         return UserRatingsResponse
 
 

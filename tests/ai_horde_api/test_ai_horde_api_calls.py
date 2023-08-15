@@ -5,7 +5,11 @@ from pathlib import Path
 import aiohttp
 import pytest
 
-from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient, AIHordeAPISession
+from horde_sdk.ai_horde_api.ai_horde_clients import (
+    AIHordeAPIAsyncClientSession,
+    AIHordeAPIClientSession,
+    AIHordeAPIManualClient,
+)
 from horde_sdk.ai_horde_api.apimodels import (
     AllWorkersDetailsRequest,
     AllWorkersDetailsResponse,
@@ -41,7 +45,7 @@ class TestAIHordeAPIClients:
 
         image_async_response: ImageGenerateAsyncResponse | RequestErrorResponse = client.submit_request(
             api_request=simple_image_gen_request,
-            expected_response_type=simple_image_gen_request.get_success_response_type(),
+            expected_response_type=simple_image_gen_request.get_default_success_response_type(),
         )
 
         if isinstance(image_async_response, RequestErrorResponse):
@@ -61,7 +65,7 @@ class TestAIHordeAPIClients:
                 ),
             )
 
-        assert isinstance(cancel_response, DeleteImageGenerateRequest.get_success_response_type())
+        assert isinstance(cancel_response, DeleteImageGenerateRequest.get_default_success_response_type())
 
     def test_workers_all(self) -> None:
         """Test the all workers endpoint."""
@@ -71,7 +75,7 @@ class TestAIHordeAPIClients:
 
         api_response = client.submit_request(
             api_request,
-            api_request.get_success_response_type(),
+            api_request.get_default_success_response_type(),
         )
 
         if isinstance(api_response, RequestErrorResponse):
@@ -99,20 +103,22 @@ class TestAIHordeAPIClients:
 
     def test_HordeRequestSession_cleanup(self, simple_image_gen_request: ImageGenerateAsyncRequest) -> None:
         """Test that the context manager cleans up correctly."""
-        with pytest.raises(HordeTestException), AIHordeAPISession() as horde_session:
+        with pytest.raises(HordeTestException), AIHordeAPIClientSession() as horde_session:
             api_response = horde_session.submit_request(  # noqa: F841
                 simple_image_gen_request,
-                simple_image_gen_request.get_success_response_type(),
+                simple_image_gen_request.get_default_success_response_type(),
             )
             raise HordeTestException("This tests the context manager, not the request/response.")
 
     @pytest.mark.asyncio
     async def test_HordeRequestSession_async(self, simple_image_gen_request: ImageGenerateAsyncRequest) -> None:
         """Test that the context manager cleans up correctly asynchronously."""
-        async with aiohttp.ClientSession() as aiohttp_session, AIHordeAPISession(aiohttp_session) as horde_session:
-            api_response = await horde_session.async_submit_request(  # noqa: F841
+        async with aiohttp.ClientSession() as aiohttp_session, AIHordeAPIAsyncClientSession(
+            aiohttp_session=aiohttp_session,
+        ) as horde_session:
+            api_response = await horde_session.submit_request(  # noqa: F841
                 simple_image_gen_request,
-                simple_image_gen_request.get_success_response_type(),
+                simple_image_gen_request.get_default_success_response_type(),
             )
 
     @pytest.mark.asyncio
@@ -122,9 +128,11 @@ class TestAIHordeAPIClients:
     ) -> None:
         """Test that the context manager cleans up correctly asynchronously when an exception is raised."""
         with pytest.raises(HordeTestException):
-            async with aiohttp.ClientSession() as aiohttp_session, AIHordeAPISession(aiohttp_session) as horde_session:
-                api_response = await horde_session.async_submit_request(  # noqa: F841
+            async with aiohttp.ClientSession() as aiohttp_session, AIHordeAPIAsyncClientSession(
+                aiohttp_session=aiohttp_session,
+            ) as horde_session:
+                api_response = await horde_session.submit_request(  # noqa: F841
                     simple_image_gen_request,
-                    simple_image_gen_request.get_success_response_type(),
+                    simple_image_gen_request.get_default_success_response_type(),
                 )
                 raise HordeTestException("This tests the context manager, not the request/response.")

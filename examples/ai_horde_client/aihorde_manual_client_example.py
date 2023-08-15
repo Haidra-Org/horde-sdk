@@ -27,7 +27,7 @@ def main() -> None:
 
     response = manual_client.submit_request(
         image_generate_async_request,
-        image_generate_async_request.get_success_response_type(),
+        image_generate_async_request.get_default_success_response_type(),
     )
 
     if isinstance(response, RequestErrorResponse):
@@ -67,7 +67,7 @@ def main() -> None:
 
     status_response = manual_client.submit_request(
         image_generate_status_request,
-        image_generate_status_request.get_success_response_type(),
+        image_generate_status_request.get_default_success_response_type(),
     )
 
     if isinstance(status_response, RequestErrorResponse):

@@ -339,7 +339,6 @@ class SwaggerDoc(BaseModel):
         This in the form of:
         `dict[endpoint_path, dict[http_method, dict[http_status_code, example_response]]]`
         """
-
         # Create an empty dictionary to hold all endpoint examples.
         every_endpoint_example: dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]] = {}
 
@@ -372,7 +371,6 @@ class SwaggerDoc(BaseModel):
             A dictionary of response examples for the endpoint in the form of:
             `dict[http_method, dict[http_status_code, example_response]]`
         """
-
         # Create an empty dictionary to hold the response examples for each HTTP method used by the endpoint.
         endpoint_examples: dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]] = {}
 
@@ -401,7 +399,6 @@ class SwaggerDoc(BaseModel):
             A dictionary of response examples for the HTTP method in the form of:
             `dict[http_status_code, example_response]`
         """
-
         # Create an empty dictionary to hold the response examples for each HTTP status code used by the HTTP method.
         endpoint_method_examples: dict[HTTPStatusCode, dict[str, object] | list] = {}
 
@@ -434,7 +431,6 @@ class SwaggerDoc(BaseModel):
         Returns:
             A dictionary or list representing an example response for the HTTP response definition.
         """
-
         # Create an empty dictionary or list to hold the example response.
         example_response: dict[str, object] | list = {}
 
@@ -465,7 +461,6 @@ class SwaggerDoc(BaseModel):
         This in the form of:
         `dict[endpoint_path, dict[param_name, param_example_value]]]`
         """
-
         # Create an empty dictionary to hold all endpoint examples.
         every_endpoint_example: dict[str, dict[HTTPMethod, dict[str, object]]] = {}
 
@@ -556,7 +551,6 @@ class SwaggerDoc(BaseModel):
         Returns:
             A string representing the filename for the given endpoint path.
         """
-
         # Replace any non-alphanumeric characters in the endpoint path with underscores.
         endpoint_path = re.sub(r"\W+", "_", endpoint_path)
 
@@ -579,7 +573,6 @@ class SwaggerDoc(BaseModel):
         Returns:
             A boolean indicating whether the operation succeeded.
         """
-
         # Convert the directory path to a Path object.
         directory = Path(directory)
 
@@ -621,7 +614,6 @@ class SwaggerDoc(BaseModel):
         Returns:
             A boolean indicating whether the operation succeeded.
         """
-
         # Convert the directory path to a Path object.
         directory = Path(directory)
 
@@ -794,7 +786,6 @@ class SwaggerDoc(BaseModel):
 
     def get_default_with_constraint(self, model_property: SwaggerModelProperty) -> object:
         """Get the example value, defaulting to a a value appropriate to the type with any constraints applied."""
-
         # If the model property has a description that includes the word "optionally", do nothing
         if model_property.description and "optionally" in model_property.description:
             pass
