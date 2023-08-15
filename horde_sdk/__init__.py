@@ -9,16 +9,16 @@ from loguru import logger
 dotenv.load_dotenv()
 
 if os.getenv("AI_HORDE_DEV_URL"):
-    logger.warning(
+    logger.info(
         "AI_HORDE_DEV_URL is set.",
     )
 
 if os.getenv("RATINGS_DEV_URL"):
-    logger.warning(
+    logger.info(
         "RATINGS_DEV_URL is set.",
     )
 
 if os.getenv("AIWORKER_CACHE_HOME"):
-    logger.warning(
+    logger.info(
         "AIWORKER_CACHE_HOME is set.",
     )
