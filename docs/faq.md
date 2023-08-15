@@ -18,7 +18,4 @@ title: Frequently Asked Questions
 >
 > If you don't like working with the objects from this library within
 > your own code, you can always translate between the types and dicts using
-> pydantic's `.model_dump()` `.model_validate()`. There is also a convenience
-> function [to_json_horde_sdk_safe()](../horde_sdk/generic_api/apimodels/#horde_sdk.generic_api.apimodels.HordeAPIModel.to_json_horde_sdk_safe)
-> which may be useful. All API models in this library have this method,
-> but certain other classes may not.
+> pydantic's `.model_dump()` ('to dict') `.model_validate()` ('from dict').
