@@ -2,11 +2,12 @@ from pydantic import BaseModel, Field
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
-from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckResponse
+from horde_sdk.ai_horde_api.apimodels.generate._progress import ResponseGenerationProgressMixin
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
 from horde_sdk.ai_horde_api.fields import ImageID, WorkerID
 from horde_sdk.consts import HTTPMethod
+from horde_sdk.generic_api.apimodels import BaseResponse, ResponseWithProgressMixin
 
 
 class ImageGeneration(BaseModel):
@@ -34,7 +35,11 @@ class ImageGeneration(BaseModel):
     """When true this image has been censored by the worker's safety filter."""
 
 
-class ImageGenerateStatusResponse(ImageGenerateCheckResponse):
+class ImageGenerateStatusResponse(
+    BaseResponse,
+    ResponseWithProgressMixin,
+    ResponseGenerationProgressMixin,
+):
     """Represent the response from the AI-Horde API when checking the status of an image generation job.
 
     v2 API Model: `RequestStatusStable`
@@ -49,6 +54,15 @@ class ImageGenerateStatusResponse(ImageGenerateCheckResponse):
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "RequestStatusStable"
+
+    @override
+    @classmethod
+    def get_finalize_success_request_type(cls) -> None:
+        return None
+
+    @override
+    def is_job_complete(self, number_of_result_expected: int) -> bool:
+        return len(self.generations) == number_of_result_expected
 
 
 class DeleteImageGenerateRequest(
@@ -74,7 +88,7 @@ class DeleteImageGenerateRequest(
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
+    def get_default_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
         return ImageGenerateStatusResponse
 
 
@@ -98,5 +112,5 @@ class ImageGenerateStatusRequest(BaseAIHordeRequest, JobRequestMixin):
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
+    def get_default_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
         return ImageGenerateStatusResponse

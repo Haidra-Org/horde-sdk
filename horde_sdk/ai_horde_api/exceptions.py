@@ -12,7 +12,13 @@ class AIHordeServerException(HordeException):
         *,
         message: str = "The AI Horde API returned an error response and it wasn't handled.",
         error_response: RequestErrorResponse,
-    ):
+    ) -> None:
+        """Initialize the exception.
+
+        Args:
+            message: The message to display to the user.
+            error_response: The error response returned by the AI Horde API.
+        """
         logger.error(f"The AI Horde API returned an error response and it wasn't handled. Response: {error_response}")
         if error_response.object_data is not None:
             logger.error(f"Response object data: {error_response.object_data}")

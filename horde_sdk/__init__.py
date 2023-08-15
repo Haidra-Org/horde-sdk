@@ -17,3 +17,8 @@ if os.getenv("RATINGS_DEV_URL"):
     logger.warning(
         "RATINGS_DEV_URL is set.",
     )
+
+if os.getenv("AIWORKER_CACHE_HOME"):
+    logger.warning(
+        "AIWORKER_CACHE_HOME is set.",
+    )

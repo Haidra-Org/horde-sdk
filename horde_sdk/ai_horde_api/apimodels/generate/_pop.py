@@ -7,10 +7,11 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     ImageGenerateParamMixin,
     JobResponseMixin,
 )
+from horde_sdk.ai_horde_api.apimodels.generate._submit import ImageGenerationJobSubmitRequest
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE, KNOWN_SOURCE_PROCESSING
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseResponse, MayUseAPIKeyInRequestMixin, ResponseNeedingFollowUpMixin
+from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, BaseResponse, ResponseRequiringFollowUpMixin
 
 
 class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
@@ -56,7 +57,7 @@ class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
     """How many waiting requests were skipped because they requested a controlnet."""
 
 
-class ImageGenerateJobResponse(BaseResponse, JobResponseMixin, ResponseNeedingFollowUpMixin):
+class ImageGenerateJobResponse(BaseResponse, JobResponseMixin, ResponseRequiringFollowUpMixin):
     """Represents the data returned from the `/v2/generate/pop` endpoint.
 
     v2 API Model: `GenerationPayloadStable`
@@ -92,15 +93,25 @@ class ImageGenerateJobResponse(BaseResponse, JobResponseMixin, ResponseNeedingFo
         return "GenerationPayloadStable"
 
     @override
-    def get_follow_up_returned_params(self) -> dict[str, object]:
-        return {"id": self.id_}
+    @classmethod
+    def get_follow_up_default_request(cls) -> type[ImageGenerationJobSubmitRequest]:
+        return ImageGenerationJobSubmitRequest
+
+    @override
+    @classmethod
+    def get_follow_up_failure_cleanup_request_type(cls) -> type[ImageGenerationJobSubmitRequest]:
+        return ImageGenerationJobSubmitRequest
+
+    @override
+    def get_follow_up_returned_params(self) -> list[dict[str, object]]:
+        return [{"id": self.id_}]
 
     @override
     def get_follow_up_failure_cleanup_params(self) -> dict[str, object]:
         return {"state": GENERATION_STATE.faulted}  # TODO: One day, could I do away with the magic string?
 
 
-class ImageGenerateJobPopRequest(BaseAIHordeRequest, MayUseAPIKeyInRequestMixin):
+class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     """Represents the data needed to make a job request from a worker to the /v2/generate/pop endpoint.
 
     v2 API Model: `PopInputStable`
@@ -140,7 +151,7 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, MayUseAPIKeyInRequestMixin)
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[ImageGenerateJobResponse]:
+    def get_default_success_response_type(cls) -> type[ImageGenerateJobResponse]:
         return ImageGenerateJobResponse
 
 

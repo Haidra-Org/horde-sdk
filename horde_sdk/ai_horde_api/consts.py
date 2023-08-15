@@ -75,6 +75,8 @@ class ALCHEMY_FORMS(StrEnum):
 
 
 class KNOWN_ALCHEMY_TYPES(StrEnum):
+    """The alchemy processes (types) that are known to the API."""
+
     caption = auto()
     interrogation = auto()
     nsfw = auto()

@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import pathlib
+import re
 import urllib.parse
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from strenum import StrEnum
 
 from horde_sdk.ai_horde_api.consts import ALCHEMY_FORMS
 from horde_sdk.ai_horde_worker.locale_info.bridge_data_fields import BRIDGE_DATA_FIELD_DESCRIPTIONS
@@ -14,6 +16,15 @@ from horde_sdk.generic_api.consts import ANON_API_KEY
 
 _UNREASONABLE_NUMBER_OF_MODELS = 1000
 """1000"""
+
+
+class MetaInstruction(StrEnum):
+    ALL_REGEX = r"all$"
+
+    TOP_N_REGEX = r"TOP (\d+)"
+    """The regex to use to match the top N models. The number is in a capture group on its own."""
+
+    BOTTOM_N_REGEX = r"BOTTOM (\d+)"
 
 
 class BaseHordeBridgeData(BaseModel):
@@ -265,6 +276,26 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
             self.allow_controlnet = False
         return self
 
+    _meta_load_instructions: list[str] | None = None
+
+    @property
+    def meta_load_instructions(self) -> list[str] | None:
+        """The meta load instructions."""
+        return self._meta_load_instructions
+
+    @model_validator(mode="after")
+    def handle_meta_instructions(self) -> ImageWorkerBridgeData:
+        # See if any entries are meta instructions, and if so, remove them and place them in _meta_load_instructions
+        for instruction_regex in MetaInstruction.__members__.values():
+            for i, model in enumerate(self.image_models_to_load):
+                if re.match(instruction_regex, model, re.IGNORECASE):
+                    if self._meta_load_instructions is None:
+                        self._meta_load_instructions = []
+                    self._meta_load_instructions.append(model)
+                    self.image_models_to_load.pop(i)
+
+        return self
+
     @field_validator("image_models_to_load")
     def validate_models_to_load(cls, v: list) -> list:
         """Validate and parse the models to load."""
@@ -337,7 +368,12 @@ class CombinedHordeBridgeData(ImageWorkerBridgeData, ScribeBridgeData):
 
 
 # Get all BaseModels from the current file
-ALL_DATA_FILES_TYPES: list[type[BaseModel]] = [SharedHordeBridgeData, ImageWorkerBridgeData, ScribeBridgeData]
+ALL_DATA_FILES_TYPES: list[type[BaseModel]] = [
+    SharedHordeBridgeData,
+    ImageWorkerBridgeData,
+    ScribeBridgeData,
+    CombinedHordeBridgeData,
+]
 
 
 # Dynamically add descriptions to the fields of all the base models

@@ -1,4 +1,5 @@
-from pydantic import Field, model_validator
+from loguru import logger
+from pydantic import Field, field_validator, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
@@ -12,18 +13,18 @@ from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
+    APIKeyAllowedInRequestMixin,
     BaseResponse,
     ContainsMessageResponseMixin,
-    MayUseAPIKeyInRequestMixin,
     RequestUsesImageWorkerMixin,
-    ResponseNeedingFollowUpMixin,
+    ResponseRequiringFollowUpMixin,
 )
 
 
 class ImageGenerateAsyncResponse(
     BaseResponse,
     JobResponseMixin,
-    ResponseNeedingFollowUpMixin,
+    ResponseRequiringFollowUpMixin,
     ContainsMessageResponseMixin,
 ):
     """Represents the data returned from the `/v2/generate/async` endpoint.
@@ -35,8 +36,8 @@ class ImageGenerateAsyncResponse(
     kudos: float
 
     @override
-    def get_follow_up_returned_params(self) -> dict[str, object]:
-        return {"id": self.id_}
+    def get_follow_up_returned_params(self) -> list[dict[str, object]]:
+        return [{"id": self.id_}]
 
     @classmethod
     def get_follow_up_default_request(cls) -> type[ImageGenerateCheckRequest]:
@@ -51,7 +52,7 @@ class ImageGenerateAsyncResponse(
 
     @override
     @classmethod
-    def get_follow_up_failure_cleanup_request_type(cls) -> type[DeleteImageGenerateRequest] | None:
+    def get_follow_up_failure_cleanup_request_type(cls) -> type[DeleteImageGenerateRequest]:
         return DeleteImageGenerateRequest
 
     @override
@@ -61,12 +62,21 @@ class ImageGenerateAsyncResponse(
 
 
 class ImageGenerationInputPayload(ImageGenerateParamMixin):
-    n: int = Field(default=1, ge=1)
+    n: int = Field(default=1, ge=1, le=60)
+
+    @field_validator("n", mode="before")
+    def validate_n(cls, value: int) -> int:
+        if value >= 30:
+            logger.warning(
+                "n (number of images to generate) is >= 30; only moderators and certain users can generate that many "
+                f"images at once. The request will probably fail. (n={value}))",
+            )
+        return value
 
 
 class ImageGenerateAsyncRequest(
     BaseAIHordeRequest,
-    MayUseAPIKeyInRequestMixin,
+    APIKeyAllowedInRequestMixin,
     RequestUsesImageWorkerMixin,
 ):
     """Represents the data needed to make a request to the `/v2/generate/async` endpoint.
@@ -113,12 +123,12 @@ class ImageGenerateAsyncRequest(
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[ImageGenerateAsyncResponse]:
+    def get_default_success_response_type(cls) -> type[ImageGenerateAsyncResponse]:
         return ImageGenerateAsyncResponse
 
     @override
     @classmethod
     def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[BaseResponse]]:
         return {
-            HTTPStatusCode.ACCEPTED: cls.get_success_response_type(),
+            HTTPStatusCode.ACCEPTED: cls.get_default_success_response_type(),
         }

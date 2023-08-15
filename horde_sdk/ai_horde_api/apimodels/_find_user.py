@@ -6,7 +6,7 @@ from typing_extensions import override
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseResponse, MayUseAPIKeyInRequestMixin
+from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, BaseResponse
 
 
 class ContributionsDetails(BaseModel):
@@ -99,7 +99,7 @@ class FindUserResponse(BaseResponse):
         examples=[False],
     )
     """This user has been flagged for suspicious activity."""
-    id_: int | None = Field(default=None, description="The user unique ID. It is always an integer.")
+    id_: int | None = Field(default=None, description="The user unique ID. It is always an integer.", alias="id")
     """The user unique ID. It is always an integer."""
     kudos: float | None = Field(
         default=None,
@@ -175,7 +175,7 @@ class FindUserResponse(BaseResponse):
     When 0, this user cannot add (new) workers to the horde."""
 
 
-class FindUserRequest(BaseAIHordeRequest, MayUseAPIKeyInRequestMixin):
+class FindUserRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -193,5 +193,5 @@ class FindUserRequest(BaseAIHordeRequest, MayUseAPIKeyInRequestMixin):
 
     @override
     @classmethod
-    def get_success_response_type(self) -> type[FindUserResponse]:
+    def get_default_success_response_type(self) -> type[FindUserResponse]:
         return FindUserResponse

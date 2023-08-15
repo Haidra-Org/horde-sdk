@@ -11,7 +11,10 @@ from strenum import StrEnum
 
 
 class GenericHeaderFields(StrEnum):
-    """`StrEnum` for data that is exclusively passed in the header of a request."""
+    """`StrEnum` for data that may be passed in the header of a request.
+
+    Pass this in to a GenericClient initializer if implementing a new API. See an existing API's `metadata.py` module.
+    """
 
     apikey = auto()
     accept = auto()
@@ -20,15 +23,24 @@ class GenericHeaderFields(StrEnum):
 
 
 class GenericAcceptTypes(StrEnum):
-    """`StrEnum` for supported values for the header parameter 'accept'."""
+    """`StrEnum` for supported values for the header parameter 'accept'.
+
+    Pass this in to a GenericClient initializer if implementing a new API. See an existing API's `metadata.py` module.
+    """
 
     json = "application/json"
     # html = "application/html" # TODO?
 
 
 class GenericPathFields(StrEnum):
-    """`StrEnum` for data that is exclusively passed as part of a URL path (not a query string after the `?`)."""
+    """`StrEnum` for data that may be passed as part of a URL path (before the query string).
+
+    Pass this in to a GenericClient initializer if implementing a new API. See an existing API's `metadata.py` module.
+    """
 
 
 class GenericQueryFields(StrEnum):
-    """`StrEnum` for data that is exclusively passed as part of a URL query (after the `?`)."""
+    """`StrEnum` for data that may be passed as part of a URL query (after the `?`).
+
+    Pass this in to a GenericClient initializer if implementing a new API. See an existing API's `metadata.py` module.
+    """
