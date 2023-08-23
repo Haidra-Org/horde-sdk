@@ -1,4 +1,5 @@
 import base64
+import os
 import pathlib
 
 import pytest
@@ -7,10 +8,17 @@ from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest, ImageGen
 from horde_sdk.generic_api.consts import ANON_API_KEY
 
 
+@pytest.fixture(scope="session")
+def ai_horde_api_key() -> str:
+    dev_key = os.getenv("AI_HORDE_DEV_APIKEY", None)
+
+    return dev_key if dev_key is not None else ANON_API_KEY
+
+
 @pytest.fixture(scope="function")
-def simple_image_gen_request() -> ImageGenerateAsyncRequest:
+def simple_image_gen_request(ai_horde_api_key: str) -> ImageGenerateAsyncRequest:
     return ImageGenerateAsyncRequest(
-        apikey=ANON_API_KEY,
+        apikey=ai_horde_api_key,
         prompt="a cat in a hat",
         models=["Deliberate"],
         params=ImageGenerationInputPayload(
@@ -21,9 +29,9 @@ def simple_image_gen_request() -> ImageGenerateAsyncRequest:
 
 
 @pytest.fixture(scope="function")
-def simple_image_gen_n_requests() -> ImageGenerateAsyncRequest:
+def simple_image_gen_n_requests(ai_horde_api_key: str) -> ImageGenerateAsyncRequest:
     return ImageGenerateAsyncRequest(
-        apikey=ANON_API_KEY,
+        apikey=ai_horde_api_key,
         prompt="a cat in a hat",
         models=["Deliberate"],
         params=ImageGenerationInputPayload(

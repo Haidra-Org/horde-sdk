@@ -8,12 +8,12 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     JobRequestMixin,
 )
 from horde_sdk.ai_horde_api.consts import KNOWN_ALCHEMY_TYPES
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    BaseResponse,
     HordeAPIObject,
+    HordeResponseBaseModel,
     ResponseRequiringFollowUpMixin,
 )
 
@@ -84,7 +84,7 @@ class NoValidAlchemyFound(HordeAPIObject):
     )
 
 
-class AlchemyPopResponse(BaseResponse, ResponseRequiringFollowUpMixin):
+class AlchemyPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin):
     """v2 API Model: `InterrogationPopPayload`."""
 
     # and not actually specifying a schema
@@ -98,7 +98,7 @@ class AlchemyPopResponse(BaseResponse, ResponseRequiringFollowUpMixin):
 
     @override
     @classmethod
-    def get_follow_up_default_request(cls) -> type[AlchemyJobSubmitRequest]:
+    def get_follow_up_default_request_type(cls) -> type[AlchemyJobSubmitRequest]:
         return AlchemyJobSubmitRequest
 
     @override
@@ -122,7 +122,7 @@ class AlchemyPopResponse(BaseResponse, ResponseRequiringFollowUpMixin):
 
     @override
     @classmethod
-    def get_follow_up_request_types(cls) -> list[type]:
+    def get_follow_up_request_types(cls) -> list[type[AlchemyJobSubmitRequest]]:  # type: ignore[override]
         """Return a list of all the possible follow up request types for this response."""
         return [AlchemyJobSubmitRequest]
 
@@ -149,8 +149,8 @@ class AlchemyPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_interrogate_pop
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_interrogate_pop
 
     @override
     @classmethod

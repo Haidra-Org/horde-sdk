@@ -8,7 +8,7 @@ import horde_sdk.ai_horde_api.apimodels
 import horde_sdk.ratings_api.apimodels
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api._reflection import get_all_request_types
-from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
+from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponse
 from horde_sdk.generic_api.utils.swagger import SwaggerDoc
 
 EXAMPLE_PAYLOADS: dict[ModuleType, Path] = {
@@ -54,18 +54,18 @@ class Test_reflection_and_dynamic:  # noqa: D101
             # Check that at least one request type was found.
             assert len(all_request_types) > 0, f"Failed to find any request types in {api.__name__}"
 
-            # Loop through each request type and check that it is a subclass of `BaseRequest`.
+            # Loop through each request type and check that it is a subclass of `HordeRequest`.
             for request_type in all_request_types:
                 assert issubclass(
                     request_type,
-                    BaseRequest,
-                ), f"Request type is not a subclass if `BaseRequest`: {request_type}"
+                    HordeRequest,
+                ), f"Request type is not a subclass if `HordeRequest`: {request_type}"
 
-                # Check that the success response type for the request type is a subclass of `BaseResponse`.
+                # Check that the success response type for the request type is a subclass of `HordeResponse`.
                 assert issubclass(
                     request_type.get_default_success_response_type(),
-                    BaseResponse,
-                ), f"Response type is not a subclass of `BaseResponse`: {request_type}"
+                    HordeResponse,
+                ), f"Response type is not a subclass of `HordeResponse`: {request_type}"
 
     @staticmethod
     def dynamic_json_load(module: ModuleType) -> None:
@@ -74,24 +74,24 @@ class Test_reflection_and_dynamic:  # noqa: D101
         module_name = module.__name__
 
         # Get a list of all non-abstract request types in the module.
-        all_request_types: list[type[BaseRequest]] = get_all_request_types(module_name)
+        all_request_types: list[type[HordeRequest]] = get_all_request_types(module_name)
 
         # Loop through each request type and test it.
         for request_type in all_request_types:
-            # Check that the request type is a subclass of `BaseRequest`.
+            # Check that the request type is a subclass of `HordeRequest`.
             assert issubclass(
                 request_type,
-                BaseRequest,
-            ), f"Request type is not a subclass if `BaseRequest`: {request_type}"
+                HordeRequest,
+            ), f"Request type is not a subclass if `HordeRequest`: {request_type}"
 
             # Get the success response type for the request type.
-            response_type: type[BaseResponse] = request_type.get_default_success_response_type()
+            response_type: type[HordeResponse] = request_type.get_default_success_response_type()
 
-            # Check that the response type is a subclass of `BaseResponse`.
+            # Check that the response type is a subclass of `HordeResponse`.
             assert issubclass(
                 response_type,
-                BaseResponse,
-            ), f"Response type is not a subclass of `BaseResponse`: {response_type}"
+                HordeResponse,
+            ), f"Response type is not a subclass of `HordeResponse`: {response_type}"
 
             # If the request type is not a GET or DELETE request, check that the example payload file exists.
             if request_type.get_http_method() not in [HTTPMethod.GET, HTTPMethod.DELETE]:

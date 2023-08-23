@@ -4,9 +4,9 @@ from pydantic import BaseModel, Field
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, BaseResponse
+from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, HordeResponseBaseModel
 
 
 class ContributionsDetails(BaseModel):
@@ -60,7 +60,7 @@ class UsageDetails(BaseModel):
     requests: int | None = Field(default=None, description="How many images this user has requested.")
 
 
-class FindUserResponse(BaseResponse):
+class FindUserResponse(HordeResponseBaseModel):
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -183,8 +183,8 @@ class FindUserRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_find_user
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_find_user
 
     @override
     @classmethod

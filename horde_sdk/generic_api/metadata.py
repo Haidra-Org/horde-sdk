@@ -9,6 +9,8 @@ from enum import auto
 
 from strenum import StrEnum
 
+# TODO: Extending enums is troublesome... would regular (BaseModel?) classes be better?
+
 
 class GenericHeaderFields(StrEnum):
     """`StrEnum` for data that may be passed in the header of a request.

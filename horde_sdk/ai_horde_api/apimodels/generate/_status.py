@@ -4,10 +4,10 @@ from typing_extensions import override
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
 from horde_sdk.ai_horde_api.apimodels.generate._progress import ResponseGenerationProgressMixin
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
-from horde_sdk.ai_horde_api.fields import ImageID, WorkerID
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
+from horde_sdk.ai_horde_api.fields import JobID, WorkerID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseResponse, ResponseWithProgressMixin
+from horde_sdk.generic_api.apimodels import HordeResponseBaseModel, ResponseWithProgressMixin
 
 
 class ImageGeneration(BaseModel):
@@ -16,8 +16,8 @@ class ImageGeneration(BaseModel):
     v2 API Model: `GenerationStable`
     """
 
-    id_: str | ImageID = Field(alias="id")
-    """The UUID of this image. Is always returned as a `ImageID`, but can initialized from a `str`."""
+    id_: JobID = Field(alias="id")
+    """The UUID of this generation. Is always returned as a `JobID`, but can initialized from a `str`."""
     # todo: remove `str`?
     worker_id: str | WorkerID
     """The UUID of the worker which generated this image."""
@@ -36,7 +36,7 @@ class ImageGeneration(BaseModel):
 
 
 class ImageGenerateStatusResponse(
-    BaseResponse,
+    HordeResponseBaseModel,
     ResponseWithProgressMixin,
     ResponseGenerationProgressMixin,
 ):
@@ -64,6 +64,11 @@ class ImageGenerateStatusResponse(
     def is_job_complete(self, number_of_result_expected: int) -> bool:
         return len(self.generations) == number_of_result_expected
 
+    @override
+    @classmethod
+    def is_final_follow_up(cls) -> bool:
+        return True
+
 
 class DeleteImageGenerateRequest(
     BaseAIHordeRequest,
@@ -83,8 +88,8 @@ class DeleteImageGenerateRequest(
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_generate_status
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_status
 
     @override
     @classmethod
@@ -107,8 +112,8 @@ class ImageGenerateStatusRequest(BaseAIHordeRequest, JobRequestMixin):
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_generate_status
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_status
 
     @override
     @classmethod

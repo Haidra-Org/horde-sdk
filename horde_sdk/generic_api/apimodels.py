@@ -9,14 +9,12 @@ from typing_extensions import override
 
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.consts import ANON_API_KEY
-from horde_sdk.generic_api.endpoints import url_with_path
+from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
 
 class HordeAPIObject(BaseModel, abc.ABC):
     """Base class for all Horde API data models, requests, or responses."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
 
     @classmethod
     @abc.abstractmethod
@@ -31,8 +29,12 @@ class HordeAPIMessage(HordeAPIObject):
     """Represents any request or response from any Horde API."""
 
 
-class BaseResponse(HordeAPIMessage):
+class HordeResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
+
+
+class HordeResponseBaseModel(HordeResponse, BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
 
 class ResponseRequiringFollowUpMixin(abc.ABC):
@@ -43,7 +45,7 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
         """Return the information required from this response to submit a follow up request.
 
         Note that this dict uses the alias field names (as seen on the API), not the python field names.
-        GenerationIDs will be returned as `{"id": "00000000-0000-0000-0000-000000000000"}` instead of
+        JobIDs will be returned as `{"id": "00000000-0000-0000-0000-000000000000"}` instead of
         `{"id_": "00000000-0000-0000-0000-000000000000"}`.
 
         Returns:
@@ -76,18 +78,18 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def get_follow_up_default_request(cls) -> type[BaseRequest]:
+    def get_follow_up_default_request_type(cls) -> type[HordeRequest]:
         """Return the default request type for this response."""
 
     @classmethod
     @abc.abstractmethod
-    def get_follow_up_failure_cleanup_request_type(cls) -> type[BaseRequest]:
+    def get_follow_up_failure_cleanup_request_type(cls) -> type[HordeRequest]:
         """Return the request type for this response to clean up after a failed follow up request.
 
         Defaults to `None`, meaning no cleanup request is needed.
         """
 
-    _cleanup_requests: list[BaseRequest] | None = None
+    _cleanup_requests: list[HordeRequest] | None = None
 
     def get_follow_up_failure_cleanup_params(self) -> dict[str, object]:
         """Return any extra information required from this response to clean up after a failed follow up request.
@@ -98,7 +100,7 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
         """
         return {}
 
-    def get_follow_up_failure_cleanup_request(self) -> list[BaseRequest]:
+    def get_follow_up_failure_cleanup_request(self) -> list[HordeRequest]:
         """Return the request for this response to clean up after a failed follow up request."""
         if self._cleanup_requests is not None:
             return self._cleanup_requests
@@ -117,9 +119,9 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
         return self._cleanup_requests
 
     @classmethod
-    def get_follow_up_request_types(cls) -> list[type]:  # TODO type hint???
+    def get_follow_up_request_types(cls) -> list[type[HordeRequest]]:
         """Return a list of all the possible follow up request types for this response."""
-        return [cls.get_follow_up_default_request()]
+        return [cls.get_follow_up_default_request_type()]
 
 
 class ResponseWithProgressMixin(BaseModel):
@@ -137,8 +139,13 @@ class ResponseWithProgressMixin(BaseModel):
         """
 
     @classmethod
+    def is_final_follow_up(cls) -> bool:
+        """Return whether this response is the final follow up response."""
+        return False
+
+    @classmethod
     @abc.abstractmethod
-    def get_finalize_success_request_type(cls) -> type[BaseRequest] | None:
+    def get_finalize_success_request_type(cls) -> type[HordeRequest] | None:
         """Return the request type for this response to finalize the job on success, or `None` if not needed."""
 
 
@@ -148,7 +155,7 @@ class ContainsMessageResponseMixin(BaseModel):
     message: str = ""
 
 
-class RequestErrorResponse(BaseResponse, ContainsMessageResponseMixin):
+class RequestErrorResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
     """The catch all error response for any request to any Horde API.
 
     v2 API Model: `RequestError`
@@ -163,7 +170,7 @@ class RequestErrorResponse(BaseResponse, ContainsMessageResponseMixin):
         return "RequestError"
 
 
-class BaseRequest(HordeAPIMessage):
+class HordeRequest(HordeAPIMessage, BaseModel):
     """Represents any request to any Horde API."""
 
     @classmethod
@@ -192,17 +199,17 @@ class BaseRequest(HordeAPIMessage):
 
     @classmethod
     @abc.abstractmethod
-    def get_api_endpoint_subpath(cls) -> str:
+    def get_api_endpoint_subpath(cls) -> GENERIC_API_ENDPOINT_SUBPATH:
         """Return the subpath to the specific API action defined by this object."""
 
     @classmethod
     @abc.abstractmethod
-    def get_default_success_response_type(cls) -> type[BaseResponse]:
+    def get_default_success_response_type(cls) -> type[HordeResponse]:
         """Return the `type` of the response expected in the ordinary case of success."""
 
     @classmethod
-    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[BaseResponse]]:
-        """Return a dict of HTTP status codes and the expected `BaseResponse`.
+    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponse]]:
+        """Return a dict of HTTP status codes and the expected `HordeResponse`.
 
         Defaults to `{HTTPStatusCode.OK: cls.get_expected_response_type()}`, but may be overridden to support other
         status codes.
@@ -217,6 +224,55 @@ class BaseRequest(HordeAPIMessage):
         which inherits from `GenericHeaderFields`, typically found in the `horde_sdk.<api_name>_api.metadata` module.
         """
         return []
+
+    def get_number_of_results_expected(self) -> int:
+        """Return the number of (job) results expected from this request.
+
+        Defaults to `1`, but may be overridden to dynamically change the number of results expected.
+
+        This is factored into context management; if the number of results expected is not met, the job is considered
+        unhandled on an exception and followed up on to attempt to close it.
+        """
+        return 1
+
+    def get_requires_follow_up(self) -> bool:
+        """Return whether this request requires a follow up request(s).
+        Returns:
+            bool: Whether this request requires a follow up request to close the job on the server.
+        """
+        for response_type in self.get_success_status_response_pairs().values():
+            if issubclass(response_type, ResponseRequiringFollowUpMixin):
+                return True
+        return False
+
+    def does_target_request_follow_up(self, target_request: HordeRequest) -> bool:
+        """Return whether the `target_request` would follow up on this request.
+
+        Args:
+            target_request (HordeRequest): The request to check if it would follow up on this request.
+
+        Returns:
+            bool: Whether the `target_request` would follow up on this request.
+        """
+        if not self.get_requires_follow_up():
+            return False
+
+        defined_response_types = self.get_success_status_response_pairs().values()
+
+        for response_type in defined_response_types:
+            if issubclass(response_type, ResponseRequiringFollowUpMixin):  # noqa: SIM102
+                if type(target_request) in response_type.get_follow_up_request_types():
+                    return True
+
+        return False
+
+    @classmethod
+    def get_sensitive_fields(self) -> list[str]:
+        return ["apikey"]
+
+    def log_safe_model_dump(self) -> dict:
+        """Return a dict of the model's fields, with any sensitive fields redacted."""
+        return self.dict(exclude=set(self.get_sensitive_fields()))
 
 
 class APIKeyAllowedInRequestMixin(BaseModel):
@@ -273,12 +329,16 @@ class RequestUsesImageWorkerMixin(BaseModel):
 
 
 __all__ = [
+    "APIKeyAllowedInRequestMixin",
+    "HordeRequest",
+    "HordeResponse",
+    "HordeResponseBaseModel",
+    "ContainsMessageResponseMixin",
     "HordeAPIObject",
     "HordeAPIMessage",
-    "BaseResponse",
-    "BaseRequest",
-    "APIKeyAllowedInRequestMixin",
+    "RequestErrorResponse",
     "RequestSpecifiesUserIDMixin",
     "RequestUsesImageWorkerMixin",
-    "RequestErrorResponse",
+    "ResponseRequiringFollowUpMixin",
+    "ResponseWithProgressMixin",
 ]

@@ -16,7 +16,6 @@ from horde_sdk.ai_horde_api.apimodels.workers._workers_all import (
     WorkerKudosDetails,
 )
 from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS, KNOWN_SOURCE_PROCESSING, WORKER_TYPE
-from horde_sdk.generic_api.consts import ANON_API_KEY
 
 
 def test_api_endpoint() -> None:
@@ -25,9 +24,9 @@ def test_api_endpoint() -> None:
     ImageGenerateAsyncRequest.get_api_endpoint_url()
 
 
-def test_ImageGenerateAsyncRequest() -> None:
+def test_ImageGenerateAsyncRequest(ai_horde_api_key: str) -> None:
     test_async_request = ImageGenerateAsyncRequest(
-        apikey=ANON_API_KEY,
+        apikey=ai_horde_api_key,
         models=["Deliberate"],
         prompt="test prompt",
         params=ImageGenerationInputPayload(
@@ -66,7 +65,7 @@ def test_ImageGenerateAsyncRequest() -> None:
         replacement_filter=True,
         dry_run=False,
     )
-    assert test_async_request.apikey == ANON_API_KEY
+    assert test_async_request.apikey == ai_horde_api_key
     assert test_async_request.models == ["Deliberate"]
     assert test_async_request.prompt == "test prompt"
     assert test_async_request.params is not None
@@ -206,8 +205,8 @@ def test_AllWorkersDetailsResponse() -> None:
     pass
 
 
-def test_FindUserRequest() -> None:
-    FindUserRequest(apikey=ANON_API_KEY)
+def test_FindUserRequest(ai_horde_api_key: str) -> None:
+    FindUserRequest(apikey=ai_horde_api_key)
 
 
 def test_FindUserResponse() -> None:

@@ -1,21 +1,25 @@
 from loguru import logger
-from pydantic import BaseModel, RootModel, field_validator
+from pydantic import BaseModel, field_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
+from horde_sdk.ai_horde_api.consts import GENERATION_STATE, KNOWN_ALCHEMY_TYPES, KNOWN_UPSCALERS
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    BaseResponse,
+    HordeResponseBaseModel,
     ResponseWithProgressMixin,
 )
 
 # FIXME: All vs API models defs? (override get_api_model_name and add to docstrings)
 
 
-class AlchemyUpscaleResult(RootModel[str]):
+class AlchemyUpscaleResult(BaseModel):
     """Represents the result of an upscale job."""
+
+    upscaler_used: KNOWN_UPSCALERS
+    url: str
 
 
 class AlchemyCaptionResult(BaseModel):
@@ -58,9 +62,14 @@ class AlchemyInterrogationResult(BaseModel):
 class AlchemyFormStatus(BaseModel):
     """Represents the status of a form in an interrogation job."""
 
-    form: str
-    state: str
+    form: KNOWN_ALCHEMY_TYPES
+    state: GENERATION_STATE
     result: AlchemyInterrogationDetails | AlchemyNSFWResult | AlchemyCaptionResult | AlchemyUpscaleResult | None = None
+
+    @property
+    def done(self) -> bool:
+        """Return whether the form is done."""
+        return self.state == "done"
 
     @field_validator("result", mode="before")
     def validate_result(
@@ -70,10 +79,17 @@ class AlchemyFormStatus(BaseModel):
         if "additionalProp1" in v:
             logger.debug("Found additionalProp1 in result, this is a dummy result. Ignoring.")
             return None
+
+        for key in list(v.keys()):
+            if key in KNOWN_UPSCALERS.__members__:
+                v["upscaler_used"] = KNOWN_UPSCALERS(key)
+                v["url"] = v[key]
+                del v[key]
+
         return v
 
 
-class AlchemyStatusResponse(BaseResponse, ResponseWithProgressMixin):
+class AlchemyStatusResponse(HordeResponseBaseModel, ResponseWithProgressMixin):
     """The response from the `/v2/interrogate/status/{id}` endpoint.
 
     You will find the results of the alchemy here.
@@ -81,8 +97,30 @@ class AlchemyStatusResponse(BaseResponse, ResponseWithProgressMixin):
     v2 API Model: `InterrogationStatus`
     """
 
-    state: str
+    state: GENERATION_STATE
     forms: list[AlchemyFormStatus]
+
+    @property
+    def all_interrogation_results(self) -> list[AlchemyInterrogationDetails]:
+        """Return all completed interrogation results."""
+        return [
+            form.result for form in self.forms if form.done and isinstance(form.result, AlchemyInterrogationDetails)
+        ]
+
+    @property
+    def all_nsfw_results(self) -> list[AlchemyNSFWResult]:
+        """Return all completed nsfw results."""
+        return [form.result for form in self.forms if form.done and isinstance(form.result, AlchemyNSFWResult)]
+
+    @property
+    def all_caption_results(self) -> list[AlchemyCaptionResult]:
+        """Return all completed caption results."""
+        return [form.result for form in self.forms if form.done and isinstance(form.result, AlchemyCaptionResult)]
+
+    @property
+    def all_upscale_results(self) -> list[AlchemyUpscaleResult]:
+        """Return all completed upscale results."""
+        return [form.result for form in self.forms if form.done and isinstance(form.result, AlchemyUpscaleResult)]
 
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -98,6 +136,11 @@ class AlchemyStatusResponse(BaseResponse, ResponseWithProgressMixin):
                 return False
             found_results += 1
         return found_results == number_of_result_expected
+
+    @override
+    @classmethod
+    def is_final_follow_up(cls) -> bool:
+        return True
 
     @override
     @classmethod
@@ -124,8 +167,8 @@ class AlchemyStatusRequest(
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_interrogate_status
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_interrogate_status
 
     @override
     @classmethod
@@ -151,8 +194,8 @@ class AlchemyDeleteRequest(
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_interrogate_status
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_interrogate_status
 
     @override
     @classmethod

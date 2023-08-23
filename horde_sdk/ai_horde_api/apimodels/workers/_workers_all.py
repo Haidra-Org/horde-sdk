@@ -5,10 +5,14 @@ from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.consts import WORKER_TYPE
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import TeamID, WorkerID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, BaseResponse, HordeAPIObject
+from horde_sdk.generic_api.apimodels import (
+    APIKeyAllowedInRequestMixin,
+    HordeAPIObject,
+    HordeResponse,
+)
 
 
 class TeamDetailsLite(HordeAPIObject):
@@ -80,7 +84,9 @@ class WorkerDetailItem(HordeAPIObject):
         return "WorkerDetailItem"
 
 
-class AllWorkersDetailsResponse(RootModel[list[WorkerDetailItem]], BaseResponse):
+class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]):
+    model_config = {}
+
     # @tazlin: The typing of __iter__ in BaseModel seems to assume that RootModel wouldn't also be a parent class.
     # without a `type: ignore``, mypy feels that this is a bad override. This is probably a sub-optimal solution
     # on my part with a more elegant path in the future.
@@ -109,8 +115,8 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_workers_all
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_workers_all
 
     @override
     @classmethod
@@ -119,7 +125,7 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[BaseResponse]:
+    def get_default_success_response_type(cls) -> type[HordeResponse]:
         return AllWorkersDetailsResponse
 
     @override

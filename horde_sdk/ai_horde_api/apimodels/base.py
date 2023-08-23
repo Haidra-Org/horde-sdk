@@ -4,12 +4,12 @@ from typing_extensions import override
 
 from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
-from horde_sdk.ai_horde_api.fields import GenerationID, WorkerID
-from horde_sdk.generic_api.apimodels import BaseRequest, BaseResponse
+from horde_sdk.ai_horde_api.fields import JobID, WorkerID
+from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponseBaseModel
 from horde_sdk.utils import seed_to_int
 
 
-class BaseAIHordeRequest(BaseRequest):
+class BaseAIHordeRequest(HordeRequest):
     """Base class for all AI Horde API requests."""
 
     @override
@@ -21,14 +21,14 @@ class BaseAIHordeRequest(BaseRequest):
 class JobRequestMixin(BaseModel):
     """Mix-in class for data relating to any generation jobs."""
 
-    id_: str | GenerationID = Field(alias="id")
+    id_: JobID = Field(alias="id")
     """The UUID for this job. Use this to post the results in the future."""
 
 
 class JobResponseMixin(BaseModel):  # TODO: this model may not actually exist as such in the API
     """Mix-in class for data relating to any generation jobs."""
 
-    id_: str | GenerationID = Field(alias="id")
+    id_: JobID = Field(alias="id")
     """The UUID for this job."""
 
 
@@ -98,7 +98,7 @@ class ImageGenerateParamMixin(BaseModel):
         return str(seed_to_int(v))
 
 
-class JobSubmitResponse(BaseResponse):
+class JobSubmitResponse(HordeResponseBaseModel):
     """The response to a job submission request, indicating the number of kudos gained.
 
     v2 API Model: `GenerationSubmitted`

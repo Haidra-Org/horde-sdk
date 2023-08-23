@@ -4,13 +4,13 @@ from typing_extensions import override
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
 from horde_sdk.ai_horde_api.apimodels.generate._progress import ResponseGenerationProgressMixin
 from horde_sdk.ai_horde_api.apimodels.generate._status import ImageGenerateStatusRequest
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseResponse, ResponseWithProgressMixin
+from horde_sdk.generic_api.apimodels import HordeResponseBaseModel, ResponseWithProgressMixin
 
 
 class ImageGenerateCheckResponse(
-    BaseResponse,
+    HordeResponseBaseModel,
     ResponseWithProgressMixin,
     ResponseGenerationProgressMixin,
 ):
@@ -33,8 +33,9 @@ class ImageGenerateCheckResponse(
             )
         return self.done
 
+    @override
     @classmethod
-    def get_finalize_success_request_type(cls) -> type[ImageGenerateStatusRequest] | None:
+    def get_finalize_success_request_type(cls) -> type[ImageGenerateStatusRequest]:
         return ImageGenerateStatusRequest
 
 
@@ -53,8 +54,8 @@ class ImageGenerateCheckRequest(BaseAIHordeRequest, JobRequestMixin):
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_generate_check
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_check
 
     @override
     @classmethod

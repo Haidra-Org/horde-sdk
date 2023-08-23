@@ -9,9 +9,13 @@ from horde_sdk.ai_horde_api.apimodels.base import (
 )
 from horde_sdk.ai_horde_api.apimodels.generate._submit import ImageGenerationJobSubmitRequest
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE, KNOWN_SOURCE_PROCESSING
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, BaseResponse, ResponseRequiringFollowUpMixin
+from horde_sdk.generic_api.apimodels import (
+    APIKeyAllowedInRequestMixin,
+    HordeResponseBaseModel,
+    ResponseRequiringFollowUpMixin,
+)
 
 
 class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
@@ -57,7 +61,7 @@ class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
     """How many waiting requests were skipped because they requested a controlnet."""
 
 
-class ImageGenerateJobResponse(BaseResponse, JobResponseMixin, ResponseRequiringFollowUpMixin):
+class ImageGenerateJobResponse(HordeResponseBaseModel, JobResponseMixin, ResponseRequiringFollowUpMixin):
     """Represents the data returned from the `/v2/generate/pop` endpoint.
 
     v2 API Model: `GenerationPayloadStable`
@@ -94,7 +98,7 @@ class ImageGenerateJobResponse(BaseResponse, JobResponseMixin, ResponseRequiring
 
     @override
     @classmethod
-    def get_follow_up_default_request(cls) -> type[ImageGenerationJobSubmitRequest]:
+    def get_follow_up_default_request_type(cls) -> type[ImageGenerationJobSubmitRequest]:
         return ImageGenerationJobSubmitRequest
 
     @override
@@ -146,8 +150,8 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_generate_pop
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_pop
 
     @override
     @classmethod

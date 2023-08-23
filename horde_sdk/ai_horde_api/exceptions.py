@@ -4,6 +4,16 @@ from horde_sdk.exceptions import HordeException
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 
+class AIHordeRequestError(HordeException):
+    def __init__(self, error_response: RequestErrorResponse) -> None:
+        logger.error(f"The AI Horde API returned an error response. Response: {error_response.message}")
+        super().__init__(error_response.message)
+
+
+class AIHordeImageValidationError(AIHordeRequestError):
+    """Exception for when the AI Horde API cannot parse a source image for img2img."""
+
+
 class AIHordeServerException(HordeException):
     """Base exception for any case where the AI Horde API returns a `RequestErrorResponse` and it was not handled."""
 

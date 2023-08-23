@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "horde_sdk"
-version = "0.5.2"
+version = "0.7.0"
 description = "A python toolkit for interacting with the horde APIs, services, and ecosystem."
 authors = [
     {name = "tazlin", email = "tazlin.on.github@gmail.com"},
@@ -69,6 +69,9 @@ ignore = [
   "D413",]
 exclude = ["codegen"]
 
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["E402"]
+
 [tool.black]
 line-length = 119
 include = '\.pyi?$'
@@ -90,3 +93,6 @@ exclude = '''
 plugins = [
   "pydantic.mypy"
 ]
+
+[tool.coverage.run]
+concurrency = ["gevent"]
