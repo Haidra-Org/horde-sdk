@@ -15,7 +15,7 @@ def simple_generate_example() -> None:
 
     generations: list[ImageGeneration] = simple_client.image_generate_request(
         ImageGenerateAsyncRequest(
-            apikey="0000000000",
+            apikey=ANON_API_KEY,
             prompt="A cat in a hat",
             models=["Deliberate"],
         ),
@@ -23,7 +23,7 @@ def simple_generate_example() -> None:
 
     image = simple_client.generation_to_image(generations[0])
 
-    image.save("cat_in_hat.png")
+    image.save("cat_in_hat.webp")
 
 if __name__ == "__main__":
     simple_generate_example()
@@ -45,27 +45,27 @@ async def async_simple_generate_example() -> None:
 
     generations: list[ImageGeneration] = await simple_client.async_image_generate_request(
         ImageGenerateAsyncRequest(
-            apikey="0000000000",
+            apikey=ANON_API_KEY,
             prompt="A cat in a hat",
             models=["Deliberate"],
         ),
     )
 
     image = simple_client.generation_to_image(generations[0])
-    image.save("cat_in_hat.png")
+    image.save("cat_in_hat.webp")
 
     # Do 2 requests at once.
     multi_generations: tuple[list[ImageGeneration], list[ImageGeneration]] = await asyncio.gather(
         simple_client.async_image_generate_request(
             ImageGenerateAsyncRequest(
-                apikey="0000000000",
+                apikey=ANON_API_KEY,
                 prompt="A cat in a hat",
                 models=["Deliberate"],
             ),
         ),
         simple_client.async_image_generate_request(
             ImageGenerateAsyncRequest(
-                apikey="0000000000",
+                apikey=ANON_API_KEY,
                 prompt="A cat in a hat",
                 models=["Deliberate"],
             ),
@@ -73,11 +73,11 @@ async def async_simple_generate_example() -> None:
     )
 
     multi_image_1 = simple_client.generation_to_image(multi_generations[0][0])
-    multi_image_1.save("cat_in_hat_multi_1.png")
+    multi_image_1.save("cat_in_hat_multi_1.webp")
 
     multi_image_2 = simple_client.generation_to_image(multi_generations[1][0])
 
-    multi_image_2.save("cat_in_hat_multi_2.png")
+    multi_image_2.save("cat_in_hat_multi_2.webp")
 if __name__ == "__main__":
     asyncio.run(async_simple_generate_example())
 ```

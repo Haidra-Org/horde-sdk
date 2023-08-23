@@ -48,7 +48,7 @@ pip install horde_sdk
 3. Construct the request as appropriate:
 ``` python
 image_generate_async_request = ImageGenerateAsyncRequest(
-    apikey="0000000000",
+    apikey=ANON_API_KEY,
     prompt="A cat in a hat",
     models=["Deliberate"],
     params=ImageGenerationInputPayload(
@@ -66,18 +66,25 @@ image_generate_async_request = ImageGenerateAsyncRequest(
     Simple Client:
     ``` python
     simple_client = AIHordeAPISimpleClient()
-    generations: list[ImageGeneration] = simple_client.image_generate_request(
-        image_generate_async_request,
+    status_response, job_id = simple_client.image_generate_request(
+        ImageGenerateAsyncRequest(
+            apikey=ANON_API_KEY,
+            prompt="A cat in a hat",
+            models=["Deliberate"],
+        ),
     )
+    # You can now download the image:
+    image: PIL.Image.Image = simple_client.download_image_from_generation(status_response.generations[0])
     ```
 
     Manual Client:
     ``` python
     manual_client = AIHordeAPIManualClient()
 
+    response: ImageGenerateAsyncResponse | RequestErrorResponse
     response = manual_client.submit_request(
         image_generate_async_request,
-        image_generate_async_request.get_success_response_type(),
+        image_generate_async_request.get_default_success_response_type(),
     )
     ```
     <div class="warning" markdown="1">
