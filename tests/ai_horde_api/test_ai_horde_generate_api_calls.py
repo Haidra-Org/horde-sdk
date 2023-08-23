@@ -14,10 +14,12 @@ from horde_sdk.ai_horde_api.apimodels import (
     AlchemyAsyncRequestFormItem,
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
+    ImageGenerateStatusResponse,
     ImageGeneration,
     ImageGenerationInputPayload,
     LorasPayloadEntry,
 )
+from horde_sdk.ai_horde_api.fields import JobID
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 
@@ -60,11 +62,14 @@ class TestAIHordeGenerate:
         """Test that a simple image generation request can be submitted and cancelled."""
         simple_client = AIHordeAPISimpleClient()
 
-        generations: list[ImageGeneration] = simple_client.image_generate_request(simple_image_gen_request)
+        image_generate_status_respons, job_id = simple_client.image_generate_request(simple_image_gen_request)
 
-        assert len(generations) == 1
+        if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
+            raise AssertionError(image_generate_status_respons.generations.message)
 
-        image = simple_client.generation_to_image(generations[0])
+        assert len(image_generate_status_respons.generations) == 1
+
+        image = simple_client.download_image_from_generation(image_generate_status_respons.generations[0])
 
         assert image is not None
 
@@ -74,7 +79,7 @@ class TestAIHordeGenerate:
         """Test that a simple image generation request can be submitted and cancelled when no API key is specified."""
         simple_client = AIHordeAPISimpleClient()
 
-        generations = simple_client.image_generate_request(
+        image_generate_status_respons, job_id = simple_client.image_generate_request(
             ImageGenerateAsyncRequest(
                 prompt="a cat in a hat",
                 params=ImageGenerationInputPayload(
@@ -85,9 +90,12 @@ class TestAIHordeGenerate:
             ),
         )
 
-        assert len(generations) == 1
+        if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
+            raise AssertionError(image_generate_status_respons.generations.message)
 
-        image = simple_client.generation_to_image(generations[0])
+        assert len(image_generate_status_respons.generations) == 1
+
+        image = simple_client.download_image_from_generation(image_generate_status_respons.generations[0])
 
         assert image is not None
 
@@ -107,11 +115,13 @@ class TestAIHordeGenerate:
 
         simple_client = AIHordeAPISimpleClient()
 
-        generations: list[ImageGeneration] = simple_client.image_generate_request(lora_image_gen_request)
+        image_generate_status_respons, job_id = simple_client.image_generate_request(
+            lora_image_gen_request,
+        )
 
-        assert len(generations) == 1
+        assert len(image_generate_status_respons.generations) == 1
 
-        image = simple_client.generation_to_image(generations[0])
+        image = simple_client.download_image_from_generation(image_generate_status_respons.generations[0])
 
         assert image is not None
 
@@ -124,13 +134,13 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            generations: list[ImageGeneration] = await simple_client.image_generate_request(
+            image_generate_status_respons, job_id = await simple_client.image_generate_request(
                 simple_image_gen_request,
             )
 
-            assert len(generations) == 1
+            assert len(image_generate_status_respons.generations) == 1
 
-            image = await simple_client.generation_to_image(generations[0])
+            image = await simple_client.download_image_from_generation(image_generate_status_respons.generations[0])
 
             assert image is not None
 
@@ -141,13 +151,13 @@ class TestAIHordeGenerate:
         """Test that a batch of image generation requests can be submitted and cancelled."""
         simple_client = AIHordeAPISimpleClient()
 
-        generations: list[ImageGeneration] = simple_client.image_generate_request(simple_image_gen_n_requests)
+        image_generate_status_respons, job_id = simple_client.image_generate_request(simple_image_gen_n_requests)
 
         assert simple_image_gen_n_requests.params is not None
-        assert len(generations) == simple_image_gen_n_requests.params.n
+        assert len(image_generate_status_respons.generations) == simple_image_gen_n_requests.params.n
 
-        for generation in generations:
-            image = simple_client.generation_to_image(generation)
+        for generation in image_generate_status_respons.generations:
+            image = simple_client.download_image_from_generation(generation)
 
             assert image is not None
 
@@ -158,11 +168,14 @@ class TestAIHordeGenerate:
         simple_client = AIHordeAPISimpleClient()
 
         for _ in range(5):
-            generations: list[ImageGeneration] = simple_client.image_generate_request(simple_image_gen_request)
+            image_generate_status_respons, job_id = simple_client.image_generate_request(simple_image_gen_request)
 
-            assert len(generations) == 1
+            if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
+                raise AssertionError(image_generate_status_respons.generations.message)
 
-            image = simple_client.generation_to_image(generations[0])
+            assert len(image_generate_status_respons.generations) == 1
+
+            image = simple_client.download_image_from_generation(image_generate_status_respons.generations[0])
 
             assert image is not None
 
@@ -192,15 +205,18 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            generations: list[ImageGeneration] = await simple_client.image_generate_request(
+            image_generate_status_response, job_id = await simple_client.image_generate_request(
                 simple_image_gen_n_requests,
             )
 
-            assert simple_image_gen_n_requests.params is not None
-            assert len(generations) == simple_image_gen_n_requests.params.n
+            if isinstance(image_generate_status_response.generations, RequestErrorResponse):
+                raise AssertionError(image_generate_status_response.generations.message)
 
-            for generation in generations:
-                image = await simple_client.generation_to_image(generation)
+            assert simple_image_gen_n_requests.params is not None
+            assert len(image_generate_status_response.generations) == simple_image_gen_n_requests.params.n
+
+            for generation in image_generate_status_response.generations:
+                image = await simple_client.download_image_from_generation(generation)
 
                 assert image is not None
 
@@ -213,16 +229,19 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            generations: list[ImageGeneration] = await simple_client.image_generate_request(
+            image_generate_status_response, job_id = await simple_client.image_generate_request(
                 simple_image_gen_n_requests,
                 timeout=7,  # 7 seconds isn't (generally) going to be enough time for 3 generations to complete
             )
 
+            if isinstance(image_generate_status_response.generations, RequestErrorResponse):
+                raise AssertionError(image_generate_status_response.generations.message)
+
             assert simple_image_gen_n_requests.params is not None
-            assert len(generations) < simple_image_gen_n_requests.params.n
+            assert len(image_generate_status_response.generations) < simple_image_gen_n_requests.params.n
 
     async def delayed_cancel(self, task: asyncio.Task) -> None:
-        """Cancel the task after 2 seconds."""
+        """Cancel the task after 4 seconds."""
         await asyncio.sleep(4)
         assert task.cancel("Test cancel")
 
@@ -234,15 +253,18 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            async def submit_request() -> list[ImageGeneration]:
-                generations: list[ImageGeneration] = await simple_client.image_generate_request(
-                    simple_image_gen_request,
-                    timeout=-1,
-                )
-                return generations
+            async def _submit_request() -> tuple[ImageGenerateStatusResponse, JobID] | None:
+                try:
+                    image_generate_status_response, job_id = await simple_client.image_generate_request(
+                        simple_image_gen_request,
+                        timeout=-1,
+                    )
+                    return image_generate_status_response, job_id
+                except asyncio.CancelledError:
+                    return None
 
             # Run 5 concurrent requests using asyncio
-            tasks = [asyncio.create_task(submit_request()) for _ in range(5)]
+            tasks = [asyncio.create_task(_submit_request()) for _ in range(5)]
             all_generations: list[list[ImageGeneration]] = await asyncio.gather(*tasks, self.delayed_cancel(tasks[0]))
 
             # Check that all requests were successful
@@ -256,17 +278,23 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            async def submit_request() -> list[ImageGeneration]:
-                generations: list[ImageGeneration] = await simple_client.image_generate_request(
-                    simple_image_gen_request,
-                    timeout=-1,
-                )
-                return generations
+            async def submit_request() -> ImageGenerateStatusResponse | None:
+                try:
+                    image_generate_status_response, job_id = await simple_client.image_generate_request(
+                        simple_image_gen_request,
+                        timeout=-1,
+                    )
+
+                    if isinstance(image_generate_status_response.generations, RequestErrorResponse):
+                        raise AssertionError(image_generate_status_response.generations.message)
+                    return image_generate_status_response
+                except asyncio.CancelledError:
+                    return None
 
             # Run 5 concurrent requests using asyncio
             tasks = [asyncio.create_task(submit_request()) for _ in range(5)]
             cancel_tasks = [asyncio.create_task(self.delayed_cancel(task)) for task in tasks]
-            all_generations: list[list[ImageGeneration]] = await asyncio.gather(*tasks, *cancel_tasks)
+            all_generations: list[ImageGenerateStatusResponse] = await asyncio.gather(*tasks, *cancel_tasks)
 
             # Check that all requests were successful
             assert len([generations for generations in all_generations if generations]) == 0

@@ -10,19 +10,20 @@ from horde_sdk.ai_horde_api.apimodels.base import (
 from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckRequest
 from horde_sdk.ai_horde_api.apimodels.generate._status import DeleteImageGenerateRequest, ImageGenerateStatusRequest
 from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    BaseResponse,
     ContainsMessageResponseMixin,
+    HordeResponse,
+    HordeResponseBaseModel,
     RequestUsesImageWorkerMixin,
     ResponseRequiringFollowUpMixin,
 )
 
 
 class ImageGenerateAsyncResponse(
-    BaseResponse,
+    HordeResponseBaseModel,
     JobResponseMixin,
     ResponseRequiringFollowUpMixin,
     ContainsMessageResponseMixin,
@@ -40,12 +41,12 @@ class ImageGenerateAsyncResponse(
         return [{"id": self.id_}]
 
     @classmethod
-    def get_follow_up_default_request(cls) -> type[ImageGenerateCheckRequest]:
+    def get_follow_up_default_request_type(cls) -> type[ImageGenerateCheckRequest]:
         return ImageGenerateCheckRequest
 
     @override
     @classmethod
-    def get_follow_up_request_types(
+    def get_follow_up_request_types(  # type: ignore[override]
         cls,
     ) -> list[type[ImageGenerateCheckRequest | ImageGenerateStatusRequest]]:
         return [ImageGenerateCheckRequest, ImageGenerateStatusRequest]
@@ -66,6 +67,10 @@ class ImageGenerationInputPayload(ImageGenerateParamMixin):
 
     @field_validator("n", mode="before")
     def validate_n(cls, value: int) -> int:
+        if not value:
+            logger.debug("n (number of images to generate) is not set; defaulting to 1")
+            return 1
+
         if value >= 30:
             logger.warning(
                 "n (number of images to generate) is >= 30; only moderators and certain users can generate that many "
@@ -118,8 +123,8 @@ class ImageGenerateAsyncRequest(
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_generate_async
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_async
 
     @override
     @classmethod
@@ -128,7 +133,13 @@ class ImageGenerateAsyncRequest(
 
     @override
     @classmethod
-    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[BaseResponse]]:
+    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponse]]:
         return {
             HTTPStatusCode.ACCEPTED: cls.get_default_success_response_type(),
         }
+
+    @override
+    def get_number_of_results_expected(self) -> int:
+        if not self.params:
+            return 1
+        return self.params.n

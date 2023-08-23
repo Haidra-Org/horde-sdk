@@ -3,53 +3,54 @@
 However, this module may still assist in the construction of valid requests to the API, primarily
 by providing additional type hints for the request and response payloads and validation.
 """
-
 import uuid
+from typing import Any
 
-from pydantic import BaseModel, field_validator
+from pydantic import RootModel, field_validator
+from typing_extensions import override
 
 
-class UUID_Identifier(BaseModel):
+class UUID_Identifier(RootModel[uuid.UUID]):
     """Represents a UUID type identifier used by the API."""
 
     model_config = {"frozen": True}
 
-    id: str | uuid.UUID  # noqa: A003
+    root: uuid.UUID
 
-    @property
-    def id_as_uuid(self) -> uuid.UUID:
-        """Return the ID as a UUID."""
-        if isinstance(self.id, uuid.UUID):
-            return self.id
-
-        return uuid.UUID(str(self.id), version=4)
-
-    @field_validator("id")
+    @field_validator("root", mode="before")
     def id_must_be_uuid(cls, v: str | uuid.UUID) -> str | uuid.UUID:
         """Ensure that the ID is a valid UUID."""
         if isinstance(v, uuid.UUID):
             return v
 
+        if v == "":  # FIXME? This is a workaround for the swagger doc having `""`
+            return uuid.UUID(int=0)
+
         try:
-            uuid.UUID(v, version=4)
+            return uuid.UUID(v, version=4)
         except ValueError as e:
             raise ValueError(f"Invalid UUID {v}") from e
-        return v
 
+    @override
     def __str__(self) -> str:
-        """Return the ID as a string."""
-        return str(self.id)
+        return self.root.__str__()
 
-    def __eq__(self, other: object) -> bool:
-        """Return True if this object string compares equal to the other object string."""
-        return str(self) == str(other)
+    @override
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, str):
+            return self.root.__str__() == other
 
+        if isinstance(other, uuid.UUID):
+            return self.root == other
+
+        return False
+
+    @override
     def __hash__(self) -> int:
-        """Return the hash of the string representation of this object."""
-        return hash(str(self))
+        return self.root.__hash__()
 
 
-class GenerationID(UUID_Identifier):
+class JobID(UUID_Identifier):
     """Represents the ID of a generation job. Instances of this class can be compared with a `str` or a UUID object."""
 
 

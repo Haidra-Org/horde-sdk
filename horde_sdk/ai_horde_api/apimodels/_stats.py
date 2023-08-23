@@ -5,9 +5,9 @@ from strenum import StrEnum
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseResponse
+from horde_sdk.generic_api.apimodels import HordeResponseBaseModel
 
 
 class StatsModelsTimeframe(StrEnum):
@@ -16,7 +16,7 @@ class StatsModelsTimeframe(StrEnum):
     total = auto()
 
 
-class StatsModelsResponse(BaseResponse):
+class StatsModelsResponse(HordeResponseBaseModel):
     """Represents the data returned from the `/v2/stats/img/models` endpoint.
 
     v2 API Model: `ImgModelStats`
@@ -92,8 +92,8 @@ class StatsImageModelsRequest(BaseAIHordeRequest):
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_stats_img_models
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_stats_img_models
 
     @override
     @classmethod

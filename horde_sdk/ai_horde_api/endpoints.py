@@ -2,9 +2,7 @@
 
 import os
 
-from strenum import StrEnum
-
-from horde_sdk.generic_api.endpoints import url_with_path
+from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
 
 # TODO: Defer setting this?
 AI_HORDE_BASE_URL = "https://aihorde.net/api/"
@@ -16,7 +14,7 @@ if os.environ.get("AI_HORDE_DEV_URL", None):
     AI_HORDE_BASE_URL = os.environ["AI_HORDE_DEV_URL"]
 
 
-class AI_HORDE_API_ENDPOINT_SUBPATHS(StrEnum):
+class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
     """The URL actions 'paths' to the endpoints.
 
     Includes the find/replace strings in brackets for path (non-query) variables.
@@ -37,7 +35,9 @@ class AI_HORDE_API_ENDPOINT_SUBPATHS(StrEnum):
     v2_generate_submit = "/v2/generate/submit"
 
     # Note that `{id}`` (or any variable wrapped in curly braces) is dynamically replaced with the appropriate value
-    # when a request being prepared for submission. The fields that are replaced are defined in the `GenericPathData`
+    # when a request being prepared for submission. The fields that are replaced are defined in the `AIHordePathData`
+    # class in `metadata.py`.
+    #
     # See `horde_shared_models\generic_api\generic_client.py` for the actual replacement
 
     v2_generate_check = "/v2/generate/check/{id}"
@@ -83,5 +83,5 @@ def get_ai_horde_swagger_url() -> str:
     """Get the URL for the AI Horde API swagger docs."""
     return url_with_path(
         base_url=AI_HORDE_BASE_URL,
-        path=AI_HORDE_API_ENDPOINT_SUBPATHS.swagger,
+        path=AI_HORDE_API_ENDPOINT_SUBPATH.swagger,
     )

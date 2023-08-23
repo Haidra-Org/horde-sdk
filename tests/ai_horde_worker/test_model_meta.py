@@ -56,3 +56,15 @@ def test_image_model_load_resolver_bottom_n(stats_response: StatsModelsResponse)
     )
 
     assert len(all_model_names) == 1
+
+
+def test_image_model_load_resolver_multiple_instructions(stats_response: StatsModelsResponse) -> None:
+    model_reference_manager = ModelReferenceManager()
+    image_model_load_resolver = ImageModelLoadResolver(model_reference_manager)
+
+    resolved_model_names = image_model_load_resolver.resolve_meta_instructions(
+        ["top 1", "bottom 1"],
+        AIHordeAPIManualClient(),
+    )
+
+    assert len(resolved_model_names) > 0

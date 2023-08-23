@@ -3,6 +3,12 @@
 import functools
 import urllib.parse
 
+from strenum import StrEnum
+
+
+class GENERIC_API_ENDPOINT_SUBPATH(StrEnum):
+    """The placeholder class, meant to extended by APIs to define the endpoint paths."""
+
 
 def url_with_path(
     *,

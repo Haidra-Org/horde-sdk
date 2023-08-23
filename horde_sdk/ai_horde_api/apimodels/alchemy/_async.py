@@ -10,19 +10,20 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     JobResponseMixin,
 )
 from horde_sdk.ai_horde_api.consts import KNOWN_ALCHEMY_TYPES
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATHS
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.metadata import AIHordePathData
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    BaseResponse,
     ContainsMessageResponseMixin,
+    HordeResponse,
+    HordeResponseBaseModel,
     ResponseRequiringFollowUpMixin,
 )
 
 
 class AlchemyAsyncResponse(
-    BaseResponse,
+    HordeResponseBaseModel,
     JobResponseMixin,
     ResponseRequiringFollowUpMixin,
     ContainsMessageResponseMixin,
@@ -43,12 +44,12 @@ class AlchemyAsyncResponse(
 
     @override
     @classmethod
-    def get_follow_up_default_request(cls) -> type[AlchemyStatusRequest]:
+    def get_follow_up_default_request_type(cls) -> type[AlchemyStatusRequest]:
         return AlchemyStatusRequest
 
     @override
     @classmethod
-    def get_follow_up_request_types(
+    def get_follow_up_request_types(  # type: ignore[override]
         cls,
     ) -> list[type[AlchemyStatusRequest]]:
         return [AlchemyStatusRequest]
@@ -72,6 +73,12 @@ class AlchemyAsyncRequest(
     """The public URL of the source image or a base64 string to use."""
     slow_workers: bool = False
     """Whether to use the slower workers. Costs additional kudos if `True`."""
+
+    @field_validator("forms")
+    def check_at_least_one_form(cls, v: list[AlchemyAsyncRequestFormItem]) -> list[AlchemyAsyncRequestFormItem]:
+        if not v:
+            raise ValueError("At least one form must be provided.")
+        return v
 
     @field_validator("source_image")
     def check_source_image(cls, v: str) -> str:
@@ -99,8 +106,8 @@ class AlchemyAsyncRequest(
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_ENDPOINT_SUBPATHS.v2_interrogate_async
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_interrogate_async
 
     @override
     @classmethod
@@ -109,7 +116,11 @@ class AlchemyAsyncRequest(
 
     @override
     @classmethod
-    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[BaseResponse]]:
+    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponse]]:
         return {
             HTTPStatusCode.ACCEPTED: cls.get_default_success_response_type(),
         }
+
+    @override
+    def get_number_of_results_expected(self) -> int:
+        return len(self.forms)

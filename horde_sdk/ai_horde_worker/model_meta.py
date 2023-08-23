@@ -1,6 +1,6 @@
 import re
 
-from horde_model_reference.meta_consts import MODEL_REFERENCE_CATEGORIES
+from horde_model_reference.meta_consts import MODEL_REFERENCE_CATEGORY
 from horde_model_reference.model_reference_manager import ModelReferenceManager
 from loguru import logger
 
@@ -23,7 +23,7 @@ class ImageModelLoadResolver:
             raise TypeError("model_reference_manager must be of type ModelReferenceManager")
         self._model_reference_manager = model_reference_manager
 
-    def resolve_all_meta_instructions(
+    def resolve_meta_instructions(
         self,
         possible_meta_instructions: list[str],
         client: AIHordeAPIManualClient,
@@ -104,7 +104,7 @@ class ImageModelLoadResolver:
         """
         all_model_references = self._model_reference_manager.get_all_model_references()
 
-        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORIES.stable_diffusion]
+        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.stable_diffusion]
 
         if sd_model_references:
             return set(sd_model_references.root.keys())
@@ -161,7 +161,7 @@ class ImageModelLoadResolver:
         models_in_timeframe = response.get_timeframe(timeframe)
 
         # Sort by value (number of uses) ascending (lowest first)
-        sorted_models = sorted(models_in_timeframe.items(), key=lambda x: x[1], reverse=False)
+        sorted_models = sorted(models_in_timeframe.items(), key=lambda x: x[1])
 
         # Get the bottom n models
         bottom_n_models = sorted_models[:number_of_bottom_models]

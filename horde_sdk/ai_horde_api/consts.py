@@ -11,10 +11,17 @@ class GENERATION_STATE(StrEnum):
     (ok, censored, faulted, etc...)
     """
 
+    _NONE = ""  # FIXME
+
     ok = auto()
     censored = auto()
     faulted = auto()
     csam = auto()
+    waiting = auto()
+    processing = auto()
+    partial = auto()
+    cancelled = auto()
+    done = auto()
 
 
 class WORKER_TYPE(StrEnum):
@@ -122,6 +129,8 @@ class KNOWN_ALCHEMY_TYPES(StrEnum):
 
     (caption, GFPGAN, strip_background, etc)
     """
+
+    _NONE = ""  # FIXME
 
     caption = KNOWN_CLIP_BLIP_TYPES.caption
     interrogation = KNOWN_CLIP_BLIP_TYPES.interrogation

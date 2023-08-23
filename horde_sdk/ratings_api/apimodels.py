@@ -9,14 +9,14 @@ from typing_extensions import override
 from horde_sdk.consts import _UNDEFINED_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    BaseRequest,
-    BaseResponse,
+    HordeRequest,
+    HordeResponseBaseModel,
     RequestSpecifiesUserIDMixin,
 )
-from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
+from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, RATING_API_ENDPOINT_SUBPATH
 
 
-class BaseRatingsAPIRequest(BaseRequest):
+class BaseRatingsAPIRequest(HordeRequest):
     """Base class for all requests to the AI Horde Ratings API."""
 
     @override
@@ -49,7 +49,7 @@ class ImageRatingResponseSubRecord(BaseModel):
     artifacts: int | None
 
 
-class ImageRatingsResponse(BaseResponse):
+class ImageRatingsResponse(HordeResponseBaseModel):
     """The representation of the full response from `/v1/image/ratings`."""
 
     total: int
@@ -72,7 +72,7 @@ class UserRatingsResponseSubRecord(BaseImageRatingRecord):
     """The name of the user in format `name#1234`."""
 
 
-class UserRatingsResponse(BaseResponse):
+class UserRatingsResponse(HordeResponseBaseModel):
     """The representation of the full response from `/v1/user/ratings`."""
 
     total: int
@@ -90,7 +90,7 @@ class UserValidateResponseRecord(BaseImageRatingRecord):
     """A single sub-record in a response from the `/v1/validate/{user_id}` endpoint."""
 
 
-class UserValidateResponse(BaseResponse):
+class UserValidateResponse(HordeResponseBaseModel):
     """The representation of the full response from `/v1/validate/{user_id}`."""
 
     total: int
@@ -104,7 +104,7 @@ class UserValidateResponse(BaseResponse):
         return _UNDEFINED_MODEL
 
 
-class UserCheckResponse(BaseResponse):
+class UserCheckResponse(HordeResponseBaseModel):
     """A single record from the `/v1/user/check/` endpoint."""
 
     ratings_in_timeframe: int
@@ -131,7 +131,7 @@ class UserCheckResponse(BaseResponse):
 # region Requests
 
 
-class BaseRequestImageSpecific(BaseModel):
+class HordeRequestImageSpecific(BaseModel):
     """Represents the minimum for any request specifying a specific user to the API."""
 
     image_id: uuid.UUID
@@ -171,8 +171,8 @@ class ImageRatingsRequest(
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return Rating_API_URL_Literals.v1_image_ratings
+    def get_api_endpoint_subpath(cls) -> RATING_API_ENDPOINT_SUBPATH:
+        return RATING_API_ENDPOINT_SUBPATH.v1_image_ratings
 
     @override
     @classmethod
@@ -222,8 +222,8 @@ class UserValidateRequest(
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return Rating_API_URL_Literals.v1_user_validate
+    def get_api_endpoint_subpath(cls) -> RATING_API_ENDPOINT_SUBPATH:
+        return RATING_API_ENDPOINT_SUBPATH.v1_user_validate
 
     @override
     @classmethod
@@ -253,8 +253,8 @@ class UserCheckRequest(
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return Rating_API_URL_Literals.v1_user_check
+    def get_api_endpoint_subpath(cls) -> RATING_API_ENDPOINT_SUBPATH:
+        return RATING_API_ENDPOINT_SUBPATH.v1_user_check
 
     @override
     @classmethod
@@ -285,8 +285,8 @@ class UserRatingsRequest(
 
     @override
     @classmethod
-    def get_api_endpoint_subpath(cls) -> str:
-        return Rating_API_URL_Literals.v1_user_ratings
+    def get_api_endpoint_subpath(cls) -> RATING_API_ENDPOINT_SUBPATH:
+        return RATING_API_ENDPOINT_SUBPATH.v1_user_ratings
 
     @override
     @classmethod

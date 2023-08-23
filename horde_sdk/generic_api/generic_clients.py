@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from abc import ABC, abstractmethod
-from collections.abc import Coroutine
+from abc import ABC
 from typing import TypeVar
 
 import aiohttp
@@ -17,10 +16,11 @@ from typing_extensions import override
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    BaseRequest,
-    BaseResponse,
+    HordeRequest,
+    HordeResponse,
     RequestErrorResponse,
     ResponseRequiringFollowUpMixin,
+    ResponseWithProgressMixin,
 )
 from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.generic_api.metadata import (
@@ -46,9 +46,9 @@ class ParsedRawRequest(BaseModel):
     """The body to be sent with the request, or `None` if no body should be sent."""
 
 
-HordeRequest = TypeVar("HordeRequest", bound=BaseRequest)
+HordeRequestTypeVar = TypeVar("HordeRequestTypeVar", bound=HordeRequest)
 """TypeVar for the horde request type."""
-HordeResponse = TypeVar("HordeResponse", bound=BaseResponse)
+HordeResponseTypeVar = TypeVar("HordeResponseTypeVar", bound=HordeResponse)
 """TypeVar for the horde response type."""
 
 
@@ -110,13 +110,13 @@ class BaseHordeAPIClient(ABC):
         if not self._apikey:
             self._apikey = ANON_API_KEY
 
-        if not issubclass(header_fields, GenericHeaderFields):
+        if not issubclass(header_fields, GenericHeaderFields):  # pragma: no cover
             raise TypeError("`header_fields` must be of type `GenericHeaderData` or a subclass of it!")
-        if not issubclass(path_fields, GenericPathFields):
+        if not issubclass(path_fields, GenericPathFields):  # pragma: no cover
             raise TypeError("`path_fields` must be of type `GenericPathData` or a subclass of it!")
-        if not issubclass(accept_types, GenericAcceptTypes):
+        if not issubclass(accept_types, GenericAcceptTypes):  # pragma: no cover
             raise TypeError("`accept_types` must be of type `GenericAcceptTypes` or a subclass of it!")
-        if not issubclass(query_fields, GenericQueryFields):
+        if not issubclass(query_fields, GenericQueryFields):  # pragma: no cover
             raise TypeError("`query_fields` must be of type `GenericQueryData` or a subclass of it!")
 
         self._header_field_keys = header_fields
@@ -124,36 +124,28 @@ class BaseHordeAPIClient(ABC):
         self._query_field_keys = query_fields
         self._accept_types = accept_types
 
-    @abstractmethod
-    def submit_request(
-        self,
-        api_request: HordeRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse | Coroutine[None, None, HordeResponse | RequestErrorResponse]:
-        """Submit a request to the API and return the response."""
-
-    def _validate_and_prepare_request(self, api_request: BaseRequest) -> ParsedRawRequest:
+    def _validate_and_prepare_request(self, api_request: HordeRequest) -> ParsedRawRequest:
         """Validate the given `api_request` and returns a `_ParsedRequest` instance with the data to be sent.
 
-        This method converts a `BaseRequest` instance into the data needed to make a request with `requests`. It
+        This method converts a `HordeRequest` instance into the data needed to make a request with `requests`. It
         validates the request and extracts the specified headers, paths, and queries from the request. It also extracts
         any extra header fields and the request body data from the request. Finally, it returns a `_ParsedRequest`
         instance with the extracted data.
 
         Args:
-            api_request (BaseRequest): The `BaseRequest` instance to be validated and prepared.
-
+            api_request (HordeRequest): The `HordeRequest` instance to be validated and prepared.
+            expected_response_type (type[HordeResponse]): The expected response type.
         Returns:
             _ParsedRequest: A `_ParsedRequest` instance with the extracted data to be sent in the request.
 
         Raises:
-            TypeError: If `api_request` is not of type `BaseRequest` or a subclass of it.
+            TypeError: If `api_request` is not of type `HordeRequest` or a subclass of it.
         """
-        if not issubclass(api_request.__class__, BaseRequest):
-            raise TypeError("`request` must be of type `BaseRequest` or a subclass of it!")
+        if not issubclass(api_request.__class__, HordeRequest):
+            raise TypeError("`request` must be of type `HordeRequest` or a subclass of it!")
 
         # Define a helper function to extract specified data keys from the request
-        def get_specified_data_keys(data_keys: type[StrEnum], api_request: BaseRequest) -> dict[str, str]:
+        def get_specified_data_keys(data_keys: type[StrEnum], api_request: HordeRequest) -> dict[str, str]:
             """Extract the specified data keys from the request and returns them as a dictionary."""
             return {
                 # The key is the python field name.
@@ -226,9 +218,8 @@ class BaseHordeAPIClient(ABC):
             request_body_data_dict = None
 
         # Add the API key to the request headers if the request is authenticated and an API key is provided
-        if isinstance(api_request, APIKeyAllowedInRequestMixin) and self._apikey:
+        if request_headers_dict.get("apikey") is None and isinstance(api_request, APIKeyAllowedInRequestMixin):
             request_headers_dict["apikey"] = self._apikey
-            logger.debug("No API key was provided, using the anonymous API key.")
 
         return ParsedRawRequest(
             endpoint_no_query=endpoint_url,
@@ -243,8 +234,8 @@ class BaseHordeAPIClient(ABC):
         *,
         raw_response_json: dict,
         returned_status_code: int,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
+        expected_response_type: type[HordeResponseTypeVar],
+    ) -> HordeResponseTypeVar | RequestErrorResponse:
         # If requests response is a failure code, see if a `message` key exists in the response.
         # If so, return a RequestErrorResponse
         if returned_status_code >= 400:
@@ -258,7 +249,7 @@ class BaseHordeAPIClient(ABC):
                 ),
             )
 
-        handled_response: HordeResponse | RequestErrorResponse | None = None
+        handled_response: HordeResponseTypeVar | RequestErrorResponse | None = None
         try:
             parsed_response = expected_response_type.model_validate(raw_response_json)
             if isinstance(parsed_response, expected_response_type):
@@ -269,7 +260,7 @@ class BaseHordeAPIClient(ABC):
                     object_data={"raw_response": raw_response_json},
                 )
         except ValidationError as e:
-            if not isinstance(handled_response, expected_response_type):
+            if not isinstance(handled_response, expected_response_type):  # pragma: no cover
                 error_response = RequestErrorResponse(
                     message="The response type doesn't match expected one! See `object_data` for the raw response.",
                     object_data={"exception": e, "raw_response": raw_response_json},
@@ -287,9 +278,9 @@ class GenericHordeAPIManualClient(BaseHordeAPIClient):
 
     def submit_request(
         self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
+        api_request: HordeRequest,
+        expected_response_type: type[HordeResponseTypeVar],
+    ) -> HordeResponseTypeVar | RequestErrorResponse:
         """Submit a request to the API and return the response.
 
         If you are wondering why `expected_response_type` is a parameter, it is because the API may return different
@@ -297,11 +288,11 @@ class GenericHordeAPIManualClient(BaseHordeAPIClient):
         expect, and pass it in here.
 
         Args:
-            api_request (BaseRequest): The request to submit.
+            api_request (HordeRequest): The request to submit.
             expected_response_type (type[HordeResponse]): The expected response type.
 
         Returns:
-            HordeResponse | RequestErrorResponse: The response from the API.
+            HordeResponseTypeVar | RequestErrorResponse: The response from the API.
         """
         http_method_name = api_request.get_http_method()
 
@@ -394,9 +385,9 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
 
     async def submit_request(
         self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
+        api_request: HordeRequest,
+        expected_response_type: type[HordeResponseTypeVar],
+    ) -> HordeResponseTypeVar | RequestErrorResponse:
         """Submit a request to the API asynchronously and return the response.
 
         If you are wondering why `expected_response_type` is a parameter, it is because the API may return different
@@ -404,7 +395,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
         expect, and pass it in here.
 
         Args:
-            api_request (BaseRequest): The request to submit.
+            api_request (HordeRequest): The request to submit.
             expected_response_type (type[HordeResponse]): The expected response type.
 
         Returns:
@@ -454,7 +445,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
     or anything labeled as `async` on the API.
     """
 
-    _pending_follow_ups: list[tuple[BaseRequest, BaseResponse, list[BaseRequest] | None]]
+    _pending_follow_ups: list[tuple[HordeRequest, HordeResponse, list[HordeRequest] | None]]
     """A `list` of 3-tuples containing the request, response, and a clean-up request for any requests which might need
     it."""
 
@@ -475,35 +466,51 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         )
         self._pending_follow_ups = []
 
-    @override
     def submit_request(
         self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
+        api_request: HordeRequest,
+        expected_response_type: type[HordeResponseTypeVar],
+    ) -> HordeResponseTypeVar | RequestErrorResponse:
         response = super().submit_request(api_request, expected_response_type)
-
-        # Check if this request is a cleanup request for another request in self._pending_follow_ups
-        # but only if the response succeeded
-        for index, (_, _, cleanup_request) in enumerate(self._pending_follow_ups):
-            # If so, remove the request from self._pending_follow_ups as its been handled
-            # The response stores the reference to this cleanup request internally, so we can match by identity
-            if api_request is cleanup_request:
-                if not isinstance(response, RequestErrorResponse):
-                    self._pending_follow_ups.pop(index)
-                else:
-                    logger.error(
-                        "This api request would have followed up on an operation which requires it, but it failed!",
-                    )
-                    logger.error(f"Request: {api_request}")
-                    logger.error(f"Response: {response}")
-
-                break
 
         if isinstance(response, ResponseRequiringFollowUpMixin):
             self._pending_follow_ups.append(
                 (api_request, response, response.get_follow_up_failure_cleanup_request()),
             )
+        else:  # TODO: This whole else is duplicated in the asyncio version of this class. Refactor it out.
+            # Check if this request is a cleanup or follow up request for a prior request
+
+            # Loop through each item in self._pending_follow_ups list
+            for index, (prior_request, _prior_response, cleanup_request) in enumerate(self._pending_follow_ups):
+                if api_request is cleanup_request:
+                    if not isinstance(response, RequestErrorResponse):
+                        self._pending_follow_ups.pop(index)
+                    else:
+                        logger.error(
+                            "This api request would have followed up on an operation which requires it, but it "
+                            "failed!",
+                        )
+                        logger.error(f"Request: {api_request}")
+                        logger.error(f"Response: {response}")
+                    break
+
+                # If the response isn't a final follow-up, we don't need to do anything else.
+                if not isinstance(response, ResponseWithProgressMixin):
+                    continue
+                if not response.is_final_follow_up():
+                    continue
+                if not prior_request.get_requires_follow_up():
+                    continue
+
+                # See if the current api_request is a follow-up to the prior_request
+                if not prior_request.does_target_request_follow_up(api_request):
+                    continue
+
+                # Check if the current response indicates that the job is complete
+                if response.is_job_complete(prior_request.get_number_of_results_expected()):
+                    # Remove the current item from the _pending_follow_ups list
+                    # This is for the benefit of the __exit__ method (context management)
+                    self._pending_follow_ups.pop(index)
 
         return response
 
@@ -522,7 +529,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
 
         # If there are no pending follow-up requests, return True if the exception was a CancelledError.
         if not self._pending_follow_ups:
-            return exc_type is asyncio.CancelledError
+            return exc_type is asyncio.exceptions.CancelledError
 
         # Handle each pending follow-up request.
         all_handled = True
@@ -531,23 +538,23 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
             all_handled = all_handled and handled
 
         # Check if the exception was a CancelledError.
-        is_cancelled = exc_type is asyncio.CancelledError
+        is_cancelled = exc_type is asyncio.exceptions.CancelledError
 
         # If we cancelled the task and everything cleaned up ok, we don't want to raise an exception.
         return all_handled and is_cancelled  # Returns True if everything was handled and we cancelled the task.
 
     def _handle_exit(
         self,
-        request_to_follow_up: BaseRequest,  # The request that is ending prematurely.
-        response_to_follow_up: BaseResponse,  # The response to the request that is ending prematurely.
-        cleanup_requests: list[BaseRequest] | None,  # The request to clean up after the premature ending, if any.
+        request_to_follow_up: HordeRequest,  # The request that is ending prematurely.
+        response_to_follow_up: HordeResponse,  # The response to the request that is ending prematurely.
+        cleanup_requests: list[HordeRequest] | None,  # The request to clean up after the premature ending, if any.
     ) -> bool:
         """Send any follow up requests needed to clean up after a request which is ending prematurely.
 
         Args:
-            request_to_follow_up (BaseRequest): The request which is ending prematurely.
-            response_to_follow_up (BaseResponse): The response to the request which is ending prematurely.
-            cleanup_requests (BaseRequest | None): The request to clean up after the premature ending, if any.
+            request_to_follow_up (HordeRequest): The request which is ending prematurely.
+            response_to_follow_up (HordeResponse): The response to the request which is ending prematurely.
+            cleanup_requests (HordeRequest | None): The request to clean up after the premature ending, if any.
 
         Returns:
             bool: True if the request was handled successfully, False otherwise.
@@ -595,11 +602,11 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
 class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
     """A client which can perform arbitrary horde API requests asynchronously, but also keeps track of responses."""
 
-    _awaiting_requests: list[BaseRequest]
-    """A `list` of `BaseRequest` instances which are being `await`ed on asynchronously."""
+    _awaiting_requests: list[HordeRequest]
+    """A `list` of `HordeRequest` instances which are being `await`ed on asynchronously."""
     _awaiting_requests_lock: asyncio.Lock = asyncio.Lock()
 
-    _pending_follow_ups: list[tuple[BaseRequest, BaseResponse, list[BaseRequest] | None]]
+    _pending_follow_ups: list[tuple[HordeRequest, HordeResponse, list[HordeRequest] | None]]
     """A `list` of 3-tuples containing the request, response, and a clean-up request for any requests which might need
     it."""
     _pending_follow_ups_lock: asyncio.Lock = asyncio.Lock()
@@ -627,9 +634,9 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
     @override
     async def submit_request(
         self,
-        api_request: BaseRequest,
-        expected_response_type: type[HordeResponse],
-    ) -> HordeResponse | RequestErrorResponse:
+        api_request: HordeRequest,
+        expected_response_type: type[HordeResponseTypeVar],
+    ) -> HordeResponseTypeVar | RequestErrorResponse:
         # Add the request to the list of awaiting requests.
         async with self._awaiting_requests_lock:
             self._awaiting_requests.append(api_request)
@@ -648,11 +655,11 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
                     (api_request, response, response.get_follow_up_failure_cleanup_request()),
                 )
 
-                # Check if this request is a cleanup request for another request in self._pending_follow_ups
-                # but only if the response succeeded
-                for index, (_, _, cleanup_request) in enumerate(self._pending_follow_ups):
-                    # If so, remove the request from self._pending_follow_ups as its been handled
-                    # The response stores the reference to this cleanup request internally, so we can match by identity
+            else:
+                # Check if this request is a cleanup or follow up request for a prior request
+
+                # Loop through each item in self._pending_follow_ups list
+                for index, (prior_request, _prior_response, cleanup_request) in enumerate(self._pending_follow_ups):
                     if api_request is cleanup_request:
                         if not isinstance(response, RequestErrorResponse):
                             self._pending_follow_ups.pop(index)
@@ -664,6 +671,24 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
                             logger.error(f"Request: {api_request}")
                             logger.error(f"Response: {response}")
                         break
+
+                    # If the response isn't a final follow-up, we don't need to do anything else.
+                    if not isinstance(response, ResponseWithProgressMixin):
+                        continue
+                    if not response.is_final_follow_up():
+                        continue
+                    if not prior_request.get_requires_follow_up():
+                        continue
+
+                    # See if the current api_request is a follow-up to the prior_request
+                    if not prior_request.does_target_request_follow_up(api_request):
+                        continue
+
+                    # Check if the current response indicates that the job is complete
+                    if response.is_job_complete(prior_request.get_number_of_results_expected()):
+                        # Remove the current item from the _pending_follow_ups list
+                        # This is for the benefit of the __exit__ method (context management)
+                        self._pending_follow_ups.pop(index)
 
         # Return the response from the API.
         return response
@@ -690,7 +715,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
 
         # If there are no pending follow-up requests, return True if the exception was a CancelledError.
         if not self._pending_follow_ups:
-            return exc_type is asyncio.CancelledError
+            return exc_type is asyncio.exceptions.CancelledError
 
         try:
             # Handle each pending follow-up request asynchronously.
@@ -703,7 +728,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
 
             # Return True if everything was handled and the task was cancelled deliberately,
             # False otherwise (which will reraise the exception)
-            return exc_type is asyncio.CancelledError
+            return exc_type is asyncio.exceptions.CancelledError
         except Exception as e:
             # If an exception occurred while handling the follow-up requests, log an error and return False.
             logger.exception(e)
@@ -711,16 +736,16 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
 
     async def _handle_exit_async(
         self,
-        request_to_follow_up: BaseRequest,  # The request that is ending prematurely.
-        response_to_follow_up: BaseResponse,  # The response to the request that is ending prematurely.
-        cleanup_requests: list[BaseRequest] | None,  # The request to clean up after the premature ending, if any.
+        request_to_follow_up: HordeRequest,  # The request that is ending prematurely.
+        response_to_follow_up: HordeResponse,  # The response to the request that is ending prematurely.
+        cleanup_requests: list[HordeRequest] | None,  # The request to clean up after the premature ending, if any.
     ) -> bool:
         """Send any follow up requests needed to clean up after a request which is ending prematurely.
 
         Args:
-            request_to_follow_up (BaseRequest): The request which is ending prematurely.
-            response_to_follow_up (BaseResponse): The response to the request which is ending prematurely.
-            cleanup_requests (BaseRequest | None): The request to clean up after the premature ending, if any.
+            request_to_follow_up (HordeRequest): The request which is ending prematurely.
+            response_to_follow_up (HordeResponse): The response to the request which is ending prematurely.
+            cleanup_requests (HordeRequest | None): The request to clean up after the premature ending, if any.
 
         Returns:
             bool: True if the request was handled successfully, False otherwise.
