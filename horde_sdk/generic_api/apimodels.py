@@ -272,7 +272,7 @@ class HordeRequest(HordeAPIMessage, BaseModel):
 
     def log_safe_model_dump(self) -> dict:
         """Return a dict of the model's fields, with any sensitive fields redacted."""
-        return self.dict(exclude=set(self.get_sensitive_fields()))
+        return self.model_dump(exclude=set(self.get_sensitive_fields()))
 
 
 class APIKeyAllowedInRequestMixin(BaseModel):
