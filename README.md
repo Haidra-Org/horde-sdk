@@ -5,7 +5,7 @@
 # horde_sdk
 
 ## Note
-horde_sdk is in **alpha**. Everything is subject to change. Please feel free to report bugs or make suggestions on our [github issue page](https://https//github.com/Haidra-Org/horde-sdk)
+horde_sdk is in **beta**. Everything is subject to change. Please feel free to report bugs or make suggestions on our [github issue page](https://https//github.com/Haidra-Org/horde-sdk)
 
 ## About
 This library simplifies interfacing with any API created by [Haidra](https://github.com/Haidra-Org) - the community organization
