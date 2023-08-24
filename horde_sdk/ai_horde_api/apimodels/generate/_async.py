@@ -1,53 +1,60 @@
-from pydantic import Field, model_validator
+from loguru import logger
+from pydantic import Field, field_validator, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,
-    BaseImageGenerateParam,
+    ImageGenerateParamMixin,
+    JobResponseMixin,
 )
 from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckRequest
 from horde_sdk.ai_horde_api.apimodels.generate._status import DeleteImageGenerateRequest, ImageGenerateStatusRequest
 from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
-from horde_sdk.ai_horde_api.fields import GenerationID
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
-    BaseRequestAuthenticated,
-    BaseRequestWorkerDriven,
-    BaseResponse,
+    APIKeyAllowedInRequestMixin,
+    ContainsMessageResponseMixin,
+    HordeResponse,
+    HordeResponseBaseModel,
+    RequestUsesImageWorkerMixin,
+    ResponseRequiringFollowUpMixin,
 )
 
 
-class ImageGenerateAsyncResponse(BaseResponse):
+class ImageGenerateAsyncResponse(
+    HordeResponseBaseModel,
+    JobResponseMixin,
+    ResponseRequiringFollowUpMixin,
+    ContainsMessageResponseMixin,
+):
     """Represents the data returned from the `/v2/generate/async` endpoint.
 
     v2 API Model: `RequestAsync`
     """
 
-    id_: str | GenerationID = Field(alias="id")  # TODO: Remove `str`?
     """The UUID for this image generation."""
     kudos: float
-    message: str | None = None
 
     @override
-    @classmethod
-    def is_requiring_follow_up(cls) -> bool:
-        return True
-
-    @override
-    def get_follow_up_data(self) -> dict[str, object]:
-        return {"id": self.id_}
+    def get_follow_up_returned_params(self) -> list[dict[str, object]]:
+        return [{"id": self.id_}]
 
     @classmethod
-    def get_follow_up_default_request(cls) -> type[ImageGenerateCheckRequest]:
+    def get_follow_up_default_request_type(cls) -> type[ImageGenerateCheckRequest]:
         return ImageGenerateCheckRequest
 
     @override
     @classmethod
-    def get_follow_up_request_types(
+    def get_follow_up_request_types(  # type: ignore[override]
         cls,
     ) -> list[type[ImageGenerateCheckRequest | ImageGenerateStatusRequest]]:
         return [ImageGenerateCheckRequest, ImageGenerateStatusRequest]
+
+    @override
+    @classmethod
+    def get_follow_up_failure_cleanup_request_type(cls) -> type[DeleteImageGenerateRequest]:
+        return DeleteImageGenerateRequest
 
     @override
     @classmethod
@@ -55,14 +62,27 @@ class ImageGenerateAsyncResponse(BaseResponse):
         return "RequestAsync"
 
 
-class ImageGenerationInputPayload(BaseImageGenerateParam):
-    n: int = Field(default=1, ge=1)
+class ImageGenerationInputPayload(ImageGenerateParamMixin):
+    n: int = Field(default=1, ge=1, le=60)
+
+    @field_validator("n", mode="before")
+    def validate_n(cls, value: int) -> int:
+        if not value:
+            logger.debug("n (number of images to generate) is not set; defaulting to 1")
+            return 1
+
+        if value >= 30:
+            logger.warning(
+                "n (number of images to generate) is >= 30; only moderators and certain users can generate that many "
+                f"images at once. The request will probably fail. (n={value}))",
+            )
+        return value
 
 
 class ImageGenerateAsyncRequest(
     BaseAIHordeRequest,
-    BaseRequestAuthenticated,
-    BaseRequestWorkerDriven,
+    APIKeyAllowedInRequestMixin,
+    RequestUsesImageWorkerMixin,
 ):
     """Represents the data needed to make a request to the `/v2/generate/async` endpoint.
 
@@ -103,25 +123,23 @@ class ImageGenerateAsyncRequest(
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_URL_Literals.v2_generate_async
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_async
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[ImageGenerateAsyncResponse]:
+    def get_default_success_response_type(cls) -> type[ImageGenerateAsyncResponse]:
         return ImageGenerateAsyncResponse
 
     @override
     @classmethod
-    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[BaseResponse]]:
+    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponse]]:
         return {
-            HTTPStatusCode.ACCEPTED: cls.get_success_response_type(),
+            HTTPStatusCode.ACCEPTED: cls.get_default_success_response_type(),
         }
 
     @override
-    @classmethod
-    def is_recovery_enabled(cls) -> bool:
-        return True
-
-    def get_recovery_request_type(self) -> type[DeleteImageGenerateRequest]:
-        return DeleteImageGenerateRequest
+    def get_number_of_results_expected(self) -> int:
+        if not self.params:
+            return 1
+        return self.params.n

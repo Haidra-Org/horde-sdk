@@ -49,7 +49,7 @@ def main() -> None:
     )
 
     print("Request URL:")
-    print(user_validate_request.get_endpoint_url())
+    print(user_validate_request.get_api_endpoint_url())
     print()
     print("Request Body JSON:")
     print(user_validate_request.model_dump_json())
@@ -57,7 +57,7 @@ def main() -> None:
     response: pydantic.BaseModel = ratings_api_client.submit_request(
         api_request=user_validate_request,
         # Note that the type hint is accurate on the return type of this `get_success_response_type()`
-        expected_response_type=user_validate_request.get_success_response_type(),
+        expected_response_type=user_validate_request.get_default_success_response_type(),
     )
     if not isinstance(response, UserValidateResponse):
         raise Exception("The response type doesn't match expected one!")

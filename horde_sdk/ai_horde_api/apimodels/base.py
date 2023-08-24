@@ -1,14 +1,15 @@
+"""The base classes for all AI Horde API requests/responses."""
 from pydantic import BaseModel, Field, field_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
-from horde_sdk.ai_horde_api.fields import GenerationID, WorkerID
-from horde_sdk.generic_api.apimodels import BaseRequest
+from horde_sdk.ai_horde_api.fields import JobID, WorkerID
+from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponseBaseModel
 from horde_sdk.utils import seed_to_int
 
 
-class BaseAIHordeRequest(BaseRequest):
+class BaseAIHordeRequest(HordeRequest):
     """Base class for all AI Horde API requests."""
 
     @override
@@ -17,15 +18,22 @@ class BaseAIHordeRequest(BaseRequest):
         return AI_HORDE_BASE_URL
 
 
-class BaseImageJobRequest(BaseModel):
-    """Base class for data relating to image generation jobs."""
+class JobRequestMixin(BaseModel):
+    """Mix-in class for data relating to any generation jobs."""
 
-    id_: str | GenerationID = Field(alias="id")
+    id_: JobID = Field(alias="id")
+    """The UUID for this job. Use this to post the results in the future."""
+
+
+class JobResponseMixin(BaseModel):  # TODO: this model may not actually exist as such in the API
+    """Mix-in class for data relating to any generation jobs."""
+
+    id_: JobID = Field(alias="id")
     """The UUID for this job."""
 
 
-class BaseWorkerRequest(BaseModel):
-    """Base class for data relating to worker requests."""
+class WorkerRequestMixin(BaseModel):
+    """Mix-in class for data relating to worker requests."""
 
     worker_id: str | WorkerID
     """The UUID of the worker in question for this request."""
@@ -47,8 +55,8 @@ class LorasPayloadEntry(BaseModel):
     """Any trigger required to activate the LoRa model."""
 
 
-class BaseImageGenerateParam(BaseModel):
-    """Represents some of the data included in a request to the `/v2/generate/async` endpoint.
+class ImageGenerateParamMixin(BaseModel):
+    """Mix-in class of some of the data included in a request to the `/v2/generate/async` endpoint.
 
     Also is the corresponding information returned on a job pop to the `/v2/generate/pop` endpoint.
     v2 API Model: `ModelPayloadStable`
@@ -85,6 +93,21 @@ class BaseImageGenerateParam(BaseModel):
         return v
 
     @field_validator("seed")
-    def seed_to_int_if_str(cls, v: str | int) -> str | int:
+    def seed_to_int_if_str(cls, v: str | int) -> str:
         """Ensure that the seed is an integer. If it is a string, convert it to an integer."""
         return str(seed_to_int(v))
+
+
+class JobSubmitResponse(HordeResponseBaseModel):
+    """The response to a job submission request, indicating the number of kudos gained.
+
+    v2 API Model: `GenerationSubmitted`
+    """
+
+    reward: float
+    """The amount of kudos gained for submitting this request."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "GenerationSubmitted"

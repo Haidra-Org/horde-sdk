@@ -2,12 +2,20 @@ import pydantic
 from pydantic import Field, field_validator
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, BaseImageGenerateParam
-from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
-from horde_sdk.ai_horde_api.fields import GenerationID
+from horde_sdk.ai_horde_api.apimodels.base import (
+    BaseAIHordeRequest,
+    ImageGenerateParamMixin,
+    JobResponseMixin,
+)
+from horde_sdk.ai_horde_api.apimodels.generate._submit import ImageGenerationJobSubmitRequest
+from horde_sdk.ai_horde_api.consts import GENERATION_STATE, KNOWN_SOURCE_PROCESSING
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseResponse
+from horde_sdk.generic_api.apimodels import (
+    APIKeyAllowedInRequestMixin,
+    HordeResponseBaseModel,
+    ResponseRequiringFollowUpMixin,
+)
 
 
 class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
@@ -53,15 +61,13 @@ class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
     """How many waiting requests were skipped because they requested a controlnet."""
 
 
-class ImageGenerateJobResponse(BaseResponse):
+class ImageGenerateJobResponse(HordeResponseBaseModel, JobResponseMixin, ResponseRequiringFollowUpMixin):
     """Represents the data returned from the `/v2/generate/pop` endpoint.
 
     v2 API Model: `GenerationPayloadStable`
     """
 
-    id: str | GenerationID  # noqa: A003
-    """The UUID for this image generation."""
-    payload: BaseImageGenerateParam
+    payload: ImageGenerateParamMixin
     """The parameters used to generate this image."""
     skipped: ImageGenerateJobPopSkippedStatus
     """The reasons this worker was not issued certain jobs, and the number of jobs for each reason."""
@@ -90,8 +96,26 @@ class ImageGenerateJobResponse(BaseResponse):
     def get_api_model_name(cls) -> str | None:
         return "GenerationPayloadStable"
 
+    @override
+    @classmethod
+    def get_follow_up_default_request_type(cls) -> type[ImageGenerationJobSubmitRequest]:
+        return ImageGenerationJobSubmitRequest
 
-class ImageGenerateJobPopRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
+    @override
+    @classmethod
+    def get_follow_up_failure_cleanup_request_type(cls) -> type[ImageGenerationJobSubmitRequest]:
+        return ImageGenerationJobSubmitRequest
+
+    @override
+    def get_follow_up_returned_params(self) -> list[dict[str, object]]:
+        return [{"id": self.id_}]
+
+    @override
+    def get_follow_up_failure_cleanup_params(self) -> dict[str, object]:
+        return {"state": GENERATION_STATE.faulted}  # TODO: One day, could I do away with the magic string?
+
+
+class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     """Represents the data needed to make a job request from a worker to the /v2/generate/pop endpoint.
 
     v2 API Model: `PopInputStable`
@@ -126,16 +150,16 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_URL_Literals.v2_generate_pop
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_pop
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[ImageGenerateJobResponse]:
+    def get_default_success_response_type(cls) -> type[ImageGenerateJobResponse]:
         return ImageGenerateJobResponse
 
 
-class ImageGenerateJobPopPayload(BaseImageGenerateParam):
+class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
     prompt: str
 
     @property

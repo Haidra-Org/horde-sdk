@@ -1,15 +1,40 @@
+/* .md-main .md-grid {
+    max-width: 80rem;
+}
+
+.md-content {
+    min-width: 60%;
+}
+
+.md-sidebar {
+    width: unset;
+}
+
+.md-sidebar.md-sidebar--secondary {
+    width: 30%;
+}
+
+.md-sidebar.md-sidebar--primary .md-sidebar__scrollwrap .md-sidebar__inner {
+    padding-right: calc(100% - 14rem);
+}
+
+
+.md-sidebar.md-sidebar--secondary .md-sidebar__scrollwrap .md-sidebar__inner {
+    padding-right: calc(100% - 20rem);
+} */
+
 .doc-object-name {
     font-weight: bold;
     letter-spacing: 0.0em;
 }
 .doc.doc-children .doc-object {
-    background-color: rgb(240, 240, 240);
+    background-color: rgb(229, 229, 229);
     padding-left: 3px;
     padding-right: 3px;
 }
 
 .doc-label code {
-    background-color: rgb(222, 222, 222);
+    background-color: rgb(226, 226, 226);
 
 }
 
@@ -44,6 +69,7 @@ details.quote div.highlight {
     margin: 0;
 }
 
+
 code {
     font-weight: 500;
 }
@@ -74,6 +100,42 @@ code {
     overflow-x: auto;
 }
 
+div.doc.doc-object {
+    border-bottom: 4px solid #ccc;
+}
+
+.doc-class-name {
+    color: #1c7d4d;
+}
+
+.doc-class-bases code a{
+    color: #33BBA2;
+}
+.doc-class-bases code span{
+    color: #33BBA2;
+}
+
+.doc-attribute-name {
+    color: #00a6ff;
+}
+
+.doc-function-name {
+    font-weight: initial;
+    color: #a846b9;
+}
+
+.doc-label-module-attribute code{
+    color: #00a6ff;
+}
+
+.doc-label-abstractmethod code{
+    font-weight: bold;
+    font-style: italic;
+}
+
+.doc-label-classmethod code{
+    color: #33BBA2;
+}
 
 .note {
     border: 1px solid #ccc;

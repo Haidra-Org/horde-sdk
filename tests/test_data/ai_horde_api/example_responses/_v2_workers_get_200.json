@@ -22,8 +22,12 @@
         "flagged": false,
         "suspicious": 0,
         "uncompleted_jobs": 0,
-        "models": [],
-        "forms": [],
+        "models": [
+            ""
+        ],
+        "forms": [
+            ""
+        ],
         "team": {
             "name": "",
             "id": ""

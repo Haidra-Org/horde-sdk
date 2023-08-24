@@ -1,5 +1,13 @@
+"""This module contains functions for generating API endpoints urls."""
+
 import functools
 import urllib.parse
+
+from strenum import StrEnum
+
+
+class GENERIC_API_ENDPOINT_SUBPATH(StrEnum):
+    """The placeholder class, meant to extended by APIs to define the endpoint paths."""
 
 
 def url_with_path(
@@ -7,7 +15,7 @@ def url_with_path(
     base_url: str,
     path: str,
 ) -> str:
-    """Returns the combined baseURL and endpoint path. Cached for a marginal performance boost.
+    """Return the combined baseURL and endpoint path. Cached for a marginal performance boost.
 
     Args:
         path (Rating_API_URL_Literals): The API action path.

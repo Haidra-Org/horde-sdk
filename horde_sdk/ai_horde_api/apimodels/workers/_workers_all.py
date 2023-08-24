@@ -1,15 +1,21 @@
-from pydantic import BaseModel, Field
+from collections.abc import Iterator
+
+from pydantic import AliasChoices, Field, RootModel
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.consts import WORKER_TYPE
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import TeamID, WorkerID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import BaseRequestAuthenticated, BaseResponse, HordeAPIModel
+from horde_sdk.generic_api.apimodels import (
+    APIKeyAllowedInRequestMixin,
+    HordeAPIObject,
+    HordeResponse,
+)
 
 
-class TeamDetailsLite(HordeAPIModel):
+class TeamDetailsLite(HordeAPIObject):
     name: str | None = None
     """The Name given to this team."""
     id_: str | TeamID | None = Field(None, alias="id")
@@ -21,7 +27,7 @@ class TeamDetailsLite(HordeAPIModel):
         return "TeamDetailsLite"
 
 
-class WorkerKudosDetails(HordeAPIModel):
+class WorkerKudosDetails(HordeAPIObject):
     generated: float | None = None
     """How much Kudos this worker has received for generating images."""
     uptime: int | None = None
@@ -33,7 +39,7 @@ class WorkerKudosDetails(HordeAPIModel):
         return "WorkerKudosDetails"
 
 
-class WorkerDetailItem(HordeAPIModel):
+class WorkerDetailItem(HordeAPIObject):
     type_: WORKER_TYPE = Field(alias="type")
     name: str
     id_: str | WorkerID = Field(alias="id")
@@ -62,7 +68,11 @@ class WorkerDetailItem(HordeAPIModel):
     megapixelsteps_generated: int | None = None
     img2img: bool | None = None
     painting: bool | None = None
-    post_processing: bool | None = None
+    post_processing: bool | None = Field(
+        None,
+        validation_alias=AliasChoices("post_processing", "post-processing"),
+        serialization_alias="post-processing",
+    )
     lora: bool | None = None
     max_length: int | None = None
     max_context_length: int | None = None
@@ -74,45 +84,28 @@ class WorkerDetailItem(HordeAPIModel):
         return "WorkerDetailItem"
 
 
-class AllWorkersDetailsResponse(BaseResponse):
-    _workers: list[WorkerDetailItem]
+class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]):
+    model_config = {}
 
-    @property
-    def workers(self) -> list[WorkerDetailItem]:
-        return self._workers
+    # @tazlin: The typing of __iter__ in BaseModel seems to assume that RootModel wouldn't also be a parent class.
+    # without a `type: ignore``, mypy feels that this is a bad override. This is probably a sub-optimal solution
+    # on my part with a more elegant path in the future.
+    # TODO: fix this?
+    def __iter__(self) -> Iterator[WorkerDetailItem]:  # type: ignore
+        return iter(self.root)
+
+    def __getitem__(self, item: int) -> WorkerDetailItem:
+        return self.root[item]
 
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "WorkerDetails"
 
-    @override
-    @classmethod
-    def is_array_response(cls) -> bool:
-        return True
 
-    @override
-    @classmethod
-    def get_array_item_type(cls) -> type[BaseModel]:
-        return WorkerDetailItem
+class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
+    """Returns information on all works. If a moderator API key is specified, it will return additional information."""
 
-    @override
-    def set_array(self, list_: list) -> None:
-        if not isinstance(list_, list):
-            raise ValueError("list_ must be a list")
-
-        parsed_list = []
-        for item in list_:
-            parsed_list.append(WorkerDetailItem(**item))
-
-        self._workers = parsed_list
-
-    @override
-    def get_array(self) -> list:
-        return self._workers.copy()
-
-
-class AllWorkersDetailsRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
     type_: WORKER_TYPE = Field(alias="type")
 
     @override
@@ -122,8 +115,8 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_URL_Literals.v2_workers_all
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_workers_all
 
     @override
     @classmethod
@@ -132,10 +125,15 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, BaseRequestAuthenticated):
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[BaseResponse]:
+    def get_default_success_response_type(cls) -> type[HordeResponse]:
         return AllWorkersDetailsResponse
 
     @override
     @classmethod
     def get_header_fields(cls) -> list[str]:
         return ["type_"]
+
+    @classmethod
+    def is_api_key_required(cls) -> bool:
+        """Return whether this endpoint requires an API key."""
+        return False

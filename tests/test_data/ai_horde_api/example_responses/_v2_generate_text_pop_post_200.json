@@ -17,7 +17,9 @@
         "top_k": 0.0,
         "top_p": 0.001,
         "typical": 0.0,
-        "sampler_order": [],
+        "sampler_order": [
+            0
+        ],
         "prompt": ""
     },
     "id": "",

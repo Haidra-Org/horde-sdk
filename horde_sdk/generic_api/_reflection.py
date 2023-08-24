@@ -1,21 +1,16 @@
 import inspect
 import sys
 
-from horde_sdk.generic_api.apimodels import BaseRequest
+from horde_sdk.generic_api.apimodels import HordeRequest
 
 
-def get_all_request_types(module_name: str) -> list[type[BaseRequest]]:
-    """Returns all non-abstract class types inheriting from `BaseRequest`.
-
-    Args:
-        moduleName (str): The target module name to reflect.
-
-    Returns:
-        list[type[BaseRequest]]: All types inheriting from `BaseRequest`.
-    """
-    list_of_types = []
-    for value in sys.modules[module_name].__dict__.values():
-        if isinstance(value, type) and issubclass(value, BaseRequest) and not inspect.isabstract(value):
-            list_of_types.append(value)
-
-    return list_of_types
+def get_all_request_types(package_name: str) -> list[type[HordeRequest]]:
+    """Return all non-abstract class types inheriting from `HordeRequest` by searching the package."""
+    all_request_types: list[type[HordeRequest]] = []
+    for _, obj in inspect.getmembers(sys.modules[package_name], inspect.isclass):
+        if inspect.isabstract(obj):
+            continue
+        if not issubclass(obj, HordeRequest):
+            continue
+        all_request_types.append(obj)
+    return all_request_types

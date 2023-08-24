@@ -30,9 +30,9 @@ def main() -> None:
 
         with open(relative_folder / ".pages", "w") as f:
             if relative_folder.name == "horde_sdk":
-                f.write("title: Horde SDK Code Reference")
+                f.write("title: Horde SDK Code Reference\n")
             else:
-                f.write(f"title: {relative_folder.name}")
+                f.write(f"title: {relative_folder.name}\n")
 
         # Get all the files in the folder
         files_in_folder = list(folder.glob("*.py"))

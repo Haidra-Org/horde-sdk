@@ -1,12 +1,13 @@
 from pydantic import BaseModel, Field
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, BaseImageJobRequest
-from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckResponse
+from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
+from horde_sdk.ai_horde_api.apimodels.generate._progress import ResponseGenerationProgressMixin
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
-from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_URL_Literals
-from horde_sdk.ai_horde_api.fields import ImageID, WorkerID
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
+from horde_sdk.ai_horde_api.fields import JobID, WorkerID
 from horde_sdk.consts import HTTPMethod
+from horde_sdk.generic_api.apimodels import HordeResponseBaseModel, ResponseWithProgressMixin
 
 
 class ImageGeneration(BaseModel):
@@ -15,8 +16,9 @@ class ImageGeneration(BaseModel):
     v2 API Model: `GenerationStable`
     """
 
-    id: str | ImageID  # noqa: A003
-    """The UUID of this image. Is always returned as a `ImageID`, but can initialized from a `str`."""
+    id_: JobID = Field(alias="id")
+    """The UUID of this generation. Is always returned as a `JobID`, but can initialized from a `str`."""
+    # todo: remove `str`?
     worker_id: str | WorkerID
     """The UUID of the worker which generated this image."""
     worker_name: str
@@ -33,7 +35,11 @@ class ImageGeneration(BaseModel):
     """When true this image has been censored by the worker's safety filter."""
 
 
-class ImageGenerateStatusResponse(ImageGenerateCheckResponse):
+class ImageGenerateStatusResponse(
+    HordeResponseBaseModel,
+    ResponseWithProgressMixin,
+    ResponseGenerationProgressMixin,
+):
     """Represent the response from the AI-Horde API when checking the status of an image generation job.
 
     v2 API Model: `RequestStatusStable`
@@ -49,10 +55,24 @@ class ImageGenerateStatusResponse(ImageGenerateCheckResponse):
     def get_api_model_name(cls) -> str | None:
         return "RequestStatusStable"
 
+    @override
+    @classmethod
+    def get_finalize_success_request_type(cls) -> None:
+        return None
+
+    @override
+    def is_job_complete(self, number_of_result_expected: int) -> bool:
+        return len(self.generations) == number_of_result_expected
+
+    @override
+    @classmethod
+    def is_final_follow_up(cls) -> bool:
+        return True
+
 
 class DeleteImageGenerateRequest(
     BaseAIHordeRequest,
-    BaseImageJobRequest,
+    JobRequestMixin,
 ):
     """Represents a DELETE request to the `/v2/generate/status/{id}` endpoint."""
 
@@ -68,16 +88,16 @@ class DeleteImageGenerateRequest(
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_URL_Literals.v2_generate_status
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_status
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
+    def get_default_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
         return ImageGenerateStatusResponse
 
 
-class ImageGenerateStatusRequest(BaseAIHordeRequest, BaseImageJobRequest):
+class ImageGenerateStatusRequest(BaseAIHordeRequest, JobRequestMixin):
     """Represents a GET request to the `/v2/generate/status/{id}` endpoint."""
 
     @override
@@ -92,10 +112,10 @@ class ImageGenerateStatusRequest(BaseAIHordeRequest, BaseImageJobRequest):
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return AI_HORDE_API_URL_Literals.v2_generate_status
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_status
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
+    def get_default_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
         return ImageGenerateStatusResponse

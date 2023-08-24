@@ -2,152 +2,164 @@
 from __future__ import annotations
 
 import abc
-import json
 
+from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from typing_extensions import Self, override
+from typing_extensions import override
 
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
-from horde_sdk.generic_api.endpoints import url_with_path
+from horde_sdk.generic_api.consts import ANON_API_KEY
+from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
 
-class HordeAPIModel(BaseModel, abc.ABC):
+class HordeAPIObject(BaseModel, abc.ABC):
     """Base class for all Horde API data models, requests, or responses."""
-
-    model_config = ConfigDict(frozen=True)
 
     @classmethod
     @abc.abstractmethod
     def get_api_model_name(cls) -> str | None:
-        """Return the name of the model as seen in the published swagger doc. If none, there is no payload,
-        such as for a GET request.
+        """Return the name of the model as seen in the published swagger doc.
+
+        If none, there is no payload, such as for a GET request.
         """
 
-    def to_json_horde_sdk_safe(self) -> str:
-        """Return the model as a JSON string, taking into account the paradigms of the horde_sdk.
 
-        If you use the default json dumping behavior, you will find some rough edges, such as alias
-        field names not being used, `None` values being included, and responses which return arrays
-        not being handled correctly (returning `{}` instead of the object)
-        """
-        return self.model_dump_json(by_alias=True, exclude_none=True)
-
-
-class HordeAPIMessage(HordeAPIModel):
+class HordeAPIMessage(HordeAPIObject):
     """Represents any request or response from any Horde API."""
 
 
-class BaseResponse(HordeAPIMessage):
+class HordeResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
 
-    @classmethod
-    def is_requiring_follow_up(cls) -> bool:
-        """Return whether this response requires a follow up request of some kind."""
-        return False
 
-    def get_follow_up_data(self) -> dict[str, object]:
+class HordeResponseBaseModel(HordeResponse, BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+
+class ResponseRequiringFollowUpMixin(abc.ABC):
+    """Represents any response from any Horde API which requires a follow up request of some kind."""
+
+    @abc.abstractmethod
+    def get_follow_up_returned_params(self) -> list[dict[str, object]]:
         """Return the information required from this response to submit a follow up request.
 
         Note that this dict uses the alias field names (as seen on the API), not the python field names.
-        GenerationIDs will be returned as `{"id": "00000000-0000-0000-0000-000000000000"}` instead of
+        JobIDs will be returned as `{"id": "00000000-0000-0000-0000-000000000000"}` instead of
         `{"id_": "00000000-0000-0000-0000-000000000000"}`.
 
-        This means it is suitable for passing directly
-        to a constructor, such as `ImageGenerateStatusRequest(**response.get_follow_up_required_info())`.
+        Returns:
+            list[dict[str, object]]: A list of dicts of parameter names and values for each follow up request.
         """
-        raise NotImplementedError("This response does not require a follow up request")
+
+    def get_follow_up_extra_params(self) -> dict[str, object]:
+        """Return any additional information required from this response to submit a follow up request."""
+        logger.warning("This method may be deprecated in the future.")
+        return {}  # TODO: Would extra params need to come into play for a list of follow up requests?
+
+    def get_follow_up_all_params(self) -> list[dict[str, object]]:
+        """Return the required inf from this response to submit any follow up requests warranted from this response.
+
+        Note that this dict uses the alias field names (as seen on the API), not the python field names.
+
+        `get_follow_up_failure_cleanup_params` is **not** included.
+
+        This is used for context management.
+
+        Returns:
+            list[dict[str, object]]: A list of dicts of parameter names and values for each follow up request.
+        """
+        follow_up_params = self.get_follow_up_returned_params()
+
+        if isinstance(follow_up_params, list):
+            return follow_up_params  # FIXME: Would extra params need to come into play?
+
+        return [{**follow_up_params, **self.get_follow_up_extra_params()}]
 
     @classmethod
-    def get_follow_up_default_request(cls) -> type[BaseRequest]:
-        raise NotImplementedError("This response does not require a follow up request")
+    @abc.abstractmethod
+    def get_follow_up_default_request_type(cls) -> type[HordeRequest]:
+        """Return the default request type for this response."""
 
     @classmethod
-    def get_follow_up_request_types(cls) -> list[type]:  # TODO type hint???
-        """Return a list of all the possible follow up request types for this response"""
-        return [cls.get_follow_up_default_request()]
+    @abc.abstractmethod
+    def get_follow_up_failure_cleanup_request_type(cls) -> type[HordeRequest]:
+        """Return the request type for this response to clean up after a failed follow up request.
 
-    _follow_up_handled: bool = False
+        Defaults to `None`, meaning no cleanup request is needed.
+        """
 
-    def set_follow_up_handled(self) -> None:
-        """Set this response as having had its follow up request handled.
+    _cleanup_requests: list[HordeRequest] | None = None
+
+    def get_follow_up_failure_cleanup_params(self) -> dict[str, object]:
+        """Return any extra information required from this response to clean up after a failed follow up request.
+
+        Note that this dict uses the alias field names (as seen on the API), not the python field names.
 
         This is used for context management.
         """
-        self._follow_up_handled = True
+        return {}
 
-    def is_follow_up_handled(self) -> bool:
-        """Return whether this response has had its follow up request handled.
+    def get_follow_up_failure_cleanup_request(self) -> list[HordeRequest]:
+        """Return the request for this response to clean up after a failed follow up request."""
+        if self._cleanup_requests is not None:
+            return self._cleanup_requests
 
-        This is used for context management.
-        """
-        return self._follow_up_handled
+        cleanup_request_type = self.get_follow_up_failure_cleanup_request_type()
+        if not cleanup_request_type:
+            raise ValueError("No cleanup request type defined")
+
+        self._cleanup_requests = []
+
+        all_cleanup_params: list[dict[str, object]] = self.get_follow_up_all_params()
+        for cleanup_params in all_cleanup_params:
+            cleanup_params.update(self.get_follow_up_failure_cleanup_params())
+            self._cleanup_requests.append(cleanup_request_type.model_validate(cleanup_params))
+
+        return self._cleanup_requests
 
     @classmethod
-    def is_array_response(cls) -> bool:
-        """Return whether this response is an array of an internal type."""
+    def get_follow_up_request_types(cls) -> list[type[HordeRequest]]:
+        """Return a list of all the possible follow up request types for this response."""
+        return [cls.get_follow_up_default_request_type()]
+
+
+class ResponseWithProgressMixin(BaseModel):
+    """Represents any response from any Horde API which contains progress information."""
+
+    @abc.abstractmethod
+    def is_job_complete(self, number_of_result_expected: int) -> bool:
+        """Return whether the job is complete.
+
+        Args:
+            number_of_result_expected (int): The number of results expected from the job.
+
+        Returns:
+            bool: Whether the job is complete.
+        """
+
+    @classmethod
+    def is_final_follow_up(cls) -> bool:
+        """Return whether this response is the final follow up response."""
         return False
 
     @classmethod
-    def get_array_item_type(cls) -> type[BaseModel]:
-        """If this is an array response, return the type of the internal array elements.
-
-        Check `is_array_response` first if you are not sure if this is an array response.
-        """
-        raise NotImplementedError("This is not an array response")
-
-    def set_array(self, list_: list[HordeAPIModel]) -> None:
-        """Set this response's internal array to the passed value."""
-        raise NotImplementedError("This is not an array response")
-
-    def get_array(self) -> list[HordeAPIModel]:
-        """Get this response's internal array."""
-        raise NotImplementedError("This is not an array response")
-
-    @classmethod
-    def from_dict_or_array(cls, dict_or_array: dict | list) -> Self:
-        """Create a new pydantic BaseModel as normal if the passed value is a dict, otherwise, use the 'array' method.
-
-        This is useful for handling responses which return a json array instead of a json object.
-        See also `is_array_response` and `get_array_item_type`.
-
-        Args:
-            dict_or_array (dict | list): The dict or array to create the model from.
-
-        Returns:
-            `Self`: The new model instance, of the type which called this method.
-        """
-        if not isinstance(dict_or_array, dict):
-            if not isinstance(dict_or_array, list):
-                dict_or_array = [dict_or_array]
-
-            new_instance = cls()
-            new_instance.set_array(dict_or_array)
-            return new_instance
-
-        return cls(**dict_or_array)
-
-    @override
-    def to_json_horde_sdk_safe(self) -> str:
-        # TODO: Is there a more pydantic way to do this?
-        if self.is_array_response():
-            self_array = self.get_array()
-
-            if not self_array:
-                return "{}"
-
-            return json.dumps(self_array, default=lambda o: o.model_dump(by_alias=True, exclude_none=True), indent=4)
-
-        return super().to_json_horde_sdk_safe()
+    @abc.abstractmethod
+    def get_finalize_success_request_type(cls) -> type[HordeRequest] | None:
+        """Return the request type for this response to finalize the job on success, or `None` if not needed."""
 
 
-class RequestErrorResponse(BaseResponse):
+class ContainsMessageResponseMixin(BaseModel):
+    """Represents any response from any Horde API which contains a message."""
+
+    message: str = ""
+
+
+class RequestErrorResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
     """The catch all error response for any request to any Horde API.
 
     v2 API Model: `RequestError`
     """
-
-    message: str = ""
 
     object_data: object = None
     """This is a catch all for any additional data that may be returned by the API relevant to the error."""
@@ -158,7 +170,7 @@ class RequestErrorResponse(BaseResponse):
         return "RequestError"
 
 
-class BaseRequest(HordeAPIMessage):
+class HordeRequest(HordeAPIMessage, BaseModel):
     """Represents any request to any Horde API."""
 
     @classmethod
@@ -176,9 +188,9 @@ class BaseRequest(HordeAPIMessage):
     )
 
     @classmethod
-    def get_endpoint_url(cls) -> str:
-        """Return the endpoint URL, including the path to the specific API action defined by this object"""
-        return url_with_path(base_url=cls.get_api_url(), path=cls.get_endpoint_subpath())
+    def get_api_endpoint_url(cls) -> str:
+        """Return the endpoint URL, including the path to the specific API action defined by this object."""
+        return url_with_path(base_url=cls.get_api_url(), path=cls.get_api_endpoint_subpath())
 
     @classmethod
     @abc.abstractmethod
@@ -187,78 +199,124 @@ class BaseRequest(HordeAPIMessage):
 
     @classmethod
     @abc.abstractmethod
-    def get_endpoint_subpath(cls) -> str:
-        """Return the subpath to the specific API action defined by this object"""
+    def get_api_endpoint_subpath(cls) -> GENERIC_API_ENDPOINT_SUBPATH:
+        """Return the subpath to the specific API action defined by this object."""
 
     @classmethod
     @abc.abstractmethod
-    def get_success_response_type(cls) -> type[BaseResponse]:
+    def get_default_success_response_type(cls) -> type[HordeResponse]:
         """Return the `type` of the response expected in the ordinary case of success."""
 
     @classmethod
-    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[BaseResponse]]:
-        """Return a dict of HTTP status codes and the expected `BaseResponse`.
+    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponse]]:
+        """Return a dict of HTTP status codes and the expected `HordeResponse`.
 
         Defaults to `{HTTPStatusCode.OK: cls.get_expected_response_type()}`, but may be overridden to support other
         status codes.
         """
-        return {HTTPStatusCode.OK: cls.get_success_response_type()}
+        return {HTTPStatusCode.OK: cls.get_default_success_response_type()}
 
     @classmethod
     def get_header_fields(cls) -> list[str]:
         """Return a list of field names from this request object that should be sent as header fields.
 
         This is in addition to `GenericHeaderFields`'s values, and possibly the API specific class
-        which inherits from `GenericHeaderFields`, typically found in `horde_sdk.<api_name>_api.metadata`.
+        which inherits from `GenericHeaderFields`, typically found in the `horde_sdk.<api_name>_api.metadata` module.
         """
         return []
 
-    @classmethod
-    def is_recovery_enabled(cls) -> bool:
-        """Return whether this request should attempt to recover from a client failure by submitting a request
-        specified by `get_recovery_request_type`.
+    def get_number_of_results_expected(self) -> int:
+        """Return the number of (job) results expected from this request.
 
-        This is used in for context management.
+        Defaults to `1`, but may be overridden to dynamically change the number of results expected.
+
+        This is factored into context management; if the number of results expected is not met, the job is considered
+        unhandled on an exception and followed up on to attempt to close it.
         """
+        return 1
+
+    def get_requires_follow_up(self) -> bool:
+        """Return whether this request requires a follow up request(s).
+        Returns:
+            bool: Whether this request requires a follow up request to close the job on the server.
+        """
+        for response_type in self.get_success_status_response_pairs().values():
+            if issubclass(response_type, ResponseRequiringFollowUpMixin):
+                return True
         return False
 
-    def get_recovery_request_type(self) -> type[BaseRequest]:
-        """Return an instance of the request that should be submitted to clean up after a client failure."""
-        if self.is_recovery_enabled():
-            raise NotImplementedError(
-                (
-                    "This request is configured to support recovery with `is_recovery_enabled`, but does not "
-                    "implement `get_recovery_request`."
-                ),
-            )
-        raise NotImplementedError(
-            "This request does not support recovery. Use `.is_recovery_enabled` to determine this.",
-        )
+    def does_target_request_follow_up(self, target_request: HordeRequest) -> bool:
+        """Return whether the `target_request` would follow up on this request.
+
+        Args:
+            target_request (HordeRequest): The request to check if it would follow up on this request.
+
+        Returns:
+            bool: Whether the `target_request` would follow up on this request.
+        """
+        if not self.get_requires_follow_up():
+            return False
+
+        defined_response_types = self.get_success_status_response_pairs().values()
+
+        for response_type in defined_response_types:
+            if issubclass(response_type, ResponseRequiringFollowUpMixin):  # noqa: SIM102
+                if type(target_request) in response_type.get_follow_up_request_types():
+                    return True
+
+        return False
+
+    @classmethod
+    def get_sensitive_fields(self) -> list[str]:
+        return ["apikey"]
+
+    def log_safe_model_dump(self) -> dict:
+        """Return a dict of the model's fields, with any sensitive fields redacted."""
+        return self.model_dump(exclude=set(self.get_sensitive_fields()))
 
 
-class BaseRequestAuthenticated(BaseModel):
+class APIKeyAllowedInRequestMixin(BaseModel):
     """Mix-in class to describe an endpoint which may require authentication."""
 
-    apikey: str | None = None  # TODO validator
-    """A horde API key."""
+    apikey: str | None = None
+    """Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"""
+
+    @classmethod
+    def is_api_key_required(cls) -> bool:
+        """Return whether this endpoint requires an API key."""
+        return True
+
+    @field_validator("apikey", mode="before")
+    def validate_api_key_length(cls, v: str) -> str:
+        """Validate that the API key is the correct length, or is the special ANON_API_KEY."""
+        if v is None:
+            return ANON_API_KEY
+        if v == ANON_API_KEY:
+            return v
+        if len(v) != 22:
+            raise ValueError("API key must be 22 characters long")
+        return v
 
 
-class BaseRequestUserSpecific(BaseModel):
-    """Mix-in class to describe an endpoint for which you can specify a user.""" ""
+class RequestSpecifiesUserIDMixin(BaseModel):
+    """Mix-in class to describe an endpoint for which you can specify a user."""
 
     user_id: str
     """The user's ID, as a `str`, but only containing numeric values."""
 
     @field_validator("user_id")
     def user_id_is_numeric(cls, value: str) -> str:
-        """The API endpoint expects a string, but the only valid values would be numbers only."""
+        """Check if the ID is a numeric string.
+
+        The API endpoint expects a string, but the only valid values would be numbers only.
+        """
         if not value.isnumeric():
             raise ValueError("user_id must only contain numeric values")
         return value
 
 
-class BaseRequestWorkerDriven(BaseModel):
-    """ "Mix-in class to describe an endpoint for which you can specify workers."""
+class RequestUsesImageWorkerMixin(BaseModel):
+    """Mix-in class to describe an endpoint for which you can specify workers."""
 
     trusted_workers: bool = False
     slow_workers: bool = False
@@ -271,12 +329,16 @@ class BaseRequestWorkerDriven(BaseModel):
 
 
 __all__ = [
-    "HordeAPIModel",
+    "APIKeyAllowedInRequestMixin",
+    "HordeRequest",
+    "HordeResponse",
+    "HordeResponseBaseModel",
+    "ContainsMessageResponseMixin",
+    "HordeAPIObject",
     "HordeAPIMessage",
-    "BaseResponse",
-    "BaseRequest",
-    "BaseRequestAuthenticated",
-    "BaseRequestUserSpecific",
-    "BaseRequestWorkerDriven",
     "RequestErrorResponse",
+    "RequestSpecifiesUserIDMixin",
+    "RequestUsesImageWorkerMixin",
+    "ResponseRequiringFollowUpMixin",
+    "ResponseWithProgressMixin",
 ]

@@ -8,15 +8,17 @@ from typing_extensions import override
 
 from horde_sdk.consts import _UNDEFINED_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
-    BaseRequest,
-    BaseRequestAuthenticated,
-    BaseRequestUserSpecific,
-    BaseResponse,
+    APIKeyAllowedInRequestMixin,
+    HordeRequest,
+    HordeResponseBaseModel,
+    RequestSpecifiesUserIDMixin,
 )
-from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, Rating_API_URL_Literals
+from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, RATING_API_ENDPOINT_SUBPATH
 
 
-class BaseRatingsAPIRequest(BaseRequest):
+class BaseRatingsAPIRequest(HordeRequest):
+    """Base class for all requests to the AI Horde Ratings API."""
+
     @override
     @classmethod
     def get_api_url(cls) -> str:
@@ -47,7 +49,7 @@ class ImageRatingResponseSubRecord(BaseModel):
     artifacts: int | None
 
 
-class ImageRatingsResponse(BaseResponse):
+class ImageRatingsResponse(HordeResponseBaseModel):
     """The representation of the full response from `/v1/image/ratings`."""
 
     total: int
@@ -70,7 +72,7 @@ class UserRatingsResponseSubRecord(BaseImageRatingRecord):
     """The name of the user in format `name#1234`."""
 
 
-class UserRatingsResponse(BaseResponse):
+class UserRatingsResponse(HordeResponseBaseModel):
     """The representation of the full response from `/v1/user/ratings`."""
 
     total: int
@@ -88,7 +90,7 @@ class UserValidateResponseRecord(BaseImageRatingRecord):
     """A single sub-record in a response from the `/v1/validate/{user_id}` endpoint."""
 
 
-class UserValidateResponse(BaseResponse):
+class UserValidateResponse(HordeResponseBaseModel):
     """The representation of the full response from `/v1/validate/{user_id}`."""
 
     total: int
@@ -102,7 +104,7 @@ class UserValidateResponse(BaseResponse):
         return _UNDEFINED_MODEL
 
 
-class UserCheckResponse(BaseResponse):
+class UserCheckResponse(HordeResponseBaseModel):
     """A single record from the `/v1/user/check/` endpoint."""
 
     ratings_in_timeframe: int
@@ -129,7 +131,7 @@ class UserCheckResponse(BaseResponse):
 # region Requests
 
 
-class BaseRequestImageSpecific(BaseModel):
+class HordeRequestImageSpecific(BaseModel):
     """Represents the minimum for any request specifying a specific user to the API."""
 
     image_id: uuid.UUID
@@ -152,7 +154,7 @@ class BaseSelectableReturnTypeRequest(BaseModel):
 
 class ImageRatingsRequest(
     BaseRatingsAPIRequest,
-    BaseRequestAuthenticated,
+    APIKeyAllowedInRequestMixin,
     BaseSelectableReturnTypeRequest,
 ):
     """Represents the data needed to make a request to the `/v1/image/ratings/{image_id}` endpoint."""
@@ -169,12 +171,12 @@ class ImageRatingsRequest(
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return Rating_API_URL_Literals.v1_image_ratings
+    def get_api_endpoint_subpath(cls) -> RATING_API_ENDPOINT_SUBPATH:
+        return RATING_API_ENDPOINT_SUBPATH.v1_image_ratings
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[ImageRatingsResponse]:
+    def get_default_success_response_type(cls) -> type[ImageRatingsResponse]:
         return ImageRatingsResponse
 
 
@@ -202,8 +204,8 @@ class ImageRatingsFilterableRequestBase(BaseSelectableReturnTypeRequest):
 
 class UserValidateRequest(
     BaseRatingsAPIRequest,
-    BaseRequestAuthenticated,
-    BaseRequestUserSpecific,
+    APIKeyAllowedInRequestMixin,
+    RequestSpecifiesUserIDMixin,
     ImageRatingsFilterableRequestBase,
 ):
     """Represents the data needed to make a request to the `/v1/user/validate/{user_id}` endpoint."""
@@ -220,19 +222,19 @@ class UserValidateRequest(
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return Rating_API_URL_Literals.v1_user_validate
+    def get_api_endpoint_subpath(cls) -> RATING_API_ENDPOINT_SUBPATH:
+        return RATING_API_ENDPOINT_SUBPATH.v1_user_validate
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[UserValidateResponse]:
+    def get_default_success_response_type(cls) -> type[UserValidateResponse]:
         return UserValidateResponse
 
 
 class UserCheckRequest(
     BaseRatingsAPIRequest,
-    BaseRequestAuthenticated,
-    BaseRequestUserSpecific,
+    APIKeyAllowedInRequestMixin,
+    RequestSpecifiesUserIDMixin,
 ):
     """Represents the data needed to make a request to the `/v1/user/check/` endpoint."""
 
@@ -251,18 +253,18 @@ class UserCheckRequest(
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return Rating_API_URL_Literals.v1_user_check
+    def get_api_endpoint_subpath(cls) -> RATING_API_ENDPOINT_SUBPATH:
+        return RATING_API_ENDPOINT_SUBPATH.v1_user_check
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[UserCheckResponse]:
+    def get_default_success_response_type(cls) -> type[UserCheckResponse]:
         return UserCheckResponse
 
 
 class UserRatingsRequest(
     BaseRatingsAPIRequest,
-    BaseRequestAuthenticated,
+    APIKeyAllowedInRequestMixin,
     ImageRatingsFilterableRequestBase,
 ):
     """Represents the data needed to make a request to the `/v1/user/ratings/` endpoint."""
@@ -283,12 +285,12 @@ class UserRatingsRequest(
 
     @override
     @classmethod
-    def get_endpoint_subpath(cls) -> str:
-        return Rating_API_URL_Literals.v1_user_ratings
+    def get_api_endpoint_subpath(cls) -> RATING_API_ENDPOINT_SUBPATH:
+        return RATING_API_ENDPOINT_SUBPATH.v1_user_ratings
 
     @override
     @classmethod
-    def get_success_response_type(cls) -> type[UserRatingsResponse]:
+    def get_default_success_response_type(cls) -> type[UserRatingsResponse]:
         return UserRatingsResponse
 
 
