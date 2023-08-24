@@ -18,4 +18,4 @@ The goal is to minimize the amount of time it takes to develop applications in p
 
 From anything to requesting your own images, or rolling your own [worker](https://github.com/Haidra-Org/AI-Horde-Worker) software, this package may suit your needs.
 
-See the navigation bar on the right. If you're looking for the code reference, (sub)package names are in italics.
+See the navigation bar on the right. If you're looking for the code reference, (sub)package names are in monospace font.
