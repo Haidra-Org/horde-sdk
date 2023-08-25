@@ -37,6 +37,7 @@ from horde_sdk.ai_horde_api.apimodels.alchemy._status import (
 )
 from horde_sdk.ai_horde_api.apimodels.base import LorasPayloadEntry
 from horde_sdk.ai_horde_api.apimodels.generate._async import (
+    ImageGenerateAsyncDryRunResponse,
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
     ImageGenerationInputPayload,
@@ -82,6 +83,7 @@ __all__ = [
     "ImageGenerateAsyncResponse",
     "ImageGenerateCheckRequest",
     "ImageGenerateCheckResponse",
+    "ImageGenerateAsyncDryRunResponse",
     "ImageGeneration",
     "ImageGenerationInputPayload",
     "ImageGenerateJobPopRequest",

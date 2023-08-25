@@ -19,6 +19,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     AlchemyAsyncRequest,
     AlchemyStatusResponse,
     DeleteImageGenerateRequest,
+    ImageGenerateAsyncDryRunResponse,
     ImageGenerateAsyncRequest,
     ImageGenerateCheckRequest,
     ImageGenerateCheckResponse,
@@ -478,12 +479,14 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                 expected_response_type=api_request.get_default_success_response_type(),
             )
 
+            logger.log(PROGRESS_LOGGER_LABEL, f"Response received: {response}")
+
             # Check for error responses
             if isinstance(response, RequestErrorResponse):  # pragma: no cover
                 raise AIHordeRequestError(response)
 
             if not isinstance(response, ResponseRequiringFollowUpMixin):  # pragma: no cover
-                raise RuntimeError(f"Response did not need follow up. Request: {api_request}")
+                raise RuntimeError(f"Response did not need follow up. Request: {api_request.log_safe_model_dump()}")
 
             # Get the follow up data from the response
             check_request_type = response.get_follow_up_default_request_type()
@@ -500,8 +503,10 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             check_request = check_request_type.model_validate(follow_up_data[0])
 
             if not isinstance(check_request, JobRequestMixin):  # pragma: no cover
-                logger.error(f"Check request type is not a JobRequestMixin: {check_request}")
-                raise RuntimeError(f"Check request type is not a JobRequestMixin: {check_request}")
+                logger.error(f"Check request type is not a JobRequestMixin: {check_request.log_safe_model_dump()}")
+                raise RuntimeError(
+                    f"Check request type is not a JobRequestMixin: {check_request.log_safe_model_dump()}",
+                )
 
             # There is a rate limit, so we start a clock to keep track of how long we've been waiting
             start_time = time.time()
@@ -612,6 +617,27 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             raise RuntimeError("Response was not an ImageGenerateStatusResponse")
 
         return (final_response, JobID)
+
+    def image_generate_request_dry_run(
+        self,
+        image_gen_request: ImageGenerateAsyncRequest,
+    ) -> ImageGenerateAsyncDryRunResponse:
+        if not image_gen_request.dry_run:
+            raise RuntimeError("Dry run request must have dry_run set to True")
+
+        n = image_gen_request.params.n if image_gen_request.params and image_gen_request.params.n else 1
+        logger.log(PROGRESS_LOGGER_LABEL, f"Requesting dry run for {n} images.")
+
+        with AIHordeAPIClientSession() as horde_session:
+            dry_run_response = horde_session.submit_request(image_gen_request, ImageGenerateAsyncDryRunResponse)
+
+            if isinstance(dry_run_response, RequestErrorResponse):  # pragma: no cover
+                logger.error(f"Error response received: {dry_run_response.message}")
+                raise AIHordeRequestError(dry_run_response)
+
+            return dry_run_response
+
+        raise RuntimeError("Something went wrong with the request")
 
     def alchemy_request(
         self,
@@ -769,8 +795,10 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             check_request = check_request_type.model_validate(follow_up_data[0])
 
             if not isinstance(check_request, JobRequestMixin):  # pragma: no cover
-                logger.error(f"Check request type is not a JobRequestMixin: {check_request}")
-                raise RuntimeError(f"Check request type is not a JobRequestMixin: {check_request}")
+                logger.error(f"Check request type is not a JobRequestMixin: {check_request.log_safe_model_dump()}")
+                raise RuntimeError(
+                    f"Check request type is not a JobRequestMixin: {check_request.log_safe_model_dump()}",
+                )
 
             # There is a rate limit, so we start a clock to keep track of how long we've been waiting
             start_time = time.time()

@@ -62,6 +62,15 @@ class ImageGenerateAsyncResponse(
         return "RequestAsync"
 
 
+class ImageGenerateAsyncDryRunResponse(HordeResponseBaseModel):
+    kudos: float
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "UNDOCUMENTED"
+
+
 class ImageGenerationInputPayload(ImageGenerateParamMixin):
     n: int = Field(default=1, ge=1, le=60)
 
@@ -135,6 +144,7 @@ class ImageGenerateAsyncRequest(
     @classmethod
     def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponse]]:
         return {
+            HTTPStatusCode.OK: ImageGenerateAsyncDryRunResponse,
             HTTPStatusCode.ACCEPTED: cls.get_default_success_response_type(),
         }
 
