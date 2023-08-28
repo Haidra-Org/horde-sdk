@@ -6,7 +6,7 @@ import sys
 
 def main(path: str) -> None:
     print(f"Processing {path}")
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         contents = f.read()
     contents = re.sub(r"example=([^=]*?)(,)?(\)|$)", r"examples=[\1]\2\3", contents)
     contents = re.sub(r"example=\"(.*)\"(,)", r'examples=["\1"]\2', contents)
@@ -16,7 +16,7 @@ def main(path: str) -> None:
     contents = re.sub(r"type: ", r"type_: ", contents)
     # Replace the literal string `\n` with a newline
 
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write(contents)
 
 

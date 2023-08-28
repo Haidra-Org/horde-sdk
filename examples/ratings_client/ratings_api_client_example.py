@@ -79,7 +79,7 @@ def main() -> None:
     print(f"{first_rating.average=}")
     print(f"{first_rating.times_rated=}")
 
-    with open(args.output_file, "w") as fileOutHandle:
+    with open(args.output_file, "w", encoding="utf-8") as fileOutHandle:
         fileOutHandle.write(first_rating.model_dump_json())
 
 

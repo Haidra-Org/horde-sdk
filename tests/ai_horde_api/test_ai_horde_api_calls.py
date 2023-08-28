@@ -98,7 +98,7 @@ class TestAIHordeAPIClients:
         )
 
         _PRODUCTION_RESPONSES_FOLDER.mkdir(parents=True, exist_ok=True)
-        with open(_PRODUCTION_RESPONSES_FOLDER / Path(filename + "_production.json"), "w") as f:
+        with open(_PRODUCTION_RESPONSES_FOLDER / Path(filename + "_production.json"), "w", encoding="utf-8") as f:
             f.write(api_response.model_dump_json())
 
     def test_HordeRequestSession_cleanup(self, simple_image_gen_request: ImageGenerateAsyncRequest) -> None:

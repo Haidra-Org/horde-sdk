@@ -28,7 +28,7 @@ def main() -> None:
         relative_folder = "docs" / relative_folder
         relative_folder.mkdir(parents=True, exist_ok=True)
 
-        with open(relative_folder / ".pages", "w") as f:
+        with open(relative_folder / ".pages", "w", encoding="utf-8") as f:
             if relative_folder.name == "horde_sdk":
                 f.write("title: Horde SDK Code Reference\n")
             else:
@@ -47,7 +47,7 @@ def main() -> None:
             continue
 
         for file in sorted_files_in_folder:
-            with open(relative_folder / f"{file.stem}.md", "w") as f:
+            with open(relative_folder / f"{file.stem}.md", "w", encoding="utf-8") as f:
                 f.write(f"# {file.stem}\n")
                 file_namespace = pyfile_lookup[file]
                 f.write(f"::: {file_namespace}\n")

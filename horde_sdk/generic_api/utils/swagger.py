@@ -593,7 +593,7 @@ class SwaggerDoc(BaseModel):
                 filepath = directory / f"{filename}.json"
 
                 # Write the example payload to the filepath as a JSON file.
-                with open(filepath, "w") as f:
+                with open(filepath, "w", encoding="utf-8") as f:
                     f.write(json.dumps(example_payload, indent=4) + "\n")
 
         # Return True to indicate that the operation succeeded.
@@ -640,7 +640,7 @@ class SwaggerDoc(BaseModel):
                     filepath = directory / f"{filename}.json"
 
                     # Write the example response to the filepath as a JSON file.
-                    with open(filepath, "w") as f:
+                    with open(filepath, "w", encoding="utf-8") as f:
                         f.write(json.dumps(example_response, indent=4) + "\n")
         # Return True to indicate that the operation succeeded.
         return True
@@ -854,7 +854,7 @@ class SwaggerParser:
         if swagger_doc_path:
             swagger_doc_path = Path(swagger_doc_path)
             if swagger_doc_path.exists():
-                with open(swagger_doc_path) as f:
+                with open(swagger_doc_path, encoding="utf-8") as f:
                     self._swagger_json = json.load(f)
             else:
                 raise RuntimeError(f"Failed to find swagger.json at {swagger_doc_path}")

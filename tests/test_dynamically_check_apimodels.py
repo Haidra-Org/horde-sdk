@@ -115,7 +115,7 @@ class Test_reflection_and_dynamic:  # noqa: D101
                 example_response_file_path = f"{EXAMPLE_RESPONSES[module]}/{example_response_filename}.json"
 
                 # Load the example response JSON from the file and validate it against the success response type.
-                with open(example_response_file_path) as sample_file_handle:
+                with open(example_response_file_path, encoding="utf-8") as sample_file_handle:
                     sample_data_json = json.loads(sample_file_handle.read())
                     try:
                         success_response_type.model_validate(sample_data_json)
@@ -129,7 +129,7 @@ class Test_reflection_and_dynamic:  # noqa: D101
 
                 # If a production response file exists, load it and validate it against the success response type.
                 if os.path.exists(production_response_file_path):
-                    with open(production_response_file_path, encoding="utf8") as sample_file_handle:
+                    with open(production_response_file_path, encoding="utf-8") as sample_file_handle:
                         sample_data_json = json.loads(sample_file_handle.read())
                         try:
                             _ = success_response_type.model_validate(sample_data_json)
@@ -145,7 +145,7 @@ class Test_reflection_and_dynamic:  # noqa: D101
                     f"{EXAMPLE_PRODUCTION_RESPONSES[module]}/{example_response_filename}.json"
                 )
                 if os.path.exists(example_production_response_file_path):
-                    with open(example_production_response_file_path, encoding="utf8") as sample_file_handle:
+                    with open(example_production_response_file_path, encoding="utf-8") as sample_file_handle:
                         sample_data_json = json.loads(sample_file_handle.read())
                         _ = success_response_type.model_validate(sample_data_json)
 
