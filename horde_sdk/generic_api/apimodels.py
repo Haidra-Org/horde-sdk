@@ -16,6 +16,8 @@ from horde_sdk.generic_api.metadata import GenericAcceptTypes
 class HordeAPIObject(BaseModel, abc.ABC):
     """Base class for all Horde API data models, requests, or responses."""
 
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
     @classmethod
     @abc.abstractmethod
     def get_api_model_name(cls) -> str | None:

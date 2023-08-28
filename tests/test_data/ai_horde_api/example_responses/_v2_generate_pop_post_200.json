@@ -10,7 +10,6 @@
         "post_processing": [
             "GFPGAN"
         ],
-        "post_processing_order": "facefixers_first",
         "karras": false,
         "tiling": false,
         "hires_fix": false,
@@ -25,6 +24,13 @@
                 "model": 1.0,
                 "clip": 1.0,
                 "inject_trigger": "a"
+            }
+        ],
+        "tis": [
+            {
+                "name": "7808",
+                "inject_ti": "prompt",
+                "strength": 1.0
             }
         ],
         "special": {
