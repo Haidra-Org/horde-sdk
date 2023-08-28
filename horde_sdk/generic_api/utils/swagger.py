@@ -594,7 +594,7 @@ class SwaggerDoc(BaseModel):
 
                 # Write the example payload to the filepath as a JSON file.
                 with open(filepath, "w") as f:
-                    json.dump(example_payload, f, indent=4)
+                    f.write(json.dumps(example_payload, indent=4) + "\n")
 
         # Return True to indicate that the operation succeeded.
         return True
@@ -641,8 +641,7 @@ class SwaggerDoc(BaseModel):
 
                     # Write the example response to the filepath as a JSON file.
                     with open(filepath, "w") as f:
-                        json.dump(example_response, f, indent=4)
-
+                        f.write(json.dumps(example_response, indent=4) + "\n")
         # Return True to indicate that the operation succeeded.
         return True
 
@@ -762,7 +761,7 @@ class SwaggerDoc(BaseModel):
                 # If the property is an array, recursively resolve any references in the items property
                 if prop.items:
                     items_as_list = [prop.items] if isinstance(prop.items, SwaggerModelProperty) else prop.items
-                    sub_item_return_list = []
+                    sub_item_return_list: list[object] = []
                     for item in items_as_list:
                         if item.ref:
                             # This is were the recursion happens
@@ -774,6 +773,9 @@ class SwaggerDoc(BaseModel):
                             elif isinstance(resolved_model, list):
                                 sub_item_return_list.append(resolved_model[0])
                             continue
+
+                        # Otherwise, get the default value for the item and add it to the sub-item return list
+                        sub_item_return_list.append(self.get_default_with_constraint(item))
 
                     # Add the sub-item return list to the return dictionary
                     return_dict[prop_name] = sub_item_return_list
