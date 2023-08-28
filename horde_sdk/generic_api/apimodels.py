@@ -204,7 +204,7 @@ class HordeRequest(HordeAPIMessage, BaseModel):
     # X_Fields # TODO
 
     client_agent: str = Field(
-        default="horde_sdk:0.2.0:https://githib.com/haidra-org/horde-sdk",
+        default="horde_sdk:0.7.1:https://githib.com/haidra-org/horde-sdk",
         alias="Client-Agent",
     )
 
