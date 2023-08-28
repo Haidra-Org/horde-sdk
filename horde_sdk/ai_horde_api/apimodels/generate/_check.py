@@ -34,6 +34,10 @@ class ImageGenerateCheckResponse(
         return self.done
 
     @override
+    def is_job_possible(self) -> bool:
+        return self.is_possible
+
+    @override
     @classmethod
     def get_finalize_success_request_type(cls) -> type[ImageGenerateStatusRequest]:
         return ImageGenerateStatusRequest

@@ -8,13 +8,15 @@ import time
 import urllib.parse
 from abc import ABC, abstractmethod
 from collections.abc import Coroutine
+from enum import auto
 
 import aiohttp
 import PIL.Image
 import requests
 from loguru import logger
+from strenum import StrEnum
 
-from horde_sdk import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL
+from horde_sdk import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL, ContainsMessageResponseMixin, HordeRequest
 from horde_sdk.ai_horde_api.apimodels import (
     AlchemyAsyncRequest,
     AlchemyStatusResponse,
@@ -28,6 +30,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGeneration,
 )
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
+from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.exceptions import AIHordeImageValidationError, AIHordeRequestError
 from horde_sdk.ai_horde_api.fields import JobID
@@ -369,12 +372,18 @@ class AIHordeAPIAsyncClientSession(GenericAsyncHordeAPISession):
         )
 
 
+class _PROGRESS_STATE(StrEnum):
+    waiting = auto()
+    finished = auto()
+    timed_out = auto()
+
+
 class BaseAIHordeSimpleClient(ABC):
     """The base class for the most straightforward clients which interact with the AI-Horde API."""
 
-    reasonable_minimum_timeout = 15
+    reasonable_minimum_timeout = 20
 
-    def is_timeout_reasonable(self, timeout: int, log_message: bool = False) -> bool:
+    def validate_timeout(self, timeout: int, log_message: bool = False) -> int:
         """Check if a timeout is reasonable.
 
         Args:
@@ -383,16 +392,24 @@ class BaseAIHordeSimpleClient(ABC):
         Returns:
             bool: True if the timeout is reasonable, False otherwise.
         """
-        if timeout <= 0:  # No timeout
-            return True
+        if timeout <= 0:  # pragma: no cover
+            logger.debug(f"No timeout set. Using default timeout of {GENERATION_MAX_LIFE} seconds.")
+            return GENERATION_MAX_LIFE
 
-        is_reasonable = timeout > self.reasonable_minimum_timeout
-        if not is_reasonable and log_message:  # pragma: no cover
+        if timeout > GENERATION_MAX_LIFE:  # pragma: no cover
             logger.warning(
-                f"Timeout is less than {self.reasonable_minimum_timeout} seconds, this is probably too short.",
+                f"Timeout ({timeout}) is greater than the maximum possible of {GENERATION_MAX_LIFE} seconds."
+                f"Using {GENERATION_MAX_LIFE} for the timeout.",
+            )
+            return GENERATION_MAX_LIFE
+
+        if timeout < self.reasonable_minimum_timeout and log_message:  # pragma: no cover
+            logger.warning(
+                f"test_simple_client_async_image_generate_multiple than {self.reasonable_minimum_timeout} seconds, "
+                "this is probably too short.",
             )
 
-        return is_reasonable
+        return timeout
 
     @abstractmethod
     def download_image_from_generation(
@@ -424,6 +441,102 @@ class BaseAIHordeSimpleClient(ABC):
 
         """
         return parse_image_from_base64(image_base64)
+
+    def _handle_initial_response(
+        self,
+        initial_response: HordeResponse | RequestErrorResponse,
+    ) -> tuple[HordeRequest, JobID, list[dict[str, object]]]:
+        # Check for error responses
+        if isinstance(initial_response, RequestErrorResponse):  # pragma: no cover
+            if "Image validation failed" in initial_response.message:  # TODO: No magic strings!
+                raise AIHordeImageValidationError(initial_response)
+            raise AIHordeRequestError(initial_response)
+
+        if not isinstance(initial_response, ResponseRequiringFollowUpMixin):  # pragma: no cover
+            raise RuntimeError("Response did not need follow up")
+
+        # Get the follow up data from the response
+        check_request_type = initial_response.get_follow_up_default_request_type()
+        follow_up_data = initial_response.get_follow_up_returned_params()
+        num_follow_up_data = len(follow_up_data)
+
+        # If there is not exactly one follow up request, something has gone wrong (or the API has changed?)
+        if num_follow_up_data != 1:  # FIXME?  # pragma: no cover
+            raise RuntimeError(
+                f"Expected exactly one check request should have been found, found {num_follow_up_data}",
+            )
+
+        # Create the check request from the follow up data
+        check_request = check_request_type.model_validate(follow_up_data[0])
+
+        if not isinstance(check_request, JobRequestMixin):  # pragma: no cover
+            logger.error(f"Check request type is not a JobRequestMixin: {check_request.log_safe_model_dump()}")
+            raise RuntimeError(
+                f"Check request type is not a JobRequestMixin: {check_request.log_safe_model_dump()}",
+            )
+
+        job_id: JobID = check_request.id_
+
+        logger.log(PROGRESS_LOGGER_LABEL, f"Response received: {initial_response}")
+        if isinstance(initial_response, ContainsMessageResponseMixin) and initial_response.message:
+            if "warning" in initial_response.message.lower():
+                logger.warning(f"{job_id}: {initial_response.message}")
+            else:
+                logger.info(f"{job_id}: {initial_response.message}")
+
+        return check_request, job_id, follow_up_data
+
+    def _handle_progress_response(
+        self,
+        check_request: HordeRequest,
+        check_response: HordeResponse | RequestErrorResponse,
+        job_id: JobID,
+        *,
+        check_count: int,
+        number_of_responses: int,
+        start_time: float,
+        timeout: int,
+    ) -> _PROGRESS_STATE:
+        """Handle a response from the API when checking the progress of a request.
+
+        Typically, this is a response from a `check` or `status` request.
+        """
+
+        # Check for error responses
+        if isinstance(check_response, RequestErrorResponse):
+            raise AIHordeRequestError(check_response)
+
+        # Check if the response has progress
+        if not isinstance(check_response, ResponseWithProgressMixin):
+            raise RuntimeError(f"Response did not have progress: {check_response}")
+
+        # Log a message indicating that the request has been checked
+        log_message = f"Checked request: {job_id}, is_possible: {check_response.is_job_possible()}"
+
+        # Log the request if it's the first check or every 5th check
+        if check_count == 1 or check_count % 5 == 0:
+            logger.log(PROGRESS_LOGGER_LABEL, log_message)
+            logger.log(PROGRESS_LOGGER_LABEL, f"{job_id}: {check_request.log_safe_model_dump()}")
+            if not check_response.is_job_possible():
+                logger.warning(f"Job not possible: {job_id}")
+        # Otherwise, just log the message at the debug level
+        else:
+            logger.debug(log_message)
+
+        # If the number of finished images is equal to the number of images requested, we're done
+        if check_response.is_job_complete(number_of_responses):
+            logger.log(PROGRESS_LOGGER_LABEL, f"Job finished and available on the server: {job_id}")
+            return _PROGRESS_STATE.finished
+
+        # If we've timed out, stop waiting, log a warning, and break out of the loop
+        if timeout and timeout > 0 and time.time() - start_time > timeout:
+            logger.warning(
+                f"Timeout reached, cancelling generations still outstanding: {job_id}: {check_response}:",
+            )
+            return _PROGRESS_STATE.timed_out
+
+        # If the job is not complete and the timeout has not been reached, continue waiting
+        return _PROGRESS_STATE.waiting
 
 
 class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
@@ -468,97 +581,81 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         api_request: BaseAIHordeRequest,
         *,
         number_of_responses: int = 1,
-        timeout: int | None = None,
+        timeout: int = GENERATION_MAX_LIFE,
     ) -> tuple[HordeResponse, JobID]:
+        """Submit a request which requires check/status polling to the AI-Horde API, and wait for it to complete.
+
+        Args:
+            api_request (BaseAIHordeRequest): The request to submit.
+            number_of_responses (int, optional): The number of responses to expect. Defaults to 1.
+            timeout (int, optional): The number of seconds to wait before aborting.
+                returns any completed images at the end of the timeout. Defaults to DEFAULT_GENERATION_TIMEOUT.
+
+        Returns:
+            tuple[HordeResponse, JobID]: The final response and the corresponding job ID.
+        """
+
         # This session class will cleanup incomplete requests in the event of an exception
         with AIHordeAPIClientSession() as horde_session:
             # Submit the initial request
-            logger.log(PROGRESS_LOGGER_LABEL, f"Submitting request: {api_request.log_safe_model_dump()}")
-            response = horde_session.submit_request(
+            logger.debug(
+                f"Submitting request: {api_request.log_safe_model_dump()} with timeout {timeout}",
+            )
+            initial_response = horde_session.submit_request(
                 api_request=api_request,
                 expected_response_type=api_request.get_default_success_response_type(),
             )
 
-            logger.log(PROGRESS_LOGGER_LABEL, f"Response received: {response}")
-
-            # Check for error responses
-            if isinstance(response, RequestErrorResponse):  # pragma: no cover
-                raise AIHordeRequestError(response)
-
-            if not isinstance(response, ResponseRequiringFollowUpMixin):  # pragma: no cover
-                raise RuntimeError(f"Response did not need follow up. Request: {api_request.log_safe_model_dump()}")
-
-            # Get the follow up data from the response
-            check_request_type = response.get_follow_up_default_request_type()
-            follow_up_data = response.get_follow_up_returned_params()
-            num_follow_up_data = len(follow_up_data)
-
-            # If there is not exactly one follow up request, something has gone wrong (or the API has changed?)
-            if num_follow_up_data != 1:  # FIXME?  # pragma: no cover
-                raise RuntimeError(
-                    f"Expected exactly one check request should have been found, found {num_follow_up_data}",
-                )
-
-            # Create the check request from the follow up data
-            check_request = check_request_type.model_validate(follow_up_data[0])
-
-            if not isinstance(check_request, JobRequestMixin):  # pragma: no cover
-                logger.error(f"Check request type is not a JobRequestMixin: {check_request.log_safe_model_dump()}")
-                raise RuntimeError(
-                    f"Check request type is not a JobRequestMixin: {check_request.log_safe_model_dump()}",
-                )
+            # Handle the initial response to get the check request, job ID, and follow-up data
+            check_request, job_id, follow_up_data = self._handle_initial_response(initial_response)
 
             # There is a rate limit, so we start a clock to keep track of how long we've been waiting
             start_time = time.time()
-
+            check_count = 0
             check_response: HordeResponse
 
-            job_id: JobID = check_request.id_
-
             # Wait for the image generation to complete, checking every 4 seconds
-            check_count = 0
             while True:
                 check_count += 1
+
                 # Submit the check request
                 check_response = horde_session.submit_request(
                     api_request=check_request,
                     expected_response_type=check_request.get_default_success_response_type(),
                 )
-                if check_count % 5 == 0:
-                    logger.log(PROGRESS_LOGGER_LABEL, f"Checking request: {check_request.id_}")
-                else:
-                    logger.debug(f"Checking request: {check_request.id_}")
 
-                # Check for error responses
-                if isinstance(check_response, RequestErrorResponse):  # pragma: no cover
-                    raise AIHordeRequestError(check_response)
+                # Handle the progress response to determine if the job is finished or timed out
+                progress_state = self._handle_progress_response(
+                    check_request,
+                    check_response,
+                    job_id,
+                    check_count=check_count,
+                    number_of_responses=number_of_responses,
+                    start_time=start_time,
+                    timeout=timeout,
+                )
 
-                if not isinstance(check_response, ResponseWithProgressMixin):  # pragma: no cover
-                    raise RuntimeError(f"Response did not have progress: {check_response}")
-
-                # If the number of finished images is equal to the number of images requested, we're done
-                if check_response.is_job_complete(number_of_responses):
-                    logger.log(PROGRESS_LOGGER_LABEL, f"Job finished and available on the server: {check_request.id_}")
+                if progress_state == _PROGRESS_STATE.finished or progress_state == _PROGRESS_STATE.timed_out:
                     break
 
-                # If we've timed out, stop waiting, log a warning, and break out of the loop
-                if timeout and timeout > 0 and time.time() - start_time > timeout:
-                    logger.warning(
-                        f"Timeout reached, cancelling generations still outstanding: {response}:",
-                    )
-                    break
-
-                # FIXME: This should be configurable
+                # Wait for 4 seconds before checking again
                 time.sleep(4)
 
+            # Check if the check response has progress
+            if not isinstance(check_response, ResponseWithProgressMixin):
+                raise RuntimeError(f"Response did not have progress: {check_response}")
+
+            # Get the finalize request type from the check response
             finalize_request_type = check_response.get_finalize_success_request_type()
 
+            # Set the final response to the check response by default
             final_response: HordeResponse = check_response
 
+            # If there is a finalize request type, submit the finalize request
             if finalize_request_type:
                 status_request = finalize_request_type.model_validate(follow_up_data[0])
 
-                if not isinstance(status_request, JobRequestMixin):  # pragma: no cover
+                if not isinstance(status_request, JobRequestMixin):
                     logger.error(f"Finalize request type is not a JobRequestMixin: {finalize_request_type}")
                     raise RuntimeError(f"Finalize request type is not a JobRequestMixin: {finalize_request_type}")
 
@@ -567,20 +664,24 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                     expected_response_type=status_request.get_default_success_response_type(),
                 )
 
-                if isinstance(final_response, RequestErrorResponse):  # pragma: no cover
-                    raise RuntimeError(f"Error response received: {final_response.message}")
+                if isinstance(final_response, RequestErrorResponse):
+                    raise AIHordeRequestError(final_response)
 
-            logger.log(COMPLETE_LOGGER_LABEL, f"Request complete: {check_request.id_}")
+            # Log a message indicating that the request is complete
+            logger.log(COMPLETE_LOGGER_LABEL, f"Request complete: {job_id}")
+
+            # Return the final response and job ID
             return (final_response, job_id)
 
+        # If there is an exception, log an error and raise a RuntimeError
         logger.error("Something went wrong with the request:")
-        logger.error(f"Request: {api_request}")
+        logger.error(f"Request: {api_request.log_safe_model_dump()}")
         raise RuntimeError("Something went wrong with the request")
 
     def image_generate_request(
         self,
         image_gen_request: ImageGenerateAsyncRequest,
-        timeout: int | None = None,
+        timeout: int = GENERATION_MAX_LIFE,
     ) -> tuple[ImageGenerateStatusResponse, JobID]:
         """Submit an image generation request to the AI-Horde API, and wait for it to complete.
 
@@ -598,8 +699,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             RuntimeError: If the image couldn't be downloaded or parsed for any other reason.
         """
 
-        timeout = timeout if timeout else 0
-        self.is_timeout_reasonable(timeout, log_message=True)
+        timeout = self.validate_timeout(timeout, log_message=True)
 
         n = image_gen_request.params.n if image_gen_request.params and image_gen_request.params.n else 1
         logger.log(PROGRESS_LOGGER_LABEL, f"Requesting {n} images.")
@@ -642,7 +742,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
     def alchemy_request(
         self,
         alchemy_request: AlchemyAsyncRequest,
-        timeout: int | None = None,
+        timeout: int = GENERATION_MAX_LIFE,
     ) -> tuple[AlchemyStatusResponse, JobID]:
         """Submit an alchemy request to the AI-Horde API, and wait for it to complete.
 
@@ -655,8 +755,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
         """
-        if timeout:
-            self.is_timeout_reasonable(timeout, log_message=True)
+        timeout = self.validate_timeout(timeout, log_message=True)
 
         logger.log(PROGRESS_LOGGER_LABEL, f"Requesting {len(alchemy_request.forms)} alchemy requests.")
         for form in alchemy_request.forms:
@@ -760,111 +859,116 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         api_request: BaseAIHordeRequest,
         *,
         number_of_responses: int = 1,
-        timeout: int | None = None,
+        timeout: int = GENERATION_MAX_LIFE,
     ) -> tuple[HordeResponse, JobID]:
-        # This session class will cleanup incomplete requests in the event of an exception
+        """Submit a request which requires check/status polling to the AI-Horde API, and wait for it to complete.
 
+        Args:
+            api_request (BaseAIHordeRequest): The request to submit.
+            number_of_responses (int, optional): The number of responses to expect. Defaults to 1.
+            timeout (int, optional): The number of seconds to wait before aborting.
+                returns any completed images at the end of the timeout. Defaults to DEFAULT_GENERATION_TIMEOUT.
+
+        Returns:
+            tuple[HordeResponse, JobID]: The final response and the corresponding job ID.
+
+        Raises:
+            AIHordeRequestError: If the request failed. The error response is included in the exception.
+        """
+
+        # This session class will cleanup incomplete requests in the event of an exception
         async with AIHordeAPIAsyncClientSession(aiohttp_session=self._aiohttp_session) as ai_horde_session:
             # Submit the initial request
-            response = await ai_horde_session.submit_request(
+            logger.debug(
+                f"Submitting request: {api_request.log_safe_model_dump()} with timeout {timeout}",
+            )
+            initial_response = await ai_horde_session.submit_request(
                 api_request=api_request,
                 expected_response_type=api_request.get_default_success_response_type(),
             )
 
-            # Check for error responses
-            if isinstance(response, RequestErrorResponse):  # pragma: no cover
-                if "Image validation failed" in response.message:  # TODO: No magic strings!
-                    raise AIHordeImageValidationError(response)
-                raise AIHordeRequestError(response)
-
-            if not isinstance(response, ResponseRequiringFollowUpMixin):  # pragma: no cover
-                raise RuntimeError("Response did not need follow up")
-
-            # Get the follow up data from the response
-            check_request_type = response.get_follow_up_default_request_type()
-            follow_up_data = response.get_follow_up_returned_params()
-            num_follow_up_data = len(follow_up_data)
-
-            # If there is not exactly one follow up request, something has gone wrong (or the API has changed?)
-            if num_follow_up_data != 1:  # FIXME?  # pragma: no cover
-                raise RuntimeError(
-                    f"Expected exactly one check request should have been found, found {num_follow_up_data}",
-                )
-
-            # Create the check request from the follow up data
-            check_request = check_request_type.model_validate(follow_up_data[0])
-
-            if not isinstance(check_request, JobRequestMixin):  # pragma: no cover
-                logger.error(f"Check request type is not a JobRequestMixin: {check_request.log_safe_model_dump()}")
-                raise RuntimeError(
-                    f"Check request type is not a JobRequestMixin: {check_request.log_safe_model_dump()}",
-                )
+            # Handle the initial response to get the check request, job ID, and follow-up data
+            check_request, job_id, follow_up_data = self._handle_initial_response(initial_response)
 
             # There is a rate limit, so we start a clock to keep track of how long we've been waiting
             start_time = time.time()
-
+            check_count = 0
             check_response: HordeResponse
-
-            job_id: JobID = check_request.id_
 
             # Wait for the image generation to complete, checking every 4 seconds
             while True:
+                check_count += 1
+
                 # Submit the check request
                 check_response = await ai_horde_session.submit_request(
                     api_request=check_request,
                     expected_response_type=check_request.get_default_success_response_type(),
                 )
 
-                # Check for error responses
-                if isinstance(check_response, RequestErrorResponse):  # pragma: no cover
-                    raise AIHordeRequestError(check_response)
+                # Handle the progress response to determine if the job is finished or timed out
+                progress_state = self._handle_progress_response(
+                    check_request,
+                    check_response,
+                    job_id,
+                    check_count=check_count,
+                    number_of_responses=number_of_responses,
+                    start_time=start_time,
+                    timeout=timeout,
+                )
 
-                if not isinstance(check_response, ResponseWithProgressMixin):  # pragma: no cover
-                    raise RuntimeError(f"Response did not have progress: {check_response}")
-
-                # If the number of finished images is equal to the number of images requested, we're done
-                if check_response.is_job_complete(number_of_responses):
+                if progress_state == _PROGRESS_STATE.finished or progress_state == _PROGRESS_STATE.timed_out:
                     break
 
-                # If we've timed out, stop waiting, log a warning, and break out of the loop
-                if timeout and timeout > 0 and time.time() - start_time > timeout:
-                    logger.warning(
-                        f"Timeout reached, cancelling generations still outstanding.: {response}:",
-                    )
-                    break
+                # Wait for 4 seconds before checking again
+                await asyncio.sleep(4)
 
-                time.sleep(4)  # FIXME: This should be configurable
+            # This is for type safety, but should never happen in production
+            if not isinstance(check_response, ResponseWithProgressMixin):  # pragma: no cover
+                raise RuntimeError(f"Response did not have progress: {check_response}")
 
+            # Get the finalize request type from the check response
             finalize_request_type = check_response.get_finalize_success_request_type()
 
+            # Set the final response to the check response by default
             final_response: HordeResponse = check_response
 
+            # If there is a finalize request type, submit the finalize request
             if finalize_request_type:
                 finalize_request = finalize_request_type.model_validate(follow_up_data[0])
 
+                # This is for type safety, but should never happen in production
                 if not isinstance(finalize_request, JobRequestMixin):  # pragma: no cover
-                    logger.error(f"Finalize request type is not a JobRequestMixin: {finalize_request}")
-                    raise RuntimeError(f"Finalize request type is not a JobRequestMixin: {finalize_request}")
+                    logger.error(
+                        f"Finalize request type is not a JobRequestMixin: {finalize_request.log_safe_model_dump()}",
+                    )
+                    raise RuntimeError(
+                        f"Finalize request type is not a JobRequestMixin: {finalize_request.log_safe_model_dump()}",
+                    )
 
                 final_response = await ai_horde_session.submit_request(
                     api_request=finalize_request,
                     expected_response_type=finalize_request.get_default_success_response_type(),
                 )
 
-                if isinstance(final_response, RequestErrorResponse):  # pragma: no cover
+                if isinstance(final_response, RequestErrorResponse):
                     raise AIHordeRequestError(final_response)
 
+            # Log a message indicating that the request is complete
+            logger.log(COMPLETE_LOGGER_LABEL, f"Request complete: {job_id}")
+
+            # Return the final response and job ID
             return (final_response, job_id)
 
-        # logger.error("Something went wrong with the request:")
-        logger.error("It looks like this request was cancelled:")
-        logger.error(f"Request: {api_request}")
+        # If there we get to this point, something catastrophic has happened
+        # Log an error and raise a CancelledError to kill the coroutine task
+        logger.error("Something went wrong with the request (was it cancelled?):")
+        logger.error(f"Request: {api_request.log_safe_model_dump()}")
         raise asyncio.CancelledError("Something went wrong with the request")
 
     async def image_generate_request(
         self,
         image_gen_request: ImageGenerateAsyncRequest,
-        timeout: int | None = None,
+        timeout: int = GENERATION_MAX_LIFE,
     ) -> tuple[ImageGenerateStatusResponse, JobID]:
         """Submit an image generation request to the AI-Horde API, and wait for it to complete.
 
@@ -884,8 +988,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             AIHordeRequestError: If the request failed. The error response is included in the exception.
         """
 
-        timeout = timeout if timeout else 0
-        self.is_timeout_reasonable(timeout, log_message=True)
+        timeout = self.validate_timeout(timeout, log_message=True)
 
         n = image_gen_request.params.n if image_gen_request.params and image_gen_request.params.n else 1
         final_response, job_id = await self._do_request_with_check(
@@ -905,7 +1008,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
     async def alchemy_request(
         self,
         alchemy_request: AlchemyAsyncRequest,
-        timeout: int | None = None,
+        timeout: int = GENERATION_MAX_LIFE,
     ) -> tuple[AlchemyStatusResponse, JobID]:
         """Submit an alchemy request to the AI-Horde API, and wait for it to complete.
 
@@ -921,8 +1024,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
         """
-        if timeout:
-            self.is_timeout_reasonable(timeout, log_message=True)
+        timeout = self.validate_timeout(timeout, log_message=True)
 
         response, job_id = await self._do_request_with_check(
             alchemy_request,

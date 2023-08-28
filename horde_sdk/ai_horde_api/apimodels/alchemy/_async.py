@@ -124,3 +124,7 @@ class AlchemyAsyncRequest(
     @override
     def get_number_of_results_expected(self) -> int:
         return len(self.forms)
+
+    @override
+    def get_extra_fields_to_exclude_from_log(self) -> set[str]:
+        return {"source_image"}

@@ -114,6 +114,10 @@ class ImageGenerateJobResponse(HordeResponseBaseModel, JobResponseMixin, Respons
     def get_follow_up_failure_cleanup_params(self) -> dict[str, object]:
         return {"state": GENERATION_STATE.faulted}  # TODO: One day, could I do away with the magic string?
 
+    @override
+    def get_extra_fields_to_exclude_from_log(self) -> set[str]:
+        return {"source_image"}
+
 
 class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     """Represents the data needed to make a job request from a worker to the /v2/generate/pop endpoint.

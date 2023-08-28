@@ -490,7 +490,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
                             "This api request would have followed up on an operation which requires it, but it "
                             "failed!",
                         )
-                        logger.error(f"Request: {api_request}")
+                        logger.error(f"Request: {api_request.log_safe_model_dump()}")
                         logger.error(f"Response: {response}")
                     break
 
@@ -593,7 +593,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
                 # If an exception occurred, log an error and return False.
                 logger.exception(e)
                 logger.critical(message)
-                logger.critical(f"{request_to_follow_up}")
+                logger.critical(f"{request_to_follow_up.log_safe_model_dump()}")
                 return False
         # Return True to indicate that the request was handled successfully.
         return True
@@ -638,8 +638,8 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
         expected_response_type: type[HordeResponseTypeVar],
     ) -> HordeResponseTypeVar | RequestErrorResponse:
         # Add the request to the list of awaiting requests.
-        async with self._awaiting_requests_lock:
-            self._awaiting_requests.append(api_request)
+
+        self._awaiting_requests.append(api_request)
 
         # Submit the request to the API and get the response.
         response = await super().submit_request(api_request, expected_response_type)
@@ -707,7 +707,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
             )
             # Log each unhandled request.
             for request in self._awaiting_requests:
-                logger.warning(f"Request Unhandled: {request}")
+                logger.warning(f"Request Unhandled: {request.log_safe_model_dump()}")
 
         # If there was an exception, log it.
         if exc_type is not None:
@@ -792,5 +792,5 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
             # If an exception occurred, log an error and return False.
             logger.exception(e)
             logger.critical(message)
-            logger.critical(f"{request_to_follow_up}")
+            logger.critical(f"{request_to_follow_up.log_safe_model_dump()}")
             return False

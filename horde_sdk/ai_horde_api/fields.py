@@ -32,6 +32,10 @@ class UUID_Identifier(RootModel[uuid.UUID]):
             raise ValueError(f"Invalid UUID {v}") from e
 
     @override
+    def __repr__(self) -> str:
+        return self.__str__()
+
+    @override
     def __str__(self) -> str:
         return self.root.__str__()
 

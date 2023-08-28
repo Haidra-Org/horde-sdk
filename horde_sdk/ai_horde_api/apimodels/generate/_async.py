@@ -153,3 +153,7 @@ class ImageGenerateAsyncRequest(
         if not self.params:
             return 1
         return self.params.n
+
+    @override
+    def get_extra_fields_to_exclude_from_log(self) -> set[str]:
+        return {"source_image"}

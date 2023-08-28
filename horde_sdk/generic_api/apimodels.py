@@ -28,6 +28,17 @@ class HordeAPIObject(BaseModel, abc.ABC):
 class HordeAPIMessage(HordeAPIObject):
     """Represents any request or response from any Horde API."""
 
+    @classmethod
+    def get_sensitive_fields(self) -> set[str]:
+        return {"apikey"}
+
+    def get_extra_fields_to_exclude_from_log(self) -> set[str]:
+        return set()
+
+    def log_safe_model_dump(self) -> dict:
+        """Return a dict of the model's fields, with any sensitive fields redacted."""
+        return self.model_dump(exclude=self.get_sensitive_fields() | self.get_extra_fields_to_exclude_from_log())
+
 
 class HordeResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
@@ -136,6 +147,14 @@ class ResponseWithProgressMixin(BaseModel):
 
         Returns:
             bool: Whether the job is complete.
+        """
+
+    @abc.abstractmethod
+    def is_job_possible(self) -> bool:
+        """Return whether the job is possible.
+
+        Returns:
+            bool: Whether the job is possible.
         """
 
     @classmethod
@@ -266,13 +285,10 @@ class HordeRequest(HordeAPIMessage, BaseModel):
 
         return False
 
+    @override
     @classmethod
-    def get_sensitive_fields(self) -> list[str]:
-        return ["apikey"]
-
-    def log_safe_model_dump(self) -> dict:
-        """Return a dict of the model's fields, with any sensitive fields redacted."""
-        return self.model_dump(exclude=set(self.get_sensitive_fields()))
+    def get_sensitive_fields(self) -> set[str]:
+        return {"apikey"}
 
 
 class APIKeyAllowedInRequestMixin(BaseModel):

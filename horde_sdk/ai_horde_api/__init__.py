@@ -11,6 +11,7 @@ from horde_sdk.ai_horde_api.ai_horde_clients import (
 )
 from horde_sdk.ai_horde_api.consts import (
     ALCHEMY_FORMS,
+    GENERATION_MAX_LIFE,
     GENERATION_STATE,
     KNOWN_SAMPLERS,
     KNOWN_SOURCE_PROCESSING,
@@ -19,6 +20,12 @@ from horde_sdk.ai_horde_api.consts import (
 from horde_sdk.ai_horde_api.endpoints import (
     AI_HORDE_API_ENDPOINT_SUBPATH,
     AI_HORDE_BASE_URL,
+)
+from horde_sdk.ai_horde_api.exceptions import (
+    AIHordeGenerationTimedOutError,
+    AIHordeImageValidationError,
+    AIHordeRequestError,
+    AIHordeServerException,
 )
 
 __all__ = [
@@ -29,6 +36,7 @@ __all__ = [
     "AIHordeAPISimpleClient",
     "AIHordeAPIAsyncSimpleClient",
     "download_image_from_generation",
+    "GENERATION_MAX_LIFE",
     "AI_HORDE_BASE_URL",
     "AI_HORDE_API_ENDPOINT_SUBPATH",
     "ALCHEMY_FORMS",
@@ -36,4 +44,8 @@ __all__ = [
     "KNOWN_SAMPLERS",
     "KNOWN_SOURCE_PROCESSING",
     "WORKER_TYPE",
+    "AIHordeRequestError",
+    "AIHordeImageValidationError",
+    "AIHordeGenerationTimedOutError",
+    "AIHordeServerException",
 ]

@@ -62,6 +62,7 @@ from horde_sdk.consts import (
     is_error_status_code,
     is_success_status_code,
 )
+from horde_sdk.exceptions import HordeException
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     BaseModel,
@@ -99,4 +100,5 @@ __all__ = [
     "ANON_API_KEY",
     "PROGRESS_LOGGER_LABEL",
     "COMPLETE_LOGGER_LABEL",
+    "HordeException",
 ]

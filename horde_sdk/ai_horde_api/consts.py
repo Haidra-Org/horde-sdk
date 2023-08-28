@@ -4,6 +4,12 @@ from enum import auto
 
 from strenum import StrEnum
 
+GENERATION_MAX_LIFE = (60 * 20) - 30
+"""The maximum time for the life of a generation request in seconds, minus 30 seconds to account for network latency.
+
+This is the amount of time that passes before the server will delete the request.
+"""
+
 
 class GENERATION_STATE(StrEnum):
     """The generation states that are known to the API.

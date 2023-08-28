@@ -1,5 +1,6 @@
 from loguru import logger
 
+from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE
 from horde_sdk.exceptions import HordeException
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
@@ -12,6 +13,18 @@ class AIHordeRequestError(HordeException):
 
 class AIHordeImageValidationError(AIHordeRequestError):
     """Exception for when the AI Horde API cannot parse a source image for img2img."""
+
+
+class AIHordeGenerationTimedOutError(HordeException):
+    """Exception for when the time limit for a generation request is reached."""
+
+    def __init__(self, error_response: RequestErrorResponse) -> None:
+        logger.error(
+            f"The AI Horde API returned an error response. Response: {error_response.message}. "
+            "This is likely because the generation timed out. "
+            f"The default timeout is {GENERATION_MAX_LIFE} seconds.",
+        )
+        super().__init__(error_response)
 
 
 class AIHordeServerException(HordeException):

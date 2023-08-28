@@ -241,8 +241,8 @@ class TestAIHordeGenerate:
             assert len(image_generate_status_response.generations) < simple_image_gen_n_requests.params.n
 
     async def delayed_cancel(self, task: asyncio.Task) -> None:
-        """Cancel the task after 4 seconds."""
-        await asyncio.sleep(4)
+        """Cancel the task after 3 seconds."""
+        await asyncio.sleep(3)
         assert task.cancel("Test cancel")
 
     @pytest.mark.asyncio

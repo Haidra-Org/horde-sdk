@@ -65,6 +65,10 @@ class ImageGenerateStatusResponse(
         return len(self.generations) == number_of_result_expected
 
     @override
+    def is_job_possible(self) -> bool:
+        return self.is_possible
+
+    @override
     @classmethod
     def is_final_follow_up(cls) -> bool:
         return True
