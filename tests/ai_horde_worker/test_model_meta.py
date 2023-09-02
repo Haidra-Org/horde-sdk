@@ -19,52 +19,87 @@ def stats_response() -> StatsModelsResponse:
     return stats_response
 
 
-def test_image_model_load_resolver_init() -> None:
-    model_reference_manager = ModelReferenceManager()
-    ImageModelLoadResolver(model_reference_manager)
+@pytest.fixture(scope="session")
+def image_model_load_resolver() -> ImageModelLoadResolver:
+    return ImageModelLoadResolver(ModelReferenceManager())
 
 
-def test_image_model_load_resolver_all() -> None:
-    model_reference_manager = ModelReferenceManager()
-    image_model_load_resolver = ImageModelLoadResolver(model_reference_manager)
+def test_image_model_load_resolver_all(image_model_load_resolver: ImageModelLoadResolver) -> None:
     all_model_names = image_model_load_resolver.resolve_all_model_names()
 
     assert len(all_model_names) > 0
 
 
-def test_image_model_load_resolver_top_n(stats_response: StatsModelsResponse) -> None:
-    model_reference_manager = ModelReferenceManager()
-    image_model_load_resolver = ImageModelLoadResolver(model_reference_manager)
-
-    all_model_names = image_model_load_resolver.resolve_top_n_model_names(
+def test_image_model_load_resolver_top_n(
+    image_model_load_resolver: ImageModelLoadResolver,
+    stats_response: StatsModelsResponse,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_top_n_model_names(
         1,
         stats_response,
         timeframe=StatsModelsTimeframe.month,
     )
 
-    assert len(all_model_names) == 1
+    assert len(resolved_model_names) == 1
 
 
-def test_image_model_load_resolver_bottom_n(stats_response: StatsModelsResponse) -> None:
-    model_reference_manager = ModelReferenceManager()
-    image_model_load_resolver = ImageModelLoadResolver(model_reference_manager)
+def test_image_model_top_10(
+    image_model_load_resolver: ImageModelLoadResolver,
+    stats_response: StatsModelsResponse,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_top_n_model_names(
+        10,
+        stats_response,
+        timeframe=StatsModelsTimeframe.month,
+    )
 
-    all_model_names = image_model_load_resolver.resolve_bottom_n_model_names(
+    assert len(resolved_model_names) == 10
+
+
+def test_image_model_load_resolver_bottom_n(
+    image_model_load_resolver: ImageModelLoadResolver,
+    stats_response: StatsModelsResponse,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_bottom_n_model_names(
         1,
         stats_response,
         timeframe=StatsModelsTimeframe.month,
     )
 
-    assert len(all_model_names) == 1
+    assert len(resolved_model_names) == 1
 
 
-def test_image_model_load_resolver_multiple_instructions(stats_response: StatsModelsResponse) -> None:
-    model_reference_manager = ModelReferenceManager()
-    image_model_load_resolver = ImageModelLoadResolver(model_reference_manager)
+def test_image_model_load_resolver_bottom_10(
+    image_model_load_resolver: ImageModelLoadResolver,
+    stats_response: StatsModelsResponse,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_bottom_n_model_names(
+        10,
+        stats_response,
+        timeframe=StatsModelsTimeframe.month,
+    )
 
+    assert len(resolved_model_names) == 10
+
+
+def test_image_model_load_resolver_multiple_instructions(
+    image_model_load_resolver: ImageModelLoadResolver,
+) -> None:
     resolved_model_names = image_model_load_resolver.resolve_meta_instructions(
         ["top 1", "bottom 1"],
         AIHordeAPIManualClient(),
     )
 
-    assert len(resolved_model_names) > 0
+    assert len(resolved_model_names) == 2
+
+
+def test_image_models_unique_results_only(
+    image_model_load_resolver: ImageModelLoadResolver,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_meta_instructions(
+        ["top 1000", "bottom 1000"],
+        AIHordeAPIManualClient(),
+    )
+    all_model_names = image_model_load_resolver.resolve_all_model_names()
+
+    assert len(resolved_model_names) == len(all_model_names)

@@ -117,7 +117,7 @@ class ImageModelLoadResolver:
         number_of_top_models: int,
         response: StatsModelsResponse,
         timeframe: StatsModelsTimeframe,
-    ) -> set[str]:
+    ) -> list[str]:
         """Get the names of the top N models based on usage statistics.
 
         Args:
@@ -139,15 +139,15 @@ class ImageModelLoadResolver:
         # Get the top n models
         top_n_models = sorted_models[:number_of_top_models]
 
-        # Get just the model names as a set
-        return {model[0] for model in top_n_models}
+        # Get just the model names as a list
+        return [model[0] for model in top_n_models]
 
     @staticmethod
     def resolve_bottom_n_model_names(
         number_of_bottom_models: int,
         response: StatsModelsResponse,
         timeframe: StatsModelsTimeframe,
-    ) -> set[str]:
+    ) -> list[str]:
         """Get the names of the bottom N models based on usage statistics.
 
         Args:
@@ -166,5 +166,5 @@ class ImageModelLoadResolver:
         # Get the bottom n models
         bottom_n_models = sorted_models[:number_of_bottom_models]
 
-        # Get just the model names as a set
-        return {model[0] for model in bottom_n_models}
+        # Get just the model names as a list
+        return [model[0] for model in bottom_n_models]
