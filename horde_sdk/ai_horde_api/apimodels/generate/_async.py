@@ -1,5 +1,4 @@
-from loguru import logger
-from pydantic import Field, field_validator, model_validator
+from pydantic import model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
@@ -72,20 +71,7 @@ class ImageGenerateAsyncDryRunResponse(HordeResponseBaseModel):
 
 
 class ImageGenerationInputPayload(ImageGenerateParamMixin):
-    n: int = Field(default=1, ge=1, le=60)
-
-    @field_validator("n", mode="before")
-    def validate_n(cls, value: int) -> int:
-        if not value:
-            logger.debug("n (number of images to generate) is not set; defaulting to 1")
-            return 1
-
-        if value >= 30:
-            logger.warning(
-                "n (number of images to generate) is >= 30; only moderators and certain users can generate that many "
-                f"images at once. The request will probably fail. (n={value}))",
-            )
-        return value
+    """# FIXME"""
 
 
 class ImageGenerateAsyncRequest(
