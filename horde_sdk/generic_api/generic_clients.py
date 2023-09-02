@@ -13,6 +13,7 @@ from pydantic import BaseModel, ValidationError
 from strenum import StrEnum
 from typing_extensions import override
 
+from horde_sdk.ai_horde_api.exceptions import AIHordePayloadValidationError
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
@@ -242,12 +243,11 @@ class BaseHordeAPIClient(ABC):
             if len(raw_response_json) == 1 and "message" in raw_response_json:
                 return RequestErrorResponse(**raw_response_json)
 
-            raise RuntimeError(
-                (
-                    "Received a non-200 response code, but no `message` key was found "
-                    f"in the response: {raw_response_json}. Something may be wrong with the API itself."
-                ),
-            )
+            if "errors" in raw_response_json:
+                raise AIHordePayloadValidationError(
+                    raw_response_json.get("errors", ""),
+                    raw_response_json.get("message", ""),
+                )
 
         handled_response: HordeResponseTypeVar | RequestErrorResponse | None = None
         try:

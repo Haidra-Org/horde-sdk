@@ -24,6 +24,7 @@ from horde_sdk.ai_horde_api.endpoints import (
 from horde_sdk.ai_horde_api.exceptions import (
     AIHordeGenerationTimedOutError,
     AIHordeImageValidationError,
+    AIHordePayloadValidationError,
     AIHordeRequestError,
     AIHordeServerException,
 )
@@ -48,4 +49,5 @@ __all__ = [
     "AIHordeImageValidationError",
     "AIHordeGenerationTimedOutError",
     "AIHordeServerException",
+    "AIHordePayloadValidationError",
 ]
