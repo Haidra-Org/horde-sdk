@@ -33,7 +33,7 @@ def test_ImageGenerateAsyncRequest(ai_horde_api_key: str) -> None:
             sampler_name=KNOWN_SAMPLERS.k_lms,
             cfg_scale=7.5,
             denoising_strength=1,
-            seed=None,
+            seed="123456789",
             height=512,
             width=512,
             seed_variation=None,
@@ -49,7 +49,7 @@ def test_ImageGenerateAsyncRequest(ai_horde_api_key: str) -> None:
             loras=[],
             special={},
             steps=25,
-            n_iter=1,
+            n=1,
             use_nsfw_censor=False,
         ),
         nsfw=True,
@@ -89,7 +89,7 @@ def test_ImageGenerateAsyncRequest(ai_horde_api_key: str) -> None:
     assert test_async_request.params.loras == []
     assert test_async_request.params.special == {}
     assert test_async_request.params.steps == 25
-    assert test_async_request.params.n_iter == 1
+    assert test_async_request.params.n == 1
     assert test_async_request.params.use_nsfw_censor is False
     assert test_async_request.nsfw is True
     assert test_async_request.trusted_workers is False
