@@ -516,7 +516,7 @@ class BaseAIHordeSimpleClient(ABC):
         # Log the request if it's the first check or every 5th check
         if check_count == 1 or check_count % 5 == 0:
             logger.log(PROGRESS_LOGGER_LABEL, log_message)
-            logger.log(PROGRESS_LOGGER_LABEL, f"{job_id}: {check_request.log_safe_model_dump()}")
+            logger.log(PROGRESS_LOGGER_LABEL, f"{job_id}: {check_response.log_safe_model_dump()}")
             if not check_response.is_job_possible():
                 logger.warning(f"Job not possible: {job_id}")
         # Otherwise, just log the message at the debug level
