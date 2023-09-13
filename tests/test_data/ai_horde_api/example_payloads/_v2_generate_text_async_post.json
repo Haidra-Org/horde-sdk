@@ -20,7 +20,8 @@
         "typical": 0.0,
         "sampler_order": [
             0
-        ]
+        ],
+        "use_default_badwordsids": true
     },
     "softprompt": "a",
     "trusted_workers": false,

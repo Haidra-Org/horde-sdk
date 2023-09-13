@@ -1,7 +1,11 @@
+import json
+
 import horde_sdk.ai_horde_api.apimodels
 from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode, get_all_success_status_codes
 from horde_sdk.generic_api._reflection import get_all_request_types
+from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponse
+from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH
 from horde_sdk.generic_api.utils.swagger import (
     SwaggerDoc,
     SwaggerEndpoint,
@@ -11,7 +15,7 @@ from horde_sdk.generic_api.utils.swagger import (
 
 def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     """Ensure all models defined in ai_horde_api are defined in the swagger doc."""
-    all_request_types = get_all_request_types(horde_sdk.ai_horde_api.apimodels.__name__)
+    all_request_types: list[type[HordeRequest]] = get_all_request_types(horde_sdk.ai_horde_api.apimodels.__name__)
     assert len(all_request_types) > 0, (
         f"Failed to find any request types in {horde_sdk.ai_horde_api.apimodels.__name__}. "
         "Something is critically wrong. Check `ai_horde_api/apimodels/__init__.py` imports."
@@ -24,8 +28,11 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     swagger_defined_response_examples: dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]]
     swagger_defined_response_examples = swagger_doc.get_all_response_examples()
 
+    api_to_sdk_payload_model_map: dict[str, dict[HTTPMethod, type[HordeRequest]]] = {}
+    api_to_sdk_response_model_map: dict[str, dict[HTTPStatusCode, type[HordeResponse]]] = {}
+
     for request_type in all_request_types:
-        endpoint_subpath = request_type.get_api_endpoint_subpath()
+        endpoint_subpath: GENERIC_API_ENDPOINT_SUBPATH = request_type.get_api_endpoint_subpath()
         assert endpoint_subpath, f"Failed to get endpoint subpath for {request_type.__name__}"
 
         # print(f"Found VERB: `{request_type.get_http_method()}` REQUEST TYPE: `{request_type.__name__}` in swagger")
@@ -60,25 +67,53 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
                 endpoint_subpath in swagger_defined_payload_examples
             ), f"Missing {request_type.__name__} in swagger examples"
 
-        all_http_method_examples = swagger_defined_response_examples.get(endpoint_subpath)
-        assert all_http_method_examples, f"Failed to get all HTTP method examples for {endpoint_subpath}"
+        endpoint_http_method_examples = swagger_defined_response_examples.get(endpoint_subpath)
+        assert endpoint_http_method_examples, f"Failed to get all HTTP method examples for {endpoint_subpath}"
 
-        all_http_status_code_responses = all_http_method_examples.get(request_type.get_http_method())
-        assert all_http_status_code_responses, f"Failed to get example response for {request_type.__name__}"
+        endpoint_http_status_code_responses = endpoint_http_method_examples.get(request_type.get_http_method())
+        assert endpoint_http_status_code_responses, f"Failed to get example response for {request_type.__name__}"
 
-        success_http_status_codes = [
+        if endpoint_subpath not in api_to_sdk_payload_model_map:
+            api_to_sdk_payload_model_map[endpoint_subpath] = {}
+
+        api_to_sdk_payload_model_map[endpoint_subpath][request_type.get_http_method()] = request_type
+
+        field_names_and_descriptions: list[tuple[str, str]] = []
+        for field_name, field_info in request_type.model_fields.items():
+            if field_info.description:
+                field_names_and_descriptions.append((field_name, field_info.description))
+            else:
+                field_names_and_descriptions.append((field_name, getattr(request_type, field_name).__doc__))
+
+        endpoint_success_http_status_codes: list[HTTPStatusCode] = [
             success_code
             for success_code in get_all_success_status_codes()
-            if success_code in all_http_status_code_responses
+            if success_code in endpoint_http_status_code_responses
         ]
         assert (
-            len(success_http_status_codes) > 0
+            len(endpoint_success_http_status_codes) > 0
         ), f"Failed to find any success status codes in {request_type.__name__}"
 
-        for success_code in success_http_status_codes:
+        for success_code in endpoint_success_http_status_codes:
             assert (
                 success_code in request_type.get_success_status_response_pairs()
             ), f"Missing success response type for {request_type.__name__} with status code {success_code}"
+
+        api_to_sdk_response_model_map[endpoint_subpath] = request_type.get_success_status_response_pairs()
+
+    def json_serializer(obj: object) -> object:
+        if isinstance(obj, str):
+            return obj
+        if isinstance(obj, type):
+            # Return the fully qualified (with all namespaces) name of the type
+            return obj.__module__ + "." + obj.__name__
+        raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+    with open("docs/api_to_sdk_payload_map.json", "w") as f:
+        f.write(json.dumps(api_to_sdk_payload_model_map, indent=4, default=json_serializer))
+
+    with open("docs/api_to_sdk_response_map.json", "w") as f:
+        f.write(json.dumps(api_to_sdk_response_model_map, indent=4, default=json_serializer))
 
 
 def test_all_ai_horde_model_defs_in_swagger_from_prod_swagger() -> None:

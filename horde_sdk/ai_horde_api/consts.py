@@ -75,6 +75,20 @@ class KNOWN_SAMPLERS(StrEnum):
     DDIM = "DDIM"
 
 
+class KNOWN_CONTROLNETS(StrEnum):
+    """The controlnets that are known to the API."""
+
+    canny = auto()
+    hed = auto()
+    depth = auto()
+    normal = auto()
+    openpose = auto()
+    seg = auto()
+    scribble = auto()
+    fakescribbles = auto()
+    hough = auto()
+
+
 class KNOWN_SOURCE_PROCESSING(StrEnum):
     """The source processing methods that are known to the API.
 

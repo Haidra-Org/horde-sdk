@@ -1,6 +1,6 @@
 """Constants used by the SDK."""
 
-from enum import Enum
+from enum import IntEnum
 
 from strenum import StrEnum
 
@@ -25,7 +25,7 @@ class HTTPMethod(StrEnum):
 PAYLOAD_HTTP_METHODS = {HTTPMethod.POST, HTTPMethod.PUT, HTTPMethod.PATCH}
 
 
-class HTTPStatusCode(Enum):
+class HTTPStatusCode(IntEnum):
     """An enum representing all HTTP status codes."""
 
     OK = 200

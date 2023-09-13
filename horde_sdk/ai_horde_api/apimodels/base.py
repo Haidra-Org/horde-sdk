@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from loguru import logger
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS
@@ -60,7 +60,7 @@ class LorasPayloadEntry(BaseModel):
 class TIPayloadEntry(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     inject_ti: str | None
-    strength: float = Field(default=1, min=-5, max=5)
+    strength: float = Field(default=1, ge=-5, le=5)
 
     @field_validator("inject_ti")
     def validate_inject_ti(cls, v: str | None) -> str | None:
@@ -90,6 +90,8 @@ class ImageGenerateParamMixin(BaseModel):
     Also is the corresponding information returned on a job pop to the `/v2/generate/pop` endpoint.
     v2 API Model: `ModelPayloadStable`
     """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     sampler_name: KNOWN_SAMPLERS = KNOWN_SAMPLERS.k_lms
     """The sampler to use for this generation. Defaults to `KNOWN_SAMPLERS.k_lms`."""
@@ -129,10 +131,10 @@ class ImageGenerateParamMixin(BaseModel):
     """A list of textual inversion (embedding) parameters to use."""
     special: dict = Field(default_factory=dict)
     """Reserved for future use."""
-    steps: int = Field(default=25, ge=1)
+    steps: int = Field(default=25, ge=1, validation_alias=AliasChoices("steps", "ddim_steps"))
     """The number of image generation steps to perform."""
 
-    n: int = Field(default=1, ge=1, le=20)
+    n: int = Field(default=1, ge=1, le=20, validation_alias=AliasChoices("n", "n_iter"))
     """The number of images to generate. Defaults to 1, maximum is 20."""
 
     @field_validator("width", "height", mode="before")

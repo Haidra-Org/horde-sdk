@@ -61,13 +61,17 @@ class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
     """How many waiting requests were skipped because they requested a controlnet."""
 
 
+class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
+    prompt: str
+
+
 class ImageGenerateJobResponse(HordeResponseBaseModel, JobResponseMixin, ResponseRequiringFollowUpMixin):
     """Represents the data returned from the `/v2/generate/pop` endpoint.
 
     v2 API Model: `GenerationPayloadStable`
     """
 
-    payload: ImageGenerateParamMixin
+    payload: ImageGenerateJobPopPayload
     """The parameters used to generate this image."""
     skipped: ImageGenerateJobPopSkippedStatus
     """The reasons this worker was not issued certain jobs, and the number of jobs for each reason."""
@@ -161,17 +165,3 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     @classmethod
     def get_default_success_response_type(cls) -> type[ImageGenerateJobResponse]:
         return ImageGenerateJobResponse
-
-
-class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
-    prompt: str
-
-    @property
-    def ddim_steps(self) -> int:
-        return self.steps
-
-    @ddim_steps.setter
-    def ddim_steps(self, value: int) -> None:
-        if value is None or value < 1:
-            raise ValueError("steps must be a positive integer")
-        self.steps = value

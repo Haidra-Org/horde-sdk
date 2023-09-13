@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import abc
+import uuid
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -310,6 +311,13 @@ class APIKeyAllowedInRequestMixin(BaseModel):
         if v is None:
             return ANON_API_KEY
         if v == ANON_API_KEY:
+            return v
+        if len(v) == 36:
+            try:
+                uuid.UUID(v)
+                return v
+            except ValueError as e:
+                raise ValueError("API key must be a valid UUID") from e
             return v
         if len(v) != 22:
             raise ValueError("API key must be 22 characters long")

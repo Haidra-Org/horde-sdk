@@ -43,7 +43,12 @@ from horde_sdk.ai_horde_api.apimodels.generate._async import (
     ImageGenerationInputPayload,
 )
 from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckRequest, ImageGenerateCheckResponse
-from horde_sdk.ai_horde_api.apimodels.generate._pop import ImageGenerateJobPopRequest, ImageGenerateJobResponse
+from horde_sdk.ai_horde_api.apimodels.generate._pop import (
+    ImageGenerateJobPopPayload,
+    ImageGenerateJobPopRequest,
+    ImageGenerateJobPopSkippedStatus,
+    ImageGenerateJobResponse,
+)
 from horde_sdk.ai_horde_api.apimodels.generate._status import (
     DeleteImageGenerateRequest,
     ImageGenerateStatusRequest,
@@ -87,6 +92,8 @@ __all__ = [
     "ImageGeneration",
     "ImageGenerationInputPayload",
     "ImageGenerateJobPopRequest",
+    "ImageGenerateJobPopPayload",
+    "ImageGenerateJobPopSkippedStatus",
     "ImageGenerateJobResponse",
     "ImageGenerateStatusRequest",
     "ImageGenerateStatusResponse",

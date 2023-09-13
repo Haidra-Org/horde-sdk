@@ -89,7 +89,7 @@ class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]
 
     # @tazlin: The typing of __iter__ in BaseModel seems to assume that RootModel wouldn't also be a parent class.
     # without a `type: ignore``, mypy feels that this is a bad override. This is probably a sub-optimal solution
-    # on my part with a more elegant path in the future.
+    # on my part with me hoping to come up with a more elegant path in the future.
     # TODO: fix this?
     def __iter__(self) -> Iterator[WorkerDetailItem]:  # type: ignore
         return iter(self.root)

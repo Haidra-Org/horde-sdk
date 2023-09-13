@@ -14,6 +14,7 @@ from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
+    HordeAPIObject,
     HordeResponse,
     HordeResponseBaseModel,
     RequestUsesImageWorkerMixin,
@@ -70,8 +71,16 @@ class ImageGenerateAsyncDryRunResponse(HordeResponseBaseModel):
         return "UNDOCUMENTED"
 
 
-class ImageGenerationInputPayload(ImageGenerateParamMixin):
-    """# FIXME"""
+class ImageGenerationInputPayload(HordeAPIObject, ImageGenerateParamMixin):
+    """Represents the 'params' field in the `/v2/generate/async` endpoint.
+
+    v2 API Model: `ModelGenerationInputStable`
+    """
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ModelGenerationInputStable"
 
 
 class ImageGenerateAsyncRequest(
