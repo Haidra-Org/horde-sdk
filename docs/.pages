@@ -3,6 +3,7 @@ nav:
     - getting_started.md
     - faq.md
     - examples.md
+    - api_to_sdk_map.md
     - horde_sdk
     - GitHub Repo: https://github.com/Haidra-Org/horde-sdk
 

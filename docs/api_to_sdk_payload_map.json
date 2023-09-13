@@ -1,0 +1,37 @@
+{
+    "/v2/interrogate/async": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.alchemy._async.AlchemyAsyncRequest"
+    },
+    "/v2/interrogate/status/{id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyDeleteRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyStatusRequest"
+    },
+    "/v2/interrogate/pop": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyPopRequest"
+    },
+    "/v2/workers": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.workers._workers_all.AllWorkersDetailsRequest"
+    },
+    "/v2/generate/status/{id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.generate._status.DeleteImageGenerateRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.generate._status.ImageGenerateStatusRequest"
+    },
+    "/v2/find_user": {
+        "GET": "horde_sdk.ai_horde_api.apimodels._find_user.FindUserRequest"
+    },
+    "/v2/generate/async": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest"
+    },
+    "/v2/generate/check/{id}": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.generate._check.ImageGenerateCheckRequest"
+    },
+    "/v2/generate/pop": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate._pop.ImageGenerateJobPopRequest"
+    },
+    "/v2/generate/submit": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate._submit.ImageGenerationJobSubmitRequest"
+    },
+    "/v2/stats/img/models": {
+        "GET": "horde_sdk.ai_horde_api.apimodels._stats.StatsImageModelsRequest"
+    }
+}

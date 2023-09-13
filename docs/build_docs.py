@@ -1,7 +1,8 @@
+import json
 from pathlib import Path
 
 
-def main() -> None:
+def dynamically_create_library_markdown_stubs() -> None:
     # Create mkdocs documentation using mkdocstrings
     project_root = Path(__file__).parent.parent
     code_root = Path(__file__).parent.parent / "horde_sdk"
@@ -76,5 +77,42 @@ def convert_list_of_paths_to_namespaces(paths: list[Path], root: Path) -> dict[P
     return {key: value for key, value in lookup.items() if value}
 
 
+def api_to_sdk_map_create_markdown() -> None:
+    api_to_sdk_payload_map: dict[str, dict[str, str]] = {}
+    api_to_sdk_response_map: dict[str, dict[str, str]] = {}
+
+    with open("docs/api_to_sdk_payload_map.json") as f:
+        api_to_sdk_payload_map = json.load(f)
+
+    with open("docs/api_to_sdk_response_map.json") as f:
+        api_to_sdk_response_map = json.load(f)
+
+    # Write the mapping page with the API Endpoint sorted alphabetically
+    with open("docs/api_to_sdk_map.md", "w") as f:
+        f.write("# AI-Horde API Model to SDK Class Map\n")
+        f.write("This is a mapping of the AI-Horde API models (defined at ")
+        f.write("[https://stablehorde.net/api/](https://stablehorde.net/api/), see also ")
+        f.write("[the swagger doc](https://stablehorde.net/api/swagger.json)) to the SDK classes.\n\n")
+        f.write("## Payloads\n")
+        f.write("| API Endpoint | HTTP Method | SDK Request Type |\n")
+        f.write("| ------------ | ----------- | ---------------- |\n")
+        for api_endpoint, http_method_map in sorted(api_to_sdk_payload_map.items()):
+            for http_method, sdk_request_type in http_method_map.items():
+                f.write(
+                    f"| {api_endpoint} | {http_method} | [{sdk_request_type.split('.')[-1]}][{sdk_request_type}] |\n",
+                )
+        f.write("\n\n")
+        f.write("## Responses\n")
+        f.write("| API Endpoint | HTTP Status Code | SDK Response Type |\n")
+        f.write("| ------------ | ----------- | ----------------- |\n")
+        for api_endpoint, http_status_code_map in sorted(api_to_sdk_response_map.items()):
+            for http_status_code, _sdk_response_type in http_status_code_map.items():
+                f.write(
+                    f"| {api_endpoint} | {http_status_code} | "
+                    "[{sdk_response_type.split('.')[-1]}][{sdk_response_type}] |\n",
+                )
+
+
 if __name__ == "__main__":
-    main()
+    dynamically_create_library_markdown_stubs()
+    api_to_sdk_map_create_markdown()

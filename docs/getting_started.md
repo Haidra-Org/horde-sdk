@@ -17,13 +17,13 @@ pip install horde_sdk
 
 1. Choose a client for the API you wish to consume:
     - For AI Horde, this is either:
-        - [AIHordeAPISimpleClient](../horde_sdk/ai_horde_api/ai_horde_clients/#horde_sdk.ai_horde_api.ai_horde_clients.AIHordeAPISimpleClient) (easier, more safeties)
+        - [AIHordeAPISimpleClient][horde_sdk.ai_horde_api.ai_horde_clients.AIHordeAPISimpleClient] (easier, more safeties)
 
-        - [AIHordeAPIManualClient](../horde_sdk/ai_horde_api/ai_horde_clients/#horde_sdk.ai_horde_api.ai_horde_clients.AIHordeAPIManualClient) (more control, manual cleanup required)
+        - [AIHordeAPIManualClient][horde_sdk.ai_horde_api.ai_horde_clients.AIHordeAPIManualClient] (more control, manual cleanup required)
 
 2. Find the `*Request` object type appropriate to what you want to do. (see also: [naming](../getting_started/#naming))
     - These objects types are always found in the `apimodels` namespace of the `*_api` sub package.
-    - e.g., [ImageGenerateAsyncRequest](../horde_sdk/ai_horde_api/apimodels/generate/_async/#horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest)
+    - e.g., [ImageGenerateAsyncRequest][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest]
     - **Note** that there is always one or more response types mapped to a request. You can get the default success response `type` like so:
 
 
@@ -36,7 +36,7 @@ pip install horde_sdk
     >>> image_gen_request.get_success_response_type()
     <class 'horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse'>
     ```
-    Accordingly, the [ImageGenerateAsyncResponse](../horde_sdk/ai_horde_api/apimodels/generate/_async/#horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse) type is expected to be the return type from the API.
+    Accordingly, the [ImageGenerateAsyncResponse][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse] type is expected to be the return type from the API.
 
     <div class="warning" markdown="1">
         <div class="title" markdown="1">
@@ -100,7 +100,7 @@ image_generate_async_request = ImageGenerateAsyncRequest(
 
 ### API Expectations
 #### Important note about manual clients
-A few endpoints, such as `/v2/generate/async` ([ImageGenerateAsyncRequest](../horde_sdk/ai_horde_api/apimodels/generate/_async/#horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest)), will have their operations live on the API server until they are retrieved or cancelled (in this case, with either a [ImageGenerateStatusRequest](../horde_sdk/ai_horde_api/apimodels/generate/_status/#horde_sdk.ai_horde_api.apimodels.generate._status.ImageGenerateStatusRequest) or [DeleteImageGenerateRequest](../horde_sdk/ai_horde_api/apimodels/generate/_status/#horde_sdk.ai_horde_api.apimodels.generate._status.DeleteImageGenerateRequest)). If you use a manual client, you are assuming responsibility for making a best-effort for cleaning up errant requests, especially if your implementation crashes. If you use a simple client, you do not have to worry about this, as [context handlers](../horde_sdk/generic_api/generic_clients/#horde_sdk.generic_api.generic_clients.GenericHordeAPISession) take care of this.
+A few endpoints, such as `/v2/generate/async` ([ImageGenerateAsyncRequest][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest]), will have their operations live on the API server until they are retrieved or cancelled (in this case, with either a [ImageGenerateStatusRequest][horde_sdk.ai_horde_api.apimodels.generate._status.ImageGenerateStatusRequest] or [DeleteImageGenerateRequest][horde_sdk.ai_horde_api.apimodels.generate._status.DeleteImageGenerateRequest]). If you use a manual client, you are assuming responsibility for making a best-effort for cleaning up errant requests, especially if your implementation crashes. If you use a simple client, you do not have to worry about this, as [context handlers][horde_sdk.generic_api.generic_clients.GenericHordeAPISession] take care of this.
 
 ### Typing
 
@@ -140,12 +140,12 @@ A few endpoints, such as `/v2/generate/async` ([ImageGenerateAsyncRequest](../ho
     -   These in-between objects are typically logically-speaking parent
         classes of multiple API objects, but do not represent an actual
         API object on their own.
-    -   See `horde_sdk.generic_api.apimodels` for some of the key
+    -   See [horde_sdk.generic_api.apimodels][] for some of the key
         `Base*` classes.
 -   Certain API models have attributes which would collide with a python
     builtin, such as `id` or `type`. In these cases, the attribute has a
     trailing underscore, as in `id_`. Ingested json still will work with
-    the field <span class="title-ref">id</span>\` (its a alias).
+    the field <span class="title-ref">`id`</span> (its a alias).
 
 ### Faux Immutability (or 'Why can't I change this attribute?!')
 
