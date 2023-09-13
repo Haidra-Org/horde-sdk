@@ -82,8 +82,6 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
         for field_name, field_info in request_type.model_fields.items():
             if field_info.description:
                 field_names_and_descriptions.append((field_name, field_info.description))
-            else:
-                field_names_and_descriptions.append((field_name, getattr(request_type, field_name).__doc__))
 
         endpoint_success_http_status_codes: list[HTTPStatusCode] = [
             success_code
