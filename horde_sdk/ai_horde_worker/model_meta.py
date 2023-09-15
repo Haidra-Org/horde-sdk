@@ -14,7 +14,7 @@ class ImageModelLoadResolver:
     """Resolve meta instructions for loading models."""
 
     # set a default timeframe for model stats
-    default_timeframe = StatsModelsTimeframe.day
+    default_timeframe = StatsModelsTimeframe.month
 
     _model_reference_manager: ModelReferenceManager
 
