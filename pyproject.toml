@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "horde_sdk"
-version = "0.7.3"
+version = "0.7.5"
 description = "A python toolkit for interacting with the horde APIs, services, and ecosystem."
 authors = [
     {name = "tazlin", email = "tazlin.on.github@gmail.com"},
@@ -18,7 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: GNU Affero General Public License v3",
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 4 - Beta",
 ]
 
 [tool.setuptools.package-dir]

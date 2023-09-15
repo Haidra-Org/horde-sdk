@@ -1,5 +1,5 @@
 import pydantic
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
@@ -63,6 +63,11 @@ class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
 
 class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
     prompt: str
+    ddim_steps: int = Field(default=25, ge=1, validation_alias=AliasChoices("steps", "ddim_steps"))
+    """The number of image generation steps to perform."""
+
+    n_iter: int = Field(default=1, ge=1, le=20, validation_alias=AliasChoices("n", "n_iter"))
+    """The number of images to generate. Defaults to 1, maximum is 20."""
 
 
 class ImageGenerateJobResponse(HordeResponseBaseModel, JobResponseMixin, ResponseRequiringFollowUpMixin):

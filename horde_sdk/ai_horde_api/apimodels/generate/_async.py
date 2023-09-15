@@ -1,4 +1,4 @@
-from pydantic import model_validator
+from pydantic import AliasChoices, Field, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
@@ -76,6 +76,12 @@ class ImageGenerationInputPayload(HordeAPIObject, ImageGenerateParamMixin):
 
     v2 API Model: `ModelGenerationInputStable`
     """
+
+    steps: int = Field(default=25, ge=1, validation_alias=AliasChoices("steps", "ddim_steps"))
+    """The number of image generation steps to perform."""
+
+    n: int = Field(default=1, ge=1, le=20, validation_alias=AliasChoices("n", "n_iter"))
+    """The number of images to generate. Defaults to 1, maximum is 20."""
 
     @override
     @classmethod

@@ -14,7 +14,7 @@ class ImageModelLoadResolver:
     """Resolve meta instructions for loading models."""
 
     # set a default timeframe for model stats
-    default_timeframe = StatsModelsTimeframe.day
+    default_timeframe = StatsModelsTimeframe.month
 
     _model_reference_manager: ModelReferenceManager
 
@@ -130,8 +130,8 @@ class ImageModelLoadResolver:
         """
         models_in_timeframe = response.get_timeframe(timeframe)
 
-        # Remove the `None` values from the dict
-        models_in_timeframe = {k: v for k, v in models_in_timeframe.items() if v is not None}
+        # Remove the blank or null values from the dict
+        models_in_timeframe = {k: v for k, v in models_in_timeframe.items() if k and v is not None}
 
         # Sort by value (number of uses) ascending (highest first)
         sorted_models = sorted(models_in_timeframe.items(), key=lambda x: x[1], reverse=True)
@@ -159,6 +159,9 @@ class ImageModelLoadResolver:
             A set of strings representing the names of the bottom N models.
         """
         models_in_timeframe = response.get_timeframe(timeframe)
+
+        # Remove the blank or null values from the dict
+        models_in_timeframe = {k: v for k, v in models_in_timeframe.items() if k and v is not None}
 
         # Sort by value (number of uses) ascending (lowest first)
         sorted_models = sorted(models_in_timeframe.items(), key=lambda x: x[1])
