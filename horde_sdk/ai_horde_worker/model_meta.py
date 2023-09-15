@@ -130,8 +130,8 @@ class ImageModelLoadResolver:
         """
         models_in_timeframe = response.get_timeframe(timeframe)
 
-        # Remove the `None` values from the dict
-        models_in_timeframe = {k: v for k, v in models_in_timeframe.items() if v is not None}
+        # Remove the blank or null values from the dict
+        models_in_timeframe = {k: v for k, v in models_in_timeframe.items() if k and v is not None}
 
         # Sort by value (number of uses) ascending (highest first)
         sorted_models = sorted(models_in_timeframe.items(), key=lambda x: x[1], reverse=True)
@@ -140,7 +140,7 @@ class ImageModelLoadResolver:
         top_n_models = sorted_models[:number_of_top_models]
 
         # Get just the model names as a list
-        return [model[0] for model in top_n_models if model]
+        return [model[0] for model in top_n_models]
 
     @staticmethod
     def resolve_bottom_n_model_names(
@@ -160,6 +160,9 @@ class ImageModelLoadResolver:
         """
         models_in_timeframe = response.get_timeframe(timeframe)
 
+        # Remove the blank or null values from the dict
+        models_in_timeframe = {k: v for k, v in models_in_timeframe.items() if k and v is not None}
+
         # Sort by value (number of uses) ascending (lowest first)
         sorted_models = sorted(models_in_timeframe.items(), key=lambda x: x[1])
 
@@ -167,4 +170,4 @@ class ImageModelLoadResolver:
         bottom_n_models = sorted_models[:number_of_bottom_models]
 
         # Get just the model names as a list
-        return [model[0] for model in bottom_n_models if model]
+        return [model[0] for model in bottom_n_models]
