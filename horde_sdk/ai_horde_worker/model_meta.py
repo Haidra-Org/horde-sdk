@@ -140,7 +140,7 @@ class ImageModelLoadResolver:
         top_n_models = sorted_models[:number_of_top_models]
 
         # Get just the model names as a list
-        return [model[0] for model in top_n_models]
+        return [model[0] for model in top_n_models if model]
 
     @staticmethod
     def resolve_bottom_n_model_names(
@@ -167,4 +167,4 @@ class ImageModelLoadResolver:
         bottom_n_models = sorted_models[:number_of_bottom_models]
 
         # Get just the model names as a list
-        return [model[0] for model in bottom_n_models]
+        return [model[0] for model in bottom_n_models if model]
