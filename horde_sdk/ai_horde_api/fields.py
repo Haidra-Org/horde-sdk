@@ -45,7 +45,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
             return self.root.__str__() == other
 
         if isinstance(other, uuid.UUID):
-            return self.root == other
+            return str(self.root) == str(other)
 
         return False
 
