@@ -639,7 +639,8 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
     ) -> HordeResponseTypeVar | RequestErrorResponse:
         # Add the request to the list of awaiting requests.
 
-        self._awaiting_requests.append(api_request)
+        async with self._awaiting_requests_lock:
+            self._awaiting_requests.append(api_request)
 
         # Submit the request to the API and get the response.
         response = await super().submit_request(api_request, expected_response_type)
@@ -783,6 +784,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
             # Log the results of each cleanup request.
             for i, cleanup_response in enumerate(cleanup_responses):
                 logger.info(f"Recovery request {i+1} submitted!")
+                logger.debug(f"Recovery request {i+1}: {cleanup_requests[i].log_safe_model_dump()}")
                 logger.debug(f"Recovery response {i+1}: {cleanup_response}")
 
             # Return True to indicate that all requests were handled successfully.
