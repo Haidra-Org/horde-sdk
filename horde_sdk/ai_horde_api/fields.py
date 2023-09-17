@@ -41,11 +41,14 @@ class UUID_Identifier(RootModel[uuid.UUID]):
 
     @override
     def __eq__(self, other: Any) -> bool:
+        if isinstance(other, UUID_Identifier):
+            return self.root == other.root
+
         if isinstance(other, str):
             return self.root.__str__() == other
 
         if isinstance(other, uuid.UUID):
-            return str(self.root) == str(other)
+            return self.root == other
 
         return False
 
