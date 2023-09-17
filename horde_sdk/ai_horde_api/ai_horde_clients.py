@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import contextlib
 import io
 import time
 import urllib.parse
@@ -779,9 +780,19 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
 class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
     """An asyncio based simple client for the AI-Horde API. Start with this class if you want asyncio capabilities.."""
 
-    def __init__(self, aiohttp_session: aiohttp.ClientSession) -> None:
+    _horde_client_session: AIHordeAPIAsyncClientSession | None
+
+    def __init__(
+        self,
+        aiohttp_session: aiohttp.ClientSession | None,
+        horde_client_session: AIHordeAPIAsyncClientSession | None = None,
+    ) -> None:
         """Create a new instance of the AIHordeAPISimpleClient."""
+        if aiohttp_session is not None and horde_client_session is not None:
+            raise ValueError("Only one of aiohttp_session or horde_client_session can be provided")
+
         self._aiohttp_session = aiohttp_session
+        self._horde_client_session = horde_client_session
 
     async def download_image_from_generation(self, generation: ImageGeneration) -> tuple[PIL.Image.Image, JobID]:
         """Asynchronously convert from base64 or download an image from a response.
@@ -876,8 +887,19 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             AIHordeRequestError: If the request failed. The error response is included in the exception.
         """
 
+        context: contextlib.AbstractContextManager | AIHordeAPIAsyncClientSession
+        ai_horde_session: AIHordeAPIAsyncClientSession
+
+        if self._horde_client_session is not None:
+            # Use a dummy context manager to keep the type checker happy
+            context = contextlib.nullcontext()
+            ai_horde_session = self._horde_client_session
+        elif self._aiohttp_session is not None:
+            ai_horde_session = AIHordeAPIAsyncClientSession(self._aiohttp_session)
+            context = ai_horde_session
+
         # This session class will cleanup incomplete requests in the event of an exception
-        async with AIHordeAPIAsyncClientSession(aiohttp_session=self._aiohttp_session) as ai_horde_session:
+        async with context:  # type: ignore
             # Submit the initial request
             logger.debug(
                 f"Submitting request: {api_request.log_safe_model_dump()} with timeout {timeout}",

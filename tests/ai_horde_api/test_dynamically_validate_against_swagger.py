@@ -109,9 +109,11 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
 
     with open("docs/api_to_sdk_payload_map.json", "w") as f:
         f.write(json.dumps(api_to_sdk_payload_model_map, indent=4, default=json_serializer))
+        f.write("\n")
 
     with open("docs/api_to_sdk_response_map.json", "w") as f:
         f.write(json.dumps(api_to_sdk_response_model_map, indent=4, default=json_serializer))
+        f.write("\n")
 
 
 def test_all_ai_horde_model_defs_in_swagger_from_prod_swagger() -> None:
