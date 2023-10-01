@@ -46,8 +46,8 @@ from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckR
 from horde_sdk.ai_horde_api.apimodels.generate._pop import (
     ImageGenerateJobPopPayload,
     ImageGenerateJobPopRequest,
+    ImageGenerateJobPopResponse,
     ImageGenerateJobPopSkippedStatus,
-    ImageGenerateJobResponse,
 )
 from horde_sdk.ai_horde_api.apimodels.generate._status import (
     DeleteImageGenerateRequest,
@@ -94,7 +94,7 @@ __all__ = [
     "ImageGenerateJobPopRequest",
     "ImageGenerateJobPopPayload",
     "ImageGenerateJobPopSkippedStatus",
-    "ImageGenerateJobResponse",
+    "ImageGenerateJobPopResponse",
     "ImageGenerateStatusRequest",
     "ImageGenerateStatusResponse",
     "ImageGenerationJobSubmitRequest",

@@ -12,12 +12,19 @@ from horde_sdk.ai_horde_api.apimodels import (
     KNOWN_ALCHEMY_TYPES,
     AlchemyAsyncRequest,
     AlchemyAsyncRequestFormItem,
+    AlchemyStatusResponse,
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
     ImageGenerateStatusResponse,
     ImageGeneration,
     ImageGenerationInputPayload,
     LorasPayloadEntry,
+)
+from horde_sdk.ai_horde_api.consts import (
+    KNOWN_FACEFIXERS,
+    KNOWN_MISC_POST_PROCESSORS,
+    KNOWN_UPSCALERS,
+    POST_PROCESSOR_ORDER_TYPE,
 )
 from horde_sdk.ai_horde_api.fields import JobID
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
@@ -63,6 +70,103 @@ class TestAIHordeGenerate:
         simple_client = AIHordeAPISimpleClient()
 
         image_generate_status_respons, job_id = simple_client.image_generate_request(simple_image_gen_request)
+
+        if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
+            raise AssertionError(image_generate_status_respons.generations.message)
+
+        assert len(image_generate_status_respons.generations) == 1
+
+        image = simple_client.download_image_from_generation(image_generate_status_respons.generations[0])
+
+        assert image is not None
+
+    def test_simple_client_image_generate_with_post_process(
+        self,
+        ai_horde_api_key: str,
+    ) -> None:
+        """Test that a simple image generation request can be submitted and cancelled."""
+        simple_client = AIHordeAPISimpleClient()
+
+        pp_image_gen_request = ImageGenerateAsyncRequest(
+            apikey=ai_horde_api_key,
+            prompt="a cat in a hat",
+            params=ImageGenerationInputPayload(
+                seed="1234",
+                n=1,
+                post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+            ),
+            models=["Deliberate"],
+        )
+
+        image_generate_status_respons, job_id = simple_client.image_generate_request(pp_image_gen_request)
+
+        if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
+            raise AssertionError(image_generate_status_respons.generations.message)
+
+        assert len(image_generate_status_respons.generations) == 1
+
+        image = simple_client.download_image_from_generation(image_generate_status_respons.generations[0])
+
+        assert image is not None
+
+    def test_simple_client_image_generate_with_post_process_costly_order(
+        self,
+        ai_horde_api_key: str,
+    ) -> None:
+        """Test that a simple image generation request can be submitted and cancelled."""
+        simple_client = AIHordeAPISimpleClient()
+
+        pp_image_gen_request = ImageGenerateAsyncRequest(
+            apikey=ai_horde_api_key,
+            prompt="a cat in a hat",
+            params=ImageGenerationInputPayload(
+                seed="1234",
+                n=1,
+                post_processing=[
+                    KNOWN_UPSCALERS.RealESRGAN_x2plus,
+                    KNOWN_FACEFIXERS.CodeFormers,
+                    KNOWN_MISC_POST_PROCESSORS.strip_background,
+                ],
+                post_processing_order=POST_PROCESSOR_ORDER_TYPE.custom,
+            ),
+            models=["Deliberate"],
+        )
+
+        image_generate_status_respons, job_id = simple_client.image_generate_request(pp_image_gen_request)
+
+        if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
+            raise AssertionError(image_generate_status_respons.generations.message)
+
+        assert len(image_generate_status_respons.generations) == 1
+
+        image = simple_client.download_image_from_generation(image_generate_status_respons.generations[0])
+
+        assert image is not None
+
+    def test_simple_client_image_generate_with_post_process_fix_costly_order(
+        self,
+        ai_horde_api_key: str,
+    ) -> None:
+        """Test that a simple image generation request can be submitted and cancelled."""
+        simple_client = AIHordeAPISimpleClient()
+
+        pp_image_gen_request = ImageGenerateAsyncRequest(
+            apikey=ai_horde_api_key,
+            prompt="a cat in a hat",
+            params=ImageGenerationInputPayload(
+                seed="1234",
+                n=1,
+                post_processing=[
+                    KNOWN_UPSCALERS.RealESRGAN_x2plus,
+                    KNOWN_FACEFIXERS.CodeFormers,
+                    KNOWN_MISC_POST_PROCESSORS.strip_background,
+                ],
+                post_processing_order=POST_PROCESSOR_ORDER_TYPE.facefixers_first,
+            ),
+            models=["Deliberate"],
+        )
+
+        image_generate_status_respons, job_id = simple_client.image_generate_request(pp_image_gen_request)
 
         if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
             raise AssertionError(image_generate_status_respons.generations.message)
@@ -185,16 +289,57 @@ class TestAIHordeGenerate:
     ) -> None:
         simple_client = AIHordeAPISimpleClient()
 
-        simple_client.alchemy_request(
+        result, jobid = simple_client.alchemy_request(
             alchemy_request=AlchemyAsyncRequest(
                 forms=[
                     AlchemyAsyncRequestFormItem(
                         name=KNOWN_ALCHEMY_TYPES.caption,
                     ),
+                    AlchemyAsyncRequestFormItem(
+                        name=KNOWN_ALCHEMY_TYPES.RealESRGAN_x4plus,
+                    ),
                 ],
                 source_image=default_testing_image_base64,
             ),
         )
+
+        assert result is not None
+
+    @pytest.mark.asyncio
+    async def test_simple_client_async_alchemy_basic_flood(
+        self,
+        default_testing_image_base64: str,
+    ) -> None:
+        # Perform 15 requests in parallel
+        async with aiohttp.ClientSession() as aiohttp_session:
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
+
+            async def submit_request() -> AlchemyStatusResponse:
+                result, jobid = await simple_client.alchemy_request(
+                    alchemy_request=AlchemyAsyncRequest(
+                        forms=[
+                            AlchemyAsyncRequestFormItem(
+                                name=KNOWN_ALCHEMY_TYPES.caption,
+                            ),
+                            AlchemyAsyncRequestFormItem(
+                                name=KNOWN_ALCHEMY_TYPES.RealESRGAN_x4plus,
+                            ),
+                        ],
+                        source_image=default_testing_image_base64,
+                    ),
+                )
+
+                if isinstance(result, RequestErrorResponse):
+                    raise AssertionError(result.message)
+
+                return result
+
+            # Run 15 concurrent requests using asyncio
+            tasks = [asyncio.create_task(submit_request()) for _ in range(15)]
+            all_responses: list[AlchemyStatusResponse | None] = await asyncio.gather(*tasks)
+
+            # Check that all requests were successful
+            assert len([response for response in all_responses if response]) == 15
 
     @pytest.mark.asyncio
     async def test_simple_client_async_image_generate_multiple(

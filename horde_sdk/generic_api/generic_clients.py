@@ -167,10 +167,13 @@ class BaseHordeAPIClient(ABC):
         # Get the endpoint URL from the request and replace any path keys with their corresponding values
         endpoint_url: str = api_request.get_api_endpoint_url()
 
-        for py_field_name, api_field_name in specified_paths.items():
+        for py_field_name, api_field_name in list(specified_paths.items()):
             # Replace the path key with the value from the request
             # IE: /v2/ratings/{id} -> /v2/ratings/123
+            _endpoint_url = endpoint_url
             endpoint_url = endpoint_url.format_map({api_field_name: str(getattr(api_request, py_field_name))})
+            if _endpoint_url == endpoint_url:
+                specified_paths.pop(py_field_name)
 
         # Extract any extra header fields and the request body data from the request
         extra_header_keys: list[str] = api_request.get_header_fields()
@@ -210,6 +213,7 @@ class BaseHordeAPIClient(ABC):
 
         # Convert the request body data to a dictionary
         request_body_data_dict: dict | None = api_request.model_dump(
+            by_alias=True,
             exclude_none=True,
             exclude_unset=True,
             exclude=all_fields_to_exclude_from_body,
@@ -563,6 +567,9 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         if not isinstance(response_to_follow_up, ResponseRequiringFollowUpMixin):
             return True
 
+        if response_to_follow_up.ignore_failure():
+            return True
+
         # The message to log if an exception occurs.
         message = (
             "An exception occurred while trying to create a recovery request! "
@@ -753,6 +760,9 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
         """
         # If the response doesn't need a follow-up request, we don't need to do anything.
         if not isinstance(response_to_follow_up, ResponseRequiringFollowUpMixin):
+            return True
+
+        if response_to_follow_up.ignore_failure():
             return True
 
         # If we get here, we need to create a follow-up request to clean up after the premature ending.

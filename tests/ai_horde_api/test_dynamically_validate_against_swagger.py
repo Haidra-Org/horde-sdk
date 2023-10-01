@@ -31,6 +31,9 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     api_to_sdk_payload_model_map: dict[str, dict[HTTPMethod, type[HordeRequest]]] = {}
     api_to_sdk_response_model_map: dict[str, dict[HTTPStatusCode, type[HordeResponse]]] = {}
 
+    request_field_names_and_descriptions: dict[str, list[tuple[str, str | None]]] = {}
+    response_field_names_and_descriptions: dict[str, list[tuple[str, str | None]]] = {}
+
     for request_type in all_request_types:
         endpoint_subpath: GENERIC_API_ENDPOINT_SUBPATH = request_type.get_api_endpoint_subpath()
         assert endpoint_subpath, f"Failed to get endpoint subpath for {request_type.__name__}"
@@ -78,10 +81,11 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
 
         api_to_sdk_payload_model_map[endpoint_subpath][request_type.get_http_method()] = request_type
 
-        field_names_and_descriptions: list[tuple[str, str]] = []
         for field_name, field_info in request_type.model_fields.items():
-            if field_info.description:
-                field_names_and_descriptions.append((field_name, field_info.description))
+            if request_type.__name__ not in request_field_names_and_descriptions:
+                request_field_names_and_descriptions[request_type.__name__] = []
+
+            request_field_names_and_descriptions[request_type.__name__].append((field_name, field_info.description))
 
         endpoint_success_http_status_codes: list[HTTPStatusCode] = [
             success_code
@@ -99,6 +103,18 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
 
         api_to_sdk_response_model_map[endpoint_subpath] = request_type.get_success_status_response_pairs()
 
+        for response_type in request_type.get_success_status_response_pairs().values():
+            for field_name, field_info in response_type.model_fields.items():
+                if response_type.__name__ not in response_field_names_and_descriptions:
+                    response_field_names_and_descriptions[response_type.__name__] = []
+
+                if field_info.description is not None:
+                    response_field_names_and_descriptions[response_type.__name__].append(
+                        (field_name, field_info.description),
+                    )
+                else:
+                    response_field_names_and_descriptions[response_type.__name__].append((field_name, None))
+
     def json_serializer(obj: object) -> object:
         if isinstance(obj, str):
             return obj
@@ -114,6 +130,12 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     with open("docs/api_to_sdk_response_map.json", "w") as f:
         f.write(json.dumps(api_to_sdk_response_model_map, indent=4, default=json_serializer))
         f.write("\n")
+
+    with open("docs/request_field_names_and_descriptions.json", "w") as f:
+        f.write(json.dumps(request_field_names_and_descriptions, indent=4, default=json_serializer))
+
+    with open("docs/response_field_names_and_descriptions.json", "w") as f:
+        f.write(json.dumps(response_field_names_and_descriptions, indent=4, default=json_serializer))
 
 
 def test_all_ai_horde_model_defs_in_swagger_from_prod_swagger() -> None:

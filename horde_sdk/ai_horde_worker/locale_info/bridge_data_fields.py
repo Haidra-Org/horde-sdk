@@ -192,5 +192,12 @@ BRIDGE_DATA_FIELD_DESCRIPTIONS = {
             " other worker can pretend to serve it"
         ),
     ),
+    "extra_stable_diffusion_models_folders": _L(
+        (
+            "A list of folders to search for stable diffusion models. "
+            "This is useful if you want to load models from a folder other than the default "
+            "or if you want to load models from multiple folders."
+        ),
+    ),
     "test": _L("If set to true, the worker will not actually accept jobs, but will instead just print them out."),
 }

@@ -134,6 +134,20 @@ class KNOWN_MISC_POST_PROCESSORS(StrEnum):
     strip_background = auto()
 
 
+class POST_PROCESSOR_ORDER_TYPE(StrEnum):
+    """The post processor order types that are known to the API.
+
+    (facefixers_first, upscalers_first, custom, etc)
+    """
+
+    facefixers_first = auto()
+    upscalers_first = auto()
+    custom = auto()
+
+
+DEFAULT_POST_PROCESSOR_ORDER = POST_PROCESSOR_ORDER_TYPE.facefixers_first
+
+
 class KNOWN_CLIP_BLIP_TYPES(StrEnum):
     caption = auto()
     interrogation = auto()

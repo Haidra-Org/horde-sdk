@@ -114,6 +114,9 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
 
     def get_follow_up_failure_cleanup_request(self) -> list[HordeRequest]:
         """Return the request for this response to clean up after a failed follow up request."""
+        if self.ignore_failure():
+            return []
+
         if self._cleanup_requests is not None:
             return self._cleanup_requests
 
@@ -134,6 +137,11 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
     def get_follow_up_request_types(cls) -> list[type[HordeRequest]]:
         """Return a list of all the possible follow up request types for this response."""
         return [cls.get_follow_up_default_request_type()]
+
+    def ignore_failure(self) -> bool:
+        """Return if the object is in a state which doesn't require failure follow up."""
+        # ImageGenerateJobPopResponse was the use case at the time of writing
+        return False
 
 
 class ResponseWithProgressMixin(BaseModel):
@@ -205,7 +213,7 @@ class HordeRequest(HordeAPIMessage, BaseModel):
     # X_Fields # TODO
 
     client_agent: str = Field(
-        default="horde_sdk:0.7.1:https://githib.com/haidra-org/horde-sdk",
+        default="horde_sdk:0.7.10:https://githib.com/haidra-org/horde-sdk",  # FIXME
         alias="Client-Agent",
     )
 

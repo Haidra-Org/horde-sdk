@@ -26,7 +26,7 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/generate/async | 200 | [ImageGenerateAsyncDryRunResponse][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncDryRunResponse] |
 | /v2/generate/async | 202 | [ImageGenerateAsyncResponse][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse] |
 | /v2/generate/check/{id} | 200 | [ImageGenerateCheckResponse][horde_sdk.ai_horde_api.apimodels.generate._check.ImageGenerateCheckResponse] |
-| /v2/generate/pop | 200 | [ImageGenerateJobResponse][horde_sdk.ai_horde_api.apimodels.generate._pop.ImageGenerateJobResponse] |
+| /v2/generate/pop | 200 | [ImageGenerateJobPopResponse][horde_sdk.ai_horde_api.apimodels.generate._pop.ImageGenerateJobPopResponse] |
 | /v2/generate/status/{id} | 200 | [ImageGenerateStatusResponse][horde_sdk.ai_horde_api.apimodels.generate._status.ImageGenerateStatusResponse] |
 | /v2/generate/submit | 200 | [JobSubmitResponse][horde_sdk.ai_horde_api.apimodels.base.JobSubmitResponse] |
 | /v2/interrogate/async | 202 | [AlchemyAsyncResponse][horde_sdk.ai_horde_api.apimodels.alchemy._async.AlchemyAsyncResponse] |
