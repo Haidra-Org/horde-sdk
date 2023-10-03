@@ -8,7 +8,12 @@ from PIL.Image import Image
 
 from horde_sdk import ANON_API_KEY, RequestErrorResponse
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIAsyncSimpleClient
-from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest, ImageGenerateStatusResponse
+from horde_sdk.ai_horde_api.apimodels import (
+    ImageGenerateAsyncRequest,
+    ImageGenerateStatusResponse,
+    ImageGenerationInputPayload,
+    TIPayloadEntry,
+)
 from horde_sdk.ai_horde_api.fields import JobID
 
 
@@ -24,6 +29,17 @@ async def async_one_image_generate_example(
             apikey=apikey,
             prompt="A cat in a hat",
             models=["Deliberate"],
+            params=ImageGenerationInputPayload(
+                height=512,
+                width=512,
+                tis=[
+                    TIPayloadEntry(
+                        name="72437",
+                        inject_ti="negprompt",
+                        strength=1,
+                    ),
+                ],
+            ),
         ),
     )
 
@@ -51,14 +67,16 @@ async def async_multi_image_generate_example(
             ImageGenerateAsyncRequest(
                 apikey=apikey,
                 prompt="A cat in a blue hat",
-                models=["Deliberate"],
+                models=["SDXL 1.0"],
+                params=ImageGenerationInputPayload(height=1024, width=1024),
             ),
         ),
         simple_client.image_generate_request(
             ImageGenerateAsyncRequest(
                 apikey=apikey,
                 prompt="A cat in a red hat",
-                models=["Deliberate"],
+                models=["SDXL 1.0"],
+                params=ImageGenerationInputPayload(height=1024, width=1024),
             ),
         ),
     )
@@ -84,7 +102,7 @@ async def async_simple_generate_example(apikey: str = ANON_API_KEY) -> None:
         simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
         await async_one_image_generate_example(simple_client, apikey)
-        await async_multi_image_generate_example(simple_client, apikey)
+        # await async_multi_image_generate_example(simple_client, apikey)
 
 
 if __name__ == "__main__":

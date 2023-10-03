@@ -1,11 +1,14 @@
 """The base classes for all AI Horde API requests/responses."""
 from __future__ import annotations
 
+import random
+import uuid
+
 from loguru import logger
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS
+from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS, POST_PROCESSOR_ORDER_TYPE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.fields import JobID, WorkerID
 from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponseBaseModel
@@ -26,12 +29,28 @@ class JobRequestMixin(BaseModel):
     id_: JobID = Field(alias="id")
     """The UUID for this job. Use this to post the results in the future."""
 
+    @field_validator("id_", mode="before")
+    def validate_id(cls, v: str | JobID) -> JobID | str:
+        if isinstance(v, str) and v == "":
+            logger.warning("Job ID is empty")
+            return JobID(root=uuid.uuid4())
+
+        return v
+
 
 class JobResponseMixin(BaseModel):  # TODO: this model may not actually exist as such in the API
     """Mix-in class for data relating to any generation jobs."""
 
     id_: JobID = Field(alias="id")
     """The UUID for this job."""
+
+    @field_validator("id_", mode="before")
+    def validate_id(cls, v: str | JobID) -> JobID | str:
+        if isinstance(v, str) and v == "":
+            logger.warning("Job ID is empty")
+            return JobID(root=uuid.uuid4())
+
+        return v
 
 
 class WorkerRequestMixin(BaseModel):
@@ -109,6 +128,9 @@ class ImageGenerateParamMixin(BaseModel):
     """Deprecated."""
     post_processing: list[str] = Field(default_factory=list)
     """A list of post-processing models to use."""
+    post_processing_order: POST_PROCESSOR_ORDER_TYPE = POST_PROCESSOR_ORDER_TYPE.facefixers_first
+    """The order in which to apply post-processing models.
+    Applying upscalers or removing backgrounds before facefixers costs less kudos."""
     karras: bool = True
     """Set to True if you want to use the Karras scheduling."""
     tiling: bool = False
@@ -131,25 +153,12 @@ class ImageGenerateParamMixin(BaseModel):
     """A list of textual inversion (embedding) parameters to use."""
     special: dict = Field(default_factory=dict)
     """Reserved for future use."""
-    steps: int = Field(default=25, ge=1, validation_alias=AliasChoices("steps", "ddim_steps"))
-    """The number of image generation steps to perform."""
-
-    n: int = Field(default=1, ge=1, le=20, validation_alias=AliasChoices("n", "n_iter"))
-    """The number of images to generate. Defaults to 1, maximum is 20."""
 
     @field_validator("width", "height", mode="before")
     def width_divisible_by_64(cls, value: int) -> int:
         """Ensure that the width is divisible by 64."""
         if value % 64 != 0:
             raise ValueError("width must be divisible by 64")
-        return value
-
-    @field_validator("n", mode="before")
-    def validate_n(cls, value: int) -> int:
-        if value == 0:
-            logger.debug("n (number of images to generate) is not set; defaulting to 1")
-            return 1
-
         return value
 
     use_nsfw_censor: bool = False
@@ -161,11 +170,19 @@ class ImageGenerateParamMixin(BaseModel):
             raise ValueError(f"Unknown sampler name {v}")
         return v
 
-    @model_validator(mode="after")
-    def validate_hires_fix(self) -> ImageGenerateParamMixin:
-        if self.hires_fix and (self.width < 512 or self.height < 512):
-            raise ValueError("hires_fix is only valid when width and height are both >= 512")
-        return self
+    # @model_validator(mode="after")
+    # def validate_hires_fix(self) -> ImageGenerateParamMixin:
+    #     if self.hires_fix and (self.width < 512 or self.height < 512):
+    #         raise ValueError("hires_fix is only valid when width and height are both >= 512")
+    #     return self
+
+    @field_validator("seed")
+    def random_seed_if_none(cls, v: str | None) -> str | None:
+        """If the seed is None, generate a random seed."""
+        if v is None:
+            logger.debug("Generating random seed")
+            return str(random.randint(1, 1000000000))
+        return v
 
 
 class JobSubmitResponse(HordeResponseBaseModel):

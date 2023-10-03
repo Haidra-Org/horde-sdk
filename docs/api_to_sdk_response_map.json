@@ -25,7 +25,7 @@
         "200": "horde_sdk.ai_horde_api.apimodels.generate._check.ImageGenerateCheckResponse"
     },
     "/v2/generate/pop": {
-        "200": "horde_sdk.ai_horde_api.apimodels.generate._pop.ImageGenerateJobResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.generate._pop.ImageGenerateJobPopResponse"
     },
     "/v2/generate/submit": {
         "200": "horde_sdk.ai_horde_api.apimodels.base.JobSubmitResponse"

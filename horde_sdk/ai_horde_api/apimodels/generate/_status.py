@@ -1,4 +1,7 @@
-from pydantic import BaseModel, Field
+import uuid
+
+from loguru import logger
+from pydantic import BaseModel, Field, field_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
@@ -33,6 +36,14 @@ class ImageGeneration(BaseModel):
     """The seed which generated this image."""
     censored: bool
     """When true this image has been censored by the worker's safety filter."""
+
+    @field_validator("id_", mode="before")
+    def validate_id(cls, v: str | JobID) -> JobID | str:
+        if isinstance(v, str) and v == "":
+            logger.warning("Job ID is empty")
+            return JobID(root=uuid.uuid4())
+
+        return v
 
 
 class ImageGenerateStatusResponse(

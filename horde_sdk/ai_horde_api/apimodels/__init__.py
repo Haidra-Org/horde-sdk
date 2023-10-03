@@ -35,7 +35,7 @@ from horde_sdk.ai_horde_api.apimodels.alchemy._status import (
     AlchemyStatusResponse,
     AlchemyUpscaleResult,
 )
-from horde_sdk.ai_horde_api.apimodels.base import LorasPayloadEntry
+from horde_sdk.ai_horde_api.apimodels.base import LorasPayloadEntry, TIPayloadEntry
 from horde_sdk.ai_horde_api.apimodels.generate._async import (
     ImageGenerateAsyncDryRunResponse,
     ImageGenerateAsyncRequest,
@@ -46,8 +46,8 @@ from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckR
 from horde_sdk.ai_horde_api.apimodels.generate._pop import (
     ImageGenerateJobPopPayload,
     ImageGenerateJobPopRequest,
+    ImageGenerateJobPopResponse,
     ImageGenerateJobPopSkippedStatus,
-    ImageGenerateJobResponse,
 )
 from horde_sdk.ai_horde_api.apimodels.generate._status import (
     DeleteImageGenerateRequest,
@@ -94,7 +94,7 @@ __all__ = [
     "ImageGenerateJobPopRequest",
     "ImageGenerateJobPopPayload",
     "ImageGenerateJobPopSkippedStatus",
-    "ImageGenerateJobResponse",
+    "ImageGenerateJobPopResponse",
     "ImageGenerateStatusRequest",
     "ImageGenerateStatusResponse",
     "ImageGenerationJobSubmitRequest",
@@ -106,6 +106,7 @@ __all__ = [
     "StatsImageModelsRequest",
     "StatsModelsResponse",
     "StatsModelsTimeframe",
+    "TIPayloadEntry",
     "UsageDetails",
     "UserAmountRecords",
     "UserKudosDetails",

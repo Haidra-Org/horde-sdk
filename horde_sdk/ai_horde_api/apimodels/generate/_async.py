@@ -1,4 +1,5 @@
-from pydantic import AliasChoices, Field, model_validator
+from loguru import logger
+from pydantic import AliasChoices, Field, field_validator, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
@@ -37,7 +38,9 @@ class ImageGenerateAsyncResponse(
     kudos: float
 
     @override
-    def get_follow_up_returned_params(self) -> list[dict[str, object]]:
+    def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
+        if as_python_field_name:
+            return [{"id_": self.id_}]
         return [{"id": self.id_}]
 
     @classmethod
@@ -87,6 +90,14 @@ class ImageGenerationInputPayload(HordeAPIObject, ImageGenerateParamMixin):
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "ModelGenerationInputStable"
+
+    @field_validator("n", mode="before")
+    def validate_n(cls, value: int) -> int:
+        if value == 0:
+            logger.debug("n (number of images to generate) is not set; defaulting to 1")
+            return 1
+
+        return value
 
 
 class ImageGenerateAsyncRequest(

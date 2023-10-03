@@ -15,19 +15,20 @@ def simple_generate_example(api_key: str = ANON_API_KEY) -> None:
     status_response, job_id = simple_client.image_generate_request(
         ImageGenerateAsyncRequest(
             apikey=api_key,
+            workers=["facf2d67-9e83-4a9e-a7ae-8e555d55af08"],
             params=ImageGenerationInputPayload(
                 sampler_name=KNOWN_SAMPLERS.k_euler,
                 cfg_scale=4,
-                width=512,
+                width=768,
                 height=512,
                 karras=False,
-                hires_fix=True,
+                hires_fix=False,
                 clip_skip=1,
                 steps=30,
                 loras=[
                     LorasPayloadEntry(
                         name="GlowingRunesAI",
-                        model=-1,
+                        model=1,
                         clip=1,
                         inject_trigger="any",  # Get a random color trigger
                     ),
@@ -67,4 +68,5 @@ if __name__ == "__main__":
 
     api_key = args.api_key
 
-    simple_generate_example(api_key)
+    while True:
+        simple_generate_example(api_key)

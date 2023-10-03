@@ -1,15 +1,18 @@
+import uuid
+
 import pydantic
+from loguru import logger
 from pydantic import AliasChoices, Field, field_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,
     ImageGenerateParamMixin,
-    JobResponseMixin,
 )
 from horde_sdk.ai_horde_api.apimodels.generate._submit import ImageGenerationJobSubmitRequest
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE, KNOWN_SOURCE_PROCESSING
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
+from horde_sdk.ai_horde_api.fields import JobID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
@@ -62,7 +65,7 @@ class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
 
 
 class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
-    prompt: str
+    prompt: str | None = None
     ddim_steps: int = Field(default=25, ge=1, validation_alias=AliasChoices("steps", "ddim_steps"))
     """The number of image generation steps to perform."""
 
@@ -70,20 +73,23 @@ class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
     """The number of images to generate. Defaults to 1, maximum is 20."""
 
 
-class ImageGenerateJobResponse(HordeResponseBaseModel, JobResponseMixin, ResponseRequiringFollowUpMixin):
+class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin):
     """Represents the data returned from the `/v2/generate/pop` endpoint.
 
     v2 API Model: `GenerationPayloadStable`
     """
 
+    id_: JobID | None = Field(None, alias="id")
+    """The UUID for this image generation."""
+
     payload: ImageGenerateJobPopPayload
     """The parameters used to generate this image."""
     skipped: ImageGenerateJobPopSkippedStatus
     """The reasons this worker was not issued certain jobs, and the number of jobs for each reason."""
-    model: str
+    model: str | None = None
     """Which of the available models to use for this request."""
     source_image: str | None = None
-    """The Base64-encoded webp to use for img2img."""
+    """The URL or Base64-encoded webp to use for img2img."""
     source_processing: str | KNOWN_SOURCE_PROCESSING = KNOWN_SOURCE_PROCESSING.txt2img
     """If source_image is provided, specifies how to process it."""
     source_mask: str | None = None
@@ -98,6 +104,14 @@ class ImageGenerateJobResponse(HordeResponseBaseModel, JobResponseMixin, Respons
         """Ensure that the source processing is in this list of supported source processing."""
         if v not in KNOWN_SOURCE_PROCESSING.__members__:
             raise ValueError(f"Unknown source processing {v}")
+        return v
+
+    @field_validator("id_", mode="before")
+    def validate_id(cls, v: str | JobID) -> JobID | str:
+        if isinstance(v, str) and v == "":
+            logger.warning("Job ID is empty")
+            return JobID(root=uuid.uuid4())
+
         return v
 
     @override
@@ -116,16 +130,29 @@ class ImageGenerateJobResponse(HordeResponseBaseModel, JobResponseMixin, Respons
         return ImageGenerationJobSubmitRequest
 
     @override
-    def get_follow_up_returned_params(self) -> list[dict[str, object]]:
+    def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
+        if as_python_field_name:
+            return [{"id_": self.id_}]
         return [{"id": self.id_}]
 
     @override
     def get_follow_up_failure_cleanup_params(self) -> dict[str, object]:
-        return {"state": GENERATION_STATE.faulted}  # TODO: One day, could I do away with the magic string?
+        return {
+            "state": GENERATION_STATE.faulted,
+            "seed": self.payload.seed,
+            "generation": "Faulted",
+        }  # TODO: One day, could I do away with the magic string?
 
     @override
     def get_extra_fields_to_exclude_from_log(self) -> set[str]:
         return {"source_image"}
+
+    @override
+    def ignore_failure(self) -> bool:
+        if self.id_ is None:
+            return True
+
+        return super().ignore_failure()
 
 
 class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
@@ -168,5 +195,5 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[ImageGenerateJobResponse]:
-        return ImageGenerateJobResponse
+    def get_default_success_response_type(cls) -> type[ImageGenerateJobPopResponse]:
+        return ImageGenerateJobPopResponse

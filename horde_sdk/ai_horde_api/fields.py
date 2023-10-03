@@ -6,7 +6,7 @@ by providing additional type hints for the request and response payloads and val
 import uuid
 from typing import Any
 
-from pydantic import RootModel, field_validator
+from pydantic import RootModel, field_validator, model_serializer
 from typing_extensions import override
 
 
@@ -17,7 +17,11 @@ class UUID_Identifier(RootModel[uuid.UUID]):
 
     root: uuid.UUID
 
-    @field_validator("root", mode="before")
+    @model_serializer
+    def ser_model(self) -> str:
+        return str(self.root)
+
+    @field_validator("root", mode="after")
     def id_must_be_uuid(cls, v: str | uuid.UUID) -> str | uuid.UUID:
         """Ensure that the ID is a valid UUID."""
         if isinstance(v, uuid.UUID):
@@ -45,12 +49,12 @@ class UUID_Identifier(RootModel[uuid.UUID]):
             return self.root == other.root
 
         if isinstance(other, str):
-            return self.root.__str__() == other
+            return str(self.root) == other
 
         if isinstance(other, uuid.UUID):
             return self.root == other
 
-        return False
+        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
 
     @override
     def __hash__(self) -> int:

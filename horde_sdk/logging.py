@@ -66,6 +66,7 @@ handler_config = [
         "diagnose": True,
     },
 ]
+
 PROGRESS_LOGGER_LABEL = "PROGRESS"
 """The label for request progress log messages. Less severity than INFO."""
 COMPLETE_LOGGER_LABEL = "COMPLETE"
@@ -88,4 +89,7 @@ if HORDE_SDK_LOG_VERBOSITY is not None:
     if parsed_verbosity is not None:
         verbosity = parsed_verbosity
 
-logger.configure(handlers=handler_config)
+set_logger_handlers = os.getenv("HORDE_SDK_SET_DEFAULT_LOG_HANDLERS")
+
+if set_logger_handlers:
+    logger.configure(handlers=handler_config)

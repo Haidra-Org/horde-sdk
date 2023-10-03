@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from loguru import logger
+from pydantic import model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin, JobSubmitResponse
@@ -13,14 +17,26 @@ class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, JobRequestMixin, APIKe
     v2 API Model: `SubmitInputStable`
     """
 
-    generation: str
+    generation: str = ""
     """R2 result was uploaded to R2, else the string of the result."""
     state: GENERATION_STATE
     """The state of this generation."""
-    seed: str
+    seed: int = 0
     """The seed for this generation."""
     censored: bool = False
     """If True, this resulting image has been censored."""
+
+    @model_validator(mode="after")
+    def validate_generation(self) -> ImageGenerationJobSubmitRequest:
+        if self.generation == "":
+            logger.error("Generation cannot be an empty string.")
+            logger.error(self)
+
+        if self.seed == 0:
+            logger.error("Seed cannot be 0.")
+            logger.error(self)
+
+        return self
 
     @override
     @classmethod

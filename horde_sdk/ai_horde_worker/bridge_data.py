@@ -32,7 +32,7 @@ class BaseHordeBridgeData(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    @model_validator(mode="after")  # type: ignore # FIXME: https://github.com/python/mypy/issues/15620
+    @model_validator(mode="after")
     def validate_extra_params_warning(self) -> BaseHordeBridgeData:
         """Warn on extra parameters being passed."""
         if not self.model_extra:
@@ -128,9 +128,8 @@ class SharedHordeBridgeData(BaseHordeBridgeData):
 class ImageWorkerBridgeData(SharedHordeBridgeData):
     """The bridge data file for a Dreamer or Alchemist worker."""
 
-    #
-    # Dreamer
-    #
+    extra_stable_diffusion_models_folders: list[str] = Field(default_factory=list)
+    """A list of extra folders to search for stable diffusion models."""
 
     allow_controlnet: bool = False
     """Whether to allow the use of ControlNet. This requires img2img to be enabled."""
@@ -263,9 +262,9 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
     forms: list[str] = ["caption", "nsfw", "interrogation", "post-process"]
     """The type of services or processing an alchemist worker will provide."""
 
-    @model_validator(mode="after")  # type: ignore # FIXME: https://github.com/python/mypy/issues/15620
-    def validate_param_conflict(self) -> ImageWorkerBridgeData:
-        """Validate that the parameters are not conflicting."""
+    @model_validator(mode="after")
+    def validate_model(self) -> ImageWorkerBridgeData:
+        """Validate that the parameters are not conflicting and make any fixed adjustments."""
         if not self.allow_img2img and self.allow_controlnet:
             logger.warning(
                 (
@@ -274,6 +273,9 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
                 ),
             )
             self.allow_controlnet = False
+
+        self.image_models_to_skip.append("SDXL_beta::stability.ai#6901")  # FIXME: no magic strings
+
         return self
 
     _meta_load_instructions: list[str] | None = None

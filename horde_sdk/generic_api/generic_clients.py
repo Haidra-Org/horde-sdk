@@ -167,10 +167,13 @@ class BaseHordeAPIClient(ABC):
         # Get the endpoint URL from the request and replace any path keys with their corresponding values
         endpoint_url: str = api_request.get_api_endpoint_url()
 
-        for py_field_name, api_field_name in specified_paths.items():
+        for py_field_name, api_field_name in list(specified_paths.items()):
             # Replace the path key with the value from the request
             # IE: /v2/ratings/{id} -> /v2/ratings/123
+            _endpoint_url = endpoint_url
             endpoint_url = endpoint_url.format_map({api_field_name: str(getattr(api_request, py_field_name))})
+            if _endpoint_url == endpoint_url:
+                specified_paths.pop(py_field_name)
 
         # Extract any extra header fields and the request body data from the request
         extra_header_keys: list[str] = api_request.get_header_fields()
@@ -210,6 +213,7 @@ class BaseHordeAPIClient(ABC):
 
         # Convert the request body data to a dictionary
         request_body_data_dict: dict | None = api_request.model_dump(
+            by_alias=True,
             exclude_none=True,
             exclude_unset=True,
             exclude=all_fields_to_exclude_from_body,
@@ -479,9 +483,8 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
             )
         else:  # TODO: This whole else is duplicated in the asyncio version of this class. Refactor it out.
             # Check if this request is a cleanup or follow up request for a prior request
-
             # Loop through each item in self._pending_follow_ups list
-            for index, (prior_request, _prior_response, cleanup_request) in enumerate(self._pending_follow_ups):
+            for index, (prior_request, prior_response, cleanup_request) in enumerate(self._pending_follow_ups):
                 if api_request is cleanup_request:
                     if not isinstance(response, RequestErrorResponse):
                         self._pending_follow_ups.pop(index)
@@ -494,23 +497,32 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
                         logger.error(f"Response: {response}")
                     break
 
+                if not isinstance(prior_response, ResponseRequiringFollowUpMixin):
+                    continue
+
                 # If the response isn't a final follow-up, we don't need to do anything else.
-                if not isinstance(response, ResponseWithProgressMixin):
-                    continue
-                if not response.is_final_follow_up():
-                    continue
-                if not prior_request.get_requires_follow_up():
-                    continue
+                if isinstance(response, ResponseWithProgressMixin):
+                    if not response.is_final_follow_up():
+                        continue
+                    if not prior_request.get_requires_follow_up():
+                        continue
 
-                # See if the current api_request is a follow-up to the prior_request
-                if not prior_request.does_target_request_follow_up(api_request):
-                    continue
+                    # See if the current api_request is a follow-up to the prior_request
+                    if not prior_response.does_target_request_follow_up(api_request):
+                        continue
 
-                # Check if the current response indicates that the job is complete
-                if response.is_job_complete(prior_request.get_number_of_results_expected()):
-                    # Remove the current item from the _pending_follow_ups list
-                    # This is for the benefit of the __exit__ method (context management)
+                    # Check if the current response indicates that the job is complete
+                    if response.is_job_complete(prior_request.get_number_of_results_expected()):
+                        # Remove the current item from the _pending_follow_ups list
+                        # This is for the benefit of the __exit__ method (context management)
+                        self._pending_follow_ups.pop(index)
+                        break
+                else:
+                    if not prior_response.does_target_request_follow_up(api_request):
+                        continue
+
                     self._pending_follow_ups.pop(index)
+                    break
 
         return response
 
@@ -561,6 +573,9 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         """
         # If the response doesn't need a follow-up request, we don't need to do anything.
         if not isinstance(response_to_follow_up, ResponseRequiringFollowUpMixin):
+            return True
+
+        if response_to_follow_up.ignore_failure():
             return True
 
         # The message to log if an exception occurs.
@@ -652,44 +667,55 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
             # Check if the response requires a follow-up request.
             if isinstance(response, ResponseRequiringFollowUpMixin):
                 # Add the follow-up request to the list of pending follow-ups.
-                self._pending_follow_ups.append(
-                    (api_request, response, response.get_follow_up_failure_cleanup_request()),
-                )
+                if not response.ignore_failure():
+                    self._pending_follow_ups.append(
+                        (api_request, response, response.get_follow_up_failure_cleanup_request()),
+                    )
 
             else:
                 # Check if this request is a cleanup or follow up request for a prior request
 
                 # Loop through each item in self._pending_follow_ups list
-                for index, (prior_request, _prior_response, cleanup_request) in enumerate(self._pending_follow_ups):
+                for index, (prior_request, prior_response, cleanup_request) in enumerate(self._pending_follow_ups):
                     if api_request is cleanup_request:
                         if not isinstance(response, RequestErrorResponse):
                             self._pending_follow_ups.pop(index)
-                        else:
-                            logger.error(
-                                "This api request would have followed up on an operation which requires it, but it "
-                                "failed!",
-                            )
-                            logger.error(f"Request: {api_request}")
-                            logger.error(f"Response: {response}")
+                            break
+
+                        logger.error(
+                            "This api request would have followed up on an operation which requires it, but it "
+                            "failed!",
+                        )
+                        logger.error(f"Request: {api_request.log_safe_model_dump()}")
+                        logger.error(f"Response: {response.log_safe_model_dump()}")
                         break
 
+                    if not isinstance(prior_response, ResponseRequiringFollowUpMixin):
+                        continue
+
                     # If the response isn't a final follow-up, we don't need to do anything else.
-                    if not isinstance(response, ResponseWithProgressMixin):
-                        continue
-                    if not response.is_final_follow_up():
-                        continue
-                    if not prior_request.get_requires_follow_up():
-                        continue
+                    if isinstance(response, ResponseWithProgressMixin):
+                        if not response.is_final_follow_up():
+                            continue
+                        if not prior_request.get_requires_follow_up():
+                            continue
 
-                    # See if the current api_request is a follow-up to the prior_request
-                    if not prior_request.does_target_request_follow_up(api_request):
-                        continue
+                        # See if the current api_request is a follow-up to the prior_request
+                        if not prior_response.does_target_request_follow_up(api_request):
+                            continue
 
-                    # Check if the current response indicates that the job is complete
-                    if response.is_job_complete(prior_request.get_number_of_results_expected()):
-                        # Remove the current item from the _pending_follow_ups list
-                        # This is for the benefit of the __exit__ method (context management)
+                        # Check if the current response indicates that the job is complete
+                        if response.is_job_complete(prior_request.get_number_of_results_expected()):
+                            # Remove the current item from the _pending_follow_ups list
+                            # This is for the benefit of the __exit__ method (context management)
+                            self._pending_follow_ups.pop(index)
+                            break
+                    else:
+                        if not prior_response.does_target_request_follow_up(api_request):
+                            continue
+
                         self._pending_follow_ups.pop(index)
+                        break
 
         # Return the response from the API.
         return response
@@ -755,6 +781,9 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
         if not isinstance(response_to_follow_up, ResponseRequiringFollowUpMixin):
             return True
 
+        if response_to_follow_up.ignore_failure():
+            return True
+
         # If we get here, we need to create a follow-up request to clean up after the premature ending.
         message = (
             "An exception occurred while trying to create a recovery request! "
@@ -779,10 +808,14 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
                     )
                     for cleanup_request in cleanup_requests
                 ],
+                return_exceptions=True,
             )
 
             # Log the results of each cleanup request.
             for i, cleanup_response in enumerate(cleanup_responses):
+                if isinstance(cleanup_response, Exception):
+                    logger.error(f"Recovery request {i+1} failed!")
+
                 logger.info(f"Recovery request {i+1} submitted!")
                 logger.debug(f"Recovery request {i+1}: {cleanup_requests[i].log_safe_model_dump()}")
                 logger.debug(f"Recovery response {i+1}: {cleanup_response}")
