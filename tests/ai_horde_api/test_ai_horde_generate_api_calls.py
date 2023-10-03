@@ -212,7 +212,7 @@ class TestAIHordeGenerate:
             params=ImageGenerationInputPayload(
                 seed="1234",
                 n=1,
-                loras=[LorasPayloadEntry(name="48139", model=1, clip=1)],
+                loras=[LorasPayloadEntry(name="76693", model=1, clip=1)],
             ),
             models=["Deliberate"],
         )

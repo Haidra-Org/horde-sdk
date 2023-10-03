@@ -53,7 +53,7 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
     """Represents any response from any Horde API which requires a follow up request of some kind."""
 
     @abc.abstractmethod
-    def get_follow_up_returned_params(self) -> list[dict[str, object]]:
+    def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
         """Return the information required from this response to submit a follow up request.
 
         Note that this dict uses the alias field names (as seen on the API), not the python field names.
@@ -142,6 +142,29 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
         """Return if the object is in a state which doesn't require failure follow up."""
         # ImageGenerateJobPopResponse was the use case at the time of writing
         return False
+
+    def does_target_request_follow_up(self, target_request: HordeRequest) -> bool:
+        """Return whether the `target_request` would follow up on this request.
+
+        Args:
+            target_request (HordeRequest): The request to check if it would follow up on this request.
+
+        Returns:
+            bool: Whether the `target_request` would follow up on this request.
+        """
+
+        follow_up_returned_params = self.get_follow_up_returned_params(as_python_field_name=True)
+
+        if len(follow_up_returned_params) == 0:
+            logger.warning("No follow up returned params defined for this request")
+            return False
+        all_match = True
+        for param_set in follow_up_returned_params:
+            for key, value in param_set.items():
+                if hasattr(target_request, key) and getattr(target_request, key) != value:
+                    all_match = False
+                    break
+        return all_match
 
 
 class ResponseWithProgressMixin(BaseModel):
@@ -273,27 +296,6 @@ class HordeRequest(HordeAPIMessage, BaseModel):
         for response_type in self.get_success_status_response_pairs().values():
             if issubclass(response_type, ResponseRequiringFollowUpMixin):
                 return True
-        return False
-
-    def does_target_request_follow_up(self, target_request: HordeRequest) -> bool:
-        """Return whether the `target_request` would follow up on this request.
-
-        Args:
-            target_request (HordeRequest): The request to check if it would follow up on this request.
-
-        Returns:
-            bool: Whether the `target_request` would follow up on this request.
-        """
-        if not self.get_requires_follow_up():
-            return False
-
-        defined_response_types = self.get_success_status_response_pairs().values()
-
-        for response_type in defined_response_types:
-            if issubclass(response_type, ResponseRequiringFollowUpMixin):  # noqa: SIM102
-                if type(target_request) in response_type.get_follow_up_request_types():
-                    return True
-
         return False
 
     @override

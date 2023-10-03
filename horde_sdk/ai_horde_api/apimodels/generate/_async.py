@@ -38,7 +38,9 @@ class ImageGenerateAsyncResponse(
     kudos: float
 
     @override
-    def get_follow_up_returned_params(self) -> list[dict[str, object]]:
+    def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
+        if as_python_field_name:
+            return [{"id_": self.id_}]
         return [{"id": self.id_}]
 
     @classmethod

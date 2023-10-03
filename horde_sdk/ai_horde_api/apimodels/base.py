@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import random
+import uuid
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -28,12 +29,28 @@ class JobRequestMixin(BaseModel):
     id_: JobID = Field(alias="id")
     """The UUID for this job. Use this to post the results in the future."""
 
+    @field_validator("id_", mode="before")
+    def validate_id(cls, v: str | JobID) -> JobID | str:
+        if isinstance(v, str) and v == "":
+            logger.warning("Job ID is empty")
+            return JobID(root=uuid.uuid4())
+
+        return v
+
 
 class JobResponseMixin(BaseModel):  # TODO: this model may not actually exist as such in the API
     """Mix-in class for data relating to any generation jobs."""
 
     id_: JobID = Field(alias="id")
     """The UUID for this job."""
+
+    @field_validator("id_", mode="before")
+    def validate_id(cls, v: str | JobID) -> JobID | str:
+        if isinstance(v, str) and v == "":
+            logger.warning("Job ID is empty")
+            return JobID(root=uuid.uuid4())
+
+        return v
 
 
 class WorkerRequestMixin(BaseModel):

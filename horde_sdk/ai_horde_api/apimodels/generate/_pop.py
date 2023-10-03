@@ -1,4 +1,7 @@
+import uuid
+
 import pydantic
+from loguru import logger
 from pydantic import AliasChoices, Field, field_validator
 from typing_extensions import override
 
@@ -86,7 +89,7 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
     model: str | None = None
     """Which of the available models to use for this request."""
     source_image: str | None = None
-    """The Base64-encoded webp to use for img2img."""
+    """The URL or Base64-encoded webp to use for img2img."""
     source_processing: str | KNOWN_SOURCE_PROCESSING = KNOWN_SOURCE_PROCESSING.txt2img
     """If source_image is provided, specifies how to process it."""
     source_mask: str | None = None
@@ -101,6 +104,14 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
         """Ensure that the source processing is in this list of supported source processing."""
         if v not in KNOWN_SOURCE_PROCESSING.__members__:
             raise ValueError(f"Unknown source processing {v}")
+        return v
+
+    @field_validator("id_", mode="before")
+    def validate_id(cls, v: str | JobID) -> JobID | str:
+        if isinstance(v, str) and v == "":
+            logger.warning("Job ID is empty")
+            return JobID(root=uuid.uuid4())
+
         return v
 
     @override
@@ -119,12 +130,18 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
         return ImageGenerationJobSubmitRequest
 
     @override
-    def get_follow_up_returned_params(self) -> list[dict[str, object]]:
+    def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
+        if as_python_field_name:
+            return [{"id_": self.id_}]
         return [{"id": self.id_}]
 
     @override
     def get_follow_up_failure_cleanup_params(self) -> dict[str, object]:
-        return {"state": GENERATION_STATE.faulted}  # TODO: One day, could I do away with the magic string?
+        return {
+            "state": GENERATION_STATE.faulted,
+            "seed": self.payload.seed,
+            "generation": "Faulted",
+        }  # TODO: One day, could I do away with the magic string?
 
     @override
     def get_extra_fields_to_exclude_from_log(self) -> set[str]:

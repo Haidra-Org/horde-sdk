@@ -48,6 +48,9 @@ class UUID_Identifier(RootModel[uuid.UUID]):
         if isinstance(other, UUID_Identifier):
             return self.root == other.root
 
+        if isinstance(other, str):
+            return str(self.root) == other
+
         if isinstance(other, uuid.UUID):
             return self.root == other
 

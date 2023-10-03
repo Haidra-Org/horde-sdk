@@ -11,6 +11,7 @@
         "post_processing": [
             "GFPGAN"
         ],
+        "post_processing_order": "facefixers_first",
         "karras": false,
         "tiling": false,
         "hires_fix": false,

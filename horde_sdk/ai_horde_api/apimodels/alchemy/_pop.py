@@ -107,7 +107,7 @@ class AlchemyPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin)
         return AlchemyJobSubmitRequest
 
     @override
-    def get_follow_up_returned_params(self) -> list[dict[str, object]]:
+    def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
         if not self.forms:
             return []
         all_ids: list[dict[str, object]] = []
@@ -116,7 +116,10 @@ class AlchemyPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin)
                 logger.warning(f"Skipping form {form} as it is not an AlchemyPopFormPayload")
                 continue
             if form.id_:
-                all_ids.append({"id": form.id_})
+                if as_python_field_name:
+                    all_ids.append({"id_": form.id_})
+                else:
+                    all_ids.append({"id": form.id_})
 
         return all_ids
 
