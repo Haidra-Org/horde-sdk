@@ -78,7 +78,7 @@ class LorasPayloadEntry(BaseModel):
 
 class TIPayloadEntry(BaseModel):
     name: str = Field(min_length=1, max_length=255)
-    inject_ti: str | None
+    inject_ti: str | None = None
     strength: float = Field(default=1, ge=-5, le=5)
 
     @field_validator("inject_ti")
