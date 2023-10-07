@@ -259,8 +259,16 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
     alchemist_name: str = "An Awesome Alchemist"
     """The name of the worker if it is an alchemist. This is used to easily identify the worker."""
 
-    forms: list[str] = ["caption", "nsfw", "interrogation", "post-process"]
+    forms: list[str]
     """The type of services or processing an alchemist worker will provide."""
+
+    @field_validator("forms", mode="before")
+    def default_forms(cls, v: list[str]) -> list[str]:
+        if v is None or len(v) == 0:
+            logger.info("Using the default alchemy forms as none were specified.")
+            return ["caption", "nsfw", "interrogation", "post-process"]
+
+        return v
 
     @model_validator(mode="after")
     def validate_model(self) -> ImageWorkerBridgeData:

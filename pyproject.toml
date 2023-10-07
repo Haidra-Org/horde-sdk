@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "horde_sdk"
-version = "0.7.12"
+version = "0.7.14"
 description = "A python toolkit for interacting with the horde APIs, services, and ecosystem."
 authors = [
     {name = "tazlin", email = "tazlin.on.github@gmail.com"},
@@ -51,7 +51,8 @@ select = [
   "SIM",
   "COM",
   # "D",
-  "ANN"]
+  "ANN",
+  "RUF"]
 ignore = [
   "ANN101",
   "ANN102",

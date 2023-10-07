@@ -36,8 +36,8 @@ PRODUCTION_RESPONSES: dict[ModuleType, Path] = {
 """Manually generated production responses by the developers."""
 
 
-class Test_reflection_and_dynamic:  # noqa: D101
-    def test_example_response_folders_exist(self) -> None:  # noqa: D102
+class Test_reflection_and_dynamic:
+    def test_example_response_folders_exist(self) -> None:
         for api, folder in EXAMPLE_RESPONSES.items():
             assert folder.exists(), f"Missing example response folder for {api.__name__}: {folder}"
 

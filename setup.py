@@ -1,5 +1,5 @@
 # from babel.messages import frontend as babel
-from setuptools import setup  # noqa: D100
+from setuptools import setup
 
 # setup(
 #     cmdclass={

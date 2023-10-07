@@ -99,7 +99,7 @@ class TIPayloadEntry(BaseModel):
     @model_validator(mode="after")
     def strength_only_if_inject_ti(self) -> TIPayloadEntry:
         if self.strength and self.inject_ti is None:
-            raise ValueError("strength is only valid when inject_ti is set")
+            logger.debug("strength is only valid when inject_ti is set")
         return self
 
 
