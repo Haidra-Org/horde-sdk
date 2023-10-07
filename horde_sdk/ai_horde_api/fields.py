@@ -6,14 +6,14 @@ by providing additional type hints for the request and response payloads and val
 import uuid
 from typing import Any, ClassVar
 
-from pydantic import RootModel, field_validator, model_serializer
+from pydantic import ConfigDict, RootModel, field_validator, model_serializer
 from typing_extensions import override
 
 
 class UUID_Identifier(RootModel[uuid.UUID]):
     """Represents a UUID type identifier used by the API."""
 
-    model_config: ClassVar = {"frozen": True}
+    model_config: ClassVar[ConfigDict] = {"frozen": True}
 
     root: uuid.UUID
 

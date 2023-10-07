@@ -10,7 +10,7 @@ from typing import ClassVar
 
 import requests
 from loguru import logger
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from strenum import StrEnum
 
 from horde_sdk.consts import PAYLOAD_HTTP_METHODS, HTTPMethod, HTTPStatusCode, is_error_status_code
@@ -73,7 +73,7 @@ class SwaggerModelEntry(BaseModel, ABC):
 class SwaggerModelDefinition(SwaggerModelEntry):
     """A definition of a model (data structure) used in the API."""
 
-    model_config: ClassVar = {"extra": "forbid"}
+    model_config: ClassVar[ConfigDict] = {"extra": "forbid"}
 
     type_: str | None = Field(None, alias="type")
     properties: dict[str, SwaggerModelProperty] | None = None
@@ -98,7 +98,7 @@ class SwaggerModelDefinitionSchemaValidation(SwaggerModelEntry):
     https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
     """
 
-    model_config: ClassVar = {"extra": "forbid"}
+    model_config: ClassVar[ConfigDict] = {"extra": "forbid"}
 
     allOf: list[SwaggerModelDefinition | SwaggerModelRef] | None = None
     """The model must match all of the schemas in this list."""
