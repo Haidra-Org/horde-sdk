@@ -44,7 +44,7 @@ class TestAIHordeGenerate:
             ) -> ImageGenerateAsyncResponse | RequestErrorResponse | None:
                 async with AIHordeAPIAsyncClientSession(aiohttp_session) as horde_session:
                     api_response: ImageGenerateAsyncResponse | RequestErrorResponse = (
-                        await horde_session.submit_request(  # noqa: F841
+                        await horde_session.submit_request(
                             simple_image_gen_request,
                             simple_image_gen_request.get_default_success_response_type(),
                         )
