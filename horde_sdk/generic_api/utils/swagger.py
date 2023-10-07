@@ -6,6 +6,7 @@ import json
 import re
 from abc import ABC
 from pathlib import Path
+from typing import ClassVar
 
 import requests
 from loguru import logger
@@ -72,7 +73,7 @@ class SwaggerModelEntry(BaseModel, ABC):
 class SwaggerModelDefinition(SwaggerModelEntry):
     """A definition of a model (data structure) used in the API."""
 
-    model_config = {"extra": "forbid"}
+    model_config: ClassVar = {"extra": "forbid"}
 
     type_: str | None = Field(None, alias="type")
     properties: dict[str, SwaggerModelProperty] | None = None
@@ -97,7 +98,7 @@ class SwaggerModelDefinitionSchemaValidation(SwaggerModelEntry):
     https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
     """
 
-    model_config = {"extra": "forbid"}
+    model_config: ClassVar = {"extra": "forbid"}
 
     allOf: list[SwaggerModelDefinition | SwaggerModelRef] | None = None
     """The model must match all of the schemas in this list."""
