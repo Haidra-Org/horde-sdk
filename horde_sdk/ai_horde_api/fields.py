@@ -4,16 +4,16 @@ However, this module may still assist in the construction of valid requests to t
 by providing additional type hints for the request and response payloads and validation.
 """
 import uuid
-from typing import Any
+from typing import Any, ClassVar
 
-from pydantic import RootModel, field_validator, model_serializer
+from pydantic import ConfigDict, RootModel, field_validator, model_serializer
 from typing_extensions import override
 
 
 class UUID_Identifier(RootModel[uuid.UUID]):
     """Represents a UUID type identifier used by the API."""
 
-    model_config = {"frozen": True}
+    model_config: ClassVar[ConfigDict] = {"frozen": True}
 
     root: uuid.UUID
 

@@ -635,7 +635,6 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
     ) -> None:
-        """Initialize a new `GenericHordeAPISession` instance."""
         super().__init__(
             aiohttp_session=aiohttp_session,
             header_fields=header_fields,
