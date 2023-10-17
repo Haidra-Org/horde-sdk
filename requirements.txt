@@ -1,4 +1,4 @@
-horde_model_reference~=0.5.1
+horde_model_reference~=0.5.3
 
 pydantic
 requests
