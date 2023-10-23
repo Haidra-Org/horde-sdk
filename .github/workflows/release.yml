@@ -6,10 +6,6 @@ on:
       - releases
 
 
-permissions:
-  contents: write
-  pull-requests: read
-
 jobs:
   build-n-publish:
     name: horde_sdk build and publish
@@ -21,7 +17,8 @@ jobs:
 
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
-
+      contents: write
+      pull-requests: read
 
     steps:
     - name: "📣 Release on push"
