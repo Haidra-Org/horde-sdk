@@ -866,7 +866,7 @@ class SwaggerParser:
                 response.raise_for_status()
                 self._swagger_json = response.json()
             except requests.exceptions.HTTPError as e:
-                raise RuntimeError(f"Failed to get swagger.json from server: {e.response.text}") from e
+                raise RuntimeError(f"Failed to get swagger.json from server: {e.response}") from e
 
     def get_swagger_doc(self) -> SwaggerDoc:
         """Get the swagger doc as a SwaggerDoc object."""

@@ -60,9 +60,9 @@ jobs:
         python -m build --sdist --wheel --outdir dist/ .
 
     # # Publish the package
-    # - name: "📦 Publish distribution to PyPI"
-    #   if: ${{ steps.release.outputs.version != '' }}
-    #   uses: pypa/gh-action-pypi-publish@release/v1
+    - name: "📦 Publish distribution to PyPI"
+      if: ${{ steps.release.outputs.version != '' }}
+      uses: pypa/gh-action-pypi-publish@release/v1
 
     # # Update the badges (maybe, if we're lucky)
     # - name: "📦 Refresh pypi badge cache"

@@ -56,6 +56,7 @@ class WorkerDetailItem(HordeAPIObject):
     info: str | None = None
     nsfw: bool | None = None
     owner: str | None = None
+    ipaddr: str | None = None
     trusted: bool | None = None
     flagged: bool | None = None
     suspicious: int | None = None
