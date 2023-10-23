@@ -18,6 +18,7 @@
         "info": "https://dbzer0.com",
         "nsfw": false,
         "owner": "username#1",
+        "ipaddr": "username#1",
         "trusted": false,
         "flagged": false,
         "suspicious": 0,
