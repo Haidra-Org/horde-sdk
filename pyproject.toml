@@ -1,10 +1,9 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "horde_sdk"
-version = "0.7.15"
 description = "A python toolkit for interacting with the horde APIs, services, and ecosystem."
 authors = [
     {name = "tazlin", email = "tazlin.on.github@gmail.com"},
@@ -12,7 +11,7 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.10"
-dynamic=["dependencies"]
+dynamic=["version", "dependencies"]
 license = {file = "LICENSE"}
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -20,6 +19,9 @@ classifiers = [
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Development Status :: 4 - Beta",
 ]
+
+[tool.setuptools_scm]
+write_to = "horde_sdk/_version.py"
 
 [tool.setuptools.package-dir]
 horde_sdk = "horde_sdk"
