@@ -5,6 +5,7 @@ on:
     branches:
       - releases
 
+
 permissions:
   contents: write
   pull-requests: read
@@ -17,11 +18,12 @@ jobs:
     environment: # see https://github.com/pypa/gh-action-pypi-publish/tree/release/v1/
       name: pypi
       url: https://pypi.org/p/horde-sdk/
+
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
 
-    steps:
 
+    steps:
     - name: "📣 Release on push"
       id: release
       uses: rymndhng/release-on-push-action@v0.28.0
@@ -78,10 +80,10 @@ jobs:
       run: >-
         python -m build --sdist --wheel --outdir dist/ .
 
-    # Publish the package
-    - name: "📦 Publish distribution to PyPI"
-      if: ${{ steps.release.outputs.version != '' }}
-      uses: pypa/gh-action-pypi-publish@release/v1
+    # # Publish the package
+    # - name: "📦 Publish distribution to PyPI"
+    #   if: ${{ steps.release.outputs.version != '' }}
+    #   uses: pypa/gh-action-pypi-publish@release/v1
 
     # # Update the badges (maybe, if we're lucky)
     # - name: "📦 Refresh pypi badge cache"
