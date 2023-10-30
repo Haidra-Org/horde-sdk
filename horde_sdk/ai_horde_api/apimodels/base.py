@@ -210,5 +210,5 @@ class GenMetadataEntry(BaseModel):
     """The relevance of the metadata field."""
     value: METADATA_VALUE = Field()
     """The value of the metadata field."""
-    ref: str = Field(le=255)
+    ref: str = Field(max_length=255)
     """Optionally a reference for the metadata (e.g. a lora ID)"""
