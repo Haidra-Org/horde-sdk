@@ -8,7 +8,7 @@ from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS, POST_PROCESSOR_ORDER_TYPE, METADATA_TYPE, METADATA_VALUE
+from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS, METADATA_TYPE, METADATA_VALUE, POST_PROCESSOR_ORDER_TYPE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.fields import JobID, WorkerID
 from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponseBaseModel
