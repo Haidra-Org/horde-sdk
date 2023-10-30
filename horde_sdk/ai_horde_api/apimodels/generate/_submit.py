@@ -4,7 +4,7 @@ from loguru import logger
 from pydantic import model_validator
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin, JobSubmitResponse
+from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin, JobSubmitResponse, GenMetadataEntry
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
@@ -25,6 +25,8 @@ class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, JobRequestMixin, APIKe
     """The seed for this generation."""
     censored: bool = False
     """If True, this resulting image has been censored."""
+    gen_metadata: GenMetadataEntry = None
+    """Extra metadata about faulted or defaulted componets of the generation"""
 
     @model_validator(mode="after")
     def validate_generation(self) -> ImageGenerationJobSubmitRequest:

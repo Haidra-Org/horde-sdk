@@ -8,7 +8,7 @@ from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS, POST_PROCESSOR_ORDER_TYPE
+from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS, POST_PROCESSOR_ORDER_TYPE, METADATA_TYPE, METADATA_VALUE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.fields import JobID, WorkerID
 from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponseBaseModel
@@ -198,3 +198,16 @@ class JobSubmitResponse(HordeResponseBaseModel):
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "GenerationSubmitted"
+
+class GenMetadataEntry(BaseModel):
+    """Represents a single generation metadata entry.
+
+    v2 API Model: `GenerationMetadataStable`
+    """
+
+    type_: METADATA_TYPE = Field(alias="type")
+    """The relevance of the metadata field."""
+    value: METADATA_VALUE = Field()
+    """The value of the metadata field."""
+    ref: str = Field(le=255)
+    """Optionally a reference for the metadata (e.g. a lora ID)"""

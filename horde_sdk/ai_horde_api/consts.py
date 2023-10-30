@@ -180,3 +180,28 @@ class KNOWN_ALCHEMY_TYPES(StrEnum):
     CodeFormers = KNOWN_FACEFIXERS.GFPGAN
 
     strip_background = KNOWN_MISC_POST_PROCESSORS.strip_background
+
+class METADATA_TYPE(StrEnum):
+    """The generation metadata types that are known to the API.
+
+    (lora, ti, censorship, etc)
+    """
+
+    lora = auto()
+    ti = auto()
+    censorship = auto()
+    source_image = auto()
+    source_mask = auto()
+
+class METADATA_VALUE(StrEnum):
+    """The generation metadata values that are known to the API.
+
+    (download_failed, baseline_mismatch, etc)
+    """
+
+    download_failed = auto()
+    parse_failed = auto()
+    baseline_mismatch = auto()
+    csam = auto()
+    nsfw = auto()
+
