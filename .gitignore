@@ -140,3 +140,4 @@ out.json
 .vscode/settings.json
 
 examples/requested_images/*.*
+_version.py
