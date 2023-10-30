@@ -30,7 +30,7 @@ class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, JobRequestMixin, APIKe
     """The seed for this generation."""
     censored: bool = False
     """If True, this resulting image has been censored."""
-    gen_metadata: GenMetadataEntry | None = None
+    gen_metadata: list[GenMetadataEntry] | None = None
     """Extra metadata about faulted or defaulted components of the generation"""
 
     @model_validator(mode="after")
