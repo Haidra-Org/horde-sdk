@@ -199,6 +199,7 @@ class JobSubmitResponse(HordeResponseBaseModel):
     def get_api_model_name(cls) -> str | None:
         return "GenerationSubmitted"
 
+
 class GenMetadataEntry(BaseModel):
     """Represents a single generation metadata entry.
 

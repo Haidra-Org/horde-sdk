@@ -345,6 +345,10 @@
         [
             "censored",
             null
+        ],
+        [
+            "gen_metadata",
+            null
         ]
     ],
     "StatsImageModelsRequest": [

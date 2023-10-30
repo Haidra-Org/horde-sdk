@@ -181,6 +181,7 @@ class KNOWN_ALCHEMY_TYPES(StrEnum):
 
     strip_background = KNOWN_MISC_POST_PROCESSORS.strip_background
 
+
 class METADATA_TYPE(StrEnum):
     """The generation metadata types that are known to the API.
 
@@ -193,6 +194,7 @@ class METADATA_TYPE(StrEnum):
     source_image = auto()
     source_mask = auto()
 
+
 class METADATA_VALUE(StrEnum):
     """The generation metadata values that are known to the API.
 
@@ -204,4 +206,3 @@ class METADATA_VALUE(StrEnum):
     baseline_mismatch = auto()
     csam = auto()
     nsfw = auto()
-
