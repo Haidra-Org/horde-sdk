@@ -245,7 +245,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
     )
     """The amount of RAM to leave free for the system to use. This is a percentage or a number in megabytes."""
 
-    vram_to_leave_free: str = Field(
+    vram_to_leave_free: str | None = Field(
         default="80%",
         pattern=r"^\d+%$|^\d+$",
         json_schema_extra={"unit": "Percent or MB"},
@@ -259,7 +259,9 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
     alchemist_name: str = "An Awesome Alchemist"
     """The name of the worker if it is an alchemist. This is used to easily identify the worker."""
 
-    forms: list[str]
+    forms: list[str] = Field(
+        default_factory=list,
+    )
     """The type of services or processing an alchemist worker will provide."""
 
     @field_validator("forms", mode="before")
