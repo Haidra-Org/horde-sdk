@@ -21,6 +21,9 @@
             0
         ],
         "use_default_badwordsids": true,
+        "stop_sequence": [
+            ""
+        ],
         "prompt": ""
     },
     "id": "",

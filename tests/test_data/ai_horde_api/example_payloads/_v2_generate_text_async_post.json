@@ -21,7 +21,10 @@
         "sampler_order": [
             0
         ],
-        "use_default_badwordsids": true
+        "use_default_badwordsids": true,
+        "stop_sequence": [
+            ""
+        ]
     },
     "softprompt": "a",
     "trusted_workers": false,
