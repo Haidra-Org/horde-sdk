@@ -202,7 +202,6 @@ def test_AllWorkersDetailsResponse() -> None:
     assert isinstance(test_all_workers_details_response.model_dump(), list)
 
     print(test_all_workers_details_response.model_dump())
-    pass
 
 
 def test_FindUserRequest(ai_horde_api_key: str) -> None:
