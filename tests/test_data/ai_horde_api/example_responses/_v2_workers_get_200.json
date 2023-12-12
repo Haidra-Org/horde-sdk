@@ -34,7 +34,7 @@
             "id": ""
         },
         "contact": "email@example.com",
-        "bridge_agent": "AI Horde Worker:11:https://github.com/db0/AI-Horde-Worker",
+        "bridge_agent": "AI Horde Worker:24:https://github.com/db0/AI-Horde-Worker",
         "max_pixels": 262144,
         "megapixelsteps_generated": 0.0,
         "img2img": false,

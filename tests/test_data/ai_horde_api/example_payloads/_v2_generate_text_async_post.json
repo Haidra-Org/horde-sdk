@@ -24,7 +24,8 @@
         "use_default_badwordsids": true,
         "stop_sequence": [
             ""
-        ]
+        ],
+        "min_p": 0.0
     },
     "softprompt": "a",
     "trusted_workers": false,
@@ -36,5 +37,6 @@
     "models": [
         ""
     ],
-    "dry_run": false
+    "dry_run": false,
+    "proxied_account": ""
 }
