@@ -59,5 +59,6 @@
     "r2": true,
     "shared": false,
     "replacement_filter": true,
-    "dry_run": false
+    "dry_run": false,
+    "proxied_account": ""
 }

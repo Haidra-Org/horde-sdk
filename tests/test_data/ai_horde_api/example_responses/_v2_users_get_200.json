@@ -28,10 +28,12 @@
     "trusted": false,
     "flagged": false,
     "vpn": false,
+    "service": false,
     "special": false,
     "suspicious": 0,
     "pseudonymous": false,
     "contact": "email@example.com",
+    "admin_comment": "User is sus",
     "account_age": 60,
     "usage": {
         "megapixelsteps": 0.0,

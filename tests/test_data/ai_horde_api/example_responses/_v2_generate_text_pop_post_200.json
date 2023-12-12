@@ -24,6 +24,7 @@
         "stop_sequence": [
             ""
         ],
+        "min_p": 0.0,
         "prompt": ""
     },
     "id": "",

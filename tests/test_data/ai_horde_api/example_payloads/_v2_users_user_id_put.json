@@ -11,7 +11,10 @@
     "flagged": false,
     "customizer": false,
     "vpn": false,
+    "service": false,
     "special": false,
+    "filtered": false,
     "reset_suspicion": false,
-    "contact": "email@example.com"
+    "contact": "email@example.com",
+    "admin_comment": "User is sus"
 }
