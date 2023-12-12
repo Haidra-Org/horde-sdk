@@ -110,7 +110,7 @@ class ImageGenerateParamMixin(BaseModel):
     v2 API Model: `ModelPayloadStable`
     """
 
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True)  # , extra="forbid")
 
     sampler_name: KNOWN_SAMPLERS = KNOWN_SAMPLERS.k_lms
     """The sampler to use for this generation. Defaults to `KNOWN_SAMPLERS.k_lms`."""
