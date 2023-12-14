@@ -37,11 +37,11 @@ class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, JobRequestMixin, APIKe
     def validate_generation(self) -> ImageGenerationJobSubmitRequest:
         if self.generation == "":
             logger.error("Generation cannot be an empty string.")
-            logger.error(self)
+            logger.error(self.log_safe_model_dump())
 
         if self.seed == 0:
-            logger.error("Seed cannot be 0.")
-            logger.error(self)
+            logger.debug(f"Seed is 0 for {self.id_}. That might not be intended.")
+            logger.debug(self.log_safe_model_dump())
 
         return self
 
