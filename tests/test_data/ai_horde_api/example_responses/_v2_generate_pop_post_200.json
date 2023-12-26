@@ -23,7 +23,8 @@
                 "name": "GlowingRunesAIV6",
                 "model": 1.0,
                 "clip": 1.0,
-                "inject_trigger": "a"
+                "inject_trigger": "a",
+                "is_version": false
             }
         ],
         "tis": [
