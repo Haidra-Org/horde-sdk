@@ -24,7 +24,8 @@
                 "name": "GlowingRunesAIV6",
                 "model": 1.0,
                 "clip": 1.0,
-                "inject_trigger": "a"
+                "inject_trigger": "a",
+                "is_version": false
             }
         ],
         "tis": [
@@ -59,5 +60,6 @@
     "r2": true,
     "shared": false,
     "replacement_filter": true,
-    "dry_run": false
+    "dry_run": false,
+    "proxied_account": ""
 }

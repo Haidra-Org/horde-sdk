@@ -11,7 +11,9 @@
     "flagged": false,
     "customizer": false,
     "vpn": false,
+    "service": false,
     "special": false,
     "new_suspicion": 0,
-    "contact": "email@example.com"
+    "contact": "email@example.com",
+    "admin_comment": "User is sus"
 }
