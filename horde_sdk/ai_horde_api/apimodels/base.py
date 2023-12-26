@@ -74,6 +74,8 @@ class LorasPayloadEntry(BaseModel):
     """The strength of the LoRa against the clip model."""
     inject_trigger: str | None = Field(default=None, min_length=1, max_length=30)
     """Any trigger required to activate the LoRa model."""
+    is_version: bool = Field(default=False)
+    """If true, will treat the lora name as a version ID."""
 
 
 class TIPayloadEntry(BaseModel):
