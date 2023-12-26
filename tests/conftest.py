@@ -8,6 +8,12 @@ from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest, ImageGen
 from horde_sdk.generic_api.consts import ANON_API_KEY
 
 
+@pytest.fixture(scope="session", autouse=True)
+def check_tests_ongoing_env_var() -> None:
+    """Checks that the TESTS_ONGOING environment variable is set."""
+    assert os.getenv("TESTS_ONGOING", None) is not None, "TESTS_ONGOING environment variable not set"
+
+
 @pytest.fixture(scope="session")
 def ai_horde_api_key() -> str:
     dev_key = os.getenv("AI_HORDE_DEV_APIKEY", None)

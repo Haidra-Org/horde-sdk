@@ -1,6 +1,7 @@
 """The base classes for all AI Horde API requests/responses."""
 from __future__ import annotations
 
+import os
 import random
 import uuid
 
@@ -112,7 +113,9 @@ class ImageGenerateParamMixin(BaseModel):
     v2 API Model: `ModelPayloadStable`
     """
 
-    model_config = ConfigDict(frozen=True)  # , extra="forbid")
+    model_config = (
+        ConfigDict(frozen=True) if not os.getenv("TESTS_ONGOING") else ConfigDict(frozen=True, extra="forbid")
+    )
 
     sampler_name: KNOWN_SAMPLERS | str = KNOWN_SAMPLERS.k_lms
     """The sampler to use for this generation. Defaults to `KNOWN_SAMPLERS.k_lms`."""
