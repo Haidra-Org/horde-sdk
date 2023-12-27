@@ -72,6 +72,7 @@ class KNOWN_SAMPLERS(StrEnum):
     k_dpmpp_2m = auto()
     dpmsolver = auto()
     k_dpmpp_sde = auto()
+    lcm = auto()
     DDIM = "DDIM"
 
 
