@@ -165,7 +165,7 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     priority_usernames: list[str] = Field(default_factory=list)
     nsfw: bool = True
     models: list[str]
-    bridge_version: int
+    bridge_version: int | None = None
     bridge_agent: str
     threads: int = 1
     require_upfront_kudos: bool = False
