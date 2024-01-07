@@ -155,6 +155,15 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
         return super().ignore_failure()
 
 
+class ImageGenerateJobPopMultipleResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin):
+    """Represents the data returned from the `/v2/generate/pop_multi` endpoint.
+
+    v2 API Model: `[GenerationPayloadStable]`
+    """
+
+    pop_list: list[ImageGenerateJobPopResponse]
+
+
 class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     """Represents the data needed to make a job request from a worker to the /v2/generate/pop endpoint.
 
@@ -197,3 +206,48 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     @classmethod
     def get_default_success_response_type(cls) -> type[ImageGenerateJobPopResponse]:
         return ImageGenerateJobPopResponse
+
+
+class ImageGenerateJobPopMultipleRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
+    """Represents the data needed to make a job request from a worker to the /v2/generate/pop_multi endpoint.
+
+    v2 API Model: `[PopInputStable]`
+    """
+
+    name: str
+    priority_usernames: list[str] = Field(default_factory=list)
+    nsfw: bool = True
+    models: list[str]
+    bridge_version: int
+    bridge_agent: str
+    threads: int = 1
+    require_upfront_kudos: bool = False
+    max_pixels: int
+    blacklist: list[str] = Field(default_factory=list)
+    allow_img2img: bool = True
+    allow_painting: bool = False
+    allow_unsafe_ipaddr: bool = True
+    allow_post_processing: bool = True
+    allow_controlnet: bool = False
+    allow_lora: bool = False
+    amount: int = 1
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "[PopInputStable]"
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.POST
+
+    @override
+    @classmethod
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_pop_multi
+
+    @override
+    @classmethod
+    def get_default_success_response_type(cls) -> type[ImageGenerateJobPopMultipleResponse]:
+        return ImageGenerateJobPopMultipleResponse
