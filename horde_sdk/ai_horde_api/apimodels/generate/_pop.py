@@ -81,7 +81,7 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
 
     id_: JobID | None = Field(None, alias="id")
     """(Obsolete) The UUID for this image generation."""
-    ids: list[JobID] | None = Field(None, alias="id")
+    ids: list[JobID]
     """A list of UUIDs for image generation."""
 
     payload: ImageGenerateJobPopPayload
