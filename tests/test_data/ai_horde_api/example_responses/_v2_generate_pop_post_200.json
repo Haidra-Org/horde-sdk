@@ -1,6 +1,6 @@
 {
     "payload": {
-        "sampler_name": "k_dpm_fast",
+        "sampler_name": "dpmsolver",
         "cfg_scale": 7.5,
         "denoising_strength": 0.75,
         "seed": "The little seed that could",
