@@ -1,6 +1,6 @@
 {
     "payload": {
-        "sampler_name": "dpmsolver",
+        "sampler_name": "k_lms",
         "cfg_scale": 7.5,
         "denoising_strength": 0.75,
         "seed": "The little seed that could",
@@ -45,6 +45,7 @@
         "use_nsfw_censor": false
     },
     "id": "",
+    "ids": [],
     "skipped": {
         "worker_id": 0.0,
         "performance": 0.0,
@@ -66,5 +67,8 @@
     "source_image": "",
     "source_processing": "img2img",
     "source_mask": "",
-    "r2_upload": ""
+    "r2_upload": "",
+    "r2_uploads": [
+        ""
+    ]
 }

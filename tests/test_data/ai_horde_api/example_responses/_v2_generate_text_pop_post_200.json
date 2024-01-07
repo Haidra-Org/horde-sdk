@@ -28,6 +28,7 @@
         "prompt": ""
     },
     "id": "",
+    "ids": [],
     "skipped": {
         "worker_id": 0.0,
         "performance": 0.0,
