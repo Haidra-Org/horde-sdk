@@ -18,7 +18,7 @@ from horde_sdk.generic_api.apimodels import (
 class AlchemyUpscaleResult(BaseModel):
     """Represents the result of an upscale job."""
 
-    upscaler_used: KNOWN_UPSCALERS
+    upscaler_used: KNOWN_UPSCALERS | str
     url: str
 
 
