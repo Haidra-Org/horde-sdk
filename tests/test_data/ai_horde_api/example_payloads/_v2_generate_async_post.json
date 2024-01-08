@@ -1,7 +1,7 @@
 {
     "prompt": "a",
     "params": {
-        "sampler_name": "k_lms",
+        "sampler_name": "lcm",
         "cfg_scale": 7.5,
         "denoising_strength": 0.75,
         "seed": "The little seed that could",
