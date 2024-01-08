@@ -114,7 +114,7 @@ class ImageGenerateParamMixin(BaseModel):
 
     model_config = ConfigDict(frozen=True)  # , extra="forbid")
 
-    sampler_name: KNOWN_SAMPLERS = KNOWN_SAMPLERS.k_lms
+    sampler_name: KNOWN_SAMPLERS | str = KNOWN_SAMPLERS.k_lms
     """The sampler to use for this generation. Defaults to `KNOWN_SAMPLERS.k_lms`."""
     cfg_scale: float = 7.5
     """The cfg_scale to use for this generation. Defaults to 7.5."""
@@ -169,7 +169,7 @@ class ImageGenerateParamMixin(BaseModel):
     def sampler_name_must_be_known(cls, v: str | KNOWN_SAMPLERS) -> str | KNOWN_SAMPLERS:
         """Ensure that the sampler name is in this list of supported samplers."""
         if v not in KNOWN_SAMPLERS.__members__:
-            raise ValueError(f"Unknown sampler name {v}")
+            logger.warning(f"Unknown sampler name {v}. Is your SDK out of date or did the API change?")
         return v
 
     # @model_validator(mode="after")

@@ -105,6 +105,51 @@ def test_ImageGenerateAsyncRequest(ai_horde_api_key: str) -> None:
     assert test_async_request.dry_run is False
 
 
+def test_ImageGenerateAsyncRequest_unknown_sampler(ai_horde_api_key: str) -> None:
+    test_async_request = ImageGenerateAsyncRequest(
+        apikey=ai_horde_api_key,
+        models=["Deliberate"],
+        prompt="test prompt",
+        params=ImageGenerationInputPayload(
+            sampler_name="unknown sampler",
+            cfg_scale=7.5,
+            denoising_strength=1,
+            seed="123456789",
+            height=512,
+            width=512,
+            seed_variation=None,
+            post_processing=[],
+            karras=True,
+            tiling=False,
+            hires_fix=False,
+            clip_skip=1,
+            control_type=None,
+            image_is_control=None,
+            return_control_map=None,
+            facefixer_strength=None,
+            loras=[],
+            special={},
+            steps=25,
+            n=1,
+            use_nsfw_censor=False,
+        ),
+        nsfw=True,
+        trusted_workers=False,
+        slow_workers=False,
+        workers=[],
+        censor_nsfw=False,
+        source_image="test source image (usually base64)",
+        source_processing=KNOWN_SOURCE_PROCESSING.txt2img,
+        source_mask="test source mask (usually base64)",
+        r2=True,
+        shared=False,
+        replacement_filter=True,
+        dry_run=False,
+    )
+    assert test_async_request.params is not None
+    assert test_async_request.params.sampler_name == "unknown sampler"
+
+
 def test_TeamDetailsLite() -> None:
     test_team_details_lite = TeamDetailsLite(
         name="test team name",
