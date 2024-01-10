@@ -297,6 +297,10 @@
         [
             "allow_lora",
             null
+        ],
+        [
+            "amount",
+            null
         ]
     ],
     "ImageGenerateStatusRequest": [

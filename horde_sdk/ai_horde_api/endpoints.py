@@ -32,6 +32,7 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
     v2_generate_async = "/v2/generate/async"
 
     v2_generate_pop = "/v2/generate/pop"
+    v2_generate_pop_multi = "/v2/generate/pop_multi"
     v2_generate_submit = "/v2/generate/submit"
 
     # Note that `{id}`` (or any variable wrapped in curly braces) is dynamically replaced with the appropriate value

@@ -234,6 +234,13 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
     )
     """The number of threads to use for inference."""
 
+    max_batch: int = Field(
+        default=1,
+        ge=1,
+        le=20,  # 20 is the max per request on the horde
+    )
+    """The number of threads to use for inference."""
+
     require_upfront_kudos: bool = False
     """Whether to require upfront kudos for jobs. This effectively makes the worker reject jobs from
     the anonymous API key, or from keys with no kudos."""
