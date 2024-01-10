@@ -7,7 +7,6 @@
         "caption"
     ],
     "amount": 1,
-    "bridge_version": 1,
     "bridge_agent": "AI Horde Worker:24:https://github.com/db0/AI-Horde-Worker",
     "threads": 1,
     "max_tiles": 16

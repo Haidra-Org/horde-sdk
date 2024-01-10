@@ -303,6 +303,10 @@
             null
         ],
         [
+            "ids",
+            null
+        ],
+        [
             "payload",
             null
         ],
@@ -328,6 +332,10 @@
         ],
         [
             "r2_upload",
+            null
+        ],
+        [
+            "r2_uploads",
             null
         ]
     ],

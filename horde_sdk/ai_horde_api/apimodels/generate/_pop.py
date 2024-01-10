@@ -80,7 +80,9 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
     """
 
     id_: JobID | None = Field(None, alias="id")
-    """The UUID for this image generation."""
+    """(Obsolete) The UUID for this image generation."""
+    ids: list[JobID]
+    """A list of UUIDs for image generation."""
 
     payload: ImageGenerateJobPopPayload
     """The parameters used to generate this image."""
@@ -97,7 +99,9 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
     mask of the areas to inpaint. If this arg is not passed, the inpainting/outpainting mask has to be embedded as
     alpha channel."""
     r2_upload: str | None = None
-    """The r2 upload link to use to upload this image."""
+    """(Obsolete) The r2 upload link to use to upload this image."""
+    r2_uploads: list[str] | None = None
+    """The r2 upload links for each this image. Each index matches the ID in self.ids"""
 
     @field_validator("source_processing")
     def source_processing_must_be_known(cls, v: str | KNOWN_SOURCE_PROCESSING) -> str | KNOWN_SOURCE_PROCESSING:
@@ -177,6 +181,7 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     allow_post_processing: bool = True
     allow_controlnet: bool = False
     allow_lora: bool = False
+    amount: int = 1
 
     @override
     @classmethod
