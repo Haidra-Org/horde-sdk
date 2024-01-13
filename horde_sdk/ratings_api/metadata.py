@@ -21,7 +21,7 @@ class RatingsAPIQueryFields(GenericQueryFields):
     artifacts = auto()
     artifacts_comparison = auto()
     min_ratings = auto()
-    format = "format"  # type: ignore # noqa: A003 (shadows 'format' built-in)
+    format = "format"  # type: ignore
 
     minutes = auto()
 

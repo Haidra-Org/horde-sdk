@@ -148,7 +148,7 @@ class SelectableReturnFormats(StrEnum):
 class BaseSelectableReturnTypeRequest(BaseModel):
     """Mix-in class to describe an endpoint for which you can select the return data format."""
 
-    format: SelectableReturnFormats  # noqa: A003
+    format: SelectableReturnFormats
     """The format to request the response payload in, typically json."""
 
 
