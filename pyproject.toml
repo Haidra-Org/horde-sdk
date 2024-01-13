@@ -74,6 +74,7 @@ exclude = ["codegen"]
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["E402"]
+"conftest.py" = ["E402"]
 
 [tool.black]
 line-length = 119
