@@ -1,5 +1,5 @@
 from loguru import logger
-from pydantic import Field
+from pydantic import Field, field_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.alchemy._submit import AlchemyJobSubmitRequest
@@ -43,11 +43,18 @@ class AlchemyPopFormPayload(HordeAPIObject, JobRequestMixin):
     def get_api_model_name(cls) -> str | None:
         return "InterrogationPopFormPayload"
 
-    form: KNOWN_ALCHEMY_TYPES = Field(
+    form: KNOWN_ALCHEMY_TYPES | str = Field(
         None,
         description="The name of this interrogation form",
         examples=["caption"],
     )
+
+    @field_validator("form", mode="before")
+    def validate_form(cls, v: str | KNOWN_ALCHEMY_TYPES) -> KNOWN_ALCHEMY_TYPES | str:
+        if isinstance(v, str) and v not in KNOWN_ALCHEMY_TYPES.__members__:
+            logger.warning(f"Unknown form type {v}")
+        return v
+
     payload: AlchemyFormPayloadStable | None = None
     r2_upload: str | None = Field(None, description="The URL in which the post-processed image can be uploaded.")
     source_image: str | None = Field(None, description="The URL From which the source image can be downloaded.")
