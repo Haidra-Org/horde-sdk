@@ -38,5 +38,6 @@
         ""
     ],
     "dry_run": false,
-    "proxied_account": ""
+    "proxied_account": "",
+    "disable_batching": false
 }

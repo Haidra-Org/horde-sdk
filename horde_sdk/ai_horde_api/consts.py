@@ -194,6 +194,7 @@ class METADATA_TYPE(StrEnum):
     censorship = auto()
     source_image = auto()
     source_mask = auto()
+    batch_index = auto()
 
 
 class METADATA_VALUE(StrEnum):
@@ -207,3 +208,4 @@ class METADATA_VALUE(StrEnum):
     baseline_mismatch = auto()
     csam = auto()
     nsfw = auto()
+    see_ref = auto()
