@@ -66,6 +66,10 @@ class FindUserResponse(HordeResponseBaseModel):
     def get_api_model_name(cls) -> str | None:
         return "UserDetails"
 
+    admin_comment: str | None = Field(
+        default=None,
+        description="(Privileged) Comments from the horde admins about this user.",
+    )
     account_age: int | None = Field(
         default=None,
         description="How many seconds since this account was created.",
@@ -126,6 +130,11 @@ class FindUserResponse(HordeResponseBaseModel):
     """How many images, texts, megapixelsteps and tokens this user has generated or requested."""
     sharedkey_ids: list[str] | None = None
     """The IDs of the shared keys this user has access to."""
+    service: bool | None = Field(
+        default=None,
+        description="This user is a Horde service account and can provide the `proxied_user` field.",
+        examples=[False],
+    )
     special: bool | None = Field(
         default=None,
         description="(Privileged) This user has been given the Special role.",

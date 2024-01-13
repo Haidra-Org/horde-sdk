@@ -4,8 +4,16 @@ import pathlib
 
 import pytest
 
+os.environ["TESTS_ONGOING"] = "1"
+
 from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest, ImageGenerationInputPayload
 from horde_sdk.generic_api.consts import ANON_API_KEY
+
+
+@pytest.fixture(scope="session", autouse=True)
+def check_tests_ongoing_env_var() -> None:
+    """Checks that the TESTS_ONGOING environment variable is set."""
+    assert os.getenv("TESTS_ONGOING", None) is not None, "TESTS_ONGOING environment variable not set"
 
 
 @pytest.fixture(scope="session")

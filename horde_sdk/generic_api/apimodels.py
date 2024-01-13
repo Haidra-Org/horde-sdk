@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import abc
+import os
 import uuid
 
 from loguru import logger
@@ -46,7 +47,9 @@ class HordeResponse(HordeAPIMessage):
 
 
 class HordeResponseBaseModel(HordeResponse, BaseModel):
-    model_config = ConfigDict(frozen=True)  # , extra="forbid")
+    model_config = (
+        ConfigDict(frozen=True) if not os.getenv("TESTS_ONGOING") else ConfigDict(frozen=True, extra="forbid")
+    )
 
 
 class ResponseRequiringFollowUpMixin(abc.ABC):

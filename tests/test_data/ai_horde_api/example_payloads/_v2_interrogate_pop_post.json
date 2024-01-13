@@ -7,7 +7,7 @@
         "caption"
     ],
     "amount": 1,
-    "bridge_agent": "AI Horde Worker:24:https://github.com/db0/AI-Horde-Worker",
+    "bridge_agent": "AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen",
     "threads": 1,
     "max_tiles": 16
 }

@@ -1,7 +1,7 @@
 {
     "prompt": "a",
     "params": {
-        "sampler_name": "lcm",
+        "sampler_name": "k_dpm_fast",
         "cfg_scale": 7.5,
         "denoising_strength": 0.75,
         "seed": "The little seed that could",
@@ -61,5 +61,6 @@
     "shared": false,
     "replacement_filter": true,
     "dry_run": false,
-    "proxied_account": ""
+    "proxied_account": "",
+    "disable_batching": false
 }

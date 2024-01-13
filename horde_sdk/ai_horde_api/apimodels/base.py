@@ -1,6 +1,7 @@
 """The base classes for all AI Horde API requests/responses."""
 from __future__ import annotations
 
+import os
 import random
 import uuid
 
@@ -112,7 +113,9 @@ class ImageGenerateParamMixin(BaseModel):
     v2 API Model: `ModelPayloadStable`
     """
 
-    model_config = ConfigDict(frozen=True)  # , extra="forbid")
+    model_config = (
+        ConfigDict(frozen=True) if not os.getenv("TESTS_ONGOING") else ConfigDict(frozen=True, extra="forbid")
+    )
 
     sampler_name: KNOWN_SAMPLERS | str = KNOWN_SAMPLERS.k_lms
     """The sampler to use for this generation. Defaults to `KNOWN_SAMPLERS.k_lms`."""
@@ -208,9 +211,23 @@ class GenMetadataEntry(BaseModel):
     v2 API Model: `GenerationMetadataStable`
     """
 
-    type_: METADATA_TYPE = Field(alias="type")
+    type_: METADATA_TYPE | str = Field(alias="type")
     """The relevance of the metadata field."""
-    value: METADATA_VALUE = Field()
+    value: METADATA_VALUE | str = Field()
     """The value of the metadata field."""
     ref: str | None = Field(default=None, max_length=255)
     """Optionally a reference for the metadata (e.g. a lora ID)"""
+
+    @field_validator("type_")
+    def validate_type(cls, v: str | METADATA_TYPE) -> str | METADATA_TYPE:
+        """Ensure that the type is in this list of supported types."""
+        if v not in METADATA_TYPE.__members__:
+            logger.warning(f"Unknown metadata type {v}. Is your SDK out of date or did the API change?")
+        return v
+
+    @field_validator("value")
+    def validate_value(cls, v: str | METADATA_VALUE) -> str | METADATA_VALUE:
+        """Ensure that the value is in this list of supported values."""
+        if v not in METADATA_VALUE.__members__:
+            logger.warning(f"Unknown metadata value {v}. Is your SDK out of date or did the API change?")
+        return v

@@ -20,6 +20,7 @@ jobs:
     env:
       AIWORKER_CACHE_HOME: ${{ github.workspace }}/.cache
       HORDE_MODEL_REFERENCE_MAKE_FOLDERS: 1
+      TESTS_ONGOING: 1
     runs-on: ubuntu-latest
     strategy:
       matrix:

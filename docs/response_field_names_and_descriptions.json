@@ -143,6 +143,10 @@
     ],
     "FindUserResponse": [
         [
+            "admin_comment",
+            "(Privileged) Comments from the horde admins about this user."
+        ],
+        [
             "account_age",
             "How many seconds since this account was created."
         ],
@@ -197,6 +201,10 @@
         [
             "sharedkey_ids",
             null
+        ],
+        [
+            "service",
+            "This user is a Horde service account and can provide the `proxied_user` field."
         ],
         [
             "special",

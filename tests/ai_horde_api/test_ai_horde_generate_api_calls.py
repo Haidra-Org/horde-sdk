@@ -16,7 +16,6 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
     ImageGenerateStatusResponse,
-    ImageGeneration,
     ImageGenerationInputPayload,
     LorasPayloadEntry,
 )
@@ -410,7 +409,10 @@ class TestAIHordeGenerate:
 
             # Run 5 concurrent requests using asyncio
             tasks = [asyncio.create_task(_submit_request()) for _ in range(5)]
-            all_generations: list[list[ImageGeneration]] = await asyncio.gather(*tasks, self.delayed_cancel(tasks[0]))
+            all_generations: list[tuple[ImageGenerateStatusResponse, JobID] | None] = await asyncio.gather(
+                *tasks,
+                self.delayed_cancel(tasks[0]),
+            )
 
             # Check that all requests were successful
             assert len([generations for generations in all_generations if generations]) == 4
@@ -439,7 +441,7 @@ class TestAIHordeGenerate:
             # Run 5 concurrent requests using asyncio
             tasks = [asyncio.create_task(submit_request()) for _ in range(5)]
             cancel_tasks = [asyncio.create_task(self.delayed_cancel(task)) for task in tasks]
-            all_generations: list[ImageGenerateStatusResponse] = await asyncio.gather(*tasks, *cancel_tasks)
+            all_generations: list[ImageGenerateStatusResponse | None] = await asyncio.gather(*tasks, *cancel_tasks)
 
             # Check that all requests were successful
             assert len([generations for generations in all_generations if generations]) == 0
