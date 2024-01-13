@@ -109,7 +109,7 @@ def api_to_sdk_map_create_markdown() -> None:
             for http_status_code, _sdk_response_type in http_status_code_map.items():
                 f.write(
                     f"| {api_endpoint} | {http_status_code} | "
-                    "[{sdk_response_type.split('.')[-1]}][{sdk_response_type}] |\n",
+                    f"[{_sdk_response_type.split('.')[-1]}][{_sdk_response_type}] |\n",
                 )
 
 
