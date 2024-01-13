@@ -5,6 +5,7 @@ from horde_sdk.ai_horde_api.apimodels._find_user import (
     FindUserResponse,
     UsageDetails,
 )
+from horde_sdk.ai_horde_api.apimodels.base import GenMetadataEntry
 from horde_sdk.ai_horde_api.apimodels.generate._async import (
     ImageGenerateAsyncRequest,
     ImageGenerationInputPayload,
@@ -15,7 +16,13 @@ from horde_sdk.ai_horde_api.apimodels.workers._workers_all import (
     WorkerDetailItem,
     WorkerKudosDetails,
 )
-from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS, KNOWN_SOURCE_PROCESSING, WORKER_TYPE
+from horde_sdk.ai_horde_api.consts import (
+    KNOWN_SAMPLERS,
+    KNOWN_SOURCE_PROCESSING,
+    METADATA_TYPE,
+    METADATA_VALUE,
+    WORKER_TYPE,
+)
 
 
 def test_api_endpoint() -> None:
@@ -277,4 +284,17 @@ def test_FindUserResponse() -> None:
         worker_count=1,
         worker_invited=False,
         vpn=False,
+    )
+
+
+def test_GenMetadataEntry() -> None:
+    GenMetadataEntry(
+        type=METADATA_TYPE.batch_index,
+        value=METADATA_VALUE.see_ref,
+        ref="1",
+    )
+
+    GenMetadataEntry(
+        type="test key",
+        value="test value",
     )
