@@ -62,9 +62,15 @@ class AlchemyInterrogationResult(BaseModel):
 class AlchemyFormStatus(BaseModel):
     """Represents the status of a form in an interrogation job."""
 
-    form: KNOWN_ALCHEMY_TYPES
+    form: KNOWN_ALCHEMY_TYPES | str
     state: GENERATION_STATE
     result: AlchemyInterrogationDetails | AlchemyNSFWResult | AlchemyCaptionResult | AlchemyUpscaleResult | None = None
+
+    @field_validator("form", mode="before")
+    def validate_form(cls, v: str | KNOWN_ALCHEMY_TYPES) -> KNOWN_ALCHEMY_TYPES | str:
+        if isinstance(v, str) and v not in KNOWN_ALCHEMY_TYPES.__members__:
+            logger.warning(f"Unknown form type {v}. Is your SDK out of date or did the API change?")
+        return v
 
     @property
     def done(self) -> bool:

@@ -1,6 +1,7 @@
 import base64
 import urllib.parse
 
+from loguru import logger
 from pydantic import BaseModel, field_validator
 from typing_extensions import override
 
@@ -63,7 +64,13 @@ class AlchemyAsyncResponse(
 
 
 class AlchemyAsyncRequestFormItem(BaseModel):
-    name: KNOWN_ALCHEMY_TYPES
+    name: KNOWN_ALCHEMY_TYPES | str
+
+    @field_validator("name")
+    def check_name(cls, v: KNOWN_ALCHEMY_TYPES | str) -> KNOWN_ALCHEMY_TYPES | str:
+        if isinstance(v, str) and v not in KNOWN_ALCHEMY_TYPES.__members__:
+            logger.warning(f"Unknown alchemy form name {v}. Is your SDK out of date or did the API change?")
+        return v
 
 
 class AlchemyAsyncRequest(
