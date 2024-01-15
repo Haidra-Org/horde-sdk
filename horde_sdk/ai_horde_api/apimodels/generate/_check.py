@@ -2,7 +2,7 @@ from loguru import logger
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
-from horde_sdk.ai_horde_api.apimodels.generate._progress import ResponseGenerationProgressMixin
+from horde_sdk.ai_horde_api.apimodels.generate._progress import ResponseGenerationProgressInfoMixin
 from horde_sdk.ai_horde_api.apimodels.generate._status import ImageGenerateStatusRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
@@ -12,7 +12,7 @@ from horde_sdk.generic_api.apimodels import HordeResponseBaseModel, ResponseWith
 class ImageGenerateCheckResponse(
     HordeResponseBaseModel,
     ResponseWithProgressMixin,
-    ResponseGenerationProgressMixin,
+    ResponseGenerationProgressInfoMixin,
 ):
     """Represents the data returned from the `/v2/generate/check/{id}` endpoint.
 

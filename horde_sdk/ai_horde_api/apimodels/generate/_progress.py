@@ -1,7 +1,9 @@
 from pydantic import BaseModel
 
+from horde_sdk.generic_api.apimodels import ResponseWithProgressMixin
 
-class ResponseGenerationProgressMixin(BaseModel):
+
+class ResponseGenerationProgressInfoMixin(BaseModel):
     finished: int
     """The amount of finished jobs in this request."""
     processing: int
@@ -22,3 +24,7 @@ class ResponseGenerationProgressMixin(BaseModel):
     """The amount of total Kudos this request has consumed until now."""
     is_possible: bool = True
     """If False, this request will not be able to be completed with the pool of workers currently available."""
+
+
+class ResponseGenerationProgressCombinedMixin(ResponseWithProgressMixin, ResponseGenerationProgressInfoMixin):
+    pass

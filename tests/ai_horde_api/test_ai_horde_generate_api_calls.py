@@ -15,6 +15,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     AlchemyStatusResponse,
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
+    ImageGenerateCheckResponse,
     ImageGenerateStatusResponse,
     ImageGenerationInputPayload,
     LorasPayloadEntry,
@@ -445,3 +446,99 @@ class TestAIHordeGenerate:
 
             # Check that all requests were successful
             assert len([generations for generations in all_generations if generations]) == 0
+
+    @pytest.mark.asyncio
+    async def test_check_image_gen_callback(
+        self,
+        simple_image_gen_request: ImageGenerateAsyncRequest,
+    ) -> None:
+        async with aiohttp.ClientSession() as aiohttp_session:
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
+
+            def example_callback(generation: ImageGenerateCheckResponse) -> None:
+                print(f"Callback: {generation}")
+                assert generation
+
+            image_generate_status_response, job_id = await simple_client.image_generate_request(
+                simple_image_gen_request,
+                check_callback=example_callback,
+            )
+
+            if isinstance(image_generate_status_response.generations, RequestErrorResponse):
+                raise AssertionError(image_generate_status_response.generations.message)
+
+            assert len(image_generate_status_response.generations) == 1
+
+            image = await simple_client.download_image_from_generation(image_generate_status_response.generations[0])
+
+            assert image is not None
+
+    @pytest.mark.asyncio
+    async def test_check_alchemy_callback(
+        self,
+        default_testing_image_base64: str,
+    ) -> None:
+        async with aiohttp.ClientSession() as aiohttp_session:
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
+
+            def example_callback(generation: AlchemyStatusResponse) -> None:
+                print(f"Callback: {generation}")
+                assert generation
+
+            result, jobid = await simple_client.alchemy_request(
+                alchemy_request=AlchemyAsyncRequest(
+                    forms=[
+                        AlchemyAsyncRequestFormItem(
+                            name=KNOWN_ALCHEMY_TYPES.caption,
+                        ),
+                    ],
+                    source_image=default_testing_image_base64,
+                ),
+                check_callback=example_callback,
+            )
+
+            assert result is not None
+
+    @pytest.mark.asyncio
+    async def test_bad_image_gen_callback(
+        self,
+        simple_image_gen_request: ImageGenerateAsyncRequest,
+    ) -> None:
+        async with aiohttp.ClientSession() as aiohttp_session:
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
+
+            def bad_callback() -> None:
+                pass
+
+            with pytest.raises(ValueError, match="Callback"):
+                image_generate_status_response, job_id = await simple_client.image_generate_request(
+                    simple_image_gen_request,
+                    check_callback=bad_callback,  # type: ignore
+                )
+
+    @pytest.mark.asyncio
+    async def test_bad_alchemy_callback(
+        self,
+        default_testing_image_base64: str,
+    ) -> None:
+        async with aiohttp.ClientSession() as aiohttp_session:
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
+
+            def bad_callback() -> None:
+                pass
+
+            with pytest.raises(ValueError, match="Callback"):
+                result, jobid = await simple_client.alchemy_request(
+                    alchemy_request=AlchemyAsyncRequest(
+                        forms=[
+                            AlchemyAsyncRequestFormItem(
+                                name=KNOWN_ALCHEMY_TYPES.caption,
+                            ),
+                            AlchemyAsyncRequestFormItem(
+                                name=KNOWN_ALCHEMY_TYPES.RealESRGAN_x4plus,
+                            ),
+                        ],
+                        source_image=default_testing_image_base64,
+                    ),
+                    check_callback=bad_callback,  # type: ignore
+                )

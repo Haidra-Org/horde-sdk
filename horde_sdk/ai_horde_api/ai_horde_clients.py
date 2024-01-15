@@ -4,11 +4,12 @@ from __future__ import annotations
 import asyncio
 import base64
 import contextlib
+import inspect
 import io
 import time
 import urllib.parse
 from abc import ABC, abstractmethod
-from collections.abc import Coroutine
+from collections.abc import Callable, Coroutine
 from enum import auto
 
 import aiohttp
@@ -29,6 +30,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerateStatusRequest,
     ImageGenerateStatusResponse,
     ImageGeneration,
+    ResponseGenerationProgressCombinedMixin,
 )
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
 from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE
@@ -497,6 +499,8 @@ class BaseAIHordeSimpleClient(ABC):
         number_of_responses: int,
         start_time: float,
         timeout: int,
+        check_callback: Callable | None = None,
+        check_callback_type: type[ResponseWithProgressMixin | ResponseGenerationProgressCombinedMixin] | None = None,
     ) -> _PROGRESS_STATE:
         """Handle a response from the API when checking the progress of a request.
 
@@ -510,6 +514,15 @@ class BaseAIHordeSimpleClient(ABC):
         # Check if the response has progress
         if not isinstance(check_response, ResponseWithProgressMixin):
             raise RuntimeError(f"Response did not have progress: {check_response}")
+
+        # If there is a callback, call it with the response
+        if check_callback is not None:
+            if check_callback_type and not isinstance(check_response, check_callback_type):
+                raise RuntimeError(f"Callback response type mismatch: {check_response}")
+            if check_callback_type is None:
+                logger.warning("Callback type not specified, skipping type check")
+                logger.debug(f"Type of sent response: {type(check_response)}")
+            check_callback(check_response)
 
         # Log a message indicating that the request has been checked
         log_message = f"Checked request: {job_id}, is_possible: {check_response.is_job_possible()}"
@@ -583,6 +596,8 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         *,
         number_of_responses: int = 1,
         timeout: int = GENERATION_MAX_LIFE,
+        check_callback: Callable | None = None,
+        check_callback_type: type[ResponseWithProgressMixin | ResponseGenerationProgressCombinedMixin] | None = None,
     ) -> tuple[HordeResponse, JobID]:
         """Submit a request which requires check/status polling to the AI-Horde API, and wait for it to complete.
 
@@ -595,6 +610,9 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         Returns:
             tuple[HordeResponse, JobID]: The final response and the corresponding job ID.
         """
+
+        if len(inspect.getfullargspec(check_callback).args) == 0:
+            raise ValueError("Callback must take at least one argument")
 
         # This session class will cleanup incomplete requests in the event of an exception
         with AIHordeAPIClientSession() as horde_session:
@@ -634,6 +652,8 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                     number_of_responses=number_of_responses,
                     start_time=start_time,
                     timeout=timeout,
+                    check_callback=check_callback,
+                    check_callback_type=check_callback_type,
                 )
 
                 if progress_state == _PROGRESS_STATE.finished or progress_state == _PROGRESS_STATE.timed_out:
@@ -683,6 +703,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         self,
         image_gen_request: ImageGenerateAsyncRequest,
         timeout: int = GENERATION_MAX_LIFE,
+        check_callback: Callable[[ImageGenerateCheckResponse], None] | None = None,
     ) -> tuple[ImageGenerateStatusResponse, JobID]:
         """Submit an image generation request to the AI-Horde API, and wait for it to complete.
 
@@ -708,6 +729,8 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             image_gen_request,
             number_of_responses=n,
             timeout=timeout,
+            check_callback=check_callback,
+            check_callback_type=ImageGenerateCheckResponse,
         )
 
         if isinstance(final_response, RequestErrorResponse):  # pragma: no cover
@@ -744,6 +767,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         self,
         alchemy_request: AlchemyAsyncRequest,
         timeout: int = GENERATION_MAX_LIFE,
+        check_callback: Callable[[AlchemyStatusResponse], None] | None = None,
     ) -> tuple[AlchemyStatusResponse, JobID]:
         """Submit an alchemy request to the AI-Horde API, and wait for it to complete.
 
@@ -766,6 +790,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             alchemy_request,
             number_of_responses=len(alchemy_request.forms),
             timeout=timeout,
+            check_callback=check_callback,
         )
 
         if isinstance(response, RequestErrorResponse):  # pragma: no cover
@@ -871,6 +896,8 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         *,
         number_of_responses: int = 1,
         timeout: int = GENERATION_MAX_LIFE,
+        check_callback: Callable | None = None,
+        check_callback_type: type[ResponseWithProgressMixin | ResponseGenerationProgressCombinedMixin] | None = None,
     ) -> tuple[HordeResponse, JobID]:
         """Submit a request which requires check/status polling to the AI-Horde API, and wait for it to complete.
 
@@ -886,6 +913,9 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
         """
+
+        if len(inspect.getfullargspec(check_callback).args) == 0:
+            raise ValueError("Callback must take at least one argument")
 
         context: contextlib.AbstractContextManager | AIHordeAPIAsyncClientSession
         ai_horde_session: AIHordeAPIAsyncClientSession
@@ -936,6 +966,8 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
                     number_of_responses=number_of_responses,
                     start_time=start_time,
                     timeout=timeout,
+                    check_callback=check_callback,
+                    check_callback_type=check_callback_type,
                 )
 
                 if progress_state == _PROGRESS_STATE.finished or progress_state == _PROGRESS_STATE.timed_out:
@@ -991,6 +1023,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         self,
         image_gen_request: ImageGenerateAsyncRequest,
         timeout: int = GENERATION_MAX_LIFE,
+        check_callback: Callable[[ImageGenerateCheckResponse], None] | None = None,
     ) -> tuple[ImageGenerateStatusResponse, JobID]:
         """Submit an image generation request to the AI-Horde API, and wait for it to complete.
 
@@ -1017,6 +1050,8 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             image_gen_request,
             number_of_responses=n,
             timeout=timeout,
+            check_callback=check_callback,
+            check_callback_type=ImageGenerateCheckResponse,
         )
 
         if isinstance(final_response, RequestErrorResponse):  # pragma: no cover
@@ -1031,6 +1066,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         self,
         alchemy_request: AlchemyAsyncRequest,
         timeout: int = GENERATION_MAX_LIFE,
+        check_callback: Callable[[AlchemyStatusResponse], None] | None = None,
     ) -> tuple[AlchemyStatusResponse, JobID]:
         """Submit an alchemy request to the AI-Horde API, and wait for it to complete.
 
@@ -1052,6 +1088,8 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             alchemy_request,
             number_of_responses=len(alchemy_request.forms),
             timeout=timeout,
+            check_callback=check_callback,
+            check_callback_type=AlchemyStatusResponse,
         )
         if isinstance(response, RequestErrorResponse):  # pragma: no cover
             raise AIHordeRequestError(response)
