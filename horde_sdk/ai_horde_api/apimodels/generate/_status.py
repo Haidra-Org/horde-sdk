@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, field_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, GenMetadataEntry, JobRequestMixin
-from horde_sdk.ai_horde_api.apimodels.generate._progress import ResponseGenerationProgressMixin
+from horde_sdk.ai_horde_api.apimodels.generate._progress import ResponseGenerationProgressInfoMixin
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import JobID, WorkerID
@@ -51,7 +51,7 @@ class ImageGeneration(BaseModel):
 class ImageGenerateStatusResponse(
     HordeResponseBaseModel,
     ResponseWithProgressMixin,
-    ResponseGenerationProgressMixin,
+    ResponseGenerationProgressInfoMixin,
 ):
     """Represent the response from the AI-Horde API when checking the status of an image generation job.
 

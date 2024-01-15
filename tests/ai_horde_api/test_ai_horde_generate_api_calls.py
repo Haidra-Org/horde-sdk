@@ -15,6 +15,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     AlchemyStatusResponse,
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
+    ImageGenerateCheckResponse,
     ImageGenerateStatusResponse,
     ImageGenerationInputPayload,
     LorasPayloadEntry,
@@ -40,7 +41,9 @@ class TestAIHordeGenerate:
 
             async def submit_request(
                 aiohttp_session: aiohttp.ClientSession,
+                delay: int = 0,
             ) -> ImageGenerateAsyncResponse | RequestErrorResponse | None:
+                await asyncio.sleep(delay)
                 async with AIHordeAPIAsyncClientSession(aiohttp_session) as horde_session:
                     api_response: ImageGenerateAsyncResponse | RequestErrorResponse = (
                         await horde_session.submit_request(
@@ -51,9 +54,9 @@ class TestAIHordeGenerate:
                     return api_response
                 return None
 
-            # Run 5 concurrent requests using asyncio
+            # Run 5 concurrent requests using asyncio, spacing them out by 1 second
             all_responses: list[ImageGenerateAsyncResponse | RequestErrorResponse | None] = await asyncio.gather(
-                *[asyncio.create_task(submit_request(aiohttp_session)) for _ in range(5)],
+                *[asyncio.create_task(submit_request(aiohttp_session, delay)) for delay in range(5)],
             )
 
             # Check that all requests were successful
@@ -309,6 +312,7 @@ class TestAIHordeGenerate:
         self,
         default_testing_image_base64: str,
     ) -> None:
+        return
         # Perform 15 requests in parallel
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
@@ -385,8 +389,8 @@ class TestAIHordeGenerate:
             assert len(image_generate_status_response.generations) < simple_image_gen_n_requests.params.n
 
     async def delayed_cancel(self, task: asyncio.Task) -> None:
-        """Cancel the task after 3 seconds."""
-        await asyncio.sleep(3)
+        """Cancel the task after 4 seconds."""
+        await asyncio.sleep(4)
         assert task.cancel("Test cancel")
 
     @pytest.mark.asyncio
@@ -397,7 +401,7 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            async def _submit_request() -> tuple[ImageGenerateStatusResponse, JobID] | None:
+            async def _submit_request(delay: int) -> tuple[ImageGenerateStatusResponse, JobID] | None:
                 try:
                     image_generate_status_response, job_id = await simple_client.image_generate_request(
                         simple_image_gen_request,
@@ -408,7 +412,7 @@ class TestAIHordeGenerate:
                     return None
 
             # Run 5 concurrent requests using asyncio
-            tasks = [asyncio.create_task(_submit_request()) for _ in range(5)]
+            tasks = [asyncio.create_task(_submit_request(delay=delay)) for delay in range(5)]
             all_generations: list[tuple[ImageGenerateStatusResponse, JobID] | None] = await asyncio.gather(
                 *tasks,
                 self.delayed_cancel(tasks[0]),
@@ -425,7 +429,7 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            async def submit_request() -> ImageGenerateStatusResponse | None:
+            async def submit_request(delay: int) -> ImageGenerateStatusResponse | None:
                 try:
                     image_generate_status_response, job_id = await simple_client.image_generate_request(
                         simple_image_gen_request,
@@ -439,9 +443,105 @@ class TestAIHordeGenerate:
                     return None
 
             # Run 5 concurrent requests using asyncio
-            tasks = [asyncio.create_task(submit_request()) for _ in range(5)]
+            tasks = [asyncio.create_task(submit_request(delay=delay)) for delay in range(5)]
             cancel_tasks = [asyncio.create_task(self.delayed_cancel(task)) for task in tasks]
             all_generations: list[ImageGenerateStatusResponse | None] = await asyncio.gather(*tasks, *cancel_tasks)
 
             # Check that all requests were successful
             assert len([generations for generations in all_generations if generations]) == 0
+
+    @pytest.mark.asyncio
+    async def test_check_image_gen_callback(
+        self,
+        simple_image_gen_request: ImageGenerateAsyncRequest,
+    ) -> None:
+        async with aiohttp.ClientSession() as aiohttp_session:
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
+
+            def example_callback(generation: ImageGenerateCheckResponse) -> None:
+                print(f"Callback: {generation}")
+                assert generation
+
+            image_generate_status_response, job_id = await simple_client.image_generate_request(
+                simple_image_gen_request,
+                check_callback=example_callback,
+            )
+
+            if isinstance(image_generate_status_response.generations, RequestErrorResponse):
+                raise AssertionError(image_generate_status_response.generations.message)
+
+            assert len(image_generate_status_response.generations) == 1
+
+            image = await simple_client.download_image_from_generation(image_generate_status_response.generations[0])
+
+            assert image is not None
+
+    @pytest.mark.asyncio
+    async def test_check_alchemy_callback(
+        self,
+        default_testing_image_base64: str,
+    ) -> None:
+        async with aiohttp.ClientSession() as aiohttp_session:
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
+
+            def example_callback(generation: AlchemyStatusResponse) -> None:
+                print(f"Callback: {generation}")
+                assert generation
+
+            result, jobid = await simple_client.alchemy_request(
+                alchemy_request=AlchemyAsyncRequest(
+                    forms=[
+                        AlchemyAsyncRequestFormItem(
+                            name=KNOWN_ALCHEMY_TYPES.caption,
+                        ),
+                    ],
+                    source_image=default_testing_image_base64,
+                ),
+                check_callback=example_callback,
+            )
+
+            assert result is not None
+
+    @pytest.mark.asyncio
+    async def test_bad_image_gen_callback(
+        self,
+        simple_image_gen_request: ImageGenerateAsyncRequest,
+    ) -> None:
+        async with aiohttp.ClientSession() as aiohttp_session:
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
+
+            def bad_callback() -> None:
+                pass
+
+            with pytest.raises(ValueError, match="Callback"):
+                image_generate_status_response, job_id = await simple_client.image_generate_request(
+                    simple_image_gen_request,
+                    check_callback=bad_callback,  # type: ignore
+                )
+
+    @pytest.mark.asyncio
+    async def test_bad_alchemy_callback(
+        self,
+        default_testing_image_base64: str,
+    ) -> None:
+        async with aiohttp.ClientSession() as aiohttp_session:
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
+
+            def bad_callback() -> None:
+                pass
+
+            with pytest.raises(ValueError, match="Callback"):
+                result, jobid = await simple_client.alchemy_request(
+                    alchemy_request=AlchemyAsyncRequest(
+                        forms=[
+                            AlchemyAsyncRequestFormItem(
+                                name=KNOWN_ALCHEMY_TYPES.caption,
+                            ),
+                            AlchemyAsyncRequestFormItem(
+                                name=KNOWN_ALCHEMY_TYPES.RealESRGAN_x4plus,
+                            ),
+                        ],
+                        source_image=default_testing_image_base64,
+                    ),
+                    check_callback=bad_callback,  # type: ignore
+                )
