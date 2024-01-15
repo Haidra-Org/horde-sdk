@@ -49,6 +49,10 @@ from horde_sdk.ai_horde_api.apimodels.generate._pop import (
     ImageGenerateJobPopResponse,
     ImageGenerateJobPopSkippedStatus,
 )
+from horde_sdk.ai_horde_api.apimodels.generate._progress import (
+    ResponseGenerationProgressCombinedMixin,
+    ResponseGenerationProgressInfoMixin,
+)
 from horde_sdk.ai_horde_api.apimodels.generate._status import (
     DeleteImageGenerateRequest,
     ImageGenerateStatusRequest,
@@ -113,4 +117,6 @@ __all__ = [
     "UserKudosDetails",
     "UserRecords",
     "UserThingRecords",
+    "ResponseGenerationProgressInfoMixin",
+    "ResponseGenerationProgressCombinedMixin",
 ]
