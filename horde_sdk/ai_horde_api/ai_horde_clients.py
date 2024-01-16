@@ -611,7 +611,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             tuple[HordeResponse, JobID]: The final response and the corresponding job ID.
         """
 
-        if len(inspect.getfullargspec(check_callback).args) == 0:
+        if check_callback is not None and len(inspect.getfullargspec(check_callback).args) == 0:
             raise ValueError("Callback must take at least one argument")
 
         # This session class will cleanup incomplete requests in the event of an exception
@@ -914,7 +914,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             AIHordeRequestError: If the request failed. The error response is included in the exception.
         """
 
-        if len(inspect.getfullargspec(check_callback).args) == 0:
+        if check_callback is not None and len(inspect.getfullargspec(check_callback).args) == 0:
             raise ValueError("Callback must take at least one argument")
 
         context: contextlib.AbstractContextManager | AIHordeAPIAsyncClientSession
