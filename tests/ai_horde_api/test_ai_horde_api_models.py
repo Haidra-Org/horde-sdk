@@ -323,6 +323,7 @@ def test_ImageGenerateJobPopResponse() -> None:
 
     assert test_response.id_ is None
     assert test_response.has_upscaler is True
+    assert test_response.has_facefixer is False
 
     test_response = ImageGenerateJobPopResponse(
         id=None,
@@ -333,8 +334,8 @@ def test_ImageGenerateJobPopResponse() -> None:
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
-    assert test_response.id_ is None
     assert test_response.has_upscaler is False
+    assert test_response.has_facefixer is False
 
     test_response = ImageGenerateJobPopResponse(
         id=None,
@@ -346,5 +347,18 @@ def test_ImageGenerateJobPopResponse() -> None:
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
-    assert test_response.id_ is None
     assert test_response.has_upscaler is False
+    assert test_response.has_facefixer is True
+
+    test_response = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_FACEFIXERS.CodeFormers, KNOWN_UPSCALERS.RealESRGAN_x2plus],
+            prompt="A cat in a hat",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    assert test_response.has_upscaler is True
+    assert test_response.has_facefixer is True
