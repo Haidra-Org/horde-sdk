@@ -10,7 +10,12 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     ImageGenerateParamMixin,
 )
 from horde_sdk.ai_horde_api.apimodels.generate._submit import ImageGenerationJobSubmitRequest
-from horde_sdk.ai_horde_api.consts import GENERATION_STATE, KNOWN_SOURCE_PROCESSING
+from horde_sdk.ai_horde_api.consts import (
+    GENERATION_STATE,
+    KNOWN_FACEFIXERS,
+    KNOWN_SOURCE_PROCESSING,
+    KNOWN_UPSCALERS,
+)
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import JobID
 from horde_sdk.consts import HTTPMethod
@@ -157,6 +162,22 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
             return True
 
         return super().ignore_failure()
+
+    @property
+    def has_upscaler(self) -> bool:
+        """Whether or not this image generation has an upscaler."""
+        if len(self.payload.post_processing) == 0:
+            return False
+
+        return any(post_processing in KNOWN_UPSCALERS.__members__ for post_processing in self.payload.post_processing)
+
+    @property
+    def has_facefixer(self) -> bool:
+        """Whether or not this image generation has a facefixer."""
+        if len(self.payload.post_processing) == 0:
+            return False
+
+        return any(post_processing in KNOWN_FACEFIXERS.__members__ for post_processing in self.payload.post_processing)
 
 
 class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
