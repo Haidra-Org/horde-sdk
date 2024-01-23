@@ -1,4 +1,6 @@
 """Unit tests for AI-Horde API models."""
+from uuid import UUID
+
 from horde_sdk.ai_horde_api.apimodels._find_user import (
     ContributionsDetails,
     FindUserRequest,
@@ -10,6 +12,11 @@ from horde_sdk.ai_horde_api.apimodels.generate._async import (
     ImageGenerateAsyncRequest,
     ImageGenerationInputPayload,
 )
+from horde_sdk.ai_horde_api.apimodels.generate._pop import (
+    ImageGenerateJobPopPayload,
+    ImageGenerateJobPopResponse,
+    ImageGenerateJobPopSkippedStatus,
+)
 from horde_sdk.ai_horde_api.apimodels.workers._workers_all import (
     AllWorkersDetailsResponse,
     TeamDetailsLite,
@@ -17,12 +24,15 @@ from horde_sdk.ai_horde_api.apimodels.workers._workers_all import (
     WorkerKudosDetails,
 )
 from horde_sdk.ai_horde_api.consts import (
+    KNOWN_FACEFIXERS,
     KNOWN_SAMPLERS,
     KNOWN_SOURCE_PROCESSING,
+    KNOWN_UPSCALERS,
     METADATA_TYPE,
     METADATA_VALUE,
     WORKER_TYPE,
 )
+from horde_sdk.ai_horde_api.fields import JobID
 
 
 def test_api_endpoint() -> None:
@@ -298,3 +308,43 @@ def test_GenMetadataEntry() -> None:
         type="test key",
         value="test value",
     )
+
+
+def test_ImageGenerateJobPopResponse() -> None:
+    test_response = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+            prompt="A cat in a hat",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    assert test_response.id_ is None
+    assert test_response.has_upscaler is True
+
+    test_response = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        payload=ImageGenerateJobPopPayload(
+            prompt="A cat in a hat",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    assert test_response.id_ is None
+    assert test_response.has_upscaler is False
+
+    test_response = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_FACEFIXERS.CodeFormers],
+            prompt="A cat in a hat",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    assert test_response.id_ is None
+    assert test_response.has_upscaler is False
