@@ -362,3 +362,15 @@ def test_ImageGenerateJobPopResponse() -> None:
 
     assert test_response.has_upscaler is True
     assert test_response.has_facefixer is True
+
+    test_response = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=["unknown post processor"],
+            control_type="unknown control type",
+            sampler_name="unknown sampler",
+            prompt="A cat in a hat",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
