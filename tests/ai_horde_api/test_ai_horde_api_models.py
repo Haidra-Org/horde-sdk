@@ -47,7 +47,8 @@ def test_ImageGenerateAsyncRequest(ai_horde_api_key: str) -> None:
         models=["Deliberate"],
         prompt="test prompt",
         params=ImageGenerationInputPayload(
-            sampler_name=KNOWN_SAMPLERS.k_lms,
+            # sampler_name="DDIM",
+            sampler_name=KNOWN_SAMPLERS.DDIM,
             cfg_scale=7.5,
             denoising_strength=1,
             seed="123456789",
@@ -86,7 +87,7 @@ def test_ImageGenerateAsyncRequest(ai_horde_api_key: str) -> None:
     assert test_async_request.models == ["Deliberate"]
     assert test_async_request.prompt == "test prompt"
     assert test_async_request.params is not None
-    assert test_async_request.params.sampler_name == "k_lms"
+    assert test_async_request.params.sampler_name == "DDIM"
     assert test_async_request.params.cfg_scale == 7.5
     assert test_async_request.params.denoising_strength == 1
     assert test_async_request.params.seed is not None
