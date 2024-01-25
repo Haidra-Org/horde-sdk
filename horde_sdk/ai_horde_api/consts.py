@@ -135,6 +135,18 @@ class KNOWN_MISC_POST_PROCESSORS(StrEnum):
     strip_background = auto()
 
 
+_all_valid_post_processors_names_and_values = (
+    list(KNOWN_UPSCALERS.__members__.keys())
+    + list(KNOWN_UPSCALERS.__members__.values())
+    + list(KNOWN_FACEFIXERS.__members__.keys())
+    + list(KNOWN_FACEFIXERS.__members__.values())
+    + list(KNOWN_MISC_POST_PROCESSORS.__members__.keys())
+    + list(KNOWN_MISC_POST_PROCESSORS.__members__.values())
+)
+"""Used to validate post processor names and values. \
+    This is because some post processor names are not valid python variable names."""
+
+
 class POST_PROCESSOR_ORDER_TYPE(StrEnum):
     """The post processor order types that are known to the API.
 

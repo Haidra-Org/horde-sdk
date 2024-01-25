@@ -18,6 +18,7 @@ from horde_sdk.ai_horde_api.consts import (
     METADATA_TYPE,
     METADATA_VALUE,
     POST_PROCESSOR_ORDER_TYPE,
+    _all_valid_post_processors_names_and_values,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.fields import JobID, WorkerID
@@ -182,8 +183,9 @@ class ImageGenerateParamMixin(BaseModel):
     @field_validator("sampler_name")
     def sampler_name_must_be_known(cls, v: str | KNOWN_SAMPLERS) -> str | KNOWN_SAMPLERS:
         """Ensure that the sampler name is in this list of supported samplers."""
-        if v not in KNOWN_SAMPLERS.__members__:
+        if (isinstance(v, str) and v not in KNOWN_SAMPLERS.__members__) or (not isinstance(v, KNOWN_SAMPLERS)):
             logger.warning(f"Unknown sampler name {v}. Is your SDK out of date or did the API change?")
+
         return v
 
     # @model_validator(mode="after")
@@ -208,11 +210,11 @@ class ImageGenerateParamMixin(BaseModel):
         v: list[str | KNOWN_UPSCALERS | KNOWN_FACEFIXERS | KNOWN_MISC_POST_PROCESSORS],
     ) -> list[str | KNOWN_UPSCALERS | KNOWN_FACEFIXERS | KNOWN_MISC_POST_PROCESSORS]:
         """Ensure that the post processors are in this list of supported post processors."""
+
+        _valid_types: list[type] = [str, KNOWN_UPSCALERS, KNOWN_FACEFIXERS, KNOWN_MISC_POST_PROCESSORS]
         for post_processor in v:
-            if (
-                post_processor not in KNOWN_UPSCALERS.__members__
-                and post_processor not in KNOWN_FACEFIXERS.__members__
-                and post_processor not in KNOWN_MISC_POST_PROCESSORS.__members__
+            if post_processor not in _all_valid_post_processors_names_and_values or (
+                type(post_processor) not in _valid_types
             ):
                 logger.warning(
                     f"Unknown post processor {post_processor}. Is your SDK out of date or did the API change?",
@@ -224,7 +226,7 @@ class ImageGenerateParamMixin(BaseModel):
         """Ensure that the control type is in this list of supported control types."""
         if v is None:
             return None
-        if v not in KNOWN_CONTROLNETS.__members__:
+        if (isinstance(v, str) and v not in KNOWN_CONTROLNETS.__members__) or (not isinstance(v, KNOWN_CONTROLNETS)):
             logger.warning(f"Unknown control type '{v}'. Is your SDK out of date or did the API change?")
         return v
 
@@ -260,13 +262,13 @@ class GenMetadataEntry(BaseModel):
     @field_validator("type_")
     def validate_type(cls, v: str | METADATA_TYPE) -> str | METADATA_TYPE:
         """Ensure that the type is in this list of supported types."""
-        if v not in METADATA_TYPE.__members__:
+        if (isinstance(v, str) and v not in METADATA_TYPE.__members__) or (not isinstance(v, METADATA_TYPE)):
             logger.warning(f"Unknown metadata type {v}. Is your SDK out of date or did the API change?")
         return v
 
     @field_validator("value")
     def validate_value(cls, v: str | METADATA_VALUE) -> str | METADATA_VALUE:
         """Ensure that the value is in this list of supported values."""
-        if v not in METADATA_VALUE.__members__:
+        if (isinstance(v, str) and v not in METADATA_VALUE.__members__) or (not isinstance(v, METADATA_VALUE)):
             logger.warning(f"Unknown metadata value {v}. Is your SDK out of date or did the API change?")
         return v

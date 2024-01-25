@@ -68,7 +68,9 @@ class AlchemyAsyncRequestFormItem(BaseModel):
 
     @field_validator("name")
     def check_name(cls, v: KNOWN_ALCHEMY_TYPES | str) -> KNOWN_ALCHEMY_TYPES | str:
-        if isinstance(v, str) and v not in KNOWN_ALCHEMY_TYPES.__members__:
+        if (isinstance(v, str) and v not in KNOWN_ALCHEMY_TYPES.__members__) or (
+            not isinstance(v, KNOWN_ALCHEMY_TYPES)
+        ):
             logger.warning(f"Unknown alchemy form name {v}. Is your SDK out of date or did the API change?")
         return v
 
