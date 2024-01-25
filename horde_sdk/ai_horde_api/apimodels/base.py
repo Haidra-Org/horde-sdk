@@ -183,8 +183,10 @@ class ImageGenerateParamMixin(BaseModel):
     @field_validator("sampler_name")
     def sampler_name_must_be_known(cls, v: str | KNOWN_SAMPLERS) -> str | KNOWN_SAMPLERS:
         """Ensure that the sampler name is in this list of supported samplers."""
-        if (isinstance(v, str) and v not in KNOWN_SAMPLERS.__members__) or (not isinstance(v, KNOWN_SAMPLERS)):
-            logger.warning(f"Unknown sampler name {v}. Is your SDK out of date or did the API change?")
+        if (isinstance(v, str) and v in KNOWN_SAMPLERS.__members__) or (isinstance(v, KNOWN_SAMPLERS)):
+            return v
+
+        logger.warning(f"Unknown sampler name {v}. Is your SDK out of date or did the API change?")
 
         return v
 
