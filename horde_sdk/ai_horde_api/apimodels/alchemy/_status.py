@@ -68,7 +68,9 @@ class AlchemyFormStatus(BaseModel):
 
     @field_validator("form", mode="before")
     def validate_form(cls, v: str | KNOWN_ALCHEMY_TYPES) -> KNOWN_ALCHEMY_TYPES | str:
-        if isinstance(v, str) and v not in KNOWN_ALCHEMY_TYPES.__members__:
+        if (isinstance(v, str) and v not in KNOWN_ALCHEMY_TYPES.__members__) or (
+            not isinstance(v, KNOWN_ALCHEMY_TYPES)
+        ):
             logger.warning(f"Unknown form type {v}. Is your SDK out of date or did the API change?")
         return v
 

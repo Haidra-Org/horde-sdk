@@ -374,3 +374,22 @@ def test_ImageGenerateJobPopResponse() -> None:
         ),
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
+    test_response = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=["4x_AnimeSharp"],
+            prompt="A cat in a hat",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    test_response = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_UPSCALERS.four_4x_AnimeSharp],
+            prompt="A cat in a hat",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
