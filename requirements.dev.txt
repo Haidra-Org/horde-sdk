@@ -1,6 +1,6 @@
 pytest==7.4.4
 mypy==1.8.0
-black==23.12.1
+black==24.1.0
 ruff==0.1.14
 tox~=4.12.1
 pre-commit~=3.6.0
