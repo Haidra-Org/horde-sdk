@@ -1,9 +1,7 @@
-from pydantic import BaseModel
-
-from horde_sdk.generic_api.apimodels import ResponseWithProgressMixin
+from horde_sdk.generic_api.apimodels import HordeAPIDataObject, ResponseWithProgressMixin
 
 
-class ResponseGenerationProgressInfoMixin(BaseModel):
+class ResponseGenerationProgressInfoMixin(HordeAPIDataObject):
     finished: int
     """The amount of finished jobs in this request."""
     processing: int

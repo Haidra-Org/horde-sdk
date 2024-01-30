@@ -76,6 +76,12 @@ class StatsModelsResponse(HordeResponseBaseModel):
 
         raise ValueError(f"Invalid timeframe: {timeframe}")
 
+    def __eq__(self, other: object) -> bool:
+        raise NotImplementedError("Cannot compare StatsModelsResponse objects")
+
+    def __hash__(self) -> int:
+        raise NotImplementedError("Cannot hash StatsModelsResponse objects")
+
 
 class StatsImageModelsRequest(BaseAIHordeRequest):
     """Represents the data needed to make a request to the `/v2/stats/img/models` endpoint."""

@@ -6,7 +6,7 @@ import random
 import uuid
 
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.consts import (
@@ -22,7 +22,7 @@ from horde_sdk.ai_horde_api.consts import (
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.fields import JobID, WorkerID
-from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponseBaseModel
+from horde_sdk.generic_api.apimodels import HordeAPIDataObject, HordeRequest, HordeResponseBaseModel
 
 
 class BaseAIHordeRequest(HordeRequest):
@@ -34,7 +34,7 @@ class BaseAIHordeRequest(HordeRequest):
         return AI_HORDE_BASE_URL
 
 
-class JobRequestMixin(BaseModel):
+class JobRequestMixin(HordeAPIDataObject):
     """Mix-in class for data relating to any generation jobs."""
 
     id_: JobID = Field(alias="id")
@@ -48,8 +48,16 @@ class JobRequestMixin(BaseModel):
 
         return v
 
+    def __eq__(self, __value: object) -> bool:
+        if isinstance(__value, JobRequestMixin):
+            return self.id_ == __value.id_
+        return False
 
-class JobResponseMixin(BaseModel):  # TODO: this model may not actually exist as such in the API
+    def __hash__(self) -> int:
+        return hash(self.id_)
+
+
+class JobResponseMixin(HordeAPIDataObject):  # TODO: this model may not actually exist as such in the API
     """Mix-in class for data relating to any generation jobs."""
 
     id_: JobID = Field(alias="id")
@@ -64,14 +72,14 @@ class JobResponseMixin(BaseModel):  # TODO: this model may not actually exist as
         return v
 
 
-class WorkerRequestMixin(BaseModel):
+class WorkerRequestMixin(HordeAPIDataObject):
     """Mix-in class for data relating to worker requests."""
 
     worker_id: str | WorkerID
     """The UUID of the worker in question for this request."""
 
 
-class LorasPayloadEntry(BaseModel):
+class LorasPayloadEntry(HordeAPIDataObject):
     """Represents a single lora parameter.
 
     v2 API Model: `ModelPayloadLorasStable`
@@ -89,7 +97,7 @@ class LorasPayloadEntry(BaseModel):
     """If true, will treat the lora name as a version ID."""
 
 
-class TIPayloadEntry(BaseModel):
+class TIPayloadEntry(HordeAPIDataObject):
     name: str = Field(min_length=1, max_length=255)
     inject_ti: str | None = None
     strength: float = Field(default=1, ge=-5, le=5)
@@ -116,7 +124,7 @@ class TIPayloadEntry(BaseModel):
         return self
 
 
-class ImageGenerateParamMixin(BaseModel):
+class ImageGenerateParamMixin(HordeAPIDataObject):
     """Mix-in class of some of the data included in a request to the `/v2/generate/async` endpoint.
 
     Also is the corresponding information returned on a job pop to the `/v2/generate/pop` endpoint.
@@ -252,7 +260,7 @@ class JobSubmitResponse(HordeResponseBaseModel):
         return "GenerationSubmitted"
 
 
-class GenMetadataEntry(BaseModel):
+class GenMetadataEntry(HordeAPIDataObject):
     """Represents a single generation metadata entry.
 
     v2 API Model: `GenerationMetadataStable`
@@ -268,13 +276,17 @@ class GenMetadataEntry(BaseModel):
     @field_validator("type_")
     def validate_type(cls, v: str | METADATA_TYPE) -> str | METADATA_TYPE:
         """Ensure that the type is in this list of supported types."""
-        if (isinstance(v, str) and v not in METADATA_TYPE.__members__) or (not isinstance(v, METADATA_TYPE)):
+        if isinstance(v, METADATA_TYPE):
+            return v
+        if isinstance(v, str) and v not in METADATA_TYPE.__members__:
             logger.warning(f"Unknown metadata type {v}. Is your SDK out of date or did the API change?")
         return v
 
     @field_validator("value")
     def validate_value(cls, v: str | METADATA_VALUE) -> str | METADATA_VALUE:
         """Ensure that the value is in this list of supported values."""
-        if (isinstance(v, str) and v not in METADATA_VALUE.__members__) or (not isinstance(v, METADATA_VALUE)):
+        if isinstance(v, METADATA_VALUE):
+            return v
+        if isinstance(v, str) and v not in METADATA_VALUE.__members__:
             logger.warning(f"Unknown metadata value {v}. Is your SDK out of date or did the API change?")
         return v

@@ -25,7 +25,9 @@
         "stop_sequence": [
             ""
         ],
-        "min_p": 0.0
+        "min_p": 0.0,
+        "dynatemp_range": 0.0,
+        "dynatemp_exponent": 1.0
     },
     "softprompt": "a",
     "trusted_workers": false,

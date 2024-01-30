@@ -1,5 +1,5 @@
 from loguru import logger
-from pydantic import BaseModel, field_validator
+from pydantic import field_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
@@ -8,6 +8,7 @@ from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
+    HordeAPIDataObject,
     HordeResponseBaseModel,
     ResponseWithProgressMixin,
 )
@@ -15,33 +16,33 @@ from horde_sdk.generic_api.apimodels import (
 # FIXME: All vs API models defs? (override get_api_model_name and add to docstrings)
 
 
-class AlchemyUpscaleResult(BaseModel):
+class AlchemyUpscaleResult(HordeAPIDataObject):
     """Represents the result of an upscale job."""
 
     upscaler_used: KNOWN_UPSCALERS | str
     url: str
 
 
-class AlchemyCaptionResult(BaseModel):
+class AlchemyCaptionResult(HordeAPIDataObject):
     """Represents the result of a caption job."""
 
     caption: str
 
 
-class AlchemyNSFWResult(BaseModel):
+class AlchemyNSFWResult(HordeAPIDataObject):
     """Represents the result of an NSFW evaluation."""
 
     nsfw: bool
 
 
-class AlchemyInterrogationResultItem(BaseModel):
+class AlchemyInterrogationResultItem(HordeAPIDataObject):
     """Represents an item in the result of an interrogation job."""
 
     text: str
     confidence: float
 
 
-class AlchemyInterrogationDetails(BaseModel):
+class AlchemyInterrogationDetails(HordeAPIDataObject):
     """The details of an interrogation job."""
 
     tags: list[AlchemyInterrogationResultItem]
@@ -53,13 +54,13 @@ class AlchemyInterrogationDetails(BaseModel):
     techniques: list[AlchemyInterrogationResultItem]
 
 
-class AlchemyInterrogationResult(BaseModel):
+class AlchemyInterrogationResult(HordeAPIDataObject):
     """Represents the result of an interrogation job. Use the `interrogation` field for the details."""
 
     interrogation: AlchemyInterrogationDetails
 
 
-class AlchemyFormStatus(BaseModel):
+class AlchemyFormStatus(HordeAPIDataObject):
     """Represents the status of a form in an interrogation job."""
 
     form: KNOWN_ALCHEMY_TYPES | str
@@ -68,6 +69,8 @@ class AlchemyFormStatus(BaseModel):
 
     @field_validator("form", mode="before")
     def validate_form(cls, v: str | KNOWN_ALCHEMY_TYPES) -> KNOWN_ALCHEMY_TYPES | str:
+        if isinstance(v, KNOWN_ALCHEMY_TYPES):
+            return v
         if (isinstance(v, str) and v not in KNOWN_ALCHEMY_TYPES.__members__) or (
             not isinstance(v, KNOWN_ALCHEMY_TYPES)
         ):
@@ -158,6 +161,14 @@ class AlchemyStatusResponse(HordeResponseBaseModel, ResponseWithProgressMixin):
     @classmethod
     def get_finalize_success_request_type(cls) -> None:
         return None
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, AlchemyStatusResponse):
+            return False
+        return self.state == other.state and all(form in other.forms for form in self.forms)
+
+    def __hash__(self) -> int:
+        return hash((self.state, tuple(self.forms)))
 
 
 class AlchemyStatusRequest(

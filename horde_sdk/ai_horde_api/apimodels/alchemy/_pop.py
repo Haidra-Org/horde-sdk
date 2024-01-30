@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from loguru import logger
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.alchemy._submit import AlchemyJobSubmitRequest
@@ -51,6 +53,8 @@ class AlchemyPopFormPayload(HordeAPIObject, JobRequestMixin):
 
     @field_validator("form", mode="before")
     def validate_form(cls, v: str | KNOWN_ALCHEMY_TYPES) -> KNOWN_ALCHEMY_TYPES | str:
+        if isinstance(v, KNOWN_ALCHEMY_TYPES):
+            return v
         if isinstance(v, str) and v not in KNOWN_ALCHEMY_TYPES.__members__:
             logger.warning(f"Unknown form type {v}")
         return v
@@ -130,11 +134,40 @@ class AlchemyPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin)
 
         return all_ids
 
+    @model_validator(mode="after")
+    def coerce_list_order(self) -> AlchemyPopResponse:
+        if self.forms is not None:
+            logger.debug("Sorting forms by id")
+            self.forms.sort(key=lambda form: form.id_)
+
+        return self
+
     @override
     @classmethod
     def get_follow_up_request_types(cls) -> list[type[AlchemyJobSubmitRequest]]:  # type: ignore[override]
         """Return a list of all the possible follow up request types for this response."""
         return [AlchemyJobSubmitRequest]
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, AlchemyPopResponse):
+            return False
+
+        forms_match = True
+        skipped_match = True
+
+        if self.forms is not None and other.forms is not None:
+            forms_match = all(form in other.forms for form in self.forms)
+
+        if self.skipped is not None:
+            skipped_match = self.skipped == other.skipped
+
+        return forms_match and skipped_match
+
+    def __hash__(self) -> int:
+        if self.forms is None:
+            return hash(self.skipped)
+
+        return hash((tuple([form.id_ for form in self.forms]), self.skipped))
 
 
 class AlchemyPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
