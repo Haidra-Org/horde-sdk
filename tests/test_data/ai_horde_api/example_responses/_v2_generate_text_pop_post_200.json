@@ -25,6 +25,8 @@
             ""
         ],
         "min_p": 0.0,
+        "dynatemp_range": 0.0,
+        "dynatemp_exponent": 1.0,
         "prompt": ""
     },
     "id": "",

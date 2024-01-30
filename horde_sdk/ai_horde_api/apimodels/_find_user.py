@@ -1,20 +1,20 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, HordeResponseBaseModel
+from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, HordeAPIDataObject, HordeResponseBaseModel
 
 
-class ContributionsDetails(BaseModel):
+class ContributionsDetails(HordeAPIDataObject):
     fulfillments: int | None = Field(default=None, description="How many images this user has generated.")
     megapixelsteps: float | None = Field(default=None, description="How many megapixelsteps this user has generated.")
 
 
-class UserKudosDetails(BaseModel):
+class UserKudosDetails(HordeAPIDataObject):
     accumulated: float | None = Field(0, description="The amount of Kudos accumulated or used for generating images.")
     admin: float | None = Field(0, description="The amount of Kudos this user has been given by the Horde admins.")
     awarded: float | None = Field(
@@ -29,12 +29,12 @@ class UserKudosDetails(BaseModel):
     )
 
 
-class MonthlyKudos(BaseModel):
+class MonthlyKudos(HordeAPIDataObject):
     amount: int | None = Field(default=None, description="How much recurring Kudos this user receives monthly.")
     last_received: datetime | None = Field(default=None, description="Last date this user received monthly Kudos.")
 
 
-class UserThingRecords(BaseModel):
+class UserThingRecords(HordeAPIDataObject):
     megapixelsteps: float | None = Field(
         0,
         description="How many megapixelsteps this user has generated or requested.",
@@ -42,20 +42,20 @@ class UserThingRecords(BaseModel):
     tokens: int | None = Field(0, description="How many token this user has generated or requested.")
 
 
-class UserAmountRecords(BaseModel):
+class UserAmountRecords(HordeAPIDataObject):
     image: int | None = Field(0, description="How many images this user has generated or requested.")
     interrogation: int | None = Field(0, description="How many texts this user has generated or requested.")
     text: int | None = Field(0, description="How many texts this user has generated or requested.")
 
 
-class UserRecords(BaseModel):
+class UserRecords(HordeAPIDataObject):
     contribution: UserThingRecords | None = None
     fulfillment: UserAmountRecords | None = None
     request: UserAmountRecords | None = None
     usage: UserThingRecords | None = None
 
 
-class UsageDetails(BaseModel):
+class UsageDetails(HordeAPIDataObject):
     megapixelsteps: float | None = Field(default=None, description="How many megapixelsteps this user has requested.")
     requests: int | None = Field(default=None, description="How many images this user has requested.")
 
@@ -182,6 +182,12 @@ class FindUserResponse(HordeResponseBaseModel):
     )
     """Whether this user has been invited to join a worker to the horde and how many of them.
     When 0, this user cannot add (new) workers to the horde."""
+
+    def __eq__(self, other: object) -> bool:
+        raise NotImplementedError("TODO")
+
+    def __hash__(self) -> int:
+        raise NotImplementedError("TODO")
 
 
 class FindUserRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):

@@ -60,6 +60,54 @@ class UUID_Identifier(RootModel[uuid.UUID]):
     def __hash__(self) -> int:
         return self.root.__hash__()
 
+    def __lt__(self, other: object) -> bool:
+        if isinstance(other, UUID_Identifier):
+            return self.root < other.root
+
+        if isinstance(other, str):
+            return self.root < uuid.UUID(other)
+
+        if isinstance(other, uuid.UUID):
+            return self.root < other
+
+        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+
+    def __gt__(self, other: object) -> bool:
+        if isinstance(other, UUID_Identifier):
+            return self.root > other.root
+
+        if isinstance(other, str):
+            return self.root > uuid.UUID(other)
+
+        if isinstance(other, uuid.UUID):
+            return self.root > other
+
+        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+
+    def __le__(self, other: object) -> bool:
+        if isinstance(other, UUID_Identifier):
+            return self.root <= other.root
+
+        if isinstance(other, str):
+            return self.root <= uuid.UUID(other)
+
+        if isinstance(other, uuid.UUID):
+            return self.root <= other
+
+        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+
+    def __ge__(self, other: object) -> bool:
+        if isinstance(other, UUID_Identifier):
+            return self.root >= other.root
+
+        if isinstance(other, str):
+            return self.root >= uuid.UUID(other)
+
+        if isinstance(other, uuid.UUID):
+            return self.root >= other
+
+        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+
 
 class JobID(UUID_Identifier):
     """Represents the ID of a generation job. Instances of this class can be compared with a `str` or a UUID object."""

@@ -26,6 +26,20 @@ class HordeAPIObject(BaseModel, abc.ABC):
         If none, there is no payload, such as for a GET request.
         """
 
+    model_config = ConfigDict(frozen=True)
+
+
+class HordeAPIDataObject(BaseModel):
+    """Base class for all Horde API data models which appear as objects within other data models.
+
+    These are objects which might not be specifically defined by the API docs, but (logically or otherwise) are
+    returned by the API.
+    """
+
+    model_config = (
+        ConfigDict(frozen=True) if not os.getenv("TESTS_ONGOING") else ConfigDict(frozen=True, extra="forbid")
+    )
+
 
 class HordeAPIMessage(HordeAPIObject):
     """Represents any request or response from any Horde API."""
