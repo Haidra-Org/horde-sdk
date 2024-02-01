@@ -329,6 +329,7 @@ def test_ImageGenerateJobPopResponse() -> None:
                 post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
                 prompt="A cat in a hat",
             ),
+            model="Deliberate",
             skipped=ImageGenerateJobPopSkippedStatus(),
         )
 
@@ -339,6 +340,7 @@ def test_ImageGenerateJobPopResponse() -> None:
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -352,6 +354,7 @@ def test_ImageGenerateJobPopResponse() -> None:
         payload=ImageGenerateJobPopPayload(
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -365,6 +368,7 @@ def test_ImageGenerateJobPopResponse() -> None:
             post_processing=[KNOWN_FACEFIXERS.CodeFormers],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -378,6 +382,7 @@ def test_ImageGenerateJobPopResponse() -> None:
             post_processing=[KNOWN_FACEFIXERS.CodeFormers, KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -393,6 +398,7 @@ def test_ImageGenerateJobPopResponse() -> None:
             sampler_name="unknown sampler",
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
     test_response = ImageGenerateJobPopResponse(
@@ -425,6 +431,7 @@ def test_ImageGenerateJobPopResponse() -> None:
             post_processing=["4x_AnimeSharp"],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -435,6 +442,7 @@ def test_ImageGenerateJobPopResponse() -> None:
             post_processing=[KNOWN_UPSCALERS.four_4x_AnimeSharp],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
