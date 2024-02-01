@@ -447,6 +447,7 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         source_image="r2 download link",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
@@ -458,6 +459,7 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         source_image="parsed base64",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
@@ -469,6 +471,7 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -492,6 +495,7 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -502,6 +506,7 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -527,6 +532,7 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         source_image="r2 download link",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
@@ -541,6 +547,7 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         source_image="r2 download link",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
@@ -555,6 +562,7 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         source_image="parsed base64",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
