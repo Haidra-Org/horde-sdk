@@ -70,6 +70,10 @@ class ImageGenerateJobPopSkippedStatus(HordeAPIDataObject):
     controlnet: int = Field(default=0, ge=0)
     """How many waiting requests were skipped because they requested a controlnet."""
 
+    def is_empty(self) -> bool:
+        """Whether or not this object has any non-zero values."""
+        return len(self.model_fields_set) == 0
+
 
 class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
     prompt: str | None = None
@@ -128,6 +132,9 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
     @model_validator(mode="after")
     def ids_present(self) -> ImageGenerateJobPopResponse:
         """Ensure that either id_ or ids is present."""
+        if self.skipped.is_empty() and self.model is None:
+            return self
+
         if self.id_ is None and len(self.ids) == 0:
             raise ValueError("Neither id_ nor ids were present in the response.")
 

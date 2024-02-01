@@ -1,4 +1,5 @@
 """Unit tests for AI-Horde API models."""
+import json
 from uuid import UUID
 
 import pytest
@@ -628,3 +629,41 @@ def test_AlchemyPopResponse() -> None:
     container_multiple_forms = {test_alchemy_pop_response_multiple_forms}
     assert test_alchemy_pop_response_multiple_forms in container_multiple_forms
     assert test_alchemy_pop_response_multiple_forms_copy in container_multiple_forms
+
+
+def test_ImageGenerateJobPopSkippedStatus() -> None:
+    testing_skipped_status = ImageGenerateJobPopSkippedStatus()
+
+    assert testing_skipped_status.is_empty()
+
+
+def test_problem_payload() -> None:
+    json_from_api = """
+                        {
+                        "payload": {
+                            "ddim_steps": 30,
+                            "n_iter": 1,
+                            "sampler_name": "k_euler_a",
+                            "cfg_scale": 7.5,
+                            "height": 512,
+                            "width": 512,
+                            "karras": false,
+                            "tiling": false,
+                            "hires_fix": false,
+                            "image_is_control": false,
+                            "return_control_map": false
+                        },
+                        "id": null,
+                        "ids": [],
+                        "skipped": {},
+                        "model": null,
+                        "source_image": null,
+                        "source_processing": "img2img",
+                        "source_mask": null,
+                        "r2_upload": null,
+                        "r2_uploads": null
+                    }"""
+
+    problem_payload = json.loads(json_from_api)
+
+    ImageGenerateJobPopResponse.model_validate(problem_payload)
