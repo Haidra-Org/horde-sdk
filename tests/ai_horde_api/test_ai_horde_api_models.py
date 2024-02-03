@@ -24,6 +24,7 @@ from horde_sdk.ai_horde_api.apimodels.workers._workers_all import (
     WorkerKudosDetails,
 )
 from horde_sdk.ai_horde_api.consts import (
+    KNOWN_CONTROLNETS,
     KNOWN_FACEFIXERS,
     KNOWN_SAMPLERS,
     KNOWN_SOURCE_PROCESSING,
@@ -375,6 +376,29 @@ def test_ImageGenerateJobPopResponse() -> None:
         ),
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
+    test_response = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=["unknown post processor"],
+            control_type=KNOWN_CONTROLNETS.canny,
+            sampler_name="unknown sampler",
+            prompt="A cat in a hat",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+    test_response = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=["unknown post processor"],
+            control_type="canny",
+            sampler_name="unknown sampler",
+            prompt="A cat in a hat",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
     test_response = ImageGenerateJobPopResponse(
         id=None,
         ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
