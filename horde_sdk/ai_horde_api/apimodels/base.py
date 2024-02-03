@@ -228,8 +228,12 @@ class ImageGenerateParamMixin(BaseModel):
         """Ensure that the control type is in this list of supported control types."""
         if v is None:
             return None
-        if (isinstance(v, str) and v not in KNOWN_CONTROLNETS.__members__) or (not isinstance(v, KNOWN_CONTROLNETS)):
-            logger.warning(f"Unknown control type '{v}'. Is your SDK out of date or did the API change?")
+        if isinstance(v, KNOWN_CONTROLNETS):
+            return v
+        if v in KNOWN_CONTROLNETS.__members__:
+            return v
+
+        logger.warning(f"Unknown control type {v}. Is your SDK out of date or did the API change?")
         return v
 
 
