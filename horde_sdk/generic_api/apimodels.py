@@ -207,6 +207,7 @@ class ContainsMessageResponseMixin(BaseModel):
     """Represents any response from any Horde API which contains a message."""
 
     message: str = ""
+    rc: str = ""
 
 
 class RequestErrorResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
