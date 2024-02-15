@@ -1,6 +1,8 @@
 """Unit tests for AI-Horde API models."""
 from uuid import UUID
 
+import pytest
+
 from horde_sdk.ai_horde_api.apimodels._find_user import (
     ContributionsDetails,
     FindUserRequest,
@@ -418,3 +420,25 @@ def test_ImageGenerateJobPopResponse() -> None:
         ),
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
+
+
+def test_error_response() -> None:
+    """Test that an error response can be parsed correctly."""
+    from horde_sdk.ai_horde_api.ai_horde_clients import (
+        AIHordeAPIManualClient,
+    )
+    from horde_sdk.generic_api.apimodels import RequestErrorResponse
+
+    client = AIHordeAPIManualClient()
+
+    api_request = FindUserRequest(apikey="1234567890123456789012")
+
+    api_response = client.submit_request(
+        api_request,
+        api_request.get_default_success_response_type(),
+    )
+
+    if isinstance(api_response, RequestErrorResponse):
+        assert not api_response.message.startswith("The response type doesn't match expected one!")
+    else:
+        pytest.fail(f"API Response was not an error: {api_response}")
