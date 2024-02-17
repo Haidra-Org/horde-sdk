@@ -1,4 +1,5 @@
 """Any model or helper useful for creating or interacting with a horde API."""
+
 # isort: off
 # We import dotenv first so that we can use it to load environment variables before importing anything else.
 import dotenv

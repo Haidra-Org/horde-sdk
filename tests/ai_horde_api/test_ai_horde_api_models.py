@@ -1,4 +1,5 @@
 """Unit tests for AI-Horde API models."""
+
 import json
 from uuid import UUID
 

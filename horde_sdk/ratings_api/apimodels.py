@@ -1,4 +1,5 @@
 """Model definitions for AI Horde Ratings API."""
+
 import uuid
 from enum import auto
 

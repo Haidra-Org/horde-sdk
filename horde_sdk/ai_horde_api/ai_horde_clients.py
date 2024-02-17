@@ -1,4 +1,5 @@
 """Definitions to help interact with the AI-Horde API."""
+
 from __future__ import annotations
 
 import asyncio

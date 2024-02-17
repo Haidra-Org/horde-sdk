@@ -1,4 +1,5 @@
 """Check that all models defined in all APIs `apimodels` module/subpackage can be instantiated from example JSON."""
+
 import json
 import os
 from pathlib import Path

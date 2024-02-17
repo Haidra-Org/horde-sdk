@@ -3,6 +3,7 @@
 However, this module may still assist in the construction of valid requests to the API, primarily
 by providing additional type hints for the request and response payloads and validation.
 """
+
 import uuid
 from typing import Any, ClassVar
 
