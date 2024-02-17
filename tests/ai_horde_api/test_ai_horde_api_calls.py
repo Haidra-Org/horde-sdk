@@ -113,9 +113,12 @@ class TestAIHordeAPIClients:
     @pytest.mark.asyncio
     async def test_HordeRequestSession_async(self, simple_image_gen_request: ImageGenerateAsyncRequest) -> None:
         """Test that the context manager cleans up correctly asynchronously."""
-        async with aiohttp.ClientSession() as aiohttp_session, AIHordeAPIAsyncClientSession(
-            aiohttp_session=aiohttp_session,
-        ) as horde_session:
+        async with (
+            aiohttp.ClientSession() as aiohttp_session,
+            AIHordeAPIAsyncClientSession(
+                aiohttp_session=aiohttp_session,
+            ) as horde_session,
+        ):
             api_response = await horde_session.submit_request(  # noqa: F841
                 simple_image_gen_request,
                 simple_image_gen_request.get_default_success_response_type(),
@@ -128,9 +131,12 @@ class TestAIHordeAPIClients:
     ) -> None:
         """Test that the context manager cleans up correctly asynchronously when an exception is raised."""
         with pytest.raises(HordeTestException):
-            async with aiohttp.ClientSession() as aiohttp_session, AIHordeAPIAsyncClientSession(
-                aiohttp_session=aiohttp_session,
-            ) as horde_session:
+            async with (
+                aiohttp.ClientSession() as aiohttp_session,
+                AIHordeAPIAsyncClientSession(
+                    aiohttp_session=aiohttp_session,
+                ) as horde_session,
+            ):
                 api_response = await horde_session.submit_request(  # noqa: F841
                     simple_image_gen_request,
                     simple_image_gen_request.get_default_success_response_type(),

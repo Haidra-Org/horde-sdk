@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import uuid
 
-import pydantic
 from loguru import logger
-from pydantic import AliasChoices, Field, field_validator
+from pydantic import AliasChoices, Field, field_validator, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
@@ -21,12 +22,13 @@ from horde_sdk.ai_horde_api.fields import JobID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
+    HordeAPIDataObject,
     HordeResponseBaseModel,
     ResponseRequiringFollowUpMixin,
 )
 
 
-class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
+class ImageGenerateJobPopSkippedStatus(HordeAPIDataObject):
     """Represents the data returned from the `/v2/generate/pop` endpoint for why a worker was skipped.
 
     v2 API Model: `NoValidRequestFoundStable`
@@ -67,6 +69,10 @@ class ImageGenerateJobPopSkippedStatus(pydantic.BaseModel):
     """How many waiting requests were skipped because they requested loras."""
     controlnet: int = Field(default=0, ge=0)
     """How many waiting requests were skipped because they requested a controlnet."""
+
+    def is_empty(self) -> bool:
+        """Whether or not this object has any non-zero values."""
+        return len(self.model_fields_set) == 0
 
 
 class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
@@ -123,6 +129,21 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
 
         return v
 
+    @model_validator(mode="after")
+    def ids_present(self) -> ImageGenerateJobPopResponse:
+        """Ensure that either id_ or ids is present."""
+        if self.skipped.is_empty() and self.model is None:
+            return self
+
+        if self.id_ is None and len(self.ids) == 0:
+            raise ValueError("Neither id_ nor ids were present in the response.")
+
+        if len(self.ids) > 1:
+            logger.debug("Sorting IDs")
+            self.ids.sort()
+
+        return self
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -178,6 +199,32 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
             return False
 
         return any(post_processing in KNOWN_FACEFIXERS.__members__ for post_processing in self.payload.post_processing)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ImageGenerateJobPopResponse):
+            return False
+
+        if self.id_ is not None and other.id_ is not None:
+            return self.id_ == other.id_
+
+        if len(self.ids) > 0 and len(other.ids) > 0:
+            if len(self.ids) != len(other.ids):
+                return False
+
+            return all(i in other.ids for i in self.ids)
+
+        logger.warning("No ID or IDs found in response. This is a bug.")
+        return False
+
+    def __hash__(self) -> int:
+        if self.id_ is not None:
+            return hash(self.id_)
+
+        if len(self.ids) > 0:
+            return hash(tuple(self.ids))
+
+        logger.warning("No ID or IDs found in response. This is a bug.")
+        return hash(0)
 
 
 class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):

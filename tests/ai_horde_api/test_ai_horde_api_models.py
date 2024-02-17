@@ -1,6 +1,15 @@
 """Unit tests for AI-Horde API models."""
+
+import json
 from uuid import UUID
 
+import pytest
+
+from horde_sdk.ai_horde_api.apimodels import (
+    KNOWN_ALCHEMY_TYPES,
+    AlchemyPopFormPayload,
+    AlchemyPopResponse,
+)
 from horde_sdk.ai_horde_api.apimodels._find_user import (
     ContributionsDetails,
     FindUserRequest,
@@ -313,6 +322,18 @@ def test_GenMetadataEntry() -> None:
 
 
 def test_ImageGenerateJobPopResponse() -> None:
+    with pytest.raises(ValueError):
+        _ = ImageGenerateJobPopResponse(
+            id=None,
+            ids=[],
+            payload=ImageGenerateJobPopPayload(
+                post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+                prompt="A cat in a hat",
+            ),
+            model="Deliberate",
+            skipped=ImageGenerateJobPopSkippedStatus(),
+        )
+
     test_response = ImageGenerateJobPopResponse(
         id=None,
         ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
@@ -320,6 +341,7 @@ def test_ImageGenerateJobPopResponse() -> None:
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -333,6 +355,7 @@ def test_ImageGenerateJobPopResponse() -> None:
         payload=ImageGenerateJobPopPayload(
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -346,6 +369,7 @@ def test_ImageGenerateJobPopResponse() -> None:
             post_processing=[KNOWN_FACEFIXERS.CodeFormers],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -359,6 +383,7 @@ def test_ImageGenerateJobPopResponse() -> None:
             post_processing=[KNOWN_FACEFIXERS.CodeFormers, KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -374,6 +399,7 @@ def test_ImageGenerateJobPopResponse() -> None:
             sampler_name="unknown sampler",
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
     test_response = ImageGenerateJobPopResponse(
@@ -406,6 +432,7 @@ def test_ImageGenerateJobPopResponse() -> None:
             post_processing=["4x_AnimeSharp"],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
@@ -416,5 +443,244 @@ def test_ImageGenerateJobPopResponse() -> None:
             post_processing=[KNOWN_UPSCALERS.four_4x_AnimeSharp],
             prompt="A cat in a hat",
         ),
+        model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
+
+
+def test_ImageGenerateJobPopResponse_hashability() -> None:
+    test_response_ids = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+            prompt="A cat in a hat",
+        ),
+        model="Deliberate",
+        source_image="r2 download link",
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    test_response_ids_copy = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+            prompt="A cat in a hat",
+        ),
+        model="Deliberate",
+        source_image="parsed base64",
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    test_response2_ids = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000001"))],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+            prompt="A cat in a hat",
+        ),
+        model="Deliberate",
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    container = {test_response_ids}
+    assert test_response_ids in container
+    assert test_response_ids_copy in container
+    assert test_response2_ids not in container
+
+    container2 = {test_response2_ids}
+    assert test_response2_ids in container2
+    assert test_response_ids not in container2
+
+    combined_container = {test_response_ids, test_response2_ids}
+    assert test_response_ids in combined_container
+    assert test_response2_ids in combined_container
+
+    test_response_no_ids = ImageGenerateJobPopResponse(
+        id=JobID(root=UUID("00000000-0000-0000-0000-000000000000")),
+        ids=[],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+            prompt="A cat in a hat",
+        ),
+        model="Deliberate",
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    test_response_no_ids2 = ImageGenerateJobPopResponse(
+        id=JobID(root=UUID("00000000-0000-0000-0000-000000000001")),
+        ids=[],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+            prompt="A cat in a hat",
+        ),
+        model="Deliberate",
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    container_no_ids = {test_response_no_ids}
+    assert test_response_no_ids in container_no_ids
+    assert test_response_no_ids2 not in container_no_ids
+
+    container2_no_ids = {test_response_no_ids2}
+    assert test_response_no_ids2 in container2_no_ids
+    assert test_response_no_ids not in container2_no_ids
+
+    combined_container_no_ids = {test_response_no_ids, test_response_no_ids2}
+    assert test_response_no_ids in combined_container_no_ids
+    assert test_response_no_ids2 in combined_container_no_ids
+
+    test_response_multiple_ids = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[
+            JobID(root=UUID("00000000-0000-0000-0000-000000000000")),
+            JobID(root=UUID("00000000-0000-0000-0000-000000000001")),
+        ],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+            prompt="A cat in a hat",
+        ),
+        model="Deliberate",
+        source_image="r2 download link",
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    test_response_multiple_ids_copy = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[
+            JobID(root=UUID("00000000-0000-0000-0000-000000000001")),
+            JobID(root=UUID("00000000-0000-0000-0000-000000000000")),
+        ],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+            prompt="A cat in a hat",
+        ),
+        model="Deliberate",
+        source_image="r2 download link",
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    test_response_multiple_ids_2 = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[
+            JobID(root=UUID("00000000-0000-0000-0000-000000000002")),
+            JobID(root=UUID("00000000-0000-0000-0000-000000000003")),
+        ],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+            prompt="A cat in a hat",
+        ),
+        model="Deliberate",
+        source_image="parsed base64",
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    container_multiple_ids = {test_response_multiple_ids}
+    assert test_response_multiple_ids in container_multiple_ids
+    assert test_response_multiple_ids_copy in container_multiple_ids
+    assert test_response_multiple_ids_2 not in container_multiple_ids
+
+    combined_container_multiple_ids = {test_response_multiple_ids, test_response_multiple_ids_2}
+    assert test_response_multiple_ids in combined_container_multiple_ids
+    assert test_response_multiple_ids_copy in combined_container_multiple_ids
+    assert test_response_multiple_ids_2 in combined_container_multiple_ids
+
+
+def test_AlchemyPopResponse() -> None:
+    test_alchemy_pop_response = AlchemyPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=JobID(root=UUID("00000000-0000-0000-0000-000000000000")),
+                form=KNOWN_ALCHEMY_TYPES.RealESRGAN_x2plus,
+                r2_upload="r2 download link",
+                source_image="r2 download link",
+            ),
+        ],
+    )
+
+    assert test_alchemy_pop_response.forms is not None
+    assert test_alchemy_pop_response.forms[0].id_ == JobID(root=UUID("00000000-0000-0000-0000-000000000000"))
+    assert test_alchemy_pop_response.forms[0].form == KNOWN_ALCHEMY_TYPES.RealESRGAN_x2plus
+    assert test_alchemy_pop_response.forms[0].r2_upload == "r2 download link"
+    assert test_alchemy_pop_response.forms[0].source_image == "r2 download link"
+
+    container = {test_alchemy_pop_response}
+
+    assert test_alchemy_pop_response in container
+
+    test_alchemy_pop_response_multiple_forms = AlchemyPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=JobID(root=UUID("00000000-0000-0000-0000-000000000010")),
+                form=KNOWN_ALCHEMY_TYPES.RealESRGAN_x2plus,
+                r2_upload="r2 download link",
+                source_image="r2 download link",
+            ),
+            AlchemyPopFormPayload(
+                id=JobID(root=UUID("00000000-0000-0000-0000-000000000020")),
+                form=KNOWN_ALCHEMY_TYPES.fourx_AnimeSharp,
+                r2_upload="r2 download link",
+                source_image="r2 download link",
+            ),
+        ],
+    )
+
+    test_alchemy_pop_response_multiple_forms_copy = AlchemyPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=JobID(root=UUID("00000000-0000-0000-0000-000000000020")),
+                form=KNOWN_ALCHEMY_TYPES.RealESRGAN_x2plus,
+                r2_upload="r2 download link",
+                source_image="r2 download link",
+            ),
+            AlchemyPopFormPayload(
+                id=JobID(root=UUID("00000000-0000-0000-0000-000000000010")),
+                form=KNOWN_ALCHEMY_TYPES.fourx_AnimeSharp,
+                r2_upload="r2 download link",
+                source_image="r2 download link",
+            ),
+        ],
+    )
+
+    container_multiple_forms = {test_alchemy_pop_response_multiple_forms}
+    assert test_alchemy_pop_response_multiple_forms in container_multiple_forms
+    assert test_alchemy_pop_response_multiple_forms_copy in container_multiple_forms
+
+
+def test_ImageGenerateJobPopSkippedStatus() -> None:
+    testing_skipped_status = ImageGenerateJobPopSkippedStatus()
+
+    assert testing_skipped_status.is_empty()
+
+
+def test_problem_payload() -> None:
+    json_from_api = """
+                        {
+                        "payload": {
+                            "ddim_steps": 30,
+                            "n_iter": 1,
+                            "sampler_name": "k_euler_a",
+                            "cfg_scale": 7.5,
+                            "height": 512,
+                            "width": 512,
+                            "karras": false,
+                            "tiling": false,
+                            "hires_fix": false,
+                            "image_is_control": false,
+                            "return_control_map": false
+                        },
+                        "id": null,
+                        "ids": [],
+                        "skipped": {},
+                        "model": null,
+                        "source_image": null,
+                        "source_processing": "img2img",
+                        "source_mask": null,
+                        "r2_upload": null,
+                        "r2_uploads": null
+                    }"""
+
+    problem_payload = json.loads(json_from_api)
+
+    ImageGenerateJobPopResponse.model_validate(problem_payload)

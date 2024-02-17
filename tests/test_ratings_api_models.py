@@ -1,6 +1,5 @@
 """Unit tests for Ratings API models."""
 
-
 import pydantic
 import pytest
 

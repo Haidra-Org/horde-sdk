@@ -47,6 +47,14 @@ class ImageGeneration(BaseModel):
 
         return v
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ImageGeneration):
+            return False
+        return self.id_ == other.id_
+
+    def __hash__(self) -> int:
+        return hash(self.id_)
+
 
 class ImageGenerateStatusResponse(
     HordeResponseBaseModel,
@@ -85,6 +93,14 @@ class ImageGenerateStatusResponse(
     @classmethod
     def is_final_follow_up(cls) -> bool:
         return True
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ImageGenerateStatusResponse):
+            return False
+        return all(gen in other.generations for gen in self.generations)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self.generations))
 
 
 class DeleteImageGenerateRequest(

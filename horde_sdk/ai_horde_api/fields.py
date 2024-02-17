@@ -3,6 +3,7 @@
 However, this module may still assist in the construction of valid requests to the API, primarily
 by providing additional type hints for the request and response payloads and validation.
 """
+
 import uuid
 from typing import Any, ClassVar
 
@@ -59,6 +60,54 @@ class UUID_Identifier(RootModel[uuid.UUID]):
     @override
     def __hash__(self) -> int:
         return self.root.__hash__()
+
+    def __lt__(self, other: object) -> bool:
+        if isinstance(other, UUID_Identifier):
+            return self.root < other.root
+
+        if isinstance(other, str):
+            return self.root < uuid.UUID(other)
+
+        if isinstance(other, uuid.UUID):
+            return self.root < other
+
+        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+
+    def __gt__(self, other: object) -> bool:
+        if isinstance(other, UUID_Identifier):
+            return self.root > other.root
+
+        if isinstance(other, str):
+            return self.root > uuid.UUID(other)
+
+        if isinstance(other, uuid.UUID):
+            return self.root > other
+
+        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+
+    def __le__(self, other: object) -> bool:
+        if isinstance(other, UUID_Identifier):
+            return self.root <= other.root
+
+        if isinstance(other, str):
+            return self.root <= uuid.UUID(other)
+
+        if isinstance(other, uuid.UUID):
+            return self.root <= other
+
+        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+
+    def __ge__(self, other: object) -> bool:
+        if isinstance(other, UUID_Identifier):
+            return self.root >= other.root
+
+        if isinstance(other, str):
+            return self.root >= uuid.UUID(other)
+
+        if isinstance(other, uuid.UUID):
+            return self.root >= other
+
+        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
 
 
 class JobID(UUID_Identifier):

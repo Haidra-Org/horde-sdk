@@ -403,6 +403,7 @@ class TestAIHordeGenerate:
 
             async def _submit_request(delay: int) -> tuple[ImageGenerateStatusResponse, JobID] | None:
                 try:
+                    await asyncio.sleep(delay)
                     image_generate_status_response, job_id = await simple_client.image_generate_request(
                         simple_image_gen_request,
                         timeout=-1,
@@ -431,6 +432,7 @@ class TestAIHordeGenerate:
 
             async def submit_request(delay: int) -> ImageGenerateStatusResponse | None:
                 try:
+                    await asyncio.sleep(delay)
                     image_generate_status_response, job_id = await simple_client.image_generate_request(
                         simple_image_gen_request,
                         timeout=-1,

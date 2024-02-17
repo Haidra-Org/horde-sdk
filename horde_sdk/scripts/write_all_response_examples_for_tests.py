@@ -1,4 +1,5 @@
 """Write all example responses to a file in the tests/test_data directory."""
+
 from pathlib import Path
 
 from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url

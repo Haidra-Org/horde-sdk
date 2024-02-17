@@ -1,3 +1,4 @@
 {
-    "message": "An error with the AI Horde API has occurred. Please try again later."
+    "message": "An error with the AI Horde API has occurred. Please try again later.",
+    "rc": "SDK_API_TEST_ERROR"
 }

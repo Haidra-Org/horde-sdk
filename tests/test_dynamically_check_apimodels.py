@@ -1,8 +1,11 @@
 """Check that all models defined in all APIs `apimodels` module/subpackage can be instantiated from example JSON."""
+
 import json
 import os
 from pathlib import Path
 from types import ModuleType
+
+from loguru import logger
 
 import horde_sdk.ai_horde_api.apimodels
 import horde_sdk.ratings_api.apimodels
@@ -118,7 +121,15 @@ class Test_reflection_and_dynamic:
                 with open(example_response_file_path, encoding="utf-8") as sample_file_handle:
                     sample_data_json = json.loads(sample_file_handle.read())
                     try:
-                        success_response_type.model_validate(sample_data_json)
+                        parsed_model = success_response_type.model_validate(sample_data_json)
+                        try:
+                            hash(parsed_model)
+                        except NotImplementedError:
+                            logger.debug(f"Hashing not implemented for {example_response_file_path}")
+                        except Exception as e:
+                            print(f"Failed to hash {example_response_file_path}")
+                            print(f"Error: {e}")
+                            raise e
                     except Exception as e:
                         print(f"Failed to validate {example_response_file_path}")
                         print(f"Error: {e}")
@@ -132,7 +143,15 @@ class Test_reflection_and_dynamic:
                     with open(production_response_file_path, encoding="utf-8") as sample_file_handle:
                         sample_data_json = json.loads(sample_file_handle.read())
                         try:
-                            _ = success_response_type.model_validate(sample_data_json)
+                            parsed_model = success_response_type.model_validate(sample_data_json)
+                            try:
+                                hash(parsed_model)
+                            except NotImplementedError:
+                                logger.debug(f"Hashing not implemented for {example_response_file_path}")
+                            except Exception as e:
+                                print(f"Failed to hash {example_response_file_path}")
+                                print(f"Error: {e}")
+                                raise e
                         except Exception as e:
                             print(f"Failed to validate {production_response_file_path}")
                             print(f"Error: {e}")
@@ -147,7 +166,15 @@ class Test_reflection_and_dynamic:
                 if os.path.exists(example_production_response_file_path):
                     with open(example_production_response_file_path, encoding="utf-8") as sample_file_handle:
                         sample_data_json = json.loads(sample_file_handle.read())
-                        _ = success_response_type.model_validate(sample_data_json)
+                        parsed_model = success_response_type.model_validate(sample_data_json)
+                        try:
+                            hash(parsed_model)
+                        except NotImplementedError:
+                            logger.debug(f"Hashing not implemented for {example_response_file_path}")
+                        except Exception as e:
+                            print(f"Failed to hash {example_response_file_path}")
+                            print(f"Error: {e}")
+                            raise e
 
     def test_horde_api(self) -> None:
         """Test all models in the `horde_sdk.ai_horde_api.apimodels` module can be instantiated from example JSON."""

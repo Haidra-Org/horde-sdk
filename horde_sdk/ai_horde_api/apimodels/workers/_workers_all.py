@@ -85,6 +85,49 @@ class WorkerDetailItem(HordeAPIObject):
     def get_api_model_name(cls) -> str | None:
         return "WorkerDetailItem"
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, WorkerDetailItem):
+            return False
+        return (
+            self.type_ == other.type_
+            and self.name == other.name
+            and self.id_ == other.id_
+            and self.online == other.online
+            and self.requests_fulfilled == other.requests_fulfilled
+            and self.kudos_rewards == other.kudos_rewards
+            and self.kudos_details == other.kudos_details
+            and self.performance == other.performance
+            and self.threads == other.threads
+            and self.uptime == other.uptime
+            and self.maintenance_mode == other.maintenance_mode
+            and self.paused == other.paused
+            and self.info == other.info
+            and self.nsfw == other.nsfw
+            and self.owner == other.owner
+            and self.ipaddr == other.ipaddr
+            and self.trusted == other.trusted
+            and self.flagged == other.flagged
+            and self.suspicious == other.suspicious
+            and self.uncompleted_jobs == other.uncompleted_jobs
+            and (all(model in other.models for model in self.models) if self.models and other.models else True)
+            and (all(form in other.forms for form in self.forms) if self.forms and other.forms else True)
+            and self.team == other.team
+            and self.contact == other.contact
+            and self.bridge_agent == other.bridge_agent
+            and self.max_pixels == other.max_pixels
+            and self.megapixelsteps_generated == other.megapixelsteps_generated
+            and self.img2img == other.img2img
+            and self.painting == other.painting
+            and self.post_processing == other.post_processing
+            and self.lora == other.lora
+            and self.max_length == other.max_length
+            and self.max_context_length == other.max_context_length
+            and self.tokens_generated == other.tokens_generated
+        )
+
+    def __hash__(self) -> int:
+        raise NotImplementedError("Hashing is not implemented for WorkerDetailItem")
+
 
 class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]):
     model_config: ClassVar[ConfigDict] = {}
@@ -103,6 +146,14 @@ class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "WorkerDetails"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, AllWorkersDetailsResponse):
+            return False
+        return all(worker in other.root for worker in self.root)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self.root))
 
 
 class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
