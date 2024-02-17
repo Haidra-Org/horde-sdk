@@ -132,7 +132,11 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
     @model_validator(mode="after")
     def ids_present(self) -> ImageGenerateJobPopResponse:
         """Ensure that either id_ or ids is present."""
-        if self.skipped.is_empty() and self.model is None:
+        if self.model is None:
+            if self.skipped.is_empty():
+                logger.debug("No model or skipped data found in response.")
+            else:
+                logger.debug("No model found in response.")
             return self
 
         if self.id_ is None and len(self.ids) == 0:
