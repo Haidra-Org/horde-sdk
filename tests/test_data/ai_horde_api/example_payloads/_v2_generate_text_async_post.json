@@ -41,5 +41,6 @@
     ],
     "dry_run": false,
     "proxied_account": "",
-    "disable_batching": false
+    "disable_batching": false,
+    "webhook": ""
 }
