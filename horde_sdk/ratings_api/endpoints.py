@@ -1,6 +1,5 @@
 """Information and helper functions for URL endpoints to horde APIs."""
 
-
 # TODO make RATING_API_BASE_URL a env variable?
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH
 

@@ -1,4 +1,5 @@
 """API data model bases applicable across all (or many) horde APIs."""
+
 from __future__ import annotations
 
 import abc

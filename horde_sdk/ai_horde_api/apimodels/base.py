@@ -1,4 +1,5 @@
 """The base classes for all AI Horde API requests/responses."""
+
 from __future__ import annotations
 
 import os

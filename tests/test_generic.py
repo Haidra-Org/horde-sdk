@@ -1,4 +1,5 @@
 """Test generic API models not specific to a particular API."""
+
 import json
 
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
