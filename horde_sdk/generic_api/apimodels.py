@@ -204,7 +204,7 @@ class ResponseWithProgressMixin(BaseModel):
 
 
 class ContainsMessageResponseMixin(BaseModel):
-    """Represents any response from any Horde API which contains a message."""
+    """Represents any response from any Horde API which contains a message and an rc."""
 
     message: str = ""
     rc: str = ""

@@ -244,7 +244,7 @@ class BaseHordeAPIClient(ABC):
         # If requests response is a failure code, see if a `message` key exists in the response.
         # If so, return a RequestErrorResponse
         if returned_status_code >= 400:
-            if len(raw_response_json) == 1 and "message" in raw_response_json:
+            if "rc" in raw_response_json:
                 return RequestErrorResponse(**raw_response_json)
 
             if "errors" in raw_response_json:

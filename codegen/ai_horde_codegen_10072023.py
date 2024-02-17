@@ -944,6 +944,7 @@ class RequestAsync(BaseModel):
 
 class RequestError(BaseModel):
     message: str | None = Field(None, description="The error message for this status code.")
+    rc: str | None = Field(None, description="The return code for this status code")
 
 
 class RequestInterrogationResponse(BaseModel):
