@@ -232,6 +232,8 @@ class RequestErrorResponse(HordeResponseBaseModel, ContainsMessageResponseMixin)
     object_data: object = None
     """This is a catch all for any additional data that may be returned by the API relevant to the error."""
 
+    rc: str = "RC_MISSING"
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:

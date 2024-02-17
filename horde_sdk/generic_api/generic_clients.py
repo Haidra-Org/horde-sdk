@@ -244,13 +244,19 @@ class BaseHordeAPIClient(ABC):
         # If requests response is a failure code, see if a `message` key exists in the response.
         # If so, return a RequestErrorResponse
         if returned_status_code >= 400:
-            if len(raw_response_json) == 1 and "message" in raw_response_json:
-                return RequestErrorResponse(**raw_response_json)
-
             if "errors" in raw_response_json:
                 raise AIHordePayloadValidationError(
                     raw_response_json.get("errors", ""),
                     raw_response_json.get("message", ""),
+                )
+
+            try:
+                return RequestErrorResponse(**raw_response_json)
+            except ValidationError:
+                return RequestErrorResponse(
+                    message="The API returned an error we didn't recognize! See `object_data` for the raw response.",
+                    rc=raw_response_json.get("rc", returned_status_code),
+                    object_data={"raw_response": raw_response_json},
                 )
 
         handled_response: HordeResponseTypeVar | RequestErrorResponse | None = None
