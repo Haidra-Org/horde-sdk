@@ -684,3 +684,33 @@ def test_problem_payload() -> None:
     problem_payload = json.loads(json_from_api)
 
     ImageGenerateJobPopResponse.model_validate(problem_payload)
+
+    json_from_api = """
+                    {
+                    "payload": {
+                        "ddim_steps": 30,
+                        "n_iter": 1,
+                        "sampler_name": "k_euler_a",
+                        "cfg_scale": 7.5,
+                        "height": 512,
+                        "width": 512,
+                        "karras": false,
+                        "tiling": false,
+                        "hires_fix": false,
+                        "image_is_control": false,
+                        "return_control_map": false
+                    },
+                    "id": null,
+                    "ids": [],
+                    "skipped": {"max_pixels": 1},
+                    "model": null,
+                    "source_image": null,
+                    "source_processing": "img2img",
+                    "source_mask": null,
+                    "r2_upload": null,
+                    "r2_uploads": null
+                }"""
+
+    problem_payload = json.loads(json_from_api)
+
+    ImageGenerateJobPopResponse.model_validate(problem_payload)
