@@ -44,14 +44,23 @@ class ImageModelLoadResolver:
             # If the instruction is to load all models, return all model names
             if ImageModelLoadResolver.meta_instruction_regex_match(MetaInstruction.ALL_REGEX, possible_instruction):
                 return self.resolve_all_model_names()
-            
-            if ImageModelLoadResolver.meta_instruction_regex_match(MetaInstruction.ALL_SDXL_REGEX, possible_instruction):
+
+            if ImageModelLoadResolver.meta_instruction_regex_match(
+                MetaInstruction.ALL_SDXL_REGEX,
+                possible_instruction,
+            ):
                 return self.resolve_all_models_of_baseline("stable_diffusion_xl")
-                
-            if ImageModelLoadResolver.meta_instruction_regex_match(MetaInstruction.ALL_SD15_REGEX, possible_instruction):
+
+            if ImageModelLoadResolver.meta_instruction_regex_match(
+                MetaInstruction.ALL_SD15_REGEX,
+                possible_instruction,
+            ):
                 return self.resolve_all_models_of_baseline("stable_diffusion_1")
-            
-            if ImageModelLoadResolver.meta_instruction_regex_match(MetaInstruction.ALL_SD21_REGEX, possible_instruction):
+
+            if ImageModelLoadResolver.meta_instruction_regex_match(
+                MetaInstruction.ALL_SD21_REGEX,
+                possible_instruction,
+            ):
                 return self.resolve_all_models_of_baseline("stable_diffusion_2_768")
 
             # If the instruction is to load the top N models, add the top N model names
@@ -121,7 +130,7 @@ class ImageModelLoadResolver:
 
         logger.error("No stable diffusion models found in model reference.")
         return set()
-    
+
     def resolve_all_models_of_baseline(self, baseline: str) -> set[str]:
         """Get the names of all models of a given baseline defined in the model reference.
 
