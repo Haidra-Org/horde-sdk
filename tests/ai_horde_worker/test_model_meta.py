@@ -103,3 +103,11 @@ def test_image_models_unique_results_only(
     all_model_names = image_model_load_resolver.resolve_all_model_names()
 
     assert len(resolved_model_names) >= (len(all_model_names) - 1)  # FIXME: -1 is to account for SDXL beta
+
+
+def test_resolve_all_models_of_baseline(
+    image_model_load_resolver: ImageModelLoadResolver,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_all_models_of_baseline("stable_diffusion_xl")
+
+    assert len(resolved_model_names) > 0

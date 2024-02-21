@@ -2,6 +2,7 @@ import re
 
 from horde_model_reference.meta_consts import MODEL_REFERENCE_CATEGORY
 from horde_model_reference.model_reference_manager import ModelReferenceManager
+from horde_model_reference.model_reference_records import StableDiffusion_ModelRecord
 from loguru import logger
 
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient
@@ -111,6 +112,35 @@ class ImageModelLoadResolver:
 
         logger.error("No stable diffusion models found in model reference.")
         return set()
+
+    def resolve_all_models_of_baseline(self, baseline: str) -> set[str]:
+        """Get the names of all models of a given baseline defined in the model reference.
+
+        Args:
+            baseline: A string representing the baseline to get models for.
+
+        Returns:
+            A set of strings representing the names of all models of the given baseline.
+        """
+        all_model_references = self._model_reference_manager.get_all_model_references()
+
+        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.stable_diffusion]
+
+        found_models: set[str] = set()
+
+        if sd_model_references is None:
+            logger.error("No stable diffusion models found in model reference.")
+            return found_models
+
+        for model in sd_model_references.root.values():
+            if not isinstance(model, StableDiffusion_ModelRecord):
+                logger.error(f"Model {model} is not a StableDiffusion_ModelRecord")
+                continue
+
+            if model.baseline == baseline:
+                found_models.add(model.name)
+
+        return found_models
 
     @staticmethod
     def resolve_top_n_model_names(
