@@ -21,6 +21,12 @@ _UNREASONABLE_NUMBER_OF_MODELS = 1000
 class MetaInstruction(StrEnum):
     ALL_REGEX = r"all$|all models+$"
 
+    ALL_SDXL_REGEX = r"all sdxl$|all sdxl models+$"
+
+    ALL_SD15_REGEX = r"all sd15$|all sd15 models+$"
+
+    ALL_SD21_REGEX = r"all sd21$|all sd21 models+$"
+
     TOP_N_REGEX = r"TOP (\d+)"
     """The regex to use to match the top N models. The number is in a capture group on its own."""
 
