@@ -71,9 +71,7 @@ class AlchemyFormStatus(HordeAPIDataObject):
     def validate_form(cls, v: str | KNOWN_ALCHEMY_TYPES) -> KNOWN_ALCHEMY_TYPES | str:
         if isinstance(v, KNOWN_ALCHEMY_TYPES):
             return v
-        if (isinstance(v, str) and v not in KNOWN_ALCHEMY_TYPES.__members__) or (
-            not isinstance(v, KNOWN_ALCHEMY_TYPES)
-        ):
+        if str(v) not in KNOWN_ALCHEMY_TYPES.__members__:
             logger.warning(f"Unknown form type {v}. Is your SDK out of date or did the API change?")
         return v
 

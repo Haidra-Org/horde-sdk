@@ -1025,6 +1025,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         image_gen_request: ImageGenerateAsyncRequest,
         timeout: int = GENERATION_MAX_LIFE,
         check_callback: Callable[[ImageGenerateCheckResponse], None] | None = None,
+        delay: float = 0.0,
     ) -> tuple[ImageGenerateStatusResponse, JobID]:
         """Submit an image generation request to the AI-Horde API, and wait for it to complete.
 
@@ -1043,6 +1044,8 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
         """
+
+        await asyncio.sleep(delay)
 
         timeout = self.validate_timeout(timeout, log_message=True)
 
