@@ -81,6 +81,43 @@ class ImageModelLoadResolver:
                 found_bottom_n = True
                 continue
 
+            if ImageModelLoadResolver.meta_instruction_regex_match(
+                MetaInstruction.ALL_SDXL_REGEX,
+                possible_instruction,
+            ):
+                return_list.extend(self.resolve_all_models_of_baseline("stable_diffusion_xl"))
+
+            if ImageModelLoadResolver.meta_instruction_regex_match(
+                MetaInstruction.ALL_SD15_REGEX,
+                possible_instruction,
+            ):
+                return_list.extend(self.resolve_all_models_of_baseline("stable_diffusion_1"))
+
+            if ImageModelLoadResolver.meta_instruction_regex_match(
+                MetaInstruction.ALL_SD21_REGEX,
+                possible_instruction,
+            ):
+                return_list.extend(self.resolve_all_models_of_baseline("stable_diffusion_2_512"))
+                return_list.extend(self.resolve_all_models_of_baseline("stable_diffusion_2_768"))
+
+            if ImageModelLoadResolver.meta_instruction_regex_match(
+                MetaInstruction.ALL_INPAINTING_REGEX,
+                possible_instruction,
+            ):
+                return_list.extend(self.resolve_all_inpainting_models())
+
+            if ImageModelLoadResolver.meta_instruction_regex_match(
+                MetaInstruction.ALL_SFW_REGEX,
+                possible_instruction,
+            ):
+                return_list.extend(self.resolve_all_sfw_model_names())
+
+            if ImageModelLoadResolver.meta_instruction_regex_match(
+                MetaInstruction.ALL_NSFW_REGEX,
+                possible_instruction,
+            ):
+                return_list.extend(self.resolve_all_nsfw_model_names())
+
         # If no valid meta instruction were found, return None
         return set(return_list)
 
@@ -112,6 +149,77 @@ class ImageModelLoadResolver:
 
         logger.error("No stable diffusion models found in model reference.")
         return set()
+
+    def _resolve_sfw_nsfw_model_names(self, nsfw: bool) -> set[str]:
+        """Get the names of all SFW or NSFW models defined in the model reference.
+
+        Args:
+            nsfw: A boolean representing whether to get SFW or NSFW models.
+
+        Returns:
+            A set of strings representing the names of all SFW or NSFW models.
+        """
+        all_model_references = self._model_reference_manager.get_all_model_references()
+
+        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.stable_diffusion]
+
+        found_models: set[str] = set()
+
+        if sd_model_references is None:
+            logger.error("No stable diffusion models found in model reference.")
+            return found_models
+
+        for model in sd_model_references.root.values():
+            if not isinstance(model, StableDiffusion_ModelRecord):
+                logger.error(f"Model {model} is not a StableDiffusion_ModelRecord")
+                continue
+
+            if model.nsfw == nsfw:
+                found_models.add(model.name)
+
+        return found_models
+
+    def resolve_all_sfw_model_names(self) -> set[str]:
+        """Get the names of all SFW models defined in the model reference.
+
+        Returns:
+            A set of strings representing the names of all SFW models.
+        """
+        return self._resolve_sfw_nsfw_model_names(nsfw=False)
+
+    def resolve_all_nsfw_model_names(self) -> set[str]:
+        """Get the names of all NSFW models defined in the model reference.
+
+        Returns:
+            A set of strings representing the names of all NSFW models.
+        """
+        return self._resolve_sfw_nsfw_model_names(nsfw=True)
+
+    def resolve_all_inpainting_models(self) -> set[str]:
+        """Get the names of all inpainting models defined in the model reference.
+
+        Returns:
+            A set of strings representing the names of all inpainting models.
+        """
+        all_model_references = self._model_reference_manager.get_all_model_references()
+
+        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.stable_diffusion]
+
+        found_models: set[str] = set()
+
+        if sd_model_references is None:
+            logger.error("No stable diffusion models found in model reference.")
+            return found_models
+
+        for model in sd_model_references.root.values():
+            if not isinstance(model, StableDiffusion_ModelRecord):
+                logger.error(f"Model {model} is not a StableDiffusion_ModelRecord")
+                continue
+
+            if model.inpainting:
+                found_models.add(model.name)
+
+        return found_models
 
     def resolve_all_models_of_baseline(self, baseline: str) -> set[str]:
         """Get the names of all models of a given baseline defined in the model reference.
