@@ -93,6 +93,81 @@ def test_image_model_load_resolver_multiple_instructions(
     assert len(resolved_model_names) == 2
 
 
+def test_image_model_load_resolved_all_sd15(
+    image_model_load_resolver: ImageModelLoadResolver,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_meta_instructions(
+        ["all sd15"],
+        AIHordeAPIManualClient(),
+    )
+
+    assert len(resolved_model_names) > 0
+
+    for model_name in resolved_model_names:
+        assert "SDXL" not in model_name
+
+    assert "Deliberate" in resolved_model_names
+
+
+def test_image_model_load_resolved_all_sd21(
+    image_model_load_resolver: ImageModelLoadResolver,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_meta_instructions(
+        ["all sd21"],
+        AIHordeAPIManualClient(),
+    )
+
+    assert len(resolved_model_names) > 0
+
+    for model_name in resolved_model_names:
+        assert "SDXL" not in model_name
+        assert model_name != "Deliberate"
+
+
+def test_image_model_load_resolved_all_sdxl(
+    image_model_load_resolver: ImageModelLoadResolver,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_meta_instructions(
+        ["all sdxl"],
+        AIHordeAPIManualClient(),
+    )
+
+    assert len(resolved_model_names) > 0
+    assert "AlbedoBase XL (SDXL)" in resolved_model_names
+
+
+def test_image_model_load_resolved_all_inpainting(
+    image_model_load_resolver: ImageModelLoadResolver,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_meta_instructions(
+        ["all inpainting"],
+        AIHordeAPIManualClient(),
+    )
+
+    assert len(resolved_model_names) > 0
+    assert any("inpainting" in model_name.lower() for model_name in resolved_model_names)
+
+
+def test_image_model_load_resolved_sfw_nsfw(
+    image_model_load_resolver: ImageModelLoadResolver,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_meta_instructions(
+        ["all sfw"],
+        AIHordeAPIManualClient(),
+    )
+
+    assert len(resolved_model_names) > 0
+    assert not any("urpm" in model_name.lower() for model_name in resolved_model_names)
+
+    resolved_model_names = image_model_load_resolver.resolve_meta_instructions(
+        ["all nsfw"],
+        AIHordeAPIManualClient(),
+    )
+
+    assert len(resolved_model_names) > 0
+    assert any("urpm" in model_name.lower() for model_name in resolved_model_names)
+
+
 def test_image_models_unique_results_only(
     image_model_load_resolver: ImageModelLoadResolver,
 ) -> None:
@@ -103,3 +178,11 @@ def test_image_models_unique_results_only(
     all_model_names = image_model_load_resolver.resolve_all_model_names()
 
     assert len(resolved_model_names) >= (len(all_model_names) - 1)  # FIXME: -1 is to account for SDXL beta
+
+
+def test_resolve_all_models_of_baseline(
+    image_model_load_resolver: ImageModelLoadResolver,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_all_models_of_baseline("stable_diffusion_xl")
+
+    assert len(resolved_model_names) > 0

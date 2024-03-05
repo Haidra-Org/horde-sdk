@@ -71,7 +71,7 @@ class AlchemyAsyncRequestFormItem(HordeAPIDataObject):
     def check_name(cls, v: KNOWN_ALCHEMY_TYPES | str) -> KNOWN_ALCHEMY_TYPES | str:
         if isinstance(v, KNOWN_ALCHEMY_TYPES):
             return v
-        if isinstance(v, str) and v not in KNOWN_ALCHEMY_TYPES.__members__:
+        if str(v) not in KNOWN_ALCHEMY_TYPES.__members__:
             logger.warning(f"Unknown alchemy form name {v}. Is your SDK out of date or did the API change?")
         return v
 
@@ -83,8 +83,8 @@ class AlchemyAsyncRequest(
     forms: list[AlchemyAsyncRequestFormItem]
     source_image: str
     """The public URL of the source image or a base64 string to use."""
-    slow_workers: bool = False
-    """Whether to use the slower workers. Costs additional kudos if `True`."""
+    slow_workers: bool = True
+    """Whether to use the slower workers. Costs additional kudos if `False`."""
 
     @field_validator("forms")
     def check_at_least_one_form(cls, v: list[AlchemyAsyncRequestFormItem]) -> list[AlchemyAsyncRequestFormItem]:

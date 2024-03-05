@@ -375,7 +375,7 @@ class RequestUsesImageWorkerMixin(BaseModel):
     """Mix-in class to describe an endpoint for which you can specify workers."""
 
     trusted_workers: bool = False
-    slow_workers: bool = False
+    slow_workers: bool = True
     workers: list[str] = Field(default_factory=list)
     worker_blacklist: list[str] = Field(default_factory=list)
 
