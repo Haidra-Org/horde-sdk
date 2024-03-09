@@ -436,6 +436,11 @@ def test_ImageGenerateJobPopResponse() -> None:
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
+    assert all(
+        post_processor in KNOWN_UPSCALERS._value2member_map_
+        for post_processor in test_response.payload.post_processing
+    )
+
     test_response = ImageGenerateJobPopResponse(
         id=None,
         ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
@@ -446,6 +451,8 @@ def test_ImageGenerateJobPopResponse() -> None:
         model="Deliberate",
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
+
+    assert all(post_processor in KNOWN_UPSCALERS for post_processor in test_response.payload.post_processing)
 
 
 def test_ImageGenerateJobPopResponse_hashability() -> None:
