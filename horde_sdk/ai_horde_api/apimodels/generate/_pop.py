@@ -194,7 +194,10 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
         if len(self.payload.post_processing) == 0:
             return False
 
-        return any(post_processing in KNOWN_UPSCALERS.__members__ for post_processing in self.payload.post_processing)
+        return any(
+            post_processing in KNOWN_UPSCALERS.__members__ or post_processing in KNOWN_UPSCALERS._value2member_map_
+            for post_processing in self.payload.post_processing
+        )
 
     @property
     def has_facefixer(self) -> bool:
