@@ -100,6 +100,7 @@ class KNOWN_SOURCE_PROCESSING(StrEnum):
     img2img = auto()
     inpainting = auto()
     outpainting = auto()
+    remix = auto()
 
 
 class KNOWN_UPSCALERS(StrEnum):
