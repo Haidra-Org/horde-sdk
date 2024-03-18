@@ -100,6 +100,7 @@ class KNOWN_SOURCE_PROCESSING(StrEnum):
     img2img = auto()
     inpainting = auto()
     outpainting = auto()
+    remix = auto()
 
 
 class KNOWN_UPSCALERS(StrEnum):
@@ -206,6 +207,7 @@ class METADATA_TYPE(StrEnum):
     censorship = auto()
     source_image = auto()
     source_mask = auto()
+    extra_source_images = auto()
     batch_index = auto()
 
 

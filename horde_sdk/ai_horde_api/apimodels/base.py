@@ -125,6 +125,30 @@ class TIPayloadEntry(HordeAPIDataObject):
         return self
 
 
+class ExtraSourceImageEntry(HordeAPIDataObject):
+    """Represents a single extra source image.
+
+    v2 API Model: `ExtraSourceImage`
+    """
+
+    image: str = Field(min_length=1)
+    """The URL of the image to download."""
+    strength: float = Field(default=1, ge=-5, le=5)
+    """The strength to apply to this image on various operations."""
+
+
+class SingleWarningEntry(HordeAPIDataObject):
+    """Represents a single warning.
+
+    v2 API Model: `RequestSingleWarning`
+    """
+
+    code: str = Field(min_length=1)
+    """The code uniquely identifying this warning."""
+    message: str = Field(min_length=1)
+    """The human-readable description of this warning"""
+
+
 class ImageGenerateParamMixin(HordeAPIDataObject):
     """Mix-in class of some of the data included in a request to the `/v2/generate/async` endpoint.
 

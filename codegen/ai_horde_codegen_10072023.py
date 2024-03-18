@@ -1156,6 +1156,9 @@ class UserKudosDetails(BaseModel):
     )
     gifted: float | None = Field(0, description="The amount of Kudos this user has given to other users.")
     received: float | None = Field(0, description="The amount of Kudos this user has been given by other users.")
+    donated: float | None = Field(
+        0, description="The amount of Kudos this user has donated to support education accounts."
+    )
     recurring: float | None = Field(
         0,
         description="The amount of Kudos this user has received from recurring rewards.",

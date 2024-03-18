@@ -12,6 +12,7 @@
     "customizer": false,
     "vpn": false,
     "service": false,
+    "education": false,
     "special": false,
     "new_suspicion": 0,
     "contact": "email@example.com",
