@@ -207,6 +207,7 @@ class METADATA_TYPE(StrEnum):
     censorship = auto()
     source_image = auto()
     source_mask = auto()
+    extra_source_images = auto()
     batch_index = auto()
 
 

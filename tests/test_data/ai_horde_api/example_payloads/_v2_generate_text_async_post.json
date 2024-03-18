@@ -26,6 +26,7 @@
             ""
         ],
         "min_p": 0.0,
+        "smoothing_factor": 0.0,
         "dynatemp_range": 0.0,
         "dynatemp_exponent": 1.0
     },

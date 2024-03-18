@@ -205,6 +205,10 @@
         [
             "source_mask",
             null
+        ],
+        [
+            "extra_source_images",
+            null
         ]
     ],
     "ImageGenerateCheckRequest": [

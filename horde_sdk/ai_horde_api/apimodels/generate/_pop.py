@@ -8,6 +8,7 @@ from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,
+    ExtraSourceImageEntry,
     ImageGenerateParamMixin,
 )
 from horde_sdk.ai_horde_api.apimodels.generate._submit import ImageGenerationJobSubmitRequest
@@ -109,6 +110,8 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
     """If img_processing is set to 'inpainting' or 'outpainting', this parameter can be optionally provided as the
     mask of the areas to inpaint. If this arg is not passed, the inpainting/outpainting mask has to be embedded as
     alpha channel."""
+    extra_source_images: list[ExtraSourceImageEntry] | None = None
+    """Additional uploaded images which can be used for further operations."""
     r2_upload: str | None = None
     """(Obsolete) The r2 upload link to use to upload this image."""
     r2_uploads: list[str] | None = None
