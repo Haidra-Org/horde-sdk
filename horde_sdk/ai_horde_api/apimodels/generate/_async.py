@@ -4,8 +4,10 @@ from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,
+    ExtraSourceImageEntry,
     ImageGenerateParamMixin,
     JobResponseMixin,
+    SingleWarningEntry,
 )
 from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckRequest
 from horde_sdk.ai_horde_api.apimodels.generate._status import DeleteImageGenerateRequest, ImageGenerateStatusRequest
@@ -36,6 +38,7 @@ class ImageGenerateAsyncResponse(
 
     """The UUID for this image generation."""
     kudos: float
+    warnings: list[SingleWarningEntry]
 
     @override
     def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
@@ -63,6 +66,12 @@ class ImageGenerateAsyncResponse(
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "RequestAsync"
+
+    def __hash__(self) -> int:
+        return hash(self.id_)
+
+    def __eq__(self, __value: object) -> bool:
+        return isinstance(__value, ImageGenerateAsyncResponse) and self.id_ == __value.id_
 
 
 class ImageGenerateAsyncDryRunResponse(HordeResponseBaseModel):
@@ -125,6 +134,8 @@ class ImageGenerateAsyncRequest(
     source_image: str | None = None
     source_processing: KNOWN_SOURCE_PROCESSING = KNOWN_SOURCE_PROCESSING.txt2img
     source_mask: str | None = None
+    extra_source_images: list[ExtraSourceImageEntry] | None = None
+    """Additional uploaded images which can be used for further operations."""
 
     @model_validator(mode="before")
     def validate_censor_nsfw(cls, values: dict) -> dict:

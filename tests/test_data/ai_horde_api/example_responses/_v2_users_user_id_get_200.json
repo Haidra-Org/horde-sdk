@@ -9,6 +9,7 @@
     "kudos_details": {
         "accumulated": 0,
         "gifted": 0,
+        "donated": 0,
         "admin": 0,
         "received": 0,
         "recurring": 0,
@@ -29,6 +30,7 @@
     "flagged": false,
     "vpn": false,
     "service": false,
+    "education": false,
     "special": false,
     "suspicious": 0,
     "pseudonymous": false,

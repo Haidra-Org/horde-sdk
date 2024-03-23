@@ -23,6 +23,10 @@ class UserKudosDetails(HordeAPIDataObject):
     )
     gifted: float | None = Field(0, description="The amount of Kudos this user has given to other users.")
     received: float | None = Field(0, description="The amount of Kudos this user has been given by other users.")
+    donated: float | None = Field(
+        0,
+        description="The amount of Kudos this user has donated to support education accounts.",
+    )
     recurring: float | None = Field(
         0,
         description="The amount of Kudos this user has received from recurring rewards.",
@@ -166,6 +170,12 @@ class FindUserResponse(HordeResponseBaseModel):
         examples=[False],
     )
     """(Privileged) This user has been given the VPN role."""
+    education: bool | None = Field(
+        default=None,
+        description="This user has been given education VPN role.",
+        examples=[False],
+    )
+    """(This user has been given the education role."""
     worker_count: int | None = Field(
         default=None,
         description="How many workers this user has created (active or inactive).",

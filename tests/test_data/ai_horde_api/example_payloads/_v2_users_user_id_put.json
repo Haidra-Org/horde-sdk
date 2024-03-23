@@ -12,6 +12,7 @@
     "customizer": false,
     "vpn": false,
     "service": false,
+    "education": false,
     "special": false,
     "filtered": false,
     "reset_suspicion": false,

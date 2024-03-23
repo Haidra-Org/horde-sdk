@@ -36,7 +36,12 @@ from horde_sdk.ai_horde_api.apimodels.alchemy._status import (
     AlchemyStatusResponse,
     AlchemyUpscaleResult,
 )
-from horde_sdk.ai_horde_api.apimodels.base import GenMetadataEntry, LorasPayloadEntry, TIPayloadEntry
+from horde_sdk.ai_horde_api.apimodels.base import (
+    ExtraSourceImageEntry,
+    GenMetadataEntry,
+    LorasPayloadEntry,
+    TIPayloadEntry,
+)
 from horde_sdk.ai_horde_api.apimodels.generate._async import (
     ImageGenerateAsyncDryRunResponse,
     ImageGenerateAsyncRequest,
@@ -112,6 +117,7 @@ __all__ = [
     "StatsModelsResponse",
     "StatsModelsTimeframe",
     "TIPayloadEntry",
+    "ExtraSourceImageEntry",
     "GenMetadataEntry",
     "UsageDetails",
     "UserAmountRecords",

@@ -231,6 +231,10 @@
             "(Privileged) This user has been given the VPN role."
         ],
         [
+            "education",
+            "This user has been given education VPN role."
+        ],
+        [
             "worker_count",
             "How many workers this user has created (active or inactive)."
         ],
@@ -260,6 +264,10 @@
         ],
         [
             "kudos",
+            null
+        ],
+        [
+            "warnings",
             null
         ]
     ],
@@ -336,6 +344,10 @@
         ],
         [
             "source_mask",
+            null
+        ],
+        [
+            "extra_source_images",
             null
         ],
         [

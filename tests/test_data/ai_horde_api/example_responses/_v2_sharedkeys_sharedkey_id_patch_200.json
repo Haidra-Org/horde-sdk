@@ -1,6 +1,7 @@
 {
     "id": "",
     "username": "",
+    "name": "",
     "kudos": 0,
     "expiry": "2021-01-01T00:00:00Z",
     "utilized": 0,
