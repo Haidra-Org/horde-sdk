@@ -38,7 +38,7 @@ class ImageGenerateAsyncResponse(
 
     """The UUID for this image generation."""
     kudos: float
-    warnings: list[SingleWarningEntry]
+    warnings: list[SingleWarningEntry] | None = None
 
     @override
     def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
