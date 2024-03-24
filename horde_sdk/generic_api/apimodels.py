@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import abc
+import base64
 import os
 import uuid
 
+import aiohttp
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing_extensions import override
@@ -216,6 +218,41 @@ class ResponseWithProgressMixin(BaseModel):
     @abc.abstractmethod
     def get_finalize_success_request_type(cls) -> type[HordeRequest] | None:
         """Return the request type for this response to finalize the job on success, or `None` if not needed."""
+
+
+class ResponseRequiringDownloadMixin(BaseModel):
+    """Represents any response which may require downloading additional data."""
+
+    async def download_file_as_base64(self, client_session: aiohttp.ClientSession, url: str) -> str:
+        """Download a file and return the value as a base64 string."""
+        async with client_session.get(url) as response:
+            response.raise_for_status()
+            return base64.b64encode(await response.read()).decode("utf-8")
+
+    async def download_file_to_field_as_base64(
+        self,
+        client_session: aiohttp.ClientSession,
+        url: str,
+        field_name: str,
+    ) -> None:
+        """Download a file from a URL and save it to the field.
+
+        Args:
+            client_session (aiohttp.ClientSession): The aiohttp client session to use for the download.
+            url (str): The URL to download the file from.
+            field_name (str): The name of the field to save the file to.
+        """
+        async with client_session.get(url) as response:
+            response.raise_for_status()
+            setattr(self, field_name, base64.b64encode(await response.read()).decode("utf-8"))
+
+    @abc.abstractmethod
+    async def async_download_additional_data(self, client_session: aiohttp.ClientSession) -> None:
+        """Asynchronously download any additional data required for this response."""
+
+    @abc.abstractmethod
+    def download_additional_data(self) -> None:
+        """Download any additional data required for this response."""
 
 
 class ContainsMessageResponseMixin(BaseModel):

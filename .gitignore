@@ -141,3 +141,6 @@ out.json
 
 examples/requested_images/*.*
 _version.py
+
+tests/testing_result_images/*
+!tests/testing_result_images/.results_go_here
