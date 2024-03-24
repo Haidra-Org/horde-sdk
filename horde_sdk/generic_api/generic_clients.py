@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from abc import ABC
 from typing import TypeVar
 
@@ -110,6 +111,10 @@ class BaseHordeAPIClient(ABC):
 
         if not self._apikey:
             self._apikey = ANON_API_KEY
+
+        if os.getenv("AI_HORDE_DEV_APIKEY"):
+            logger.warning("Using the AI Horde API key from the environment variable `AI_HORDE_DEV_APIKEY`.")
+            self._apikey = os.getenv("AI_HORDE_DEV_APIKEY")
 
         if not issubclass(header_fields, GenericHeaderFields):  # pragma: no cover
             raise TypeError("`header_fields` must be of type `GenericHeaderData` or a subclass of it!")
