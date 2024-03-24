@@ -20,9 +20,11 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerationInputPayload,
     LorasPayloadEntry,
 )
+from horde_sdk.ai_horde_api.apimodels.base import ExtraSourceImageEntry
 from horde_sdk.ai_horde_api.consts import (
     KNOWN_FACEFIXERS,
     KNOWN_MISC_POST_PROCESSORS,
+    KNOWN_SOURCE_PROCESSING,
     KNOWN_UPSCALERS,
     POST_PROCESSOR_ORDER_TYPE,
 )
@@ -547,3 +549,75 @@ class TestAIHordeGenerate:
                     ),
                     check_callback=bad_callback,  # type: ignore
                 )
+
+    @pytest.mark.asyncio
+    @pytest.mark.skip("This test is too slow to run in CI")
+    async def test_remix(
+        self,
+        default_testing_image_base64: str,
+        woman_headshot_testing_image_base64: str,
+    ) -> None:
+        async with aiohttp.ClientSession() as aiohttp_session:
+            simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
+
+            n = 4
+
+            strengths = [0.1, 0.5, 1]
+            for strength in strengths:
+                response = await asyncio.create_task(
+                    simple_client.image_generate_request(
+                        ImageGenerateAsyncRequest(
+                            prompt="a headshot of a woman with a stylized logo on her face",
+                            params=ImageGenerationInputPayload(
+                                width=1024,
+                                height=1024,
+                                seed="1234",
+                                n=n,
+                            ),
+                            source_processing=KNOWN_SOURCE_PROCESSING.remix,
+                            models=["Stable Cascade 1.0"],
+                            source_image=woman_headshot_testing_image_base64,
+                            extra_source_images=[
+                                ExtraSourceImageEntry(
+                                    image=default_testing_image_base64,
+                                    strength=strength,
+                                ),
+                            ],
+                        ),
+                    ),
+                )
+
+                assert len(response[0].generations) == n
+                for generation in response[0].generations:
+                    image, job_id = await simple_client.download_image_from_generation(generation)
+                    assert image is not None
+                    image.save(f"tests/testing_result_images/remix_woman_default_{job_id}.webp")
+
+                response = await asyncio.create_task(
+                    simple_client.image_generate_request(
+                        ImageGenerateAsyncRequest(
+                            prompt="a headshot of a woman with a stylized logo on her face",
+                            params=ImageGenerationInputPayload(
+                                width=1024,
+                                height=1024,
+                                seed="1234",
+                                n=n,
+                            ),
+                            source_processing=KNOWN_SOURCE_PROCESSING.remix,
+                            models=["Stable Cascade 1.0"],
+                            source_image=default_testing_image_base64,
+                            extra_source_images=[
+                                ExtraSourceImageEntry(
+                                    image=woman_headshot_testing_image_base64,
+                                    strength=strength,
+                                ),
+                            ],
+                        ),
+                    ),
+                )
+
+                assert len(response[0].generations) == n
+                for generation in response[0].generations:
+                    image, job_id = await simple_client.download_image_from_generation(generation)
+                    assert image is not None
+                    image.save(f"tests/testing_result_images/remix_default_woman_{job_id}.webp")

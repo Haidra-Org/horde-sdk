@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import uuid
 
+import aiohttp
 from loguru import logger
 from pydantic import AliasChoices, Field, field_validator, model_validator
 from typing_extensions import override
@@ -25,6 +27,7 @@ from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     HordeAPIDataObject,
     HordeResponseBaseModel,
+    ResponseRequiringDownloadMixin,
     ResponseRequiringFollowUpMixin,
 )
 
@@ -85,7 +88,11 @@ class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
     """The number of images to generate. Defaults to 1, maximum is 20."""
 
 
-class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin):
+class ImageGenerateJobPopResponse(
+    HordeResponseBaseModel,
+    ResponseRequiringFollowUpMixin,
+    ResponseRequiringDownloadMixin,
+):
     """Represents the data returned from the `/v2/generate/pop` endpoint.
 
     v2 API Model: `GenerationPayloadStable`
@@ -104,14 +111,20 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
     """Which of the available models to use for this request."""
     source_image: str | None = None
     """The URL or Base64-encoded webp to use for img2img."""
+    _downloaded_source_image: str | None = None
+    """The downloaded source image (as base64), if any. This is not part of the API response."""
     source_processing: str | KNOWN_SOURCE_PROCESSING = KNOWN_SOURCE_PROCESSING.txt2img
     """If source_image is provided, specifies how to process it."""
     source_mask: str | None = None
     """If img_processing is set to 'inpainting' or 'outpainting', this parameter can be optionally provided as the
     mask of the areas to inpaint. If this arg is not passed, the inpainting/outpainting mask has to be embedded as
     alpha channel."""
+    _downloaded_source_mask: str | None = None
+    """The downloaded source mask (as base64), if any. This is not part of the API response."""
     extra_source_images: list[ExtraSourceImageEntry] | None = None
-    """Additional uploaded images which can be used for further operations."""
+    """Additional uploaded images (as base64) which can be used for further operations."""
+    _downloaded_extra_source_images: list[ExtraSourceImageEntry] | None = None
+    """The downloaded extra source images, if any. This is not part of the API response."""
     r2_upload: str | None = None
     """(Obsolete) The r2 upload link to use to upload this image."""
     r2_uploads: list[str] | None = None
@@ -182,7 +195,7 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
 
     @override
     def get_extra_fields_to_exclude_from_log(self) -> set[str]:
-        return {"source_image"}
+        return {"source_image", "source_mask", "extra_source_images"}
 
     @override
     def ignore_failure(self) -> bool:
@@ -209,6 +222,110 @@ class ImageGenerateJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollo
             return False
 
         return any(post_processing in KNOWN_FACEFIXERS.__members__ for post_processing in self.payload.post_processing)
+
+    def get_downloaded_source_image(self) -> str | None:
+        """Get the downloaded source image."""
+        return self._downloaded_source_image
+
+    def get_downloaded_source_mask(self) -> str | None:
+        """Get the downloaded source mask."""
+        return self._downloaded_source_mask
+
+    def get_downloaded_extra_source_images(self) -> list[ExtraSourceImageEntry] | None:
+        """Get the downloaded extra source images."""
+        return (
+            self._downloaded_extra_source_images.copy() if self._downloaded_extra_source_images is not None else None
+        )
+
+    def async_download_source_image(self, client_session: aiohttp.ClientSession) -> asyncio.Task:
+        """Download the source image concurrently."""
+
+        # If the source image is not set, there is nothing to download.
+        if self.source_image is None:
+            return asyncio.create_task(asyncio.sleep(0))
+
+        # If the source image is not a URL, it is already a base64 string.
+        if not self.source_image.startswith("http"):
+            self._downloaded_source_image = self.source_image
+            return asyncio.create_task(asyncio.sleep(0))
+
+        return asyncio.create_task(
+            self.download_file_to_field_as_base64(client_session, self.source_image, "_downloaded_source_image"),
+        )
+
+    def async_download_source_mask(self, client_session: aiohttp.ClientSession) -> asyncio.Task:
+        """Download the source mask concurrently."""
+
+        # If the source mask is not set, there is nothing to download.
+        if self.source_mask is None:
+            return asyncio.create_task(asyncio.sleep(0))
+
+        # If the source mask is not a URL, it is already a base64 string.
+        if not self.source_mask.startswith("http"):
+            self._downloaded_source_mask = self.source_mask
+            return asyncio.create_task(asyncio.sleep(0))
+
+        return asyncio.create_task(
+            self.download_file_to_field_as_base64(client_session, self.source_mask, "_downloaded_source_mask"),
+        )
+
+    async def async_download_extra_source_images(
+        self,
+        client_session: aiohttp.ClientSession,
+    ) -> list[ExtraSourceImageEntry] | None:
+        """Download all extra source images concurrently."""
+
+        if self.extra_source_images is None or len(self.extra_source_images) == 0:
+            logger.info("No extra source images to download.")
+            return None
+
+        if self._downloaded_extra_source_images is None:
+            self._downloaded_extra_source_images = []
+        else:
+            logger.warning("Extra source images already downloaded.")
+            return self._downloaded_extra_source_images
+
+        tasks: list[asyncio.Task] = []
+
+        for extra_source_image in self.extra_source_images:
+            if extra_source_image.image is None:
+                continue
+
+            if not extra_source_image.image.startswith("http"):
+                self._downloaded_extra_source_images.append(extra_source_image)
+                continue
+
+            tasks.append(
+                asyncio.create_task(
+                    self.download_file_as_base64(client_session, extra_source_image.image),
+                ),
+            )
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        for result, extra_source_image in zip(results, self.extra_source_images, strict=True):
+            if isinstance(result, Exception) or not isinstance(result, str):
+                logger.error(f"Error downloading extra source image {extra_source_image.image}: {result}")
+                continue
+
+            self._downloaded_extra_source_images.append(
+                ExtraSourceImageEntry(image=result, strength=extra_source_image.strength),
+            )
+
+        return self._downloaded_extra_source_images.copy()
+
+    @override
+    async def async_download_additional_data(self, client_session: aiohttp.ClientSession) -> None:
+        """Download all additional images concurrently."""
+        await asyncio.gather(
+            self.async_download_source_image(client_session),
+            self.async_download_source_mask(client_session),
+            self.async_download_extra_source_images(client_session),
+        )
+
+    @override
+    def download_additional_data(self) -> None:
+        raise NotImplementedError("This method is not yet implemented. Use async_download_additional_data instead.")
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ImageGenerateJobPopResponse):
