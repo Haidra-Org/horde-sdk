@@ -1,14 +1,19 @@
 """Unit tests for AI-Horde API models."""
 
+import base64
+import io
 import json
 from uuid import UUID
 
+import aiohttp
+import PIL.Image
 import pytest
 
 from horde_sdk.ai_horde_api.apimodels import (
     KNOWN_ALCHEMY_TYPES,
     AlchemyPopFormPayload,
     AlchemyPopResponse,
+    ImageGenerateAsyncResponse,
 )
 from horde_sdk.ai_horde_api.apimodels._find_user import (
     ContributionsDetails,
@@ -594,6 +599,61 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
     assert test_response_multiple_ids_2 in combined_container_multiple_ids
 
 
+@pytest.mark.asyncio
+async def test_ImageGenerateJobPop_download_addtl_data() -> None:
+    from horde_sdk.ai_horde_api.apimodels import ExtraSourceImageEntry
+
+    test_response = ImageGenerateJobPopResponse(
+        id=None,
+        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+            prompt="A cat in a hat",
+        ),
+        model="Deliberate",
+        source_image="https://raw.githubusercontent.com/db0/Stable-Horde/main/img_stable/0.jpg",
+        source_mask="https://raw.githubusercontent.com/db0/Stable-Horde/main/img_stable/1.jpg",
+        extra_source_images=[
+            ExtraSourceImageEntry(
+                image="https://raw.githubusercontent.com/db0/Stable-Horde/main/img_stable/2.jpg",
+                strength=1.0,
+            ),
+            ExtraSourceImageEntry(
+                image="https://raw.githubusercontent.com/db0/Stable-Horde/main/img_stable/3.jpg",
+                strength=2.0,
+            ),
+        ],
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    client_session = aiohttp.ClientSession()
+
+    await test_response.async_download_additional_data(client_session)
+
+    assert test_response._downloaded_source_image is not None
+    assert test_response._downloaded_source_mask is not None
+    assert test_response._downloaded_extra_source_images is not None
+    assert len(test_response._downloaded_extra_source_images) == 2
+
+    downloaded_source_image = test_response.get_downloaded_source_image()
+    assert downloaded_source_image is not None
+    assert PIL.Image.open(io.BytesIO(base64.b64decode(downloaded_source_image)))
+
+    downloaded_source_mask = test_response.get_downloaded_source_mask()
+    assert downloaded_source_mask is not None
+    assert PIL.Image.open(io.BytesIO(base64.b64decode(downloaded_source_mask)))
+
+    downloaded_extra_source_images = test_response.get_downloaded_extra_source_images()
+    assert downloaded_extra_source_images is not None
+    assert len(downloaded_extra_source_images) == 2
+    for extra_source_image in downloaded_extra_source_images:
+        assert extra_source_image is not None
+        assert PIL.Image.open(io.BytesIO(base64.b64decode(extra_source_image.image)))
+
+    assert downloaded_extra_source_images[0].strength == 1.0
+    assert downloaded_extra_source_images[1].strength == 2.0
+
+
 def test_AlchemyPopResponse() -> None:
     test_alchemy_pop_response = AlchemyPopResponse(
         forms=[
@@ -721,3 +781,16 @@ def test_problem_payload() -> None:
     problem_payload = json.loads(json_from_api)
 
     ImageGenerateJobPopResponse.model_validate(problem_payload)
+
+
+def test_problem_gen_request_response() -> None:
+
+    example_json = """
+                    {
+                    "id": "00000000-0000-0000-0000-000000000000",
+                    "kudos": 8.0
+                    }"""
+
+    json_from_api = json.loads(example_json)
+
+    ImageGenerateAsyncResponse.model_validate(json_from_api)

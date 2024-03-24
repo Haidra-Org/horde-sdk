@@ -132,7 +132,7 @@ class ExtraSourceImageEntry(HordeAPIDataObject):
     """
 
     image: str = Field(min_length=1)
-    """The URL of the image to download."""
+    """The URL of the image to download, or the base64 string once downloaded."""
     strength: float = Field(default=1, ge=-5, le=5)
     """The strength to apply to this image on various operations."""
 
