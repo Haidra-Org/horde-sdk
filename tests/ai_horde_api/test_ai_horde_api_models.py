@@ -648,6 +648,10 @@ async def test_ImageGenerateJobPop_download_addtl_data() -> None:
     assert len(downloaded_extra_source_images) == 2
     for extra_source_image in downloaded_extra_source_images:
         assert extra_source_image is not None
+        assert extra_source_image.original_url is not None
+        assert extra_source_image.original_url.startswith(
+            "https://raw.githubusercontent.com/db0/Stable-Horde/main/img_stable/",
+        )
         assert PIL.Image.open(io.BytesIO(base64.b64decode(extra_source_image.image)))
 
     assert downloaded_extra_source_images[0].strength == 1.0
