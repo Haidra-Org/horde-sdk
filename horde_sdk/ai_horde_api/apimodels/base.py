@@ -131,6 +131,9 @@ class ExtraSourceImageEntry(HordeAPIDataObject):
     v2 API Model: `ExtraSourceImage`
     """
 
+    original_url: str | None = None
+    """The URL of the original image after it was downloaded."""
+
     image: str = Field(min_length=1)
     """The URL of the image to download, or the base64 string once downloaded."""
     strength: float = Field(default=1, ge=-5, le=5)
