@@ -38,6 +38,9 @@ tests = ["*.json"]
 
 [tool.ruff]
 line-length = 119
+exclude = ["codegen"]
+
+[tool.ruff.lint]
 select = [
   "A",
   "I",
@@ -70,9 +73,8 @@ ignore = [
   "D408",
   "D409",
   "D413",]
-exclude = ["codegen"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402"]
 "conftest.py" = ["E402"]
 
