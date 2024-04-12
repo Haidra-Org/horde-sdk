@@ -1,7 +1,6 @@
 from collections.abc import Iterator
-from typing import ClassVar
 
-from pydantic import AliasChoices, ConfigDict, Field, RootModel
+from pydantic import AliasChoices, Field, RootModel
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
@@ -130,8 +129,6 @@ class WorkerDetailItem(HordeAPIObject):
 
 
 class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]):
-    model_config: ClassVar[ConfigDict] = {}
-
     # @tazlin: The typing of __iter__ in BaseModel seems to assume that RootModel wouldn't also be a parent class.
     # without a `type: ignore``, mypy feels that this is a bad override. This is probably a sub-optimal solution
     # on my part with me hoping to come up with a more elegant path in the future.
