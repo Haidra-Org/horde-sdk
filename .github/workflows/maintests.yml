@@ -38,5 +38,7 @@ jobs:
           pip install --upgrade -r requirements.dev.txt
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: --all-files
       - name: Run unit tests
         run: tox -e tests-no-api-calls
