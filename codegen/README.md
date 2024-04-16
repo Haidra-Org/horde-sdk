@@ -40,9 +40,9 @@ python codegen/codegen_regex_fixes.py codegen/ai_horde_codegen.py
 
 Format again, this time truncating the lines with `--preview`, and auto-fix lint problems
 ```bash
-black codegen/ai_horde_codegen.py --preview
+black codegen/ai_horde_codegen.py --unstable --enable-unstable-feature string_processing
 ruff codegen/ai_horde_codegen.py --fix
-black codegen/ai_horde_codegen.py
+black codegen/ai_horde_codegen.py --unstable --enable-unstable-feature string_processing # for good measure
 ruff codegen/ai_horde_codegen.py --fix # for good measure
 ```
 
