@@ -760,7 +760,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RequestError"
+                  "$ref": "#/components/schemas/RequestValidationError"
                 }
               }
             },
@@ -800,7 +800,7 @@
         "tags": [
           "v2"
         ],
-        "description": "This endpoint will immediately return with the UUID of the request for generation.\nThis endpoint will always be accepted, even if there are no workers available currently to fulfill this request. \nPerhaps some will appear in the next 10 minutes.\nAsynchronous requests live for 10 minutes before being considered stale and being deleted.",
+        "description": "This endpoint will immediately return with the UUID of the request for generation.\nThis endpoint will always be accepted, even if there are no workers available currently to fulfill this request.\nPerhaps some will appear in the next 10 minutes.\nAsynchronous requests live for 10 minutes before being considered stale and being deleted.",
         "operationId": "post_image_async_generate",
         "requestBody": {
           "content": {
@@ -1036,7 +1036,7 @@
         "tags": [
           "v2"
         ],
-        "description": "The request has to have been sent as shared: true.\nYou can select the best image in the set, and/or provide a rating for each or some images in the set.\nIf you select best-of image, you will gain 4 kudos. Each rating is 5 kudos. Best-of will be ignored when ratings conflict with it.\nYou can never gain more kudos than you spent for this generation. Your reward at max will be your kudos consumption - 1.",
+        "description": "AI\nThe request has to have been sent as shared: true.\nYou can select the best image in the set, and/or provide a rating for each or some images in the set.\nIf you select best-of image, you will gain 4 kudos. Each rating is 5 kudos. Best-of will be ignored when ratings conflict with it.\nYou can never gain more kudos than you spent for this generation. Your reward at max will be your kudos consumption - 1.",
         "operationId": "post_aesthetics",
         "requestBody": {
           "content": {
@@ -1048,7 +1048,7 @@
           },
           "required": true
         },
-        "summary": "Submit aesthetic ratings for generated images to be used by LAION"
+        "summary": "Submit aesthetic ratings for generated images to be used by LAION and Stability"
       }
     },
     "/v2/generate/status/{id}": {
@@ -1301,7 +1301,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RequestError"
+                  "$ref": "#/components/schemas/RequestValidationError"
                 }
               }
             },
@@ -1341,7 +1341,7 @@
         "tags": [
           "v2"
         ],
-        "description": "This endpoint will immediately return with the UUID of the request for generation.\nThis endpoint will always be accepted, even if there are no workers available currently to fulfill this request. \nPerhaps some will appear in the next 20 minutes.\nAsynchronous requests live for 20 minutes before being considered stale and being deleted.",
+        "description": "This endpoint will immediately return with the UUID of the request for generation.\nThis endpoint will always be accepted, even if there are no workers available currently to fulfill this request.\nPerhaps some will appear in the next 20 minutes.\nAsynchronous requests live for 20 minutes before being considered stale and being deleted.",
         "operationId": "post_text_async_generate",
         "requestBody": {
           "content": {
@@ -1633,7 +1633,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SubmitInput"
+                "$ref": "#/components/schemas/SubmitInputKobold"
               }
             }
           },
@@ -1728,7 +1728,7 @@
         "tags": [
           "v2"
         ],
-        "description": "This endpoint will immediately return with the UUID of the request for interrogation.\nThis endpoint will always be accepted, even if there are no workers available currently to fulfill this request. \nPerhaps some will appear in the next 20 minutes.\nAsynchronous requests live for 20 minutes before being considered stale and being deleted.",
+        "description": "This endpoint will immediately return with the UUID of the request for interrogation.\nThis endpoint will always be accepted, even if there are no workers available currently to fulfill this request.\nPerhaps some will appear in the next 20 minutes.\nAsynchronous requests live for 20 minutes before being considered stale and being deleted.",
         "operationId": "post_interrogate",
         "requestBody": {
           "content": {
@@ -2115,51 +2115,6 @@
         "summary": "Awards Kudos to registed user"
       }
     },
-    "/v2/kudos/kai/{user_id}": {
-      "parameters": [
-        {
-          "in": "path",
-          "name": "user_id",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        }
-      ],
-      "post": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "tags": [
-          "v2"
-        ],
-        "operationId": "post_kobold_kudos_transfer",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "kai_id": {
-                    "type": "integer"
-                  },
-                  "kudos_amount": {
-                    "type": "integer"
-                  },
-                  "trusted": {
-                    "type": "boolean"
-                  }
-                },
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
-        "summary": "Receives kudos from the KoboldAI Horde"
-      }
-    },
     "/v2/kudos/transfer": {
       "post": {
         "parameters": [
@@ -2231,6 +2186,186 @@
           "$ref": "#/components/requestBodies/post_award_kudosPayload"
         },
         "summary": "Transfer Kudos to another registed user"
+      }
+    },
+    "/v2/operations/block_worker_ipaddr/{worker_id}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "worker_id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "delete": {
+        "parameters": [
+          {
+            "description": "A mod API key.",
+            "in": "header",
+            "name": "apikey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The client name and version.",
+            "in": "header",
+            "name": "Client-Agent",
+            "schema": {
+              "default": "unknown:0:unknown",
+              "type": "string"
+            }
+          },
+          {
+            "description": "An optional fields mask",
+            "in": "header",
+            "name": "X-Fields",
+            "schema": {
+              "format": "mask",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimpleResponse"
+                }
+              }
+            },
+            "description": "Operation Completed"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Invalid API Key"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Access Denied"
+          }
+        },
+        "tags": [
+          "v2"
+        ],
+        "description": "Only usable by horde moderators",
+        "operationId": "delete_operations_block_worker_ip",
+        "summary": "Remove a worker's IP block"
+      },
+      "put": {
+        "parameters": [
+          {
+            "description": "A mod API key.",
+            "in": "header",
+            "name": "apikey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The client name and version.",
+            "in": "header",
+            "name": "Client-Agent",
+            "schema": {
+              "default": "unknown:0:unknown",
+              "type": "string"
+            }
+          },
+          {
+            "description": "An optional fields mask",
+            "in": "header",
+            "name": "X-Fields",
+            "schema": {
+              "format": "mask",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimpleResponse"
+                }
+              }
+            },
+            "description": "Operation Completed"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Invalid API Key"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Access Denied"
+          }
+        },
+        "tags": [
+          "v2"
+        ],
+        "description": "Only usable by horde moderators",
+        "operationId": "put_operations_block_worker_ip",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddWorkerTimeout"
+              }
+            }
+          },
+          "required": true
+        },
+        "summary": "Block worker's from a specific IP for 24 hours"
       }
     },
     "/v2/operations/ipaddr": {
@@ -2322,6 +2457,269 @@
           "required": true
         },
         "summary": "Remove an IP from timeout"
+      },
+      "get": {
+        "parameters": [
+          {
+            "description": "A mod API key.",
+            "in": "header",
+            "name": "apikey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The client name and version.",
+            "in": "header",
+            "name": "Client-Agent",
+            "schema": {
+              "default": "unknown:0:unknown",
+              "type": "string"
+            }
+          },
+          {
+            "description": "An optional fields mask",
+            "in": "header",
+            "name": "X-Fields",
+            "schema": {
+              "format": "mask",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/IPTimeout"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "An IP timeout entry"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Invalid API Key"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Access Denied"
+          }
+        },
+        "tags": [
+          "v2"
+        ],
+        "operationId": "get_operations_ip",
+        "summary": "Return all existing IP Block timeouts"
+      },
+      "post": {
+        "parameters": [
+          {
+            "description": "A mod API key.",
+            "in": "header",
+            "name": "apikey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The client name and version.",
+            "in": "header",
+            "name": "Client-Agent",
+            "schema": {
+              "default": "unknown:0:unknown",
+              "type": "string"
+            }
+          },
+          {
+            "description": "An optional fields mask",
+            "in": "header",
+            "name": "X-Fields",
+            "schema": {
+              "format": "mask",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimpleResponse"
+                }
+              }
+            },
+            "description": "Operation Completed"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Invalid API Key"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Access Denied"
+          }
+        },
+        "tags": [
+          "v2"
+        ],
+        "description": "Only usable by horde moderators",
+        "operationId": "post_operations_ip",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTimeoutIPInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "summary": "Add an IP or CIDR to timeout"
+      }
+    },
+    "/v2/operations/ipaddr/{ipaddr}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "ipaddr",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "parameters": [
+          {
+            "description": "A mod API key.",
+            "in": "header",
+            "name": "apikey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The client name and version.",
+            "in": "header",
+            "name": "Client-Agent",
+            "schema": {
+              "default": "unknown:0:unknown",
+              "type": "string"
+            }
+          },
+          {
+            "description": "An optional fields mask",
+            "in": "header",
+            "name": "X-Fields",
+            "schema": {
+              "format": "mask",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/IPTimeout"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "IP timeout entries that match IP"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Invalid API Key"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Access Denied"
+          }
+        },
+        "tags": [
+          "v2"
+        ],
+        "operationId": "get_operations_ip_single",
+        "summary": "Check if an IP or CIDR is in timeout"
       }
     },
     "/v2/sharedkeys": {
@@ -2543,7 +2941,7 @@
           "v2"
         ],
         "operationId": "get_shared_key_single",
-        "summary": "Get details about an existing Shared Key for this user"
+        "summary": "Get details about an existing Shared Key"
       },
       "patch": {
         "parameters": [
@@ -2657,6 +3055,15 @@
             }
           },
           {
+            "description": "If 'known', only show stats for known models in the model reference. If 'custom' only show stats for custom models. If 'all' shows stats for all models.",
+            "in": "query",
+            "name": "model_state",
+            "schema": {
+              "default": "known",
+              "type": "string"
+            }
+          },
+          {
             "description": "An optional fields mask",
             "in": "header",
             "name": "X-Fields",
@@ -2675,7 +3082,17 @@
                 }
               }
             },
-            "description": "Horde generated images statistics per model"
+            "description": "AI Horde generated images statistics per model"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "tags": [
@@ -2716,7 +3133,7 @@
                 }
               }
             },
-            "description": "Horde generated images statistics"
+            "description": "AI Horde generated images statistics"
           }
         },
         "tags": [
@@ -2758,7 +3175,7 @@
                 }
               }
             },
-            "description": "Horde generated text statistics per model"
+            "description": "AI Horde generated text statistics per model"
           }
         },
         "tags": [
@@ -2799,7 +3216,7 @@
                 }
               }
             },
-            "description": "Horde generated text statistics"
+            "description": "AI Horde generated text statistics"
           }
         },
         "tags": [
@@ -2873,6 +3290,15 @@
             }
           },
           {
+            "description": "If 'known', only show stats for known models in the model reference. If 'custom' only show stats for custom models. If 'all' shows stats for all models.",
+            "in": "query",
+            "name": "model_state",
+            "schema": {
+              "default": "all",
+              "type": "string"
+            }
+          },
+          {
             "description": "An optional fields mask",
             "in": "header",
             "name": "X-Fields",
@@ -2895,6 +3321,16 @@
               }
             },
             "description": "List All Active Models"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "tags": [
@@ -2985,7 +3421,7 @@
                 }
               }
             },
-            "description": "Horde Maintenance"
+            "description": "AI Horde Maintenance"
           }
         },
         "tags": [
@@ -3111,7 +3547,7 @@
                 }
               }
             },
-            "description": "Horde News"
+            "description": "AI Horde News"
           }
         },
         "tags": [
@@ -3152,7 +3588,7 @@
                 }
               }
             },
-            "description": "Horde Performance"
+            "description": "AI Horde Performance"
           }
         },
         "tags": [
@@ -4107,7 +4543,6 @@
         "tags": [
           "v2"
         ],
-        "description": "Maintenance can be set by the owner of the serve or an admin. \nWhen in maintenance, the worker will receive a 503 request when trying to retrieve new requests. Use this to avoid disconnecting your worker in the middle of a generation\nPaused can be set only by the admins of this Horde.\nWhen in paused mode, the worker will not be given any requests to generate.",
         "operationId": "put_worker_single",
         "requestBody": {
           "content": {
@@ -4118,8 +4553,7 @@
             }
           },
           "required": true
-        },
-        "summary": "Put the worker into maintenance or pause mode"
+        }
       }
     }
   },
@@ -4190,7 +4624,7 @@
                 "description": "The model type (text or image).",
                 "enum": [
                   "image",
-                  "tex.t"
+                  "text"
                 ],
                 "example": "image",
                 "type": "string"
@@ -4211,6 +4645,44 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "AddTimeoutIPInput": {
+        "properties": {
+          "hours": {
+            "description": "For how many hours to put this IP in timeout.",
+            "example": 24,
+            "maximum": 720,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "ipaddr": {
+            "description": "The IP address or CIDR to add from timeout.",
+            "example": "127.0.0.1",
+            "maxLength": 40,
+            "minLength": 7,
+            "type": "string"
+          }
+        },
+        "required": [
+          "hours",
+          "ipaddr"
+        ],
+        "type": "object"
+      },
+      "AddWorkerTimeout": {
+        "properties": {
+          "days": {
+            "description": "For how many days to put this worker's IP in timeout.",
+            "example": 7,
+            "maximum": 30,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "days"
+        ],
         "type": "object"
       },
       "AestheticRating": {
@@ -4297,9 +4769,9 @@
       "DeleteTimeoutIPInput": {
         "properties": {
           "ipaddr": {
-            "description": "The IP address to remove from timeout.",
+            "description": "The IP address or CIDR to remove from timeout.",
             "example": "127.0.0.1",
-            "maxLength": 15,
+            "maxLength": 40,
             "minLength": 7,
             "type": "string"
           }
@@ -4331,6 +4803,20 @@
           "deleted_name": {
             "description": "The Name of the deleted worker.",
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ExtraSourceImage": {
+        "properties": {
+          "image": {
+            "description": "The Base64-encoded webp to use for further processing.",
+            "type": "string"
+          },
+          "strength": {
+            "default": 1,
+            "description": "Optional field, determining the strength to use for the processing",
+            "type": "number"
           }
         },
         "type": "object"
@@ -4424,7 +4910,7 @@
           },
           "state": {
             "default": "ok",
-            "description": "The state of this generation.",
+            "description": "OBSOLETE (Use the gen_metadata field). The state of this generation.",
             "enum": [
               "ok",
               "censored"
@@ -4451,10 +4937,26 @@
       },
       "GenerationInputKobold": {
         "properties": {
+          "allow_downgrade": {
+            "default": false,
+            "description": "When true and the request requires upfront kudos and the account does not have enough The request will be downgraded in max context and max tokens so that it does not need upfront kudos.",
+            "type": "boolean"
+          },
+          "disable_batching": {
+            "default": false,
+            "description": "When true, This request will not use batching. This will allow you to retrieve accurate seeds. Feature is restricted to Trusted users and Patreons.",
+            "type": "boolean"
+          },
           "dry_run": {
             "default": false,
-            "description": "When false, the endpoint will simply return the cost of the request in kudos and exit.",
+            "description": "When true, the endpoint will simply return the cost of the request in kudos and exit.",
             "type": "boolean"
+          },
+          "extra_source_images": {
+            "items": {
+              "$ref": "#/components/schemas/ExtraSourceImage"
+            },
+            "type": "array"
           },
           "models": {
             "items": {
@@ -4468,6 +4970,10 @@
           },
           "prompt": {
             "description": "The prompt which will be sent to KoboldAI to generate text.",
+            "type": "string"
+          },
+          "proxied_account": {
+            "description": "If using a service account as a proxy, provide this value to identify the actual account from which this request is coming from.",
             "type": "string"
           },
           "slow_workers": {
@@ -4484,6 +4990,10 @@
             "default": false,
             "description": "When true, only trusted workers will serve this request. When False, Evaluating workers will also be used which can increase speed but adds more risk!",
             "type": "boolean"
+          },
+          "webhook": {
+            "description": "Provide a URL where the AI Horde will send a POST call after each delivered generation. The request will include the details of the job as well as the request ID.",
+            "type": "string"
           },
           "worker_blacklist": {
             "default": false,
@@ -4502,15 +5012,31 @@
       },
       "GenerationInputStable": {
         "properties": {
+          "allow_downgrade": {
+            "default": false,
+            "description": "When true and the request requires upfront kudos and the account does not have enough The request will be downgraded in steps and resolution so that it does not need upfront kudos.",
+            "type": "boolean"
+          },
           "censor_nsfw": {
             "default": false,
             "description": "If the request is SFW, and the worker accidentally generates NSFW, it will send back a censored image.",
             "type": "boolean"
           },
+          "disable_batching": {
+            "default": false,
+            "description": "When true, This request will not use batching. This will allow you to retrieve accurate seeds. Feature is restricted to Trusted users and Patreons.",
+            "type": "boolean"
+          },
           "dry_run": {
             "default": false,
-            "description": "When false, the endpoint will simply return the cost of the request in kudos and exit.",
+            "description": "When true, the endpoint will simply return the cost of the request in kudos and exit.",
             "type": "boolean"
+          },
+          "extra_source_images": {
+            "items": {
+              "$ref": "#/components/schemas/ExtraSourceImage"
+            },
+            "type": "array"
           },
           "models": {
             "items": {
@@ -4530,6 +5056,10 @@
           "prompt": {
             "description": "The prompt which will be sent to Stable Diffusion to generate an image.",
             "minLength": 1,
+            "type": "string"
+          },
+          "proxied_account": {
+            "description": "If using a service account as a proxy, provide this value to identify the actual account from which this request is coming from.",
             "type": "string"
           },
           "r2": {
@@ -4566,7 +5096,8 @@
             "enum": [
               "img2img",
               "inpainting",
-              "outpainting"
+              "outpainting",
+              "remix"
             ],
             "example": "img2img",
             "type": "string"
@@ -4575,6 +5106,13 @@
             "default": false,
             "description": "When true, only trusted workers will serve this request. When False, Evaluating workers will also be used which can increase speed but adds more risk!",
             "type": "boolean"
+          },
+          "webhook": {
+            "description": "Provide a URL where the AI Horde will send a POST call after each delivered generation. The request will include the details of the job as well as the request ID.",
+            "example": "https://haidra.net/00000000-0000-0000-0000-000000000000",
+            "maxLength": 1024,
+            "minLength": 10,
+            "type": "string"
           },
           "worker_blacklist": {
             "default": false,
@@ -4601,6 +5139,12 @@
           },
           {
             "properties": {
+              "gen_metadata": {
+                "items": {
+                  "$ref": "#/components/schemas/GenerationMetadataKobold"
+                },
+                "type": "array"
+              },
               "seed": {
                 "default": 0,
                 "description": "The seed which generated this text.",
@@ -4618,34 +5162,111 @@
           }
         ]
       },
+      "GenerationMetadataKobold": {
+        "properties": {
+          "ref": {
+            "description": "Optionally a reference for the metadata (e.g. a lora ID)",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "type": {
+            "description": "The relevance of the metadata field",
+            "enum": [
+              "censorship"
+            ],
+            "example": "censorship",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value of the metadata field",
+            "enum": [
+              "csam"
+            ],
+            "example": "csam",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "value"
+        ],
+        "type": "object"
+      },
+      "GenerationMetadataStable": {
+        "properties": {
+          "ref": {
+            "description": "Optionally a reference for the metadata (e.g. a lora ID)",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "type": {
+            "description": "The relevance of the metadata field",
+            "enum": [
+              "lora",
+              "ti",
+              "censorship",
+              "source_image",
+              "source_mask",
+              "extra_source_images",
+              "batch_index"
+            ],
+            "example": "lora",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value of the metadata field",
+            "enum": [
+              "download_failed",
+              "parse_failed",
+              "baseline_mismatch",
+              "csam",
+              "nsfw",
+              "see_ref"
+            ],
+            "example": "download_failed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "value"
+        ],
+        "type": "object"
+      },
       "GenerationPayload": {
         "properties": {
           "id": {
-            "description": "The UUID for this text generation.",
-            "type": "string"
-          },
-          "model": {
-            "description": "Which of the available models to use for this request.",
+            "description": "The UUID for this generation.",
             "type": "string"
           },
           "payload": {
-            "$ref": "#/components/schemas/ModelPayloadKobold"
+            "$ref": "#/components/schemas/ModelPayload"
           },
           "skipped": {
-            "$ref": "#/components/schemas/NoValidRequestFoundKobold"
-          },
-          "softprompt": {
-            "description": "The soft prompt requested for this generation.",
-            "type": "string"
+            "$ref": "#/components/schemas/NoValidRequestFound"
           }
         },
         "type": "object"
       },
       "GenerationPayloadStable": {
         "properties": {
+          "extra_source_images": {
+            "items": {
+              "$ref": "#/components/schemas/ExtraSourceImage"
+            },
+            "type": "array"
+          },
           "id": {
             "description": "The UUID for this image generation.",
             "type": "string"
+          },
+          "ids": {
+            "items": {
+              "description": "The UUID for this image generation.",
+              "example": "00000000-0000-0000-0000-000000000000",
+              "type": "string"
+            },
+            "type": "array"
           },
           "model": {
             "description": "Which of the available models to use for this request.",
@@ -4657,6 +5278,13 @@
           "r2_upload": {
             "description": "The r2 upload link to use to upload this image.",
             "type": "string"
+          },
+          "r2_uploads": {
+            "items": {
+              "description": "The r2 upload link to use to upload this image.",
+              "type": "string"
+            },
+            "type": "array"
           },
           "skipped": {
             "$ref": "#/components/schemas/NoValidRequestFoundStable"
@@ -4675,7 +5303,8 @@
             "enum": [
               "img2img",
               "inpainting",
-              "outpainting"
+              "outpainting",
+              "remix"
             ],
             "example": "img2img",
             "type": "string"
@@ -4693,6 +5322,12 @@
               "censored": {
                 "description": "When true this image has been censored by the worker's safety filter.",
                 "type": "boolean"
+              },
+              "gen_metadata": {
+                "items": {
+                  "$ref": "#/components/schemas/GenerationMetadataStable"
+                },
+                "type": "array"
               },
               "id": {
                 "description": "The ID for this image.",
@@ -4727,15 +5362,15 @@
       "HordeModes": {
         "properties": {
           "invite_only_mode": {
-            "description": "When True, this Horde will not only accept worker explicitly invited to join.",
+            "description": "When True, this horde will not only accept worker explicitly invited to join.",
             "type": "boolean"
           },
           "maintenance_mode": {
-            "description": "When True, this Horde will not accept new requests for image generation, but will finish processing the ones currently in the queue.",
+            "description": "When True, this horde will not accept new requests for image generation, but will finish processing the ones currently in the queue.",
             "type": "boolean"
           },
           "raid_mode": {
-            "description": "When True, this Horde will not always provide full information in order to throw off attackers.",
+            "description": "When True, this horde will not always provide full information in order to throw off attackers.",
             "type": "boolean"
           }
         },
@@ -4744,58 +5379,79 @@
       "HordePerformance": {
         "properties": {
           "interrogator_count": {
-            "description": "How many workers are actively processing image interrogations in this Horde in the past 5 minutes.",
+            "description": "How many workers are actively processing image interrogations in this {horde_noun} in the past 5 minutes.",
             "type": "integer"
           },
           "interrogator_thread_count": {
-            "description": "How many worker threads are actively processing image interrogation in this Horde in the past 5 minutes.",
+            "description": "How many worker threads are actively processing image interrogation in this {horde_noun} in the past 5 minutes.",
             "type": "integer"
           },
           "past_minute_megapixelsteps": {
-            "description": "How many megapixelsteps this Horde generated in the last minute.",
+            "description": "How many megapixelsteps this horde generated in the last minute.",
             "type": "number"
           },
           "past_minute_tokens": {
-            "description": "How many tokens this Horde generated in the last minute.",
+            "description": "How many tokens this horde generated in the last minute.",
             "type": "number"
           },
           "queued_forms": {
-            "description": "The amount of image interrogations waiting and processing currently in this Horde.",
+            "description": "The amount of image interrogations waiting and processing currently in this horde.",
             "type": "number"
           },
           "queued_megapixelsteps": {
-            "description": "The amount of megapixelsteps in waiting and processing requests currently in this Horde.",
+            "description": "The amount of megapixelsteps in waiting and processing requests currently in this horde.",
             "type": "number"
           },
           "queued_requests": {
-            "description": "The amount of waiting and processing image requests currently in this Horde.",
+            "description": "The amount of waiting and processing image requests currently in this horde.",
             "type": "integer"
           },
           "queued_text_requests": {
-            "description": "The amount of waiting and processing text requests currently in this Horde.",
+            "description": "The amount of waiting and processing text requests currently in this horde.",
             "type": "integer"
           },
           "queued_tokens": {
-            "description": "The amount of tokens in waiting and processing requests currently in this Horde.",
+            "description": "The amount of tokens in waiting and processing requests currently in this horde.",
             "type": "number"
           },
           "text_thread_count": {
-            "description": "How many worker threads are actively processing prompt generations in this Horde in the past 5 minutes.",
+            "description": "How many worker threads are actively processing prompt generations in this {horde_noun} in the past 5 minutes.",
             "type": "integer"
           },
           "text_worker_count": {
-            "description": "How many workers are actively processing prompt generations in this Horde in the past 5 minutes.",
+            "description": "How many workers are actively processing prompt generations in this horde in the past 5 minutes.",
             "type": "integer"
           },
           "thread_count": {
-            "description": "How many worker threads are actively processing prompt generations in this Horde in the past 5 minutes.",
+            "description": "How many worker threads are actively processing prompt generations in this {horde_noun} in the past 5 minutes.",
             "type": "integer"
           },
           "worker_count": {
-            "description": "How many workers are actively processing prompt generations in this Horde in the past 5 minutes.",
+            "description": "How many workers are actively processing prompt generations in this horde in the past 5 minutes.",
             "type": "integer"
           }
         },
+        "type": "object"
+      },
+      "IPTimeout": {
+        "properties": {
+          "ipaddr": {
+            "description": "The CIDR which is in timeout.",
+            "example": "127.0.0.1",
+            "maxLength": 40,
+            "minLength": 7,
+            "type": "string"
+          },
+          "seconds": {
+            "description": "How many more seconds this IP block is in timeout ",
+            "example": 1440,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ipaddr",
+          "seconds"
+        ],
         "type": "object"
       },
       "ImgModelStats": {
@@ -4888,14 +5544,9 @@
           "bridge_agent": {
             "default": "unknown",
             "description": "The worker name, version and website.",
-            "example": "AI Horde Worker:11:https://github.com/db0/AI-Horde-Worker",
+            "example": "AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen",
             "maxLength": 1000,
             "type": "string"
-          },
-          "bridge_version": {
-            "default": 1,
-            "description": "The version of the bridge used by this worker.",
-            "type": "integer"
           },
           "forms": {
             "items": {
@@ -4981,7 +5632,7 @@
           "awarded": {
             "description": "The amount of Kudos awarded.",
             "example": 100,
-            "type": "integer"
+            "type": "number"
           }
         },
         "type": "object"
@@ -4991,7 +5642,7 @@
           "transferred": {
             "description": "The amount of Kudos tranferred.",
             "example": 100,
-            "type": "integer"
+            "type": "number"
           }
         },
         "type": "object"
@@ -5088,25 +5739,34 @@
           "source_image": {
             "description": "The public URL of the image to interrogate.",
             "type": "string"
+          },
+          "webhook": {
+            "description": "Provide a URL where the AI Horde will send a POST call after each delivered generation. The request will include the details of the job as well as the request ID.",
+            "example": "https://haidra.net/00000000-0000-0000-0000-000000000000",
+            "maxLength": 1024,
+            "minLength": 10,
+            "type": "string"
           }
         },
         "type": "object"
       },
-      "ModelPayloadKobold": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ModelPayloadRootKobold"
+      "ModelPayload": {
+        "properties": {
+          "n": {
+            "description": "The amount of images to generate.",
+            "example": 1,
+            "type": "integer"
           },
-          {
-            "properties": {
-              "prompt": {
-                "description": "The prompt which will be sent to KoboldAI to generate the text.",
-                "type": "string"
-              }
-            },
-            "type": "object"
+          "prompt": {
+            "description": "The prompt which will be sent to the horde against which to run inference.",
+            "type": "string"
+          },
+          "seed": {
+            "description": "The seed to use to generete this request.",
+            "type": "string"
           }
-        ]
+        },
+        "type": "object"
       },
       "ModelPayloadLorasStable": {
         "properties": {
@@ -5114,7 +5774,7 @@
             "default": 1,
             "description": "The strength of the LoRa to apply to the clip model.",
             "maximum": 5,
-            "minimum": 0,
+            "minimum": -5,
             "type": "number"
           },
           "inject_trigger": {
@@ -5123,16 +5783,21 @@
             "minLength": 1,
             "type": "string"
           },
+          "is_version": {
+            "default": false,
+            "description": "If true, will consider the LoRa ID as a CivitAI version ID and search accordingly. Ensure the name is an integer.",
+            "type": "boolean"
+          },
           "model": {
             "default": 1,
             "description": "The strength of the LoRa to apply to the SD model.",
             "maximum": 5,
-            "minimum": 0,
+            "minimum": -5,
             "type": "number"
           },
           "name": {
-            "description": "The exact name of the LoRa.",
-            "example": "GlowingRunesAIV6",
+            "description": "The exact name or CivitAI Model Page ID of the LoRa. If is_version is true, this should be the CivitAI version ID.",
+            "example": "Magnagothica",
             "maxLength": 255,
             "minLength": 1,
             "type": "string"
@@ -5145,6 +5810,20 @@
       },
       "ModelPayloadRootKobold": {
         "properties": {
+          "dynatemp_exponent": {
+            "default": 1,
+            "description": "Dynamic temperature exponent value.",
+            "maximum": 5,
+            "minimum": 0,
+            "type": "number"
+          },
+          "dynatemp_range": {
+            "default": 0,
+            "description": "Dynamic temperature range value.",
+            "maximum": 5,
+            "minimum": 0,
+            "type": "number"
+          },
           "frmtadsnsp": {
             "description": "Input formatting option. When enabled, adds a leading space to your input if there is no trailing whitespace at the end of the previous action.",
             "example": false,
@@ -5168,15 +5847,23 @@
           "max_context_length": {
             "default": 1024,
             "description": "Maximum number of tokens to send to the model.",
+            "maximum": 32000,
             "minimum": 80,
             "type": "integer"
           },
           "max_length": {
             "default": 80,
             "description": "Number of tokens to generate.",
-            "maximum": 512,
+            "maximum": 1024,
             "minimum": 16,
             "type": "integer"
+          },
+          "min_p": {
+            "default": 0,
+            "description": "Min-p sampling value.",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
           },
           "n": {
             "example": 1,
@@ -5214,6 +5901,20 @@
             "example": false,
             "type": "boolean"
           },
+          "smoothing_factor": {
+            "default": 0,
+            "description": "Quadratic sampling value.",
+            "maximum": 10,
+            "minimum": 0,
+            "type": "number"
+          },
+          "stop_sequence": {
+            "items": {
+              "description": "An array of string sequences whereby the model will stop generating further tokens. The returned text WILL contain the stop sequence.",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "temperature": {
             "description": "Temperature value.",
             "maximum": 5,
@@ -5249,6 +5950,11 @@
             "maximum": 1,
             "minimum": 0,
             "type": "number"
+          },
+          "use_default_badwordsids": {
+            "description": "When True, uses the default KoboldAI bad word IDs.",
+            "example": true,
+            "type": "boolean"
           }
         },
         "type": "object"
@@ -5259,7 +5965,6 @@
             "default": 7.5,
             "maximum": 100,
             "minimum": 0,
-            "multipleOf": 0.5,
             "type": "number"
           },
           "clip_skip": {
@@ -5352,21 +6057,22 @@
           "sampler_name": {
             "default": "k_euler_a",
             "enum": [
-              "k_lms",
-              "k_heun",
               "k_euler",
+              "lcm",
               "k_euler_a",
+              "k_dpmpp_2s_a",
+              "DDIM",
+              "dpmsolver",
+              "k_lms",
+              "k_dpm_fast",
+              "k_dpmpp_sde",
               "k_dpm_2",
               "k_dpm_2_a",
-              "k_dpm_fast",
               "k_dpm_adaptive",
-              "k_dpmpp_2s_a",
-              "k_dpmpp_2m",
-              "dpmsolver",
-              "k_dpmpp_sde",
-              "DDIM"
+              "k_heun",
+              "k_dpmpp_2m"
             ],
-            "example": "k_lms",
+            "example": "k_euler",
             "type": "string"
           },
           "seed": {
@@ -5388,6 +6094,12 @@
             "default": false,
             "description": "Set to True to create images that stitch together seamlessly.",
             "type": "boolean"
+          },
+          "tis": {
+            "items": {
+              "$ref": "#/components/schemas/ModelPayloadTextualInversionsStable"
+            },
+            "type": "array"
           },
           "width": {
             "default": 512,
@@ -5428,6 +6140,37 @@
             "type": "object"
           }
         ]
+      },
+      "ModelPayloadTextualInversionsStable": {
+        "properties": {
+          "inject_ti": {
+            "description": "If set, Will automatically add this TI filename to the prompt or negative prompt accordingly using the provided strength. If this is set to None, then the user will have to manually add the embed to the prompt themselves.",
+            "enum": [
+              "prompt",
+              "negprompt"
+            ],
+            "example": "prompt",
+            "type": "string"
+          },
+          "name": {
+            "description": "The exact name or CivitAI ID of the Textual Inversion.",
+            "example": "7808",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "strength": {
+            "default": 1,
+            "description": "The strength with which to apply the TI to the prompt. Only used when inject_ti is not None",
+            "maximum": 5,
+            "minimum": -5,
+            "type": "number"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
       },
       "ModelSpecialPayloadStable": {
         "properties": {
@@ -5477,6 +6220,13 @@
       },
       "ModifyUser": {
         "properties": {
+          "admin_comment": {
+            "description": "The new admin comment.",
+            "example": "User is sus",
+            "maxLength": 500,
+            "minLength": 5,
+            "type": "string"
+          },
           "concurrency": {
             "description": "The request concurrency this user has after this request.",
             "example": 30,
@@ -5489,6 +6239,10 @@
           },
           "customizer": {
             "description": "The user's new customizer status.",
+            "type": "boolean"
+          },
+          "education": {
+            "description": "The user's new education status.",
             "type": "boolean"
           },
           "flagged": {
@@ -5516,6 +6270,10 @@
           "public_workers": {
             "description": "The user's new public_workers status.",
             "example": false,
+            "type": "boolean"
+          },
+          "service": {
+            "description": "The user's new service status.",
             "type": "boolean"
           },
           "special": {
@@ -5550,9 +6308,16 @@
       },
       "ModifyUserInput": {
         "properties": {
+          "admin_comment": {
+            "description": "Add further information about this user for the other admins.",
+            "example": "User is sus",
+            "maxLength": 500,
+            "minLength": 5,
+            "type": "string"
+          },
           "concurrency": {
             "description": "The amount of concurrent request this user can have.",
-            "maximum": 100,
+            "maximum": 500,
             "minimum": 0,
             "type": "integer"
           },
@@ -5565,6 +6330,16 @@
           },
           "customizer": {
             "description": "When set to true, the user will be able to serve custom Stable Diffusion models which do not exist in the Official AI Horde Model Reference.",
+            "example": false,
+            "type": "boolean"
+          },
+          "education": {
+            "description": "When set to true, the user is considered an education account and some options become more restrictive.",
+            "example": false,
+            "type": "boolean"
+          },
+          "filtered": {
+            "description": "When set to true, the replacement filter will always be applied against this user",
             "example": false,
             "type": "boolean"
           },
@@ -5593,6 +6368,11 @@
           },
           "reset_suspicion": {
             "description": "Set the user's suspicion back to 0.",
+            "type": "boolean"
+          },
+          "service": {
+            "description": "When set to true, the user is considered a service account proxying the requests for other users.",
+            "example": false,
             "type": "boolean"
           },
           "special": {
@@ -5660,7 +6440,6 @@
           "info": {
             "description": "You can optionally provide a server note which will be seen in the server details. No profanity allowed!",
             "maxLength": 1000,
-            "minLength": 2,
             "type": "string"
           },
           "maintenance": {
@@ -5789,33 +6568,6 @@
         },
         "type": "object"
       },
-      "NoValidRequestFoundKobold": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/NoValidRequestFound"
-          },
-          {
-            "properties": {
-              "matching_softprompt": {
-                "description": "How many waiting requests were skipped because they demanded an available soft-prompt which this worker does not have.",
-                "example": 0,
-                "type": "integer"
-              },
-              "max_context_length": {
-                "description": "How many waiting requests were skipped because they demanded a higher max_context_length than what this worker provides.",
-                "example": 0,
-                "type": "integer"
-              },
-              "max_length": {
-                "description": "How many waiting requests were skipped because they demanded more generated tokens that what this worker can provide.",
-                "example": 0,
-                "type": "integer"
-              }
-            },
-            "type": "object"
-          }
-        ]
-      },
       "NoValidRequestFoundStable": {
         "allOf": [
           {
@@ -5884,17 +6636,19 @@
       },
       "PopInput": {
         "properties": {
+          "amount": {
+            "default": 1,
+            "description": "How many jobvs to pop at the same time",
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer"
+          },
           "bridge_agent": {
             "default": "unknown:0:unknown",
             "description": "The worker name, version and website.",
-            "example": "AI Horde Worker:11:https://github.com/db0/AI-Horde-Worker",
+            "example": "AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen",
             "maxLength": 1000,
             "type": "string"
-          },
-          "bridge_version": {
-            "default": 1,
-            "description": "The version of the bridge used by this worker.",
-            "type": "integer"
           },
           "models": {
             "items": {
@@ -5930,7 +6684,7 @@
           "threads": {
             "default": 1,
             "description": "How many threads this worker is running. This is used to accurately the current power available in the horde.",
-            "maximum": 10,
+            "maximum": 50,
             "minimum": 1,
             "type": "integer"
           }
@@ -6058,11 +6812,17 @@
           },
           "kudos": {
             "description": "The expected kudos consumption for this request.",
-            "type": "integer"
+            "type": "number"
           },
           "message": {
             "description": "Any extra information from the horde about this request.",
             "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/RequestSingleWarning"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -6072,8 +6832,155 @@
           "message": {
             "description": "The error message for this status code.",
             "type": "string"
+          },
+          "rc": {
+            "description": "The return code for this error. See: https://github.com/Haidra-Org/AI-Horde/blob/main/README_return_codes.md",
+            "enum": [
+              "MissingPrompt",
+              "CorruptPrompt",
+              "KudosValidationError",
+              "NoValidActions",
+              "InvalidSize",
+              "InvalidPromptSize",
+              "TooManySteps",
+              "Profanity",
+              "ProfaneWorkerName",
+              "ProfaneBridgeAgent",
+              "ProfaneWorkerInfo",
+              "ProfaneUserName",
+              "ProfaneUserContact",
+              "ProfaneAdminComment",
+              "ProfaneTeamName",
+              "ProfaneTeamInfo",
+              "TooLong",
+              "TooLongWorkerName",
+              "TooLongUserName",
+              "NameAlreadyExists",
+              "WorkerNameAlreadyExists",
+              "TeamNameAlreadyExists",
+              "PolymorphicNameConflict",
+              "ImageValidationFailed",
+              "SourceImageResolutionExceeded",
+              "SourceImageSizeExceeded",
+              "SourceImageUrlInvalid",
+              "SourceImageUnreadable",
+              "InpaintingMissingMask",
+              "SourceMaskUnnecessary",
+              "UnsupportedSampler",
+              "UnsupportedModel",
+              "ControlNetUnsupported",
+              "ControlNetSourceMissing",
+              "ControlNetInvalidPayload",
+              "SourceImageRequiredForModel",
+              "UnexpectedModelName",
+              "TooManyUpscalers",
+              "ProcGenNotFound",
+              "InvalidAestheticAttempt",
+              "AestheticsNotCompleted",
+              "AestheticsNotPublic",
+              "AestheticsDuplicate",
+              "AestheticsMissing",
+              "AestheticsSolo",
+              "AestheticsConfused",
+              "AestheticsAlreadyExist",
+              "AestheticsServerRejected",
+              "AestheticsServerError",
+              "AestheticsServerDown",
+              "AestheticsServerTimeout",
+              "InvalidAPIKey",
+              "WrongCredentials",
+              "NotAdmin",
+              "NotModerator",
+              "NotOwner",
+              "NotPrivileged",
+              "AnonForbidden",
+              "AnonForbiddenWorker",
+              "AnonForbiddenUserMod",
+              "NotTrusted",
+              "UntrustedTeamCreation",
+              "UntrustedUnsafeIP",
+              "WorkerMaintenance",
+              "WorkerFlaggedMaintenance",
+              "TooManySameIPs",
+              "WorkerInviteOnly",
+              "UnsafeIP",
+              "TimeoutIP",
+              "TooManyNewIPs",
+              "KudosUpfront",
+              "SharedKeyEmpty",
+              "SharedKeyExpired",
+              "SharedKeyInsufficientKudos",
+              "InvalidJobID",
+              "RequestNotFound",
+              "WorkerNotFound",
+              "TeamNotFound",
+              "FilterNotFound",
+              "UserNotFound",
+              "DuplicateGen",
+              "AbortedGen",
+              "RequestExpired",
+              "TooManyPrompts",
+              "NoValidWorkers",
+              "MaintenanceMode",
+              "TargetAccountFlagged",
+              "SourceAccountFlagged",
+              "FaultWhenKudosReceiving",
+              "FaultWhenKudosSending",
+              "TooFastKudosTransfers",
+              "KudosTransferToAnon",
+              "KudosTransferToSelf",
+              "KudosTransferNotEnough",
+              "NegativeKudosTransfer",
+              "KudosTransferFromAnon",
+              "InvalidAwardUsername",
+              "KudosAwardToAnon",
+              "NotAllowedAwards",
+              "NoWorkerModSelected",
+              "NoUserModSelected",
+              "NoHordeModSelected",
+              "NoTeamModSelected",
+              "NoFilterModSelected",
+              "NoSharedKeyModSelected",
+              "BadRequest",
+              "Forbidden",
+              "Locked",
+              "ControlNetMismatch",
+              "HiResFixMismatch",
+              "TooManyLoras",
+              "BadLoraVersion",
+              "TooManyTIs",
+              "BetaAnonForbidden",
+              "BetaComparisonFault",
+              "BadCFGDecimals",
+              "BadCFGNumber",
+              "BadClientAgent",
+              "SpecialMissingPayload",
+              "SpecialForbidden",
+              "SpecialMissingUsername",
+              "SpecialModelNeedsSpecialUser",
+              "SpecialFieldNeedsSpecialUser",
+              "Img2ImgMismatch",
+              "TilingMismatch",
+              "EducationCannotSendKudos",
+              "InvalidPriorityUsername",
+              "OnlyServiceAccountProxy",
+              "RequiresTrust",
+              "InvalidRemixModel",
+              "InvalidExtraSourceImages",
+              "TooManyExtraSourceImages",
+              "MissingFullSamplerOrder",
+              "TooManyStopSequences",
+              "ExcessiveStopSequence",
+              "TokenOverflow",
+              "MoreThanMinExtraSourceImage"
+            ],
+            "example": "ExampleHordeError",
+            "type": "string"
           }
         },
+        "required": [
+          "rc"
+        ],
         "type": "object"
       },
       "RequestInterrogationResponse": {
@@ -6084,6 +6991,32 @@
           },
           "message": {
             "description": "Any extra information from the horde about this request.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RequestSingleWarning": {
+        "properties": {
+          "code": {
+            "description": "A unique identifier for this warning.",
+            "enum": [
+              "NoAvailableWorker",
+              "ClipSkipMismatch",
+              "StepsTooFew",
+              "StepsTooMany",
+              "CfgScaleMismatch",
+              "CfgScaleTooSmall",
+              "CfgScaleTooLarge",
+              "SamplerMismatch",
+              "SchedulerMismatch"
+            ],
+            "example": "NoAvailableWorker",
+            "type": "string"
+          },
+          "message": {
+            "description": "Something that you should be aware about this request, in plain text.",
+            "minLength": 1,
             "type": "string"
           }
         },
@@ -6176,6 +7109,25 @@
           }
         ]
       },
+      "RequestValidationError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RequestError"
+          },
+          {
+            "properties": {
+              "errors": {
+                "additionalProperties": {
+                  "description": "The details of the validation error",
+                  "type": "string"
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
       "SharedKeyDetails": {
         "properties": {
           "expiry": {
@@ -6202,6 +7154,10 @@
           "max_text_tokens": {
             "description": "The maximum amount of text tokens this key can generate per job. -1 means unlimited.",
             "type": "integer"
+          },
+          "name": {
+            "description": "The Shared Key Name.",
+            "type": "string"
           },
           "username": {
             "description": "The owning user's unique Username. It is a combination of their chosen alias plus their ID.",
@@ -6288,12 +7244,12 @@
       },
       "SinglePeriodImgStat": {
         "properties": {
-          "requests": {
-            "description": "The amount of text requests generated during this period.",
+          "images": {
+            "description": "The amount of images generated during this period.",
             "type": "integer"
           },
-          "tokens": {
-            "description": "The amount of tokens generated during this period.",
+          "ps": {
+            "description": "The amount of pixelsteps generated during this period.",
             "type": "integer"
           }
         },
@@ -6382,6 +7338,24 @@
         ],
         "type": "object"
       },
+      "SubmitInputKobold": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SubmitInput"
+          },
+          {
+            "properties": {
+              "gen_metadata": {
+                "items": {
+                  "$ref": "#/components/schemas/GenerationMetadataKobold"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
       "SubmitInputStable": {
         "allOf": [
           {
@@ -6391,8 +7365,14 @@
             "properties": {
               "censored": {
                 "default": false,
-                "description": "If True, this resulting image has been censored.",
+                "description": "OBSOLETE (start using meta): If True, this resulting image has been censored.",
                 "type": "boolean"
+              },
+              "gen_metadata": {
+                "items": {
+                  "$ref": "#/components/schemas/GenerationMetadataStable"
+                },
+                "type": "array"
               },
               "seed": {
                 "description": "The seed for this generation.",
@@ -6524,6 +7504,11 @@
             "example": 60,
             "type": "integer"
           },
+          "admin_comment": {
+            "description": "(Privileged) Information about this users by the admins",
+            "example": "User is sus",
+            "type": "string"
+          },
           "concurrency": {
             "description": "How many concurrent generations this user may request.",
             "type": "integer"
@@ -6536,12 +7521,17 @@
           "contributions": {
             "$ref": "#/components/schemas/ContributionsDetails"
           },
+          "education": {
+            "description": "This is an education account used schools and universities.",
+            "example": false,
+            "type": "boolean"
+          },
           "evaluating_kudos": {
             "description": "(Privileged) The amount of Evaluating Kudos this untrusted user has from generations and uptime. When this number reaches a prespecified threshold, they automatically become trusted.",
             "type": "number"
           },
           "flagged": {
-            "description": "This user has been flagged for suspicious activity.",
+            "description": "(Privileged) This user has been flagged for suspicious activity.",
             "example": false,
             "type": "boolean"
           },
@@ -6557,7 +7547,7 @@
             "$ref": "#/components/schemas/UserKudosDetails"
           },
           "moderator": {
-            "description": "This user is a Horde moderator.",
+            "description": "This user is a AI Horde moderator.",
             "example": false,
             "type": "boolean"
           },
@@ -6571,6 +7561,11 @@
           },
           "records": {
             "$ref": "#/components/schemas/UserRecords"
+          },
+          "service": {
+            "description": "This is a service account used by a horde proxy.",
+            "example": false,
+            "type": "boolean"
           },
           "sharedkey_ids": {
             "items": {
@@ -6591,7 +7586,7 @@
             "type": "integer"
           },
           "trusted": {
-            "description": "This user is a trusted member of the Horde.",
+            "description": "This user is a trusted member of the AI Horde.",
             "example": false,
             "type": "boolean"
           },
@@ -6620,7 +7615,7 @@
             "type": "array"
           },
           "worker_invited": {
-            "description": "Whether this user has been invited to join a worker to the horde and how many of them. When 0, this user cannot add (new) workers to the horde.",
+            "description": "Whether this user has been invited to join a worker to the AI Horde and how many of them. When 0, this user cannot add (new) workers to the horde.",
             "type": "integer"
           }
         },
@@ -6635,12 +7630,17 @@
           },
           "admin": {
             "default": 0,
-            "description": "The amount of Kudos this user has been given by the Horde admins.",
+            "description": "The amount of Kudos this user has been given by the AI Horde admins.",
             "type": "number"
           },
           "awarded": {
             "default": 0,
             "description": "The amount of Kudos this user has been awarded from things like rating images.",
+            "type": "number"
+          },
+          "donated": {
+            "default": 0,
+            "description": "The amount of Kudos this user has donated to public goods accounts like education.",
             "type": "number"
           },
           "gifted": {
@@ -6708,7 +7708,7 @@
               "bridge_agent": {
                 "default": "unknown:0:unknown",
                 "description": "The bridge agent name, version and website.",
-                "example": "AI Horde Worker:11:https://github.com/db0/AI-Horde-Worker",
+                "example": "AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen",
                 "maxLength": 1000,
                 "type": "string"
               },
@@ -6733,6 +7733,11 @@
               "img2img": {
                 "description": "If True, this worker supports and allows img2img requests.",
                 "type": "boolean"
+              },
+              "ipaddr": {
+                "description": "Privileged. The last known IP this worker has connected from.",
+                "example": "username#1",
+                "type": "string"
               },
               "kudos_details": {
                 "$ref": "#/components/schemas/WorkerKudosDetails"
@@ -6833,7 +7838,7 @@
                 "type": "integer"
               },
               "uptime": {
-                "description": "The amount of seconds this worker has been online for this Horde.",
+                "description": "The amount of seconds this worker has been online for this AI Horde.",
                 "type": "integer"
               }
             },
