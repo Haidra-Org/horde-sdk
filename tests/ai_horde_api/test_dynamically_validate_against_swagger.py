@@ -133,9 +133,11 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
 
     with open("docs/request_field_names_and_descriptions.json", "w") as f:
         f.write(json.dumps(request_field_names_and_descriptions, indent=4, default=json_serializer))
+        f.write("\n")
 
     with open("docs/response_field_names_and_descriptions.json", "w") as f:
         f.write(json.dumps(response_field_names_and_descriptions, indent=4, default=json_serializer))
+        f.write("\n")
 
 
 def test_all_ai_horde_model_defs_in_swagger_from_prod_swagger() -> None:
