@@ -175,7 +175,7 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[HordeResponse]:
+    def get_default_success_response_type(cls) -> type[AllWorkersDetailsResponse]:
         return AllWorkersDetailsResponse
 
     @override
