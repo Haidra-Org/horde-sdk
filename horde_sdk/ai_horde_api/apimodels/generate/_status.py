@@ -1,7 +1,7 @@
 import uuid
 
 from loguru import logger
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, GenMetadataEntry, JobRequestMixin
@@ -10,10 +10,10 @@ from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import JobID, WorkerID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import HordeResponseBaseModel, ResponseWithProgressMixin
+from horde_sdk.generic_api.apimodels import HordeAPIObject, HordeResponseBaseModel, ResponseWithProgressMixin
 
 
-class ImageGeneration(BaseModel):
+class ImageGeneration(HordeAPIObject):
     """Represents the individual image generation responses in a ImageGenerateStatusResponse.
 
     v2 API Model: `GenerationStable`
@@ -38,6 +38,11 @@ class ImageGeneration(BaseModel):
     """When true this image has been censored by the worker's safety filter."""
     gen_metadata: list[GenMetadataEntry] | None = None
     """Extra metadata about faulted or defaulted components of the generation"""
+
+    @override
+    @classmethod
+    def get_api_model_name(self) -> str | None:
+        return "GenerationStable"
 
     @field_validator("id_", mode="before")
     def validate_id(cls, v: str | JobID) -> JobID | str:
