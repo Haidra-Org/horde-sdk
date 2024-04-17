@@ -36,7 +36,7 @@ from horde_sdk.ai_horde_api.apimodels.alchemy._status import (
     AlchemyStatusResponse,
     AlchemyUpscaleResult,
 )
-from horde_sdk.ai_horde_api.apimodels.alchemy._submit import AlchemyJobSubmitRequest
+from horde_sdk.ai_horde_api.apimodels.alchemy._submit import AlchemyJobSubmitRequest, AlchemyJobSubmitResponse
 from horde_sdk.ai_horde_api.apimodels.base import (
     ExtraSourceImageEntry,
     GenMetadataEntry,
@@ -93,6 +93,7 @@ __all__ = [
     "AlchemyPopRequest",
     "AlchemyPopResponse",
     "AlchemyJobSubmitRequest",
+    "AlchemyJobSubmitResponse",
     "AlchemyStatusRequest",
     "AlchemyStatusResponse",
     "AlchemyUpscaleResult",
