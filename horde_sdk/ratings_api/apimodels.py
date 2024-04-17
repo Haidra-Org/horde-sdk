@@ -296,3 +296,24 @@ class UserRatingsRequest(
 
 
 # endregion
+
+__all__ = [
+    "BaseImageRatingRecord",
+    "BaseRatingsAPIRequest",
+    "BaseSelectableReturnTypeRequest",
+    "HordeRequestImageSpecific",
+    "ImageRatingResponseSubRecord",
+    "ImageRatingsComparisonTypes",
+    "ImageRatingsFilterableRequestBase",
+    "ImageRatingsRequest",
+    "ImageRatingsResponse",
+    "SelectableReturnFormats",
+    "UserCheckRequest",
+    "UserCheckResponse",
+    "UserRatingsRequest",
+    "UserRatingsResponse",
+    "UserRatingsResponseSubRecord",
+    "UserValidateRequest",
+    "UserValidateResponse",
+    "UserValidateResponseRecord",
+]
