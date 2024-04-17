@@ -6,6 +6,9 @@
         "DELETE": "horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyDeleteRequest",
         "GET": "horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyStatusRequest"
     },
+    "/v2/interrogate/submit": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.alchemy._submit.AlchemyJobSubmitRequest"
+    },
     "/v2/interrogate/pop": {
         "POST": "horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyPopRequest"
     },

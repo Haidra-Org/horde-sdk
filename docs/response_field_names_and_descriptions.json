@@ -27,6 +27,12 @@
             null
         ]
     ],
+    "AlchemyJobSubmitResponse": [
+        [
+            "reward",
+            null
+        ]
+    ],
     "AlchemyPopResponse": [
         [
             "forms",

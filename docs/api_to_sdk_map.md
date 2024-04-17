@@ -15,6 +15,7 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/interrogate/pop | POST | [AlchemyPopRequest][horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyPopRequest] |
 | /v2/interrogate/status/{id} | DELETE | [AlchemyDeleteRequest][horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyDeleteRequest] |
 | /v2/interrogate/status/{id} | GET | [AlchemyStatusRequest][horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyStatusRequest] |
+| /v2/interrogate/submit | POST | [AlchemyJobSubmitRequest][horde_sdk.ai_horde_api.apimodels.alchemy._submit.AlchemyJobSubmitRequest] |
 | /v2/stats/img/models | GET | [StatsImageModelsRequest][horde_sdk.ai_horde_api.apimodels._stats.StatsImageModelsRequest] |
 | /v2/workers | GET | [AllWorkersDetailsRequest][horde_sdk.ai_horde_api.apimodels.workers._workers_all.AllWorkersDetailsRequest] |
 
@@ -32,5 +33,6 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/interrogate/async | 202 | [AlchemyAsyncResponse][horde_sdk.ai_horde_api.apimodels.alchemy._async.AlchemyAsyncResponse] |
 | /v2/interrogate/pop | 200 | [AlchemyPopResponse][horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyPopResponse] |
 | /v2/interrogate/status/{id} | 200 | [AlchemyStatusResponse][horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyStatusResponse] |
+| /v2/interrogate/submit | 200 | [AlchemyJobSubmitResponse][horde_sdk.ai_horde_api.apimodels.alchemy._submit.AlchemyJobSubmitResponse] |
 | /v2/stats/img/models | 200 | [StatsModelsResponse][horde_sdk.ai_horde_api.apimodels._stats.StatsModelsResponse] |
 | /v2/workers | 200 | [AllWorkersDetailsResponse][horde_sdk.ai_horde_api.apimodels.workers._workers_all.AllWorkersDetailsResponse] |

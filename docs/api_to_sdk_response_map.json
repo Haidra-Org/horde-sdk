@@ -5,6 +5,9 @@
     "/v2/interrogate/status/{id}": {
         "200": "horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyStatusResponse"
     },
+    "/v2/interrogate/submit": {
+        "200": "horde_sdk.ai_horde_api.apimodels.alchemy._submit.AlchemyJobSubmitResponse"
+    },
     "/v2/interrogate/pop": {
         "200": "horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyPopResponse"
     },
