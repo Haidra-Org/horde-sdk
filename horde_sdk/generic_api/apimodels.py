@@ -17,6 +17,15 @@ from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
+try:
+    from horde_sdk._version import __version__
+except ImportError:
+    __version__ = "0.0.0"
+    logger.warning(
+        "Could not import version from _version.py. If this is a development environment, this is normal."
+        " You can fix this buy building the package with `python -m build`.",
+    )
+
 
 class HordeAPIObject(BaseModel, abc.ABC):
     """Base class for all Horde API data models, requests, or responses."""
@@ -293,7 +302,7 @@ class HordeRequest(HordeAPIMessage, BaseModel):
     # X_Fields # TODO
 
     client_agent: str = Field(
-        default="horde_sdk:0.7.10:https://githib.com/haidra-org/horde-sdk",  # FIXME
+        default=f"horde_sdk:{__version__}:https://githib.com/haidra-org/horde-sdk",
         alias="Client-Agent",
     )
 
