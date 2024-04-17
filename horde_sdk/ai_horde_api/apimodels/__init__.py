@@ -36,6 +36,7 @@ from horde_sdk.ai_horde_api.apimodels.alchemy._status import (
     AlchemyStatusResponse,
     AlchemyUpscaleResult,
 )
+from horde_sdk.ai_horde_api.apimodels.alchemy._submit import AlchemyJobSubmitRequest
 from horde_sdk.ai_horde_api.apimodels.base import (
     ExtraSourceImageEntry,
     GenMetadataEntry,
@@ -69,7 +70,13 @@ from horde_sdk.ai_horde_api.apimodels.generate._submit import (
     ImageGenerationJobSubmitRequest,
     JobSubmitResponse,
 )
-from horde_sdk.ai_horde_api.apimodels.workers._workers_all import AllWorkersDetailsRequest, AllWorkersDetailsResponse
+from horde_sdk.ai_horde_api.apimodels.workers._workers_all import (
+    AllWorkersDetailsRequest,
+    AllWorkersDetailsResponse,
+    TeamDetailsLite,
+    WorkerDetailItem,
+    WorkerKudosDetails,
+)
 
 __all__ = [
     "AlchemyAsyncRequest",
@@ -85,6 +92,7 @@ __all__ = [
     "AlchemyPopFormPayload",
     "AlchemyPopRequest",
     "AlchemyPopResponse",
+    "AlchemyJobSubmitRequest",
     "AlchemyStatusRequest",
     "AlchemyStatusResponse",
     "AlchemyUpscaleResult",
@@ -124,6 +132,9 @@ __all__ = [
     "UserKudosDetails",
     "UserRecords",
     "UserThingRecords",
+    "WorkerDetailItem",
+    "WorkerKudosDetails",
+    "TeamDetailsLite",
     "ResponseGenerationProgressInfoMixin",
     "ResponseGenerationProgressCombinedMixin",
 ]
