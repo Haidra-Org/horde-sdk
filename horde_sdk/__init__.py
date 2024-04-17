@@ -11,7 +11,7 @@ dotenv.load_dotenv()
 import os
 
 # We import the horde_sdk logging module first so that we can use it to configure the logging system before importing
-from horde_sdk.logging import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL
+from horde_sdk.horde_logging import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL
 
 from loguru import logger
 
