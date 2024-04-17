@@ -2,6 +2,7 @@ import importlib
 import inspect
 import pkgutil
 import types
+from functools import cache
 
 import horde_sdk
 import horde_sdk.ai_horde_api
@@ -9,12 +10,13 @@ import horde_sdk.ai_horde_api.apimodels
 import horde_sdk.ai_horde_worker
 import horde_sdk.ratings_api
 import horde_sdk.ratings_api.apimodels
+from horde_sdk import HordeAPIDataObject, HordeAPIObject
 
 
+@cache
 def find_subclasses(module_or_package: types.ModuleType, super_type: type) -> list[type]:
     subclasses: list[type] = []
 
-    # If this is a module, we need to get the package name
     if hasattr(module_or_package, "__package__") and module_or_package.__package__ is not None:
         module_or_package = importlib.import_module(module_or_package.__package__)
 
@@ -24,51 +26,49 @@ def find_subclasses(module_or_package: types.ModuleType, super_type: type) -> li
         onerror=lambda x: None,
     ):
         module = importlib.import_module(modname)
-        for _name, obj in inspect.getmembers(module):
+        for name in dir(module):
+            obj = getattr(module, name)
             if (
-                inspect.isclass(obj)
+                isinstance(obj, type)
                 and issubclass(obj, super_type)
-                and obj != super_type
+                and obj is not super_type
                 and not inspect.isabstract(obj)
             ):
                 subclasses.append(obj)
     return subclasses
 
 
-all_found_classes: list[type] = find_subclasses(horde_sdk, horde_sdk.HordeAPIObject)
-
-# Create a dict to map the class name to the class
-found_class_name_to_class = {cls.__name__: cls for cls in all_found_classes}
-
-api_models_modules = [
-    horde_sdk.ai_horde_api.apimodels,
-    # horde_sdk.ratings_api.apimodels,
-]
-
-# Create a dict for each module with a list of mapped classes
-module_found_classes = {module: find_subclasses(module, horde_sdk.HordeAPIObject) for module in api_models_modules}
+module_found_classes: dict[types.ModuleType, dict[type, list[type]]] = {
+    horde_sdk.ai_horde_api.apimodels: {
+        HordeAPIObject: find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject),
+        HordeAPIDataObject: find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIDataObject),
+    },
+}
 
 
-def any_unimported_classes(module: types.ModuleType) -> tuple[bool, set[type]]:
-    """Check if any classes in the module have not been imported yet.
+def any_unimported_classes(module: types.ModuleType, super_type: type) -> tuple[bool, set[type]]:
+    """Check if any classes in the module are not imported in the `__init__.py` of the apimodels namespace.
 
     Args:
         module (types.ModuleType): The module to check.
+        super_type (type): The super type of the classes to check.
 
     Returns:
         tuple[bool, set[type]]: A tuple with a boolean indicating if there are any unimported classes and a set of the
         unimported classes.
     """
     if module not in module_found_classes:
-        module_found_classes[module] = find_subclasses(module, horde_sdk.HordeAPIObject)
+        module_found_classes[module] = {
+            super_type: find_subclasses(module, super_type),
+        }
+
+    if super_type not in module_found_classes[module]:
+        module_found_classes[module][super_type] = find_subclasses(module, super_type)
 
     missing_classes = set()
 
-    for cls in module_found_classes[module]:
-        if cls.__name__ not in module.__all__:
-            missing_classes.add(cls)
+    for class_type in module_found_classes[module][super_type]:
+        if class_type.__name__ not in module.__all__:
+            missing_classes.add(class_type)
 
-    if len(missing_classes) > 0:
-        return True, missing_classes
-
-    return False, missing_classes
+    return bool(missing_classes), missing_classes
