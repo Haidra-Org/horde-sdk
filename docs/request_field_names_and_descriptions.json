@@ -39,6 +39,32 @@
             null
         ]
     ],
+    "AlchemyJobSubmitRequest": [
+        [
+            "apikey",
+            null
+        ],
+        [
+            "id_",
+            null
+        ],
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ],
+        [
+            "result",
+            null
+        ],
+        [
+            "state",
+            null
+        ]
+    ],
     "AlchemyPopRequest": [
         [
             "apikey",
