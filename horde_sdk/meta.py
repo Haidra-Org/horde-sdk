@@ -11,6 +11,8 @@ import horde_sdk.ai_horde_worker
 import horde_sdk.ratings_api
 import horde_sdk.ratings_api.apimodels
 from horde_sdk import HordeAPIDataObject, HordeAPIObject
+from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
+from horde_sdk.generic_api.utils.swagger import SwaggerParser
 
 
 @cache
@@ -72,3 +74,37 @@ def any_unimported_classes(module: types.ModuleType, super_type: type) -> tuple[
             missing_classes.add(class_type)
 
     return bool(missing_classes), missing_classes
+
+
+def all_undefined_classes(module: types.ModuleType) -> dict[str, str]:
+    """Return all of the models defined on the API but not in the SDK."""
+    if module not in module_found_classes:
+        module_found_classes[module] = {
+            HordeAPIObject: find_subclasses(module, HordeAPIObject),
+            HordeAPIDataObject: find_subclasses(module, HordeAPIDataObject),
+        }
+
+    defined_api_object_names: set[str] = set()
+
+    for class_type in module_found_classes[module][HordeAPIObject]:
+        if not issubclass(class_type, HordeAPIObject):
+            raise TypeError(f"Expected {class_type} to be a HordeAPIObject")
+
+        api_model_name = class_type.get_api_model_name()
+        if api_model_name is not None:
+            defined_api_object_names.add(api_model_name)
+
+    undefined_classes: dict[str, str] = {}
+
+    parser = SwaggerParser(swagger_doc_url=get_ai_horde_swagger_url())
+    swagger_doc = parser.get_swagger_doc()
+
+    for path, swagger_endpoint in swagger_doc.paths.items():
+        endpoint_request_models: list[str] = swagger_endpoint.get_all_request_models()
+        endpoint_response_models: list[str] = swagger_endpoint.get_all_response_models()
+
+        for model_name in endpoint_request_models + endpoint_response_models:
+            if model_name not in defined_api_object_names:
+                undefined_classes[model_name] = path
+
+    return undefined_classes
