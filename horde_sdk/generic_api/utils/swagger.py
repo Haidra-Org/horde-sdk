@@ -283,6 +283,19 @@ class SwaggerEndpoint(BaseModel):
             http_method = HTTPMethod(http_method)
         return getattr(self, http_method.value.lower(), None)
 
+    def _remove_ref_syntax(self, ref: str) -> str:
+        """Remove the reference syntax from a ref string.
+
+        Args:
+            ref: The reference string to remove the syntax from.
+
+        Returns:
+            A string representing the reference without the syntax.
+        """
+        if not ref.startswith("#/definitions/"):
+            raise ValueError("Reference must start with '#/definitions/'")
+        return ref[len("#/definitions/") :]
+
     def get_defined_endpoints(self) -> dict[str, SwaggerEndpointMethod]:
         """Get the endpoints that are specified in the swagger doc."""
         return_dict = {}
@@ -290,6 +303,30 @@ class SwaggerEndpoint(BaseModel):
             if isinstance(endpoint_method, SwaggerEndpointMethod):
                 return_dict[http_method] = endpoint_method
         return return_dict
+
+    def get_all_request_models(self) -> list[str]:
+        """Get all the request models for the endpoint."""
+        request_models = []
+        for _http_method, endpoint_method in self.get_defined_endpoints().items():
+            if endpoint_method.parameters:
+                for param in endpoint_method.parameters:
+                    if (
+                        param.schema_
+                        and isinstance(param.schema_, SwaggerEndpointMethodParameterSchemaRef)
+                        and param.schema_.ref is not None
+                    ):
+                        request_models.append(self._remove_ref_syntax(param.schema_.ref))
+        return request_models
+
+    def get_all_response_models(self) -> list[str]:
+        """Get all the response models for the endpoint."""
+        response_models = []
+        for _http_method, endpoint_method in self.get_defined_endpoints().items():
+            if endpoint_method.responses:
+                for _status_code, response in endpoint_method.responses.items():
+                    if response.schema_ and response.schema_.ref:
+                        response_models.append(self._remove_ref_syntax(response.schema_.ref))
+        return response_models
 
     @model_validator(mode="before")
     def at_least_one_method_specified(cls, v: dict[Any, Any]) -> dict[Any, Any]:
