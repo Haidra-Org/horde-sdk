@@ -39,7 +39,7 @@ from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.exceptions import AIHordeImageValidationError, AIHordeRequestError
 from horde_sdk.ai_horde_api.fields import JobID
-from horde_sdk.ai_horde_api.metadata import AIHordePathData
+from horde_sdk.ai_horde_api.metadata import AIHordePathData, AIHordeQueryData
 from horde_sdk.generic_api.apimodels import (
     HordeResponse,
     RequestErrorResponse,
@@ -189,6 +189,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient, BaseAIHordeClient):
         """Create a new instance of the AIHordeAPIManualClient."""
         super().__init__(
             path_fields=AIHordePathData,
+            query_fields=AIHordeQueryData,
         )
 
     def get_generate_check(
@@ -270,6 +271,7 @@ class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeC
         super().__init__(
             aiohttp_session=aiohttp_session,
             path_fields=AIHordePathData,
+            query_fields=AIHordeQueryData,
         )
 
     async def get_generate_check(
@@ -355,6 +357,7 @@ class AIHordeAPIClientSession(GenericHordeAPISession):
         """Create a new instance of the RatingsAPIClient."""
         super().__init__(
             path_fields=AIHordePathData,
+            query_fields=AIHordeQueryData,
         )
 
 
@@ -374,6 +377,7 @@ class AIHordeAPIAsyncClientSession(GenericAsyncHordeAPISession):
         super().__init__(
             aiohttp_session=aiohttp_session,
             path_fields=AIHordePathData,
+            query_fields=AIHordeQueryData,
         )
 
 

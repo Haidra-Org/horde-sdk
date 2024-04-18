@@ -14,6 +14,9 @@ from horde_sdk.ai_horde_api.apimodels._find_user import (
 from horde_sdk.ai_horde_api.apimodels._stats import (
     ImageModelStatsResponse,
     ImageStatsModelsRequest,
+    ImageStatsModelsTotalRequest,
+    ImageStatsModelsTotalResponse,
+    SinglePeriodImgStat,
     StatsModelsTimeframe,
 )
 from horde_sdk.ai_horde_api.apimodels.alchemy._async import (
@@ -99,6 +102,9 @@ __all__ = [
     "UserRecords",
     "UserThingRecords",
     "ImageStatsModelsRequest",
+    "ImageStatsModelsTotalRequest",
+    "ImageStatsModelsTotalResponse",
+    "SinglePeriodImgStat",
     "ImageModelStatsResponse",
     "StatsModelsTimeframe",
     "KNOWN_ALCHEMY_TYPES",
