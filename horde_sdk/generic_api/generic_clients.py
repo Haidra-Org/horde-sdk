@@ -496,7 +496,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
             # Check if this request is a cleanup or follow up request for a prior request
             # Loop through each item in self._pending_follow_ups list
             for index, (prior_request, prior_response, cleanup_request) in enumerate(self._pending_follow_ups):
-                if api_request is cleanup_request:
+                if cleanup_request is not None and api_request in cleanup_request:
                     if not isinstance(response, RequestErrorResponse):
                         self._pending_follow_ups.pop(index)
                     else:
@@ -541,7 +541,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         """Enter the context manager."""
         return self
 
-    def __exit__(self, exc_type: type[Exception], exc_val: Exception, exc_tb: object) -> bool:
+    def __exit__(self, exc_type: type[BaseException], exc_val: Exception, exc_tb: object) -> bool:
         """Exit the context manager."""
         # If there was no exception, return True.
         if exc_type is None:
@@ -687,7 +687,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
 
                 # Loop through each item in self._pending_follow_ups list
                 for index, (prior_request, prior_response, cleanup_request) in enumerate(self._pending_follow_ups):
-                    if api_request is cleanup_request:
+                    if cleanup_request is not None and api_request in cleanup_request:
                         if not isinstance(response, RequestErrorResponse):
                             self._pending_follow_ups.pop(index)
                             break
@@ -734,7 +734,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
         """Enter the context manager asynchronously."""
         return self
 
-    async def __aexit__(self, exc_type: type[Exception], exc_val: Exception, exc_tb: object) -> bool:
+    async def __aexit__(self, exc_type: type[BaseException], exc_val: Exception, exc_tb: object) -> bool:
         """Exit the context manager asynchronously."""
         # If there are any requests that haven't been returned yet, log a warning.
         if self._awaiting_requests:
