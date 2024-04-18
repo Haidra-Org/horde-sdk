@@ -224,7 +224,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
     """A list of models to load. This can be a list of model names, or a list of model loading instructions, such as
     `top 100` or `all models`."""
 
-    image_models_to_skip: list = Field(
+    image_models_to_skip: list[str] = Field(
         default_factory=list,
         alias="models_to_skip",
     )
@@ -344,7 +344,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
         return self
 
     @field_validator("image_models_to_load")
-    def validate_models_to_load(cls, v: list) -> list:
+    def validate_models_to_load(cls, v: list[str]) -> list:
         """Validate and parse the models to load."""
         if not isinstance(v, list):
             v = [v]
@@ -369,7 +369,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
         return v
 
     @field_validator("forms")
-    def validate_alchemy_forms(cls, v: list) -> list:
+    def validate_alchemy_forms(cls, v: list[str]) -> list:
         """Validate the alchemy forms (services offered)."""
         if not isinstance(v, list):
             raise ValueError("forms must be a list")

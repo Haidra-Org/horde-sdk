@@ -6,6 +6,7 @@ import abc
 import base64
 import os
 import uuid
+from typing import Any
 
 import aiohttp
 from loguru import logger
@@ -44,8 +45,9 @@ class HordeAPIObject(BaseModel, abc.ABC):
 class HordeAPIDataObject(BaseModel):
     """Base class for all Horde API data models which appear as objects within other data models.
 
-    These are objects which might not be specifically defined by the API docs, but (logically or otherwise) are
-    returned by the API.
+    These are objects which are not specifically defined by the API docs, but (logically or otherwise) are
+    returned by the API. Occasionally, objects derived from this class may also be used as a mixin to compose other
+    models.
     """
 
     model_config = (
@@ -63,7 +65,7 @@ class HordeAPIMessage(HordeAPIObject):
     def get_extra_fields_to_exclude_from_log(self) -> set[str]:
         return set()
 
-    def log_safe_model_dump(self) -> dict:
+    def log_safe_model_dump(self) -> dict[Any, Any]:
         """Return a dict of the model's fields, with any sensitive fields redacted."""
         return self.model_dump(exclude=self.get_sensitive_fields() | self.get_extra_fields_to_exclude_from_log())
 

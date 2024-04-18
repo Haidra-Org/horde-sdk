@@ -58,7 +58,7 @@ class JobRequestMixin(HordeAPIDataObject):
         return hash(self.id_)
 
 
-class JobResponseMixin(HordeAPIDataObject):  # TODO: this model may not actually exist as such in the API
+class JobResponseMixin(HordeAPIDataObject):
     """Mix-in class for data relating to any generation jobs."""
 
     id_: JobID = Field(alias="id")
