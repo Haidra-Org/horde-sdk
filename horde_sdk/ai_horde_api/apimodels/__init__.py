@@ -11,7 +11,11 @@ from horde_sdk.ai_horde_api.apimodels._find_user import (
     UserRecords,
     UserThingRecords,
 )
-from horde_sdk.ai_horde_api.apimodels._stats import StatsImageModelsRequest, StatsModelsResponse, StatsModelsTimeframe
+from horde_sdk.ai_horde_api.apimodels._stats import (
+    ImageModelStatsResponse,
+    ImageStatsModelsRequest,
+    StatsModelsTimeframe,
+)
 from horde_sdk.ai_horde_api.apimodels.alchemy._async import (
     AlchemyAsyncRequest,
     AlchemyAsyncRequestFormItem,
@@ -94,8 +98,8 @@ __all__ = [
     "UserKudosDetails",
     "UserRecords",
     "UserThingRecords",
-    "StatsImageModelsRequest",
-    "StatsModelsResponse",
+    "ImageStatsModelsRequest",
+    "ImageModelStatsResponse",
     "StatsModelsTimeframe",
     "KNOWN_ALCHEMY_TYPES",
     "AlchemyAsyncRequest",

@@ -16,7 +16,7 @@ class StatsModelsTimeframe(StrEnum):
     total = auto()
 
 
-class StatsModelsResponse(HordeResponseBaseModel):
+class ImageModelStatsResponse(HordeResponseBaseModel):
     """Represents the data returned from the `/v2/stats/img/models` endpoint.
 
     v2 API Model: `ImgModelStats`
@@ -83,7 +83,7 @@ class StatsModelsResponse(HordeResponseBaseModel):
         raise NotImplementedError("Cannot hash StatsModelsResponse objects")
 
 
-class StatsImageModelsRequest(BaseAIHordeRequest):
+class ImageStatsModelsRequest(BaseAIHordeRequest):
     """Represents the data needed to make a request to the `/v2/stats/img/models` endpoint."""
 
     @override
@@ -103,5 +103,5 @@ class StatsImageModelsRequest(BaseAIHordeRequest):
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[StatsModelsResponse]:
-        return StatsModelsResponse
+    def get_default_success_response_type(cls) -> type[ImageModelStatsResponse]:
+        return ImageModelStatsResponse
