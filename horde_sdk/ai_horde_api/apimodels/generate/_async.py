@@ -42,6 +42,16 @@ class ImageGenerateAsyncResponse(
     kudos: float
     warnings: list[SingleWarningEntry] | None = None
 
+    @model_validator(mode="after")
+    def validate_warnings(self) -> ImageGenerateAsyncResponse:
+        if self.warnings is None:
+            return self
+
+        for warning in self.warnings:
+            logger.warning(f"Warning from server ({warning.code}): {warning.message}")
+
+        return self
+
     @override
     def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
         if as_python_field_name:
