@@ -1,3 +1,5 @@
+from typing import Any
+
 from loguru import logger
 
 from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE
@@ -12,7 +14,7 @@ class AIHordeRequestError(HordeException):
 
 
 class AIHordePayloadValidationError(HordeException):
-    def __init__(self, errors: dict, message: str) -> None:
+    def __init__(self, errors: dict[str, Any], message: str) -> None:
         """Exception for when the AI Horde API cannot parse a request payload."""
         logger.error(f"The AI Horde API returned an error response. Response: {message}. Errors: {errors}")
         super().__init__(message)

@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import random
 import uuid
+from typing import Any
 
 from loguru import logger
 from pydantic import ConfigDict, Field, field_validator, model_validator
@@ -204,7 +205,7 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
     """A list of lora parameters to use."""
     tis: list[TIPayloadEntry] = Field(default_factory=list)
     """A list of textual inversion (embedding) parameters to use."""
-    special: dict = Field(default_factory=dict)
+    special: dict[Any, Any] = Field(default_factory=dict)
     """Reserved for future use."""
 
     @field_validator("width", "height", mode="before")

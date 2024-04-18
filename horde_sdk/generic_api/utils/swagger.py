@@ -6,7 +6,7 @@ import json
 import re
 from abc import ABC
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import requests
 from loguru import logger
@@ -108,7 +108,7 @@ class SwaggerModelDefinitionSchemaValidation(SwaggerModelEntry):
     """The model must match at least one of the schemas in this list."""
 
     @model_validator(mode="before")
-    def one_method_specified(cls, v: dict) -> dict:
+    def one_method_specified(cls, v: dict[Any, Any]) -> dict[Any, Any]:
         """Ensure at least one of the validation methods is specified."""
         if not any([v.get("allOf"), v.get("oneOf"), v.get("anyOf")]):
             raise ValueError("At least one of allOf, oneOf, or anyOf must be specified.")
@@ -292,7 +292,7 @@ class SwaggerEndpoint(BaseModel):
         return return_dict
 
     @model_validator(mode="before")
-    def at_least_one_method_specified(cls, v: dict) -> dict:
+    def at_least_one_method_specified(cls, v: dict[Any, Any]) -> dict[Any, Any]:
         """Ensure at least one method is specified."""
         if not any(
             [
@@ -334,14 +334,16 @@ class SwaggerDoc(BaseModel):
     definitions: dict[str, SwaggerModelDefinition | SwaggerModelDefinitionSchemaValidation]
     """The definitions of the models (data structures) used in the API."""
 
-    def get_all_response_examples(self) -> dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]]:
+    def get_all_response_examples(
+        self,
+    ) -> dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list[Any]]]]:
         """Extract all response examples from the swagger doc.
 
         This in the form of:
         `dict[endpoint_path, dict[http_method, dict[http_status_code, example_response]]]`
         """
         # Create an empty dictionary to hold all endpoint examples.
-        every_endpoint_example: dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]] = {}
+        every_endpoint_example: dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list[Any]]]] = {}
 
         # Iterate through each endpoint in the Swagger documentation.
         for endpoint_path, endpoint in self.paths.items():
@@ -362,7 +364,7 @@ class SwaggerDoc(BaseModel):
     def get_endpoint_examples(
         self,
         endpoint: SwaggerEndpoint,
-    ) -> dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]:
+    ) -> dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list[Any]]]:
         """Extract response examples for a single endpoint.
 
         Args:
@@ -373,7 +375,7 @@ class SwaggerDoc(BaseModel):
             `dict[http_method, dict[http_status_code, example_response]]`
         """
         # Create an empty dictionary to hold the response examples for each HTTP method used by the endpoint.
-        endpoint_examples: dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]] = {}
+        endpoint_examples: dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list[Any]]] = {}
 
         # Iterate through each HTTP method used by the endpoint.
         for http_method_name, endpoint_method_definition in endpoint.get_defined_endpoints().items():
@@ -390,7 +392,7 @@ class SwaggerDoc(BaseModel):
     def get_endpoint_method_examples(
         self,
         endpoint_method_definition: SwaggerEndpointMethod,
-    ) -> dict[HTTPStatusCode, dict[str, object] | list]:
+    ) -> dict[HTTPStatusCode, dict[str, object] | list[Any]]:
         """Extract response examples for a single HTTP method used by an endpoint.
 
         Args:
@@ -401,7 +403,7 @@ class SwaggerDoc(BaseModel):
             `dict[http_status_code, example_response]`
         """
         # Create an empty dictionary to hold the response examples for each HTTP status code used by the HTTP method.
-        endpoint_method_examples: dict[HTTPStatusCode, dict[str, object] | list] = {}
+        endpoint_method_examples: dict[HTTPStatusCode, dict[str, object] | list[Any]] = {}
 
         # If there are no defined responses for the HTTP method, return the empty dictionary of response examples.
         if not endpoint_method_definition.responses:
@@ -423,7 +425,7 @@ class SwaggerDoc(BaseModel):
         # Return the dictionary of response examples for the HTTP method.
         return endpoint_method_examples
 
-    def get_response_example(self, response_definition: SwaggerEndpointResponse) -> dict[str, object] | list:
+    def get_response_example(self, response_definition: SwaggerEndpointResponse) -> dict[str, object] | list[Any]:
         """Extract an example response for a single HTTP response definition.
 
         Args:
@@ -433,7 +435,7 @@ class SwaggerDoc(BaseModel):
             A dictionary or list representing an example response for the HTTP response definition.
         """
         # Create an empty dictionary or list to hold the example response.
-        example_response: dict[str, object] | list = {}
+        example_response: dict[str, object] | list[Any] = {}
 
         # If there is no response schema, return the empty dictionary or list of example response.
         if not response_definition.schema_:
@@ -651,7 +653,7 @@ class SwaggerDoc(BaseModel):
         ref: str | None,
         *,
         _recursed_property_name: str | None = None,
-    ) -> dict[str, object] | list[dict[str, object]]:
+    ) -> dict[str, Any] | list[dict[str, Any]]:
         """For ref entries, recursively resolve the default values for all properties.
 
         Note that this will combine all properties from all definitions that are referenced.
@@ -667,8 +669,8 @@ class SwaggerDoc(BaseModel):
         # objects of the same type. In this case, three dummy entries are created in `return_list`, which are
         # recognized on recursion and ultimately returned as a dict.
         # This solution was implemented in response to the SinglePeriodImgModelStats model, see it for an example.
-        return_dict: dict = {}
-        return_list: list[dict[str, object]] = []
+        return_dict: dict[str, Any] = {}
+        return_list: list[dict[str, Any]] = []
 
         # Remove the "#/definitions/" prefix from the ref as it is fixed for all refs and not needed
         if ref.startswith("#/definitions/"):
@@ -834,7 +836,7 @@ class SwaggerDoc(BaseModel):
 class SwaggerParser:
     """Parse a swagger doc from a URL or a local file."""
 
-    _swagger_json: dict
+    _swagger_json: dict[str, Any]
 
     def __init__(
         self,

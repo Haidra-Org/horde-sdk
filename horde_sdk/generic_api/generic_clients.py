@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import os
 from abc import ABC
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import aiohttp
 import requests
@@ -38,13 +38,13 @@ class ParsedRawRequest(BaseModel):
 
     endpoint_no_query: str
     """The endpoint URL without any query parameters."""
-    request_headers: dict
+    request_headers: dict[str, Any]
     """The headers to be sent with the request."""
-    request_queries: dict
+    request_queries: dict[str, Any]
     """The query parameters to be sent with the request."""
-    request_params: dict
+    request_params: dict[str, Any]
     """The path parameters to be sent with the request."""
-    request_body: dict | None
+    request_body: dict[str, Any] | None
     """The body to be sent with the request, or `None` if no body should be sent."""
 
 
@@ -82,7 +82,7 @@ class BaseHordeAPIClient(ABC):
         path_fields: type[GenericPathFields] = GenericPathFields,
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
-        **kwargs: dict,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """Initialize a new `GenericHordeAPIClient` instance.
 
@@ -183,9 +183,9 @@ class BaseHordeAPIClient(ABC):
         # Extract any extra header fields and the request body data from the request
         extra_header_keys: list[str] = api_request.get_header_fields()
 
-        request_params_dict: dict[str, object] = {}
-        request_headers_dict: dict[str, object] = {}
-        request_queries_dict: dict[str, object] = {}
+        request_params_dict: dict[str, Any] = {}
+        request_headers_dict: dict[str, Any] = {}
+        request_queries_dict: dict[str, Any] = {}
 
         # Extract all fields from the request which are not specified headers, paths, or queries
         # Note: __dict__ allows access to *all* attributes of an instance
@@ -217,7 +217,7 @@ class BaseHordeAPIClient(ABC):
         )
 
         # Convert the request body data to a dictionary
-        request_body_data_dict: dict | None = api_request.model_dump(
+        request_body_data_dict: dict[str, Any] | None = api_request.model_dump(
             by_alias=True,
             exclude_none=True,
             exclude_unset=True,
@@ -242,7 +242,7 @@ class BaseHordeAPIClient(ABC):
     def _after_request_handling(
         self,
         *,
-        raw_response_json: dict,
+        raw_response_json: dict[str, Any],
         returned_status_code: int,
         expected_response_type: type[HordeResponseTypeVar],
     ) -> HordeResponseTypeVar | RequestErrorResponse:
@@ -386,7 +386,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
         path_fields: type[GenericPathFields] = GenericPathFields,
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
-        **kwargs: dict,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         super().__init__(
             apikey=apikey,
@@ -423,7 +423,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
 
         parsed_request = self._validate_and_prepare_request(api_request)
 
-        raw_response_json: dict = {}
+        raw_response_json: dict[str, Any] = {}
         response_status: int = 599
 
         if not self._aiohttp_session:

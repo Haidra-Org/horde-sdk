@@ -17,4 +17,15 @@ repos:
     rev: 'v1.9.0'
     hooks:
     -   id: mypy
-        additional_dependencies: [pydantic, types-requests, types-pytz, types-setuptools, types-urllib3, StrEnum]
+        args: [., --strict, --ignore-missing-imports, --exclude=^codegen]
+        pass_filenames: false
+        additional_dependencies: [
+            pytest,
+            pydantic,
+            types-Pillow,
+            types-requests,
+            types-pytz,
+            types-setuptools,
+            types-urllib3,
+            StrEnum
+        ]
