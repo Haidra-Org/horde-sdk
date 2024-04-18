@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 import horde_sdk.ai_horde_api.apimodels
 from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
@@ -25,7 +26,7 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     swagger_defined_payload_examples: dict[str, dict[HTTPMethod, dict[str, object]]]
     swagger_defined_payload_examples = swagger_doc.get_all_payload_examples()
 
-    swagger_defined_response_examples: dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list]]]
+    swagger_defined_response_examples: dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list[Any]]]]
     swagger_defined_response_examples = swagger_doc.get_all_response_examples()
 
     api_to_sdk_payload_model_map: dict[str, dict[HTTPMethod, type[HordeRequest]]] = {}

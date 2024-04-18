@@ -238,7 +238,7 @@ class ImageGenerateJobPopResponse(
             self._downloaded_extra_source_images.copy() if self._downloaded_extra_source_images is not None else None
         )
 
-    def async_download_source_image(self, client_session: aiohttp.ClientSession) -> asyncio.Task:
+    def async_download_source_image(self, client_session: aiohttp.ClientSession) -> asyncio.Task[None]:
         """Download the source image concurrently."""
 
         # If the source image is not set, there is nothing to download.
@@ -254,7 +254,7 @@ class ImageGenerateJobPopResponse(
             self.download_file_to_field_as_base64(client_session, self.source_image, "_downloaded_source_image"),
         )
 
-    def async_download_source_mask(self, client_session: aiohttp.ClientSession) -> asyncio.Task:
+    def async_download_source_mask(self, client_session: aiohttp.ClientSession) -> asyncio.Task[None]:
         """Download the source mask concurrently."""
 
         # If the source mask is not set, there is nothing to download.
@@ -290,7 +290,7 @@ class ImageGenerateJobPopResponse(
 
         attempts = 0
         while attempts < max_retries:
-            tasks: list[asyncio.Task] = []
+            tasks: list[asyncio.Task[str | None]] = []
 
             for extra_source_image in self.extra_source_images:
                 if extra_source_image.image is None:

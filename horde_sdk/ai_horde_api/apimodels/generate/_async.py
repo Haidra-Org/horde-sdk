@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from loguru import logger
 from pydantic import AliasChoices, Field, field_validator, model_validator
 from typing_extensions import override
@@ -137,11 +139,11 @@ class ImageGenerateAsyncRequest(
     extra_source_images: list[ExtraSourceImageEntry] | None = None
     """Additional uploaded images which can be used for further operations."""
 
-    @model_validator(mode="before")
-    def validate_censor_nsfw(cls, values: dict) -> dict:
-        if values.get("censor_nsfw") and values.get("nsfw"):
-            raise ValueError("censor_nsfw is only valid when nsfw is False")
-        return values
+    @model_validator(mode="after")
+    def validate_censor_nsfw(self) -> ImageGenerateAsyncRequest:
+        if self.nsfw and self.censor_nsfw:
+            raise ValueError("Cannot censor NSFW content when NSFW detection is enabled.")
+        return self
 
     @override
     @classmethod

@@ -46,7 +46,6 @@ class AlchemyPopFormPayload(HordeAPIObject, JobRequestMixin):
         return "InterrogationPopFormPayload"
 
     form: KNOWN_ALCHEMY_TYPES | str = Field(
-        None,
         description="The name of this interrogation form",
         examples=["caption"],
     )

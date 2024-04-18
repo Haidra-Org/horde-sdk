@@ -344,7 +344,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
         return self
 
     @field_validator("image_models_to_load")
-    def validate_models_to_load(cls, v: list[str]) -> list:
+    def validate_models_to_load(cls, v: list[str]) -> list[str]:
         """Validate and parse the models to load."""
         if not isinstance(v, list):
             v = [v]
@@ -369,7 +369,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
         return v
 
     @field_validator("forms")
-    def validate_alchemy_forms(cls, v: list[str]) -> list:
+    def validate_alchemy_forms(cls, v: list[str]) -> list[str | ALCHEMY_FORMS]:
         """Validate the alchemy forms (services offered)."""
         if not isinstance(v, list):
             raise ValueError("forms must be a list")
