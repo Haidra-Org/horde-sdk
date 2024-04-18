@@ -1,6 +1,6 @@
 {
     "payload": {
-        "sampler_name": "k_dpmpp_sde",
+        "sampler_name": "lcm",
         "cfg_scale": 7.5,
         "denoising_strength": 0.75,
         "seed": "The little seed that could",
@@ -69,6 +69,12 @@
     "source_image": "",
     "source_processing": "img2img",
     "source_mask": "",
+    "extra_source_images": [
+        {
+            "image": "",
+            "strength": 1.0
+        }
+    ],
     "r2_upload": "",
     "r2_uploads": [
         ""
