@@ -1,13 +1,14 @@
 from enum import auto
+from typing import Literal
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from strenum import StrEnum
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import HordeResponseBaseModel
+from horde_sdk.generic_api.apimodels import HordeAPIDataObject, HordeResponseBaseModel
 
 
 class StatsModelsTimeframe(StrEnum):
@@ -86,6 +87,11 @@ class ImageModelStatsResponse(HordeResponseBaseModel):
 class ImageStatsModelsRequest(BaseAIHordeRequest):
     """Represents the data needed to make a request to the `/v2/stats/img/models` endpoint."""
 
+    model_state: Literal["known", "custom", "all"] = Field(
+        "all",
+        description="The state of the models to get stats for. Known models are models that are known to the system.",
+    )
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -105,3 +111,55 @@ class ImageStatsModelsRequest(BaseAIHordeRequest):
     @classmethod
     def get_default_success_response_type(cls) -> type[ImageModelStatsResponse]:
         return ImageModelStatsResponse
+
+
+class SinglePeriodImgStat(HordeAPIDataObject):
+    images: int | None = Field(None, description="The amount of images generated during this period.")
+    ps: int | None = Field(None, description="The amount of pixelsteps generated during this period.")
+
+    @property
+    def mps(self) -> int | None:
+        """The amount of megapixelsteps generated during this period."""
+        if self.ps is None:
+            return None
+
+        return self.ps // 1_000_000
+
+
+class ImageStatsModelsTotalResponse(HordeResponseBaseModel):
+    """Represents the data returned from the `/v2/stats/img/totals` endpoint."""
+
+    day: SinglePeriodImgStat | None = None
+    hour: SinglePeriodImgStat | None = None
+    minute: SinglePeriodImgStat | None = None
+    month: SinglePeriodImgStat | None = None
+    total: SinglePeriodImgStat | None = None
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "StatsImgTotals"
+
+
+class ImageStatsModelsTotalRequest(BaseAIHordeRequest):
+    """Represents the data needed to make a request to the `/v2/stats/img/totals` endpoint."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
+
+    @override
+    @classmethod
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_stats_img_totals
+
+    @override
+    @classmethod
+    def get_default_success_response_type(cls) -> type[ImageStatsModelsTotalResponse]:
+        return ImageStatsModelsTotalResponse
