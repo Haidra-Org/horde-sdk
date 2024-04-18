@@ -11,7 +11,7 @@ import horde_sdk.ai_horde_worker
 import horde_sdk.ratings_api
 import horde_sdk.ratings_api.apimodels
 from horde_sdk import HordeAPIDataObject, HordeAPIObject
-from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH, get_ai_horde_swagger_url
 from horde_sdk.generic_api.utils.swagger import SwaggerParser
 
 
@@ -108,3 +108,19 @@ def all_undefined_classes(module: types.ModuleType) -> dict[str, str]:
                 undefined_classes[model_name] = path
 
     return undefined_classes
+
+
+def all_unknown_endpoints_ai_horde() -> set[str]:
+    """Return all of the endpoints defined on the API but not in the SDK."""
+    parser = SwaggerParser(swagger_doc_url=get_ai_horde_swagger_url())
+    swagger_doc = parser.get_swagger_doc()
+
+    known_paths = set(AI_HORDE_API_ENDPOINT_SUBPATH.__members__.values())
+    unknown_paths = set()
+
+    for path, _swagger_endpoint in swagger_doc.paths.items():
+        if path not in known_paths:
+            print(f"Unknown path: {path}")
+            unknown_paths.add(path)
+
+    return unknown_paths

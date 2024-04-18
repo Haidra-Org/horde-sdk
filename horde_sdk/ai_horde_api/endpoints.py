@@ -50,20 +50,25 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
     v2_generate_text_pop = "/v2/generate/text/pop"
     v2_generate_text_status = "/v2/generate/text/status/{id}"
 
+    v2_generate_rate_id = "/v2/generate/rate/{id}"
+
     v2_interrogate_async = "/v2/interrogate/async"
     v2_interrogate_status = "/v2/interrogate/status/{id}"
     v2_interrogate_pop = "/v2/interrogate/pop"
     v2_interrogate_submit = "/v2/interrogate/submit"
 
+    v2_kudos_award = "/v2/kudos/award"
     v2_kudos_transfer = "/v2/kudos/transfer"
 
     v2_sharedkeys_create = "/v2/sharedkeys"
-    v2_sharedkeys = "/v2_sharedkeys/{sharedkey_id}"
+    v2_sharedkeys = "/v2/sharedkeys/{sharedkey_id}"
 
     v2_status_heartbeat = "/v2/status/heartbeat"
+    v2_status_modes = "/v2/status/modes"
+    v2_status_news = "/v2/status/news"
 
     v2_status_models_all = "/v2/status/models"
-    v2_status_models = "/v2/status/models/{model_id}"
+    v2_status_models = "/v2/status/models/{model_name}"
 
     v2_status_performance = "/v2/status/performance"
 
@@ -78,6 +83,14 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
 
     v2_workers_all = "/v2/workers"
     v2_workers = "/v2/workers/{worker_id}"
+
+    v2_filters = "/v2/filters"
+    v2_filters_regex = "/v2/filters/regex"
+    v2_filters_regex_filter_id = "/v2/filters/{filter_id}"
+
+    v2_operations_block_worker_ipaddr_worker_id = "/v2/operations/block_worker_ipaddr/{worker_id}"
+    v2_operations_ipaddr = "/v2/operations/ipaddr"
+    v2_operations_ipaddr_ipaddr = "/v2/operations/ipaddr/{ipaddr}"
 
 
 def get_ai_horde_swagger_url() -> str:
