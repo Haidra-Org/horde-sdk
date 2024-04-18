@@ -58,6 +58,16 @@ def test_all_ai_horde_api_models_defined() -> None:
     )
 
 
+def test_all_ai_horde_endpoints_known() -> None:
+    from horde_sdk.meta import all_unknown_endpoints_ai_horde
+
+    unknown_endpoints = all_unknown_endpoints_ai_horde()
+
+    assert not unknown_endpoints, (
+        "The following endpoints are defined in the API but not in the SDK: " f"{unknown_endpoints}"
+    )
+
+
 def test_all_ratings_api_models_imported() -> None:
     import horde_sdk.ratings_api.apimodels  # noqa: I001
     import horde_sdk.meta
