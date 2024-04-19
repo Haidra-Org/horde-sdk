@@ -9,6 +9,7 @@ from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import HordeAPIDataObject, HordeResponseBaseModel
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class StatsModelsTimeframe(StrEnum):
@@ -17,6 +18,8 @@ class StatsModelsTimeframe(StrEnum):
     total = auto()
 
 
+@Unequatable
+@Unhashable
 class ImageModelStatsResponse(HordeResponseBaseModel):
     """Represents the data returned from the `/v2/stats/img/models` endpoint.
 
@@ -76,12 +79,6 @@ class ImageModelStatsResponse(HordeResponseBaseModel):
             return self.total
 
         raise ValueError(f"Invalid timeframe: {timeframe}")
-
-    def __eq__(self, other: object) -> bool:
-        raise NotImplementedError("Cannot compare StatsModelsResponse objects")
-
-    def __hash__(self) -> int:
-        raise NotImplementedError("Cannot hash StatsModelsResponse objects")
 
 
 class ImageStatsModelsRequest(BaseAIHordeRequest):
