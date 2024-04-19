@@ -158,7 +158,7 @@ class BaseHordeAPIClient(ABC):
                 python_field_name:
                 # The value is the API field name, converted to a string. The python name may not match
                 # as is the case with `id`, which is reserved in python, and `id_` is used instead.
-                str(api_field_name)
+                api_field_name.value
                 for python_field_name, api_field_name in data_keys._member_map_.items()
                 if hasattr(api_request, python_field_name) and getattr(api_request, python_field_name) is not None
             }
@@ -189,7 +189,7 @@ class BaseHordeAPIClient(ABC):
 
         # Extract all fields from the request which are not specified headers, paths, or queries
         # Note: __dict__ allows access to *all* attributes of an instance
-        for request_key, request_value in api_request.__dict__.items():
+        for request_key, request_value in vars(api_request).items():
             if request_key in specified_paths:
                 continue
             if request_key in specified_headers:
@@ -199,7 +199,7 @@ class BaseHordeAPIClient(ABC):
                 # Remove any trailing underscores from the key as they are used to avoid python keyword conflicts
                 api_name = request_key if not request_key.endswith("_") else request_key[:-1]
                 specified_headers[request_key] = api_name
-                request_headers_dict[request_key] = request_value
+                request_headers_dict[api_name] = request_value
 
                 continue
             if request_key in specified_queries:
@@ -224,11 +224,11 @@ class BaseHordeAPIClient(ABC):
             exclude=all_fields_to_exclude_from_body,
         )
 
-        if request_body_data_dict == {}:
+        if not request_body_data_dict:
             request_body_data_dict = None
 
         # Add the API key to the request headers if the request is authenticated and an API key is provided
-        if request_headers_dict.get("apikey") is None and isinstance(api_request, APIKeyAllowedInRequestMixin):
+        if "apikey" not in request_headers_dict and isinstance(api_request, APIKeyAllowedInRequestMixin):
             request_headers_dict["apikey"] = self._apikey
 
         return ParsedRawRequest(
