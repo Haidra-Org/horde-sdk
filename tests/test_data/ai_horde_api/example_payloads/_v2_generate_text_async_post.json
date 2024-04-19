@@ -44,7 +44,7 @@
     "proxied_account": "",
     "extra_source_images": [
         {
-            "image": "",
+            "image": "a",
             "strength": 1.0
         }
     ],
