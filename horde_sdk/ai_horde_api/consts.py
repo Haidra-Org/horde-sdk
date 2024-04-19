@@ -36,6 +36,7 @@ class WORKER_TYPE(StrEnum):
     (alchemy, image, text, etc...)
     """
 
+    all = auto()
     image = auto()
     text = auto()
     interrogation = auto()

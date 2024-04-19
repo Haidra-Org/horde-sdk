@@ -182,6 +182,7 @@ class BaseHordeAPIClient(ABC):
 
         # Extract any extra header fields and the request body data from the request
         extra_header_keys: list[str] = api_request.get_header_fields()
+        extra_query_keys: list[str] = api_request.get_query_fields()
 
         request_params_dict: dict[str, Any] = {}
         request_headers_dict: dict[str, Any] = {}
@@ -204,6 +205,13 @@ class BaseHordeAPIClient(ABC):
                 continue
             if request_key in specified_queries:
                 request_queries_dict[specified_queries[request_key]] = request_value
+                continue
+
+            if request_key in extra_query_keys:
+                # Remove any trailing underscores from the key as they are used to avoid python keyword conflicts
+                api_name = request_key if not request_key.endswith("_") else request_key[:-1]
+                specified_queries[request_key] = api_name
+                request_queries_dict[api_name] = request_value
                 continue
 
             request_params_dict[request_key] = request_value

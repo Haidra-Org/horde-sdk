@@ -156,7 +156,7 @@ class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]
 class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     """Returns information on all works. If a moderator API key is specified, it will return additional information."""
 
-    type_: WORKER_TYPE = Field(alias="type")
+    type_: WORKER_TYPE = Field(WORKER_TYPE.all, alias="type")
 
     @override
     @classmethod
@@ -180,7 +180,7 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 
     @override
     @classmethod
-    def get_header_fields(cls) -> list[str]:
+    def get_query_fields(cls) -> list[str]:
         return ["type_"]
 
     @classmethod
