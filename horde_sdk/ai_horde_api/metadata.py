@@ -26,3 +26,4 @@ class AIHordeQueryData(GenericQueryFields):
     """AI Horde specific query data. See parent class for more information."""
 
     model_state = auto()
+    """The level of official support by the API."""
