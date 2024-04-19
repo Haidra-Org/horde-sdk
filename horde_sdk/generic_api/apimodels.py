@@ -346,6 +346,15 @@ class HordeRequest(HordeAPIMessage, BaseModel):
         """
         return []
 
+    @classmethod
+    def get_query_fields(cls) -> list[str]:
+        """Return a list of field names from this request object that should be sent as query parameters.
+
+        This is in addition to `GenericQueryFields`'s values, and possibly the API specific class
+        which inherits from `GenericQueryFields`, typically found in the `horde_sdk.<api_name>_api.metadata` module.
+        """
+        return []
+
     def get_number_of_results_expected(self) -> int:
         """Return the number of (job) results expected from this request.
 
