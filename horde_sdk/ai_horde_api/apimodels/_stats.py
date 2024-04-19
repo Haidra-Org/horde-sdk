@@ -1,7 +1,7 @@
 from enum import auto
 from typing import Literal
 
-from pydantic import Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 from strenum import StrEnum
 from typing_extensions import override
 
@@ -87,9 +87,14 @@ class ImageModelStatsResponse(HordeResponseBaseModel):
 class ImageStatsModelsRequest(BaseAIHordeRequest):
     """Represents the data needed to make a request to the `/v2/stats/img/models` endpoint."""
 
+    model_config = ConfigDict(
+        protected_namespaces=(),  # Allows the "model_" prefix on attrs
+    )
+
     model_state: Literal["known", "custom", "all"] = Field(
         "all",
         description="The state of the models to get stats for. Known models are models that are known to the system.",
+        alias="model_state",
     )
 
     @override
