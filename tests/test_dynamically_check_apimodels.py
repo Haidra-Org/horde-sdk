@@ -12,6 +12,7 @@ import horde_sdk.ratings_api.apimodels
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api._reflection import get_all_request_types
 from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponse
+from horde_sdk.generic_api.decoration import is_unhashable
 from horde_sdk.generic_api.utils.swagger import SwaggerDoc
 
 EXAMPLE_PAYLOADS: dict[ModuleType, Path] = {
@@ -123,7 +124,10 @@ class Test_reflection_and_dynamic:
                     try:
                         parsed_model = success_response_type.model_validate(sample_data_json)
                         try:
-                            hash(parsed_model)
+                            if is_unhashable(parsed_model):
+                                logger.debug(f"Unhashable model for {example_response_file_path}")
+                            else:
+                                hash(parsed_model)
                         except NotImplementedError:
                             logger.debug(f"Hashing not implemented for {example_response_file_path}")
                         except Exception as e:
@@ -145,7 +149,10 @@ class Test_reflection_and_dynamic:
                         try:
                             parsed_model = success_response_type.model_validate(sample_data_json)
                             try:
-                                hash(parsed_model)
+                                if is_unhashable(parsed_model):
+                                    logger.debug(f"Unhashable model for {example_response_file_path}")
+                                else:
+                                    hash(parsed_model)
                             except NotImplementedError:
                                 logger.debug(f"Hashing not implemented for {example_response_file_path}")
                             except Exception as e:
@@ -168,7 +175,10 @@ class Test_reflection_and_dynamic:
                         sample_data_json = json.loads(sample_file_handle.read())
                         parsed_model = success_response_type.model_validate(sample_data_json)
                         try:
-                            hash(parsed_model)
+                            if is_unhashable(parsed_model):
+                                logger.debug(f"Unhashable model for {example_response_file_path}")
+                            else:
+                                hash(parsed_model)
                         except NotImplementedError:
                             logger.debug(f"Hashing not implemented for {example_response_file_path}")
                         except Exception as e:
