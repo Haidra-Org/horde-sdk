@@ -13,6 +13,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeAPIObject,
     HordeResponse,
 )
+from horde_sdk.generic_api.decoration import Unhashable
 
 
 class TeamDetailsLite(HordeAPIObject):
@@ -39,6 +40,7 @@ class WorkerKudosDetails(HordeAPIObject):
         return "WorkerKudosDetails"
 
 
+@Unhashable
 class WorkerDetailItem(HordeAPIObject):
     type_: WORKER_TYPE = Field(alias="type")
     name: str
@@ -123,9 +125,6 @@ class WorkerDetailItem(HordeAPIObject):
             and self.max_context_length == other.max_context_length
             and self.tokens_generated == other.tokens_generated
         )
-
-    def __hash__(self) -> int:
-        raise NotImplementedError("Hashing is not implemented for WorkerDetailItem")
 
 
 class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]):
