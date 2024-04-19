@@ -193,7 +193,7 @@ class BaseHordeAPIClient(ABC):
             if request_key in specified_paths:
                 continue
             if request_key in specified_headers:
-                request_headers_dict[request_key] = request_value
+                request_headers_dict[specified_headers[request_key]] = request_value
                 continue
             if request_key in extra_header_keys:
                 # Remove any trailing underscores from the key as they are used to avoid python keyword conflicts
@@ -203,7 +203,7 @@ class BaseHordeAPIClient(ABC):
 
                 continue
             if request_key in specified_queries:
-                request_queries_dict[request_key] = request_value
+                request_queries_dict[specified_queries[request_key]] = request_value
                 continue
 
             request_params_dict[request_key] = request_value
