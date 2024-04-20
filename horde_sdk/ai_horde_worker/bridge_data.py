@@ -44,11 +44,9 @@ class BaseHordeBridgeData(BaseModel):
     @model_validator(mode="after")
     def validate_extra_params_warning(self) -> BaseHordeBridgeData:
         """Warn on extra parameters being passed."""
-        if not self.model_extra:
-            return self
-
-        for key in self.model_extra:
-            logger.warning(f"Unknown parameter {key} in bridge data file.")
+        if self.model_extra is not None:
+            for key in self.model_extra:
+                logger.warning(f"Unknown parameter {key} in bridge data file.")
 
         return self
 
