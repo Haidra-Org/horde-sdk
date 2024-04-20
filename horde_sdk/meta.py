@@ -4,7 +4,13 @@ import pkgutil
 import types
 from functools import cache
 
-from horde_sdk import HordeAPIObject
+import horde_sdk
+import horde_sdk.ai_horde_api
+import horde_sdk.ai_horde_api.apimodels
+import horde_sdk.ai_horde_worker
+import horde_sdk.ratings_api
+import horde_sdk.ratings_api.apimodels
+from horde_sdk import HordeAPIObject, HordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH, get_ai_horde_swagger_url
 from horde_sdk.generic_api.utils.swagger import SwaggerParser
 
@@ -101,3 +107,21 @@ def all_unknown_endpoints_ai_horde() -> set[str]:
             unknown_paths.add(path)
 
     return unknown_paths
+
+
+def all_unaddressed_endpoints_ai_horde() -> set[AI_HORDE_API_ENDPOINT_SUBPATH]:
+    """Return all of the endpoints known by the SDK but with no corresponding request."""
+    known_paths = set(AI_HORDE_API_ENDPOINT_SUBPATH.__members__.values())
+    known_paths.remove(AI_HORDE_API_ENDPOINT_SUBPATH.swagger)
+    unaddressed_paths = set()
+
+    all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
+
+    all_classes_paths = {cls.get_api_endpoint_subpath() for cls in all_classes if issubclass(cls, HordeRequest)}
+
+    for path in known_paths:
+        if path not in all_classes_paths:
+            print(f"Unaddressed path: {path}")
+            unaddressed_paths.add(path)
+
+    return unaddressed_paths

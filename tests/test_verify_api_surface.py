@@ -68,6 +68,17 @@ def test_all_ai_horde_endpoints_known() -> None:
     )
 
 
+@pytest.mark.skip(reason="This test is not yet enforced.")
+def test_all_ai_horde_endpoints_addressed() -> None:
+    from horde_sdk.meta import all_unaddressed_endpoints_ai_horde
+
+    unaddressed_endpoints = all_unaddressed_endpoints_ai_horde()
+
+    assert not unaddressed_endpoints, (
+        "The following endpoints are defined in the API but not in the SDK: " f"{unaddressed_endpoints}"
+    )
+
+
 def test_all_ratings_api_models_imported() -> None:
     import horde_sdk.ratings_api.apimodels  # noqa: I001
     import horde_sdk.meta
