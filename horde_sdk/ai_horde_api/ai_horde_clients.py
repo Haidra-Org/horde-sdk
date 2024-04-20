@@ -381,7 +381,7 @@ class AIHordeAPIAsyncClientSession(GenericAsyncHordeAPISession):
         )
 
 
-class _PROGRESS_STATE(StrEnum):
+class PROGRESS_STATE(StrEnum):
     waiting = auto()
     finished = auto()
     timed_out = auto()
@@ -507,7 +507,7 @@ class BaseAIHordeSimpleClient(ABC):
         timeout: int,
         check_callback: Callable[[HordeResponse], None] | None = None,
         check_callback_type: type[ResponseWithProgressMixin | ResponseGenerationProgressCombinedMixin] | None = None,
-    ) -> _PROGRESS_STATE:
+    ) -> PROGRESS_STATE:
         """Handle a response from the API when checking the progress of a request.
 
         Typically, this is a response from a `check` or `status` request.
@@ -546,17 +546,17 @@ class BaseAIHordeSimpleClient(ABC):
         # If the number of finished images is equal to the number of images requested, we're done
         if check_response.is_job_complete(number_of_responses):
             logger.log(PROGRESS_LOGGER_LABEL, f"Job finished and available on the server: {job_id}")
-            return _PROGRESS_STATE.finished
+            return PROGRESS_STATE.finished
 
         # If we've timed out, stop waiting, log a warning, and break out of the loop
         if timeout and timeout > 0 and time.time() - start_time > timeout:
             logger.warning(
                 f"Timeout reached, cancelling generations still outstanding: {job_id}: {check_response}:",
             )
-            return _PROGRESS_STATE.timed_out
+            return PROGRESS_STATE.timed_out
 
         # If the job is not complete and the timeout has not been reached, continue waiting
-        return _PROGRESS_STATE.waiting
+        return PROGRESS_STATE.waiting
 
 
 class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
@@ -662,7 +662,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                     check_callback_type=check_callback_type,
                 )
 
-                if progress_state == _PROGRESS_STATE.finished or progress_state == _PROGRESS_STATE.timed_out:
+                if progress_state == PROGRESS_STATE.finished or progress_state == PROGRESS_STATE.timed_out:
                     break
 
                 # Wait for 4 seconds before checking again
@@ -988,7 +988,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
                     check_callback_type=check_callback_type,
                 )
 
-                if progress_state == _PROGRESS_STATE.finished or progress_state == _PROGRESS_STATE.timed_out:
+                if progress_state == PROGRESS_STATE.finished or progress_state == PROGRESS_STATE.timed_out:
                     break
 
                 # Wait for 4 seconds before checking again
