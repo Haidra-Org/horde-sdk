@@ -4,13 +4,7 @@ import pkgutil
 import types
 from functools import cache
 
-import horde_sdk
-import horde_sdk.ai_horde_api
-import horde_sdk.ai_horde_api.apimodels
-import horde_sdk.ai_horde_worker
-import horde_sdk.ratings_api
-import horde_sdk.ratings_api.apimodels
-from horde_sdk import HordeAPIDataObject, HordeAPIObject
+from horde_sdk import HordeAPIObject
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH, get_ai_horde_swagger_url
 from horde_sdk.generic_api.utils.swagger import SwaggerParser
 
@@ -40,14 +34,6 @@ def find_subclasses(module_or_package: types.ModuleType, super_type: type) -> li
     return subclasses
 
 
-module_found_classes: dict[types.ModuleType, dict[type, list[type]]] = {
-    horde_sdk.ai_horde_api.apimodels: {
-        HordeAPIObject: find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject),
-        HordeAPIDataObject: find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIDataObject),
-    },
-}
-
-
 def any_unimported_classes(module: types.ModuleType, super_type: type) -> tuple[bool, set[type]]:
     """Check if any classes in the module are not imported in the `__init__.py` of the apimodels namespace.
 
@@ -59,17 +45,11 @@ def any_unimported_classes(module: types.ModuleType, super_type: type) -> tuple[
         tuple[bool, set[type]]: A tuple with a boolean indicating if there are any unimported classes and a set of the
         unimported classes.
     """
-    if module not in module_found_classes:
-        module_found_classes[module] = {
-            super_type: find_subclasses(module, super_type),
-        }
-
-    if super_type not in module_found_classes[module]:
-        module_found_classes[module][super_type] = find_subclasses(module, super_type)
+    module_found_classes = find_subclasses(module, super_type)
 
     missing_classes = set()
 
-    for class_type in module_found_classes[module][super_type]:
+    for class_type in module_found_classes:
         if class_type.__name__ not in module.__all__:
             missing_classes.add(class_type)
 
@@ -78,15 +58,12 @@ def any_unimported_classes(module: types.ModuleType, super_type: type) -> tuple[
 
 def all_undefined_classes(module: types.ModuleType) -> dict[str, str]:
     """Return all of the models defined on the API but not in the SDK."""
-    if module not in module_found_classes:
-        module_found_classes[module] = {
-            HordeAPIObject: find_subclasses(module, HordeAPIObject),
-            HordeAPIDataObject: find_subclasses(module, HordeAPIDataObject),
-        }
+
+    module_found_classes = find_subclasses(module, HordeAPIObject)
 
     defined_api_object_names: set[str] = set()
 
-    for class_type in module_found_classes[module][HordeAPIObject]:
+    for class_type in module_found_classes:
         if not issubclass(class_type, HordeAPIObject):
             raise TypeError(f"Expected {class_type} to be a HordeAPIObject")
 
@@ -111,7 +88,7 @@ def all_undefined_classes(module: types.ModuleType) -> dict[str, str]:
 
 
 def all_unknown_endpoints_ai_horde() -> set[str]:
-    """Return all of the endpoints defined on the API but not in the SDK."""
+    """Return all of the endpoints defined on the API but not known by the SDK."""
     parser = SwaggerParser(swagger_doc_url=get_ai_horde_swagger_url())
     swagger_doc = parser.get_swagger_doc()
 
