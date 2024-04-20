@@ -24,7 +24,7 @@ except ImportError:
     __version__ = "0.0.0"
     logger.warning(
         "Could not import version from _version.py. If this is a development environment, this is normal."
-        " You can fix this buy building the package with `python -m build`.",
+        " You can fix this by building the package with `python -m build`.",
     )
 
 
@@ -59,7 +59,7 @@ class HordeAPIMessage(HordeAPIObject):
     """Represents any request or response from any Horde API."""
 
     @classmethod
-    def get_sensitive_fields(self) -> set[str]:
+    def get_sensitive_fields(cls) -> set[str]:
         return {"apikey"}
 
     def get_extra_fields_to_exclude_from_log(self) -> set[str]:
@@ -75,6 +75,8 @@ class HordeResponse(HordeAPIMessage):
 
 
 class HordeResponseBaseModel(HordeResponse, BaseModel):
+    """Base class for all Horde API response data models (leveraging pydantic)."""
+
     model_config = (
         ConfigDict(frozen=True) if not os.getenv("TESTS_ONGOING") else ConfigDict(frozen=True, extra="forbid")
     )
@@ -377,7 +379,7 @@ class HordeRequest(HordeAPIMessage, BaseModel):
 
     @override
     @classmethod
-    def get_sensitive_fields(self) -> set[str]:
+    def get_sensitive_fields(cls) -> set[str]:
         return {"apikey"}
 
 
