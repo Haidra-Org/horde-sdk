@@ -262,7 +262,7 @@ class ImageGenerateJobPopResponse(
             return asyncio.create_task(asyncio.sleep(0))
 
         # If the source mask is not a URL, it is already a base64 string.
-        if not self.source_mask.startswith("http"):
+        if urlparse(self.source_mask).scheme not in ["http", "https"]:
             self._downloaded_source_mask = self.source_mask
             return asyncio.create_task(asyncio.sleep(0))
 
@@ -276,84 +276,79 @@ class ImageGenerateJobPopResponse(
         *,
         max_retries: int = 5,
     ) -> list[ExtraSourceImageEntry] | None:
-        """Download all extra source images concurrently."""
+        """Download the extra source images concurrently.
 
-        if self.extra_source_images is None or len(self.extra_source_images) == 0:
+        Args:
+            client_session: The aiohttp client session to use for downloading.
+            max_retries: The maximum number of times to retry downloading an image.
+
+        Returns:
+            The downloaded extra source images.
+        """
+        if not self.extra_source_images:
             logger.info("No extra source images to download.")
             return None
 
-        if self._downloaded_extra_source_images is None:
-            self._downloaded_extra_source_images = []
-        else:
+        if self._downloaded_extra_source_images is not None:
             logger.warning("Extra source images already downloaded.")
             return self._downloaded_extra_source_images
 
-        attempts = 0
-        while attempts < max_retries:
-            tasks: list[asyncio.Task[str | None]] = []
+        self._downloaded_extra_source_images = []
+        for extra_source_image in self.extra_source_images:
+            await self._download_image_if_needed(client_session, extra_source_image, max_retries)
 
-            for extra_source_image in self.extra_source_images:
-                if extra_source_image.image is None:
-                    continue
+        self._sort_downloaded_images()
+        return self._downloaded_extra_source_images.copy()
 
-                if urlparse(extra_source_image.image).scheme not in ["http", "https"]:
-                    self._downloaded_extra_source_images.append(extra_source_image)
-                    tasks.append(asyncio.create_task(asyncio.sleep(0)))
-                    continue
+    async def _download_image_if_needed(
+        self,
+        client_session: aiohttp.ClientSession,
+        extra_source_image: ExtraSourceImageEntry,
+        max_retries: int,
+    ) -> None:
+        """Download an extra source image if it has not already been downloaded.
 
-                if any(
-                    extra_source_image.image == downloaded_extra_source_image.original_url
-                    for downloaded_extra_source_image in self._downloaded_extra_source_images
-                ):
-                    logger.debug(f"Extra source image {extra_source_image.image} already downloaded.")
-                    tasks.append(asyncio.create_task(asyncio.sleep(0)))
-                    continue
+        Args:
+            client_session: The aiohttp client session to use for downloading.
+            extra_source_image: The extra source image to download.
+            max_retries: The maximum number of times to retry downloading an image.
+        """
+        if self._downloaded_extra_source_images is None:
+            self._downloaded_extra_source_images = []
 
-                tasks.append(
-                    asyncio.create_task(
-                        self.download_file_as_base64(client_session, extra_source_image.image),
-                    ),
-                )
+        if extra_source_image.image in (entry.original_url for entry in self._downloaded_extra_source_images):
+            logger.debug(f"Extra source image {extra_source_image.image} already downloaded.")
+            return
 
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-
-            for result, extra_source_image in zip(results, self.extra_source_images, strict=True):
-                if isinstance(result, Exception) or not isinstance(result, str):
-                    logger.error(f"Error downloading extra source image {extra_source_image.image}: {result}")
-                    continue
-
+        for attempt in range(max_retries):
+            try:
+                downloaded_image = await self.download_file_as_base64(client_session, extra_source_image.image)
                 self._downloaded_extra_source_images.append(
                     ExtraSourceImageEntry(
-                        image=result,
+                        image=downloaded_image,
                         strength=extra_source_image.strength,
                         original_url=extra_source_image.image,
                     ),
                 )
-
-            if len(self._downloaded_extra_source_images) == len(self.extra_source_images):
                 break
+            except Exception as e:
+                logger.error(f"Error downloading extra source image {extra_source_image.image}: {e}")
+                if attempt == max_retries - 1:
+                    logger.error(f"Failed to download image {extra_source_image.image} after {max_retries} attempts.")
 
-            attempts += 1
+    def _sort_downloaded_images(self) -> None:
+        """Sort the downloaded extra source images in the order they were requested."""
 
-        # If there are any entries in _downloaded_extra_source_images,
-        # make sure the order matches the order of the original list.
-        if (
-            self.extra_source_images is not None
-            and self._downloaded_extra_source_images is not None
-            and len(self._downloaded_extra_source_images) > 0
-        ):
+        if self.extra_source_images is None or self._downloaded_extra_source_images is None:
+            return
 
-            def _sort_key(x: ExtraSourceImageEntry) -> int:
-                if self.extra_source_images is not None:
-                    for i, extra_source_image in enumerate(self.extra_source_images):
-                        if extra_source_image.image == x.original_url:
-                            return i
-
-                return 0
-
-            self._downloaded_extra_source_images.sort(key=_sort_key)
-
-        return self._downloaded_extra_source_images.copy()
+        _extra_source_images = self.extra_source_images.copy()
+        self._downloaded_extra_source_images.sort(
+            key=lambda entry: next(
+                (i for i, image in enumerate(_extra_source_images) if image.image == entry.original_url),
+                len(_extra_source_images),
+            ),
+        )
 
     @override
     async def async_download_additional_data(self, client_session: aiohttp.ClientSession) -> None:
