@@ -15,10 +15,7 @@ def Unhashable(cls: type[T]) -> type[T]:
 
     cls._unhashable = True  # type: ignore
 
-    def __hash__(self) -> int:  # type: ignore # noqa: ANN001
-        raise NotImplementedError(f"Hashing is not implemented for {cls.__name__}")
-
-    cls.__hash__ = __hash__  # type: ignore
+    cls.__hash__ = None  # type: ignore
 
     return cls
 
@@ -50,7 +47,7 @@ def Unequatable(cls: type[T]) -> type[T]:
     cls._unequatable = True  # type: ignore
 
     def __eq__(self, other: Any) -> bool:  # type: ignore # noqa: ANN001, ANN401
-        raise NotImplementedError(f"Equality is not implemented for {cls.__name__}")
+        return NotImplemented
 
     cls.__eq__ = __eq__  # type: ignore
 
