@@ -71,7 +71,7 @@ class TestAIHordeAPIClients:
         """Test the all workers endpoint."""
         client = AIHordeAPIManualClient()
 
-        api_request = AllWorkersDetailsRequest(type=WORKER_TYPE.image)
+        api_request = AllWorkersDetailsRequest()
 
         api_response = client.submit_request(
             api_request,
@@ -100,6 +100,41 @@ class TestAIHordeAPIClients:
         _PRODUCTION_RESPONSES_FOLDER.mkdir(parents=True, exist_ok=True)
         with open(_PRODUCTION_RESPONSES_FOLDER / Path(filename + "_production.json"), "w", encoding="utf-8") as f:
             f.write(api_response.model_dump_json())
+
+        api_request_image = AllWorkersDetailsRequest(type=WORKER_TYPE.image)
+        api_response_image = client.submit_request(
+            api_request_image,
+            api_request_image.get_default_success_response_type(),
+        )
+
+        if isinstance(api_response_image, RequestErrorResponse):
+            pytest.fail(f"API Response was an error: {api_response_image.message}")
+
+        assert isinstance(api_response_image, AllWorkersDetailsResponse)
+        assert all(worker.type_ == WORKER_TYPE.image for worker in api_response_image.root)
+
+        api_request_text = AllWorkersDetailsRequest(type=WORKER_TYPE.text)
+        api_response_text = client.submit_request(
+            api_request_text,
+            api_request_text.get_default_success_response_type(),
+        )
+
+        if isinstance(api_response_text, RequestErrorResponse):
+            pytest.fail(f"API Response was an error: {api_response_text.message}")
+
+        assert isinstance(api_response_text, AllWorkersDetailsResponse)
+        assert all(worker.type_ == WORKER_TYPE.text for worker in api_response_text.root)
+
+        api_request_interrogation = AllWorkersDetailsRequest(type=WORKER_TYPE.interrogation)
+        api_response_interrogation = client.submit_request(
+            api_request_interrogation,
+            api_request_interrogation.get_default_success_response_type(),
+        )
+
+        if isinstance(api_response_interrogation, RequestErrorResponse):
+            pytest.fail(f"API Response was an error: {api_response_interrogation.message}")
+
+        assert isinstance(api_response_interrogation, AllWorkersDetailsResponse)
 
     def test_HordeRequestSession_cleanup(self, simple_image_gen_request: ImageGenerateAsyncRequest) -> None:
         """Test that the context manager cleans up correctly."""

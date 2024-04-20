@@ -35,6 +35,8 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     request_field_names_and_descriptions: dict[str, list[tuple[str, str | None]]] = {}
     response_field_names_and_descriptions: dict[str, list[tuple[str, str | None]]] = {}
 
+    default_num_request_fields = len(HordeRequest.model_fields)
+
     for request_type in all_request_types:
         endpoint_subpath: GENERIC_API_ENDPOINT_SUBPATH = request_type.get_api_endpoint_subpath()
         assert endpoint_subpath, f"Failed to get endpoint subpath for {request_type.__name__}"
@@ -71,11 +73,16 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
                 endpoint_subpath in swagger_defined_payload_examples
             ), f"Missing {request_type.__name__} in swagger examples"
 
-        endpoint_http_method_examples = swagger_defined_response_examples.get(endpoint_subpath)
-        assert endpoint_http_method_examples, f"Failed to get all HTTP method examples for {endpoint_subpath}"
+        endpoint_http_status_code_responses: dict[HTTPStatusCode, dict[str, object] | list[Any]] | None | None = None
 
-        endpoint_http_status_code_responses = endpoint_http_method_examples.get(request_type.get_http_method())
-        assert endpoint_http_status_code_responses, f"Failed to get example response for {request_type.__name__}"
+        if len(request_type.model_fields) == default_num_request_fields:
+            print(f"Request type {request_type.__name__} has no additional fields")
+        else:
+            endpoint_http_method_examples = swagger_defined_response_examples.get(endpoint_subpath)
+            assert endpoint_http_method_examples, f"Failed to get all HTTP method examples for {endpoint_subpath}"
+
+            endpoint_http_status_code_responses = endpoint_http_method_examples.get(request_type.get_http_method())
+            assert endpoint_http_status_code_responses, f"Failed to get example response for {request_type.__name__}"
 
         if endpoint_subpath not in api_to_sdk_payload_model_map:
             api_to_sdk_payload_model_map[endpoint_subpath] = {}
@@ -88,23 +95,34 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
 
             request_field_names_and_descriptions[request_type.__name__].append((field_name, field_info.description))
 
-        endpoint_success_http_status_codes: list[HTTPStatusCode] = [
-            success_code
-            for success_code in get_all_success_status_codes()
-            if success_code in endpoint_http_status_code_responses
-        ]
-        assert (
-            len(endpoint_success_http_status_codes) > 0
-        ), f"Failed to find any success status codes in {request_type.__name__}"
+        endpoint_success_http_status_codes: list[HTTPStatusCode] = []
 
-        for success_code in endpoint_success_http_status_codes:
+        if endpoint_http_status_code_responses is not None:
+            endpoint_success_http_status_codes = [
+                success_code
+                for success_code in get_all_success_status_codes()
+                if success_code in endpoint_http_status_code_responses
+            ]
             assert (
-                success_code in request_type.get_success_status_response_pairs()
-            ), f"Missing success response type for {request_type.__name__} with status code {success_code}"
+                len(endpoint_success_http_status_codes) > 0
+            ), f"Failed to find any success status codes in {request_type.__name__}"
+
+            for success_code in endpoint_success_http_status_codes:
+                assert (
+                    success_code in request_type.get_success_status_response_pairs()
+                ), f"Missing success response type for {request_type.__name__} with status code {success_code}"
+        else:
+            assert (
+                request_type.get_default_success_response_type() is not None
+            ), f"Failed to get default success response type for {request_type.__name__}"
 
         api_to_sdk_response_model_map[endpoint_subpath] = request_type.get_success_status_response_pairs()
 
         for response_type in request_type.get_success_status_response_pairs().values():
+            if len(response_type.model_fields) == 0:
+                print(f"Response type {response_type.__name__} has no fields")
+                continue
+
             for field_name, field_info in response_type.model_fields.items():
                 if response_type.__name__ not in response_field_names_and_descriptions:
                     response_field_names_and_descriptions[response_type.__name__] = []

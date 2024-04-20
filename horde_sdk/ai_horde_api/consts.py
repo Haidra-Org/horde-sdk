@@ -224,3 +224,14 @@ class METADATA_VALUE(StrEnum):
     csam = auto()
     nsfw = auto()
     see_ref = auto()
+
+
+class MODEL_STATE(StrEnum):
+    all = auto()
+    known = auto()
+    custom = auto()
+
+
+class MODEL_TYPE(StrEnum):
+    text = auto()
+    image = auto()
