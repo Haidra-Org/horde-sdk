@@ -147,7 +147,7 @@ class BaseHordeAPIClient(ABC):
         Raises:
             TypeError: If `api_request` is not of type `HordeRequest` or a subclass of it.
         """
-        if not issubclass(api_request.__class__, HordeRequest):
+        if not isinstance(api_request, HordeRequest):
             raise TypeError("`request` must be of type `HordeRequest` or a subclass of it!")
 
         # Define a helper function to extract specified data keys from the request
@@ -233,10 +233,12 @@ class BaseHordeAPIClient(ABC):
         )
 
         if not request_body_data_dict:
+            # This is explicitly set to None for clarity that it is unspecified
+            # i.e., and empty body is not the same as an unspecified body
             request_body_data_dict = None
 
         # Add the API key to the request headers if the request is authenticated and an API key is provided
-        if "apikey" not in request_headers_dict and isinstance(api_request, APIKeyAllowedInRequestMixin):
+        if isinstance(api_request, APIKeyAllowedInRequestMixin) and "apikey" not in request_headers_dict:
             request_headers_dict["apikey"] = self._apikey
 
         return ParsedRawRequest(
