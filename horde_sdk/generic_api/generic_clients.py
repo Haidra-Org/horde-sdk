@@ -191,6 +191,8 @@ class BaseHordeAPIClient(ABC):
         # Extract all fields from the request which are not specified headers, paths, or queries
         # Note: __dict__ allows access to *all* attributes of an instance
         for request_key, request_value in vars(api_request).items():
+            if request_value is None:
+                continue
             if request_key in specified_paths:
                 continue
             if request_key in specified_headers:

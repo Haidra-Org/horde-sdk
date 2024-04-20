@@ -111,6 +111,10 @@ class Test_reflection_and_dynamic:
             # Loop through each success status code and test the corresponding success response type.
             success_status_codes = request_type.get_success_status_response_pairs()
             for success_status_code, success_response_type in success_status_codes.items():
+                if len(success_response_type.model_fields) == 0:
+                    print(f"Response type {success_response_type.__name__} has no fields")
+                    continue
+
                 example_response_filename = SwaggerDoc.filename_from_endpoint_path(
                     request_type.get_api_endpoint_subpath(),
                     request_type.get_http_method(),

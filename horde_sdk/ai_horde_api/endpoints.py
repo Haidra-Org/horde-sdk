@@ -68,7 +68,7 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
     v2_status_news = "/v2/status/news"
 
     v2_status_models_all = "/v2/status/models"
-    v2_status_models = "/v2/status/models/{model_name}"
+    v2_status_models_single = "/v2/status/models/{model_name}"
 
     v2_status_performance = "/v2/status/performance"
 
@@ -82,15 +82,15 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
     v2_users = "/v2/users/{user_id}"
 
     v2_workers_all = "/v2/workers"
-    v2_workers = "/v2/workers/{worker_id}"
+    v2_workers_single = "/v2/workers/{worker_id}"
 
     v2_filters = "/v2/filters"
     v2_filters_regex = "/v2/filters/regex"
-    v2_filters_regex_filter_id = "/v2/filters/{filter_id}"
+    v2_filters_regex_single = "/v2/filters/{filter_id}"
 
-    v2_operations_block_worker_ipaddr_worker_id = "/v2/operations/block_worker_ipaddr/{worker_id}"
+    v2_operations_block_worker_ipaddr_single = "/v2/operations/block_worker_ipaddr/{worker_id}"
     v2_operations_ipaddr = "/v2/operations/ipaddr"
-    v2_operations_ipaddr_ipaddr = "/v2/operations/ipaddr/{ipaddr}"
+    v2_operations_ipaddr_single = "/v2/operations/ipaddr/{ipaddr}"
 
 
 def get_ai_horde_swagger_url() -> str:

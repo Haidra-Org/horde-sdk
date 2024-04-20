@@ -1,4 +1,7 @@
 {
+    "/v2/status/heartbeat": {
+        "200": "horde_sdk.ai_horde_api.apimodels._status.AIHordeHeartbeatResponse"
+    },
     "/v2/interrogate/async": {
         "202": "horde_sdk.ai_horde_api.apimodels.alchemy._async.AlchemyAsyncResponse"
     },
@@ -20,6 +23,15 @@
     "/v2/find_user": {
         "200": "horde_sdk.ai_horde_api.apimodels._find_user.FindUserResponse"
     },
+    "/v2/status/performance": {
+        "200": "horde_sdk.ai_horde_api.apimodels._status.HordePerformanceResponse"
+    },
+    "/v2/status/models": {
+        "200": "horde_sdk.ai_horde_api.apimodels._status.HordeStatusModelsAllResponse"
+    },
+    "/v2/status/models/{model_name}": {
+        "200": "horde_sdk.ai_horde_api.apimodels._status.HordeStatusModelsSingleResponse"
+    },
     "/v2/generate/async": {
         "200": "horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncDryRunResponse",
         "202": "horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse"
@@ -38,6 +50,9 @@
     },
     "/v2/stats/img/totals": {
         "200": "horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsTotalResponse"
+    },
+    "/v2/status/news": {
+        "200": "horde_sdk.ai_horde_api.apimodels._status.NewsResponse"
     },
     "/v2/stats/text/models": {
         "200": "horde_sdk.ai_horde_api.apimodels._stats.TextModelStatsResponse"

@@ -20,6 +20,10 @@ class AIHordePathData(GenericPathFields):
     """The UUID of a worker."""
     sharedkey_id = auto()
     """The UUID representing a shared key."""
+    model_name = auto()
+    """The name of a model."""
+    ipaddr = auto()
+    """An IP address."""
 
 
 class AIHordeQueryData(GenericQueryFields):

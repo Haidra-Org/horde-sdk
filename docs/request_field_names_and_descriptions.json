@@ -1,4 +1,14 @@
 {
+    "AIHordeHeartbeatRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
     "AlchemyAsyncRequest": [
         [
             "apikey",
@@ -152,6 +162,56 @@
         ],
         [
             "client_agent",
+            null
+        ]
+    ],
+    "HordePerformanceRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
+    "HordeStatusModelsAllRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ],
+        [
+            "type_",
+            "The type of model to filter by."
+        ],
+        [
+            "min_count",
+            null
+        ],
+        [
+            "max_count",
+            null
+        ],
+        [
+            "model_state",
+            null
+        ]
+    ],
+    "HordeStatusModelsSingleRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ],
+        [
+            "model_name",
             null
         ]
     ],
@@ -400,6 +460,16 @@
         ]
     ],
     "ImageStatsModelsTotalRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
+    "NewsRequest": [
         [
             "accept",
             null

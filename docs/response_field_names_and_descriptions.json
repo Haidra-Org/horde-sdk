@@ -1,4 +1,14 @@
 {
+    "AIHordeHeartbeatResponse": [
+        [
+            "message",
+            null
+        ],
+        [
+            "version",
+            null
+        ]
+    ],
     "AlchemyAsyncResponse": [
         [
             "message",
@@ -253,6 +263,72 @@
             "Whether this user has been invited to join a worker to the horde and how many of them. When 0, this user cannot add (new) workers to the horde."
         ]
     ],
+    "HordePerformanceResponse": [
+        [
+            "interrogator_count",
+            "How many workers are actively processing image interrogations in this {horde_noun} in the past 5 minutes."
+        ],
+        [
+            "interrogator_thread_count",
+            "How many worker threads are actively processing image interrogation in this {horde_noun} in the past 5 minutes."
+        ],
+        [
+            "past_minute_megapixelsteps",
+            "How many megapixelsteps this horde generated in the last minute."
+        ],
+        [
+            "past_minute_tokens",
+            "How many tokens this horde generated in the last minute."
+        ],
+        [
+            "queued_forms",
+            "The amount of image interrogations waiting and processing currently in this horde."
+        ],
+        [
+            "queued_megapixelsteps",
+            "The amount of megapixelsteps in waiting and processing requests currently in this horde."
+        ],
+        [
+            "queued_requests",
+            "The amount of waiting and processing image requests currently in this horde."
+        ],
+        [
+            "queued_text_requests",
+            "The amount of waiting and processing text requests currently in this horde."
+        ],
+        [
+            "queued_tokens",
+            "The amount of tokens in waiting and processing requests currently in this horde."
+        ],
+        [
+            "text_thread_count",
+            "How many worker threads are actively processing prompt generations in this {horde_noun} in the past 5 minutes."
+        ],
+        [
+            "text_worker_count",
+            "How many workers are actively processing prompt generations in this horde in the past 5 minutes."
+        ],
+        [
+            "thread_count",
+            "How many worker threads are actively processing prompt generations in this {horde_noun} in the past 5 minutes."
+        ],
+        [
+            "worker_count",
+            "How many workers are actively processing prompt generations in this horde in the past 5 minutes."
+        ]
+    ],
+    "HordeStatusModelsAllResponse": [
+        [
+            "root",
+            null
+        ]
+    ],
+    "HordeStatusModelsSingleResponse": [
+        [
+            "root",
+            null
+        ]
+    ],
     "ImageGenerateAsyncDryRunResponse": [
         [
             "kudos",
@@ -407,6 +483,12 @@
             null
         ]
     ],
+    "NewsResponse": [
+        [
+            "root",
+            null
+        ]
+    ],
     "TextModelStatsResponse": [
         [
             "day",
@@ -423,7 +505,7 @@
     ],
     "TextStatsModelsTotalResponse": [
         [
-            "day",
+            "minute",
             null
         ],
         [
@@ -431,7 +513,7 @@
             null
         ],
         [
-            "minute",
+            "day",
             null
         ],
         [
