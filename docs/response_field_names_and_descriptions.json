@@ -371,9 +371,67 @@
             null
         ]
     ],
-    "StatsModelsResponse": [
+    "ImageModelStatsResponse": [
         [
             "day",
+            null
+        ],
+        [
+            "month",
+            null
+        ],
+        [
+            "total",
+            null
+        ]
+    ],
+    "ImageStatsModelsTotalResponse": [
+        [
+            "day",
+            null
+        ],
+        [
+            "hour",
+            null
+        ],
+        [
+            "minute",
+            null
+        ],
+        [
+            "month",
+            null
+        ],
+        [
+            "total",
+            null
+        ]
+    ],
+    "TextModelStatsResponse": [
+        [
+            "day",
+            null
+        ],
+        [
+            "month",
+            null
+        ],
+        [
+            "total",
+            null
+        ]
+    ],
+    "TextStatsModelsTotalResponse": [
+        [
+            "day",
+            null
+        ],
+        [
+            "hour",
+            null
+        ],
+        [
+            "minute",
             null
         ],
         [

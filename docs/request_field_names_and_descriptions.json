@@ -385,7 +385,41 @@
             null
         ]
     ],
-    "StatsImageModelsRequest": [
+    "ImageStatsModelsRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ],
+        [
+            "model_state",
+            "The state of the models to get stats for. Known models are models that are known to the system."
+        ]
+    ],
+    "ImageStatsModelsTotalRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
+    "TextStatsModelsRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
+    "TextStatsModelsTotalRequest": [
         [
             "accept",
             null

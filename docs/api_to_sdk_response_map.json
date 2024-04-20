@@ -34,6 +34,15 @@
         "200": "horde_sdk.ai_horde_api.apimodels.base.JobSubmitResponse"
     },
     "/v2/stats/img/models": {
-        "200": "horde_sdk.ai_horde_api.apimodels._stats.StatsModelsResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels._stats.ImageModelStatsResponse"
+    },
+    "/v2/stats/img/totals": {
+        "200": "horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsTotalResponse"
+    },
+    "/v2/stats/text/models": {
+        "200": "horde_sdk.ai_horde_api.apimodels._stats.TextModelStatsResponse"
+    },
+    "/v2/stats/text/totals": {
+        "200": "horde_sdk.ai_horde_api.apimodels._stats.TextStatsModelsTotalResponse"
     }
 }
