@@ -210,10 +210,10 @@ class FindUserRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 
     @override
     @classmethod
-    def get_http_method(self) -> HTTPMethod:
+    def get_http_method(cls) -> HTTPMethod:
         return HTTPMethod.GET
 
     @override
     @classmethod
-    def get_default_success_response_type(self) -> type[FindUserResponse]:
+    def get_default_success_response_type(cls) -> type[FindUserResponse]:
         return FindUserResponse
