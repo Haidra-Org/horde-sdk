@@ -127,6 +127,7 @@ class WorkerDetailItem(HordeAPIObject):
         )
 
 
+@Unhashable
 class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]):
     # @tazlin: The typing of __iter__ in BaseModel seems to assume that RootModel wouldn't also be a parent class.
     # without a `type: ignore``, mypy feels that this is a bad override. This is probably a sub-optimal solution
@@ -147,9 +148,6 @@ class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]
         if not isinstance(other, AllWorkersDetailsResponse):
             return False
         return all(worker in other.root for worker in self.root)
-
-    def __hash__(self) -> int:
-        return hash(tuple(self.root))
 
 
 class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
