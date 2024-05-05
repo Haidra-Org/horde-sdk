@@ -20,6 +20,7 @@ from horde_sdk.ai_horde_api.consts import (
     METADATA_TYPE,
     METADATA_VALUE,
     POST_PROCESSOR_ORDER_TYPE,
+    WarningCode,
     _all_valid_post_processors_names_and_values,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
@@ -147,10 +148,20 @@ class SingleWarningEntry(HordeAPIDataObject):
     v2 API Model: `RequestSingleWarning`
     """
 
-    code: str = Field(min_length=1)
+    code: WarningCode | str = Field(min_length=1)
     """The code uniquely identifying this warning."""
     message: str = Field(min_length=1)
     """The human-readable description of this warning"""
+
+    @field_validator("code")
+    def code_must_be_known(cls, v: str | WarningCode) -> str | WarningCode:
+        """Ensure that the warning code is in this list of supported warning codes."""
+        if isinstance(v, WarningCode):
+            return v
+        if v not in WarningCode.__members__ or v not in WarningCode.__members__.values():
+            logger.warning(f"Unknown warning code {v}. Is your SDK out of date or did the API change?")
+
+        return v
 
 
 class ImageGenerateParamMixin(HordeAPIDataObject):
@@ -220,10 +231,13 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
     @field_validator("sampler_name")
     def sampler_name_must_be_known(cls, v: str | KNOWN_SAMPLERS) -> str | KNOWN_SAMPLERS:
         """Ensure that the sampler name is in this list of supported samplers."""
-        if (isinstance(v, str) and v in KNOWN_SAMPLERS.__members__) or (isinstance(v, KNOWN_SAMPLERS)):
+        if isinstance(v, KNOWN_SAMPLERS):
             return v
 
-        logger.warning(f"Unknown sampler name {v}. Is your SDK out of date or did the API change?")
+        try:
+            KNOWN_SAMPLERS(v)
+        except ValueError:
+            logger.warning(f"Unknown sampler name {v}. Is your SDK out of date or did the API change?")
 
         return v
 
@@ -267,10 +281,12 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
             return None
         if isinstance(v, KNOWN_CONTROLNETS):
             return v
-        if v in KNOWN_CONTROLNETS.__members__:
-            return v
 
-        logger.warning(f"Unknown control type {v}. Is your SDK out of date or did the API change?")
+        try:
+            KNOWN_CONTROLNETS(v)
+        except ValueError:
+            logger.warning(f"Unknown control type {v}. Is your SDK out of date or did the API change?")
+
         return v
 
 

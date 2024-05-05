@@ -134,8 +134,13 @@ class ImageGenerateJobPopResponse(
     @field_validator("source_processing")
     def source_processing_must_be_known(cls, v: str | KNOWN_SOURCE_PROCESSING) -> str | KNOWN_SOURCE_PROCESSING:
         """Ensure that the source processing is in this list of supported source processing."""
-        if v not in KNOWN_SOURCE_PROCESSING.__members__:
-            raise ValueError(f"Unknown source processing {v}")
+        if isinstance(v, KNOWN_SOURCE_PROCESSING):
+            return v
+
+        try:
+            KNOWN_SOURCE_PROCESSING(v)
+        except ValueError:
+            logger.warning(f"Unknown source processing {v}. Is your SDK out of date or did the API change?")
         return v
 
     @field_validator("id_", mode="before")

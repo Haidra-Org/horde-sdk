@@ -2,7 +2,7 @@ from typing import Any
 
 from loguru import logger
 
-from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE
+from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE, RC
 from horde_sdk.exceptions import HordeException
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
@@ -11,6 +11,12 @@ class AIHordeRequestError(HordeException):
     def __init__(self, error_response: RequestErrorResponse) -> None:
         logger.error(f"The AI Horde API returned an error response. Response: {error_response.message}")
         super().__init__(error_response.message)
+        try:
+            RC(error_response.rc)
+        except ValueError:
+            logger.error(
+                f"Failed to parse the RC from the error response. RC: {error_response.rc}. Is the SDK out of date?",
+            )
 
 
 class AIHordePayloadValidationError(HordeException):
