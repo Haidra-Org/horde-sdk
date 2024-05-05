@@ -20,7 +20,7 @@ import requests
 from loguru import logger
 from strenum import StrEnum
 
-from horde_sdk import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL, ContainsMessageResponseMixin, HordeRequest
+from horde_sdk import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL
 from horde_sdk.ai_horde_api.apimodels import (
     AlchemyAsyncRequest,
     AlchemyStatusResponse,
@@ -41,6 +41,8 @@ from horde_sdk.ai_horde_api.exceptions import AIHordeImageValidationError, AIHor
 from horde_sdk.ai_horde_api.fields import JobID
 from horde_sdk.ai_horde_api.metadata import AIHordePathData, AIHordeQueryData
 from horde_sdk.generic_api.apimodels import (
+    ContainsMessageResponseMixin,
+    HordeRequest,
     HordeResponse,
     RequestErrorResponse,
     ResponseRequiringFollowUpMixin,
