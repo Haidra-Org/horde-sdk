@@ -51,7 +51,12 @@ def simple_image_gen_n_requests(ai_horde_api_key: str) -> ImageGenerateAsyncRequ
 
 def pytest_collection_modifyitems(items):  # type: ignore # noqa
     """Modifies test items to ensure test modules run in a given order."""
-    MODULES_TO_RUN_FIRST = ["tests.tests_generic", "tests.test_utils", "tests.test_dynamically_check_apimodels"]
+    MODULES_TO_RUN_FIRST = [
+        "tests.tests_generic",
+        "tests.test_utils",
+        "tests.test_dynamically_check_apimodels",
+        "tests.test_verify_api_surface",
+    ]
 
     MODULES_TO_RUN_LAST = [
         "tests.ai_horde_api.test_ai_horde_api_calls",
