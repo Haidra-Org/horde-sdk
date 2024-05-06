@@ -1,5 +1,5 @@
 {
-    "maintenance": false,
-    "invite_only": false,
-    "raid": false
+    "maintenance_mode": false,
+    "invite_only_mode": false,
+    "raid_mode": false
 }
