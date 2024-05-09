@@ -14,6 +14,7 @@ from horde_sdk.generic_api.apimodels import HordeResponseBaseModel, ResponseWith
 
 
 class GenerationKobold(Generation):
+    id_: str | None = Field(None, description="The ID for this image.", title="Generation ID")
     gen_metadata: list[GenMetadataEntry] | None = None  # FIXME: API declares a `GenerationMetadataKobold` here
     seed: int | None = Field(0, description="The seed which generated this text.", title="Generation Seed")
     text: str | None = Field(None, description="The generated text.", min_length=0, title="Generated Text")
