@@ -157,6 +157,96 @@
             null
         ]
     ],
+    "TextGenerateStatusResponse": [
+        [
+            "finished",
+            null
+        ],
+        [
+            "processing",
+            null
+        ],
+        [
+            "restarted",
+            null
+        ],
+        [
+            "waiting",
+            null
+        ],
+        [
+            "done",
+            null
+        ],
+        [
+            "faulted",
+            null
+        ],
+        [
+            "wait_time",
+            null
+        ],
+        [
+            "queue_position",
+            null
+        ],
+        [
+            "kudos",
+            null
+        ],
+        [
+            "is_possible",
+            null
+        ],
+        [
+            "generations",
+            "The generations that have been completed in this request."
+        ],
+        [
+            "finished",
+            null
+        ],
+        [
+            "processing",
+            null
+        ],
+        [
+            "restarted",
+            null
+        ],
+        [
+            "waiting",
+            null
+        ],
+        [
+            "done",
+            null
+        ],
+        [
+            "faulted",
+            null
+        ],
+        [
+            "wait_time",
+            null
+        ],
+        [
+            "queue_position",
+            null
+        ],
+        [
+            "kudos",
+            null
+        ],
+        [
+            "is_possible",
+            null
+        ],
+        [
+            "generations",
+            "The generations that have been completed in this request."
+        ]
+    ],
     "FindUserResponse": [
         [
             "admin_comment",
@@ -177,6 +267,10 @@
         [
             "contributions",
             null
+        ],
+        [
+            "customizer",
+            "If this user can run custom models."
         ],
         [
             "evaluating_kudos",

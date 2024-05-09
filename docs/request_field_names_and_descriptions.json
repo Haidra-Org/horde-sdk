@@ -151,6 +151,20 @@
             null
         ]
     ],
+    "DeleteTextGenerateRequest": [
+        [
+            "id_",
+            null
+        ],
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
     "FindUserRequest": [
         [
             "apikey",
@@ -313,6 +327,38 @@
     ],
     "ImageGenerateJobPopRequest": [
         [
+            "amount",
+            "How many jobvs to pop at the same time"
+        ],
+        [
+            "bridge_agent",
+            "The worker name, version and website."
+        ],
+        [
+            "models",
+            null
+        ],
+        [
+            "name",
+            "The Name of the Worker."
+        ],
+        [
+            "nsfw",
+            "Whether this worker can generate NSFW requests or not."
+        ],
+        [
+            "priority_usernames",
+            null
+        ],
+        [
+            "require_upfront_kudos",
+            "If True, this worker will only pick up requests where the owner has the required kudos to consume already available."
+        ],
+        [
+            "threads",
+            "How many threads this worker is running. This is used to accurately the current power available in the horde."
+        ],
+        [
             "apikey",
             null
         ],
@@ -325,35 +371,7 @@
             null
         ],
         [
-            "name",
-            null
-        ],
-        [
-            "priority_usernames",
-            null
-        ],
-        [
-            "nsfw",
-            null
-        ],
-        [
-            "models",
-            null
-        ],
-        [
             "bridge_version",
-            null
-        ],
-        [
-            "bridge_agent",
-            null
-        ],
-        [
-            "threads",
-            null
-        ],
-        [
-            "require_upfront_kudos",
             null
         ],
         [
@@ -386,10 +404,6 @@
         ],
         [
             "allow_lora",
-            null
-        ],
-        [
-            "amount",
             null
         ]
     ],
@@ -470,6 +484,20 @@
         ]
     ],
     "NewsRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
+    "TextGenerateStatusRequest": [
+        [
+            "id_",
+            null
+        ],
         [
             "accept",
             null
