@@ -15,10 +15,13 @@
         "200": "horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyPopResponse"
     },
     "/v2/workers": {
-        "200": "horde_sdk.ai_horde_api.apimodels.workers._workers_all.AllWorkersDetailsResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.workers._workers.AllWorkersDetailsResponse"
     },
     "/v2/generate/status/{id}": {
         "200": "horde_sdk.ai_horde_api.apimodels.generate._status.ImageGenerateStatusResponse"
+    },
+    "/v2/generate/text/status/{id}": {
+        "200": "horde_sdk.ai_horde_api.apimodels.generate.text._status.TextGenerateStatusResponse"
     },
     "/v2/find_user": {
         "200": "horde_sdk.ai_horde_api.apimodels._find_user.FindUserResponse"
