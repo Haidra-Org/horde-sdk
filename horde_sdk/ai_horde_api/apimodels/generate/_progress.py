@@ -1,7 +1,7 @@
-from horde_sdk.generic_api.apimodels import HordeAPIDataObject, ResponseWithProgressMixin
+from horde_sdk.generic_api.apimodels import HordeAPIObject, ResponseWithProgressMixin
 
 
-class ResponseGenerationProgressInfoMixin(HordeAPIDataObject):
+class ResponseGenerationProgressInfoMixin(HordeAPIObject):
     finished: int
     """The amount of finished jobs in this request."""
     processing: int

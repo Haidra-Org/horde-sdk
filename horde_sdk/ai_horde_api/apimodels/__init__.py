@@ -103,7 +103,19 @@ from horde_sdk.ai_horde_api.apimodels.generate._status import (
 from horde_sdk.ai_horde_api.apimodels.generate._submit import (
     ImageGenerationJobSubmitRequest,
 )
-from horde_sdk.ai_horde_api.apimodels.workers._workers_all import (
+from horde_sdk.ai_horde_api.apimodels.generate.text._async import (
+    ModelGenerationInputKobold,
+    ModelPayloadRootKobold,
+    TextGenerateAsyncRequest,
+    TextGenerateAsyncResponse,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.text._status import (
+    DeleteTextGenerateRequest,
+    GenerationKobold,
+    TextGenerateStatusRequest,
+    TextGenerateStatusResponse,
+)
+from horde_sdk.ai_horde_api.apimodels.workers._workers import (
     AllWorkersDetailsRequest,
     AllWorkersDetailsResponse,
     TeamDetailsLite,
@@ -195,6 +207,14 @@ __all__ = [
     "ImageGeneration",
     "ImageGenerationJobSubmitRequest",
     "JobSubmitResponse",
+    "ModelGenerationInputKobold",
+    "ModelPayloadRootKobold",
+    "TextGenerateAsyncRequest",
+    "TextGenerateAsyncResponse",
+    "DeleteTextGenerateRequest",
+    "GenerationKobold",
+    "TextGenerateStatusRequest",
+    "TextGenerateStatusResponse",
     "AllWorkersDetailsRequest",
     "AllWorkersDetailsResponse",
     "TeamDetailsLite",
