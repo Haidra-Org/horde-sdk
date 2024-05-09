@@ -26,40 +26,80 @@ from horde_sdk.ai_horde_api.fields import JobID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    HordeAPIDataObject,
+    HordeAPIObject,
     HordeResponseBaseModel,
     ResponseRequiringDownloadMixin,
     ResponseRequiringFollowUpMixin,
 )
 
 
-class ImageGenerateJobPopSkippedStatus(HordeAPIDataObject):
+class NoValidRequestFound(HordeAPIObject):
+    blacklist: int | None = Field(
+        None,
+        description=(
+            "How many waiting requests were skipped because they demanded a generation with a word that this worker"
+            " does not accept."
+        ),
+        ge=0,
+    )
+    bridge_version: int | None = Field(
+        None,
+        description=(
+            "How many waiting requests were skipped because they require a higher version of the bridge than this"
+            " worker is running (upgrade if you see this in your skipped list)."
+        ),
+        examples=[0],
+        ge=0,
+    )
+    kudos: int | None = Field(
+        None,
+        description=(
+            "How many waiting requests were skipped because the user didn't have enough kudos when this worker"
+            " requires upfront kudos."
+        ),
+    )
+    models: int | None = Field(
+        None,
+        description=(
+            "How many waiting requests were skipped because they demanded a different model than what this worker"
+            " provides."
+        ),
+        examples=[0],
+        ge=0,
+    )
+    nsfw: int | None = Field(
+        None,
+        description=(
+            "How many waiting requests were skipped because they demanded a nsfw generation which this worker does not"
+            " provide."
+        ),
+        ge=0,
+    )
+    performance: int | None = Field(
+        None,
+        description="How many waiting requests were skipped because they required higher performance.",
+        ge=0,
+    )
+    untrusted: int | None = Field(
+        None,
+        description=(
+            "How many waiting requests were skipped because they demanded a trusted worker which this worker is not."
+        ),
+        ge=0,
+    )
+    worker_id: int | None = Field(
+        None,
+        description="How many waiting requests were skipped because they demanded a specific worker.",
+        ge=0,
+    )
+
+
+class ImageGenerateJobPopSkippedStatus(NoValidRequestFound):
     """Represents the data returned from the `/v2/generate/pop` endpoint for why a worker was skipped.
 
     v2 API Model: `NoValidRequestFoundStable`
     """
 
-    worker_id: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they demanded a specific worker."""
-    performance: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they required higher performance."""
-    nsfw: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they demanded a nsfw generation which this worker
-    does not provide."""
-    blacklist: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they demanded a generation with a word that this worker does
-    not accept."""
-    untrusted: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they demanded a trusted worker which this worker is not."""
-    models: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they demanded a different model than what this worker
-    provides."""
-    bridge_version: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they require a higher version of the bridge than this worker is
-    running (upgrade if you see this in your skipped list)."""
-    kudos: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because the user didn't have enough kudos when this worker requires
-     upfront kudos."""
     max_pixels: int = Field(default=0, ge=0)
     """How many waiting requests were skipped because they demanded a higher size than this worker provides."""
     unsafe_ip: int = Field(default=0, ge=0)
@@ -78,6 +118,11 @@ class ImageGenerateJobPopSkippedStatus(HordeAPIDataObject):
     def is_empty(self) -> bool:
         """Whether or not this object has any non-zero values."""
         return len(self.model_fields_set) == 0
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "NoValidRequestFoundStable"
 
 
 class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
@@ -395,20 +440,51 @@ class ImageGenerateJobPopResponse(
         return hash(0)
 
 
-class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
+class PopInput(HordeAPIObject):
+    amount: int | None = Field(1, description="How many jobvs to pop at the same time", ge=1, le=20)
+    bridge_agent: str | None = Field(
+        "unknown:0:unknown",
+        description="The worker name, version and website.",
+        examples=["AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen"],
+        max_length=1000,
+    )
+    models: list[str] | None = None
+    name: str | None = Field(None, description="The Name of the Worker.")
+    nsfw: bool | None = Field(False, description="Whether this worker can generate NSFW requests or not.")
+    priority_usernames: list[str] | None = None
+    require_upfront_kudos: bool | None = Field(
+        False,
+        description=(
+            "If True, this worker will only pick up requests where the owner has the required kudos to consume already"
+            " available."
+        ),
+        examples=[
+            False,
+        ],
+    )
+    threads: int | None = Field(
+        1,
+        description=(
+            "How many threads this worker is running. This is used to accurately the current power available in the"
+            " horde."
+        ),
+        ge=1,
+        le=50,
+    )
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "PopInput"
+
+
+class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin, PopInput):
     """Represents the data needed to make a job request from a worker to the /v2/generate/pop endpoint.
 
     v2 API Model: `PopInputStable`
     """
 
-    name: str
-    priority_usernames: list[str] = Field(default_factory=list)
-    nsfw: bool = True
-    models: list[str]
     bridge_version: int | None = None
-    bridge_agent: str
-    threads: int = 1
-    require_upfront_kudos: bool = False
     max_pixels: int
     blacklist: list[str] = Field(default_factory=list)
     allow_img2img: bool = True
@@ -417,7 +493,6 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     allow_post_processing: bool = True
     allow_controlnet: bool = False
     allow_lora: bool = False
-    amount: int = 1
 
     @override
     @classmethod

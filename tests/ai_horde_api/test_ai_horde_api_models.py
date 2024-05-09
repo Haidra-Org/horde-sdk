@@ -31,7 +31,7 @@ from horde_sdk.ai_horde_api.apimodels.generate._pop import (
     ImageGenerateJobPopResponse,
     ImageGenerateJobPopSkippedStatus,
 )
-from horde_sdk.ai_horde_api.apimodels.workers._workers_all import (
+from horde_sdk.ai_horde_api.apimodels.workers._workers import (
     AllWorkersDetailsResponse,
     TeamDetailsLite,
     WorkerDetailItem,

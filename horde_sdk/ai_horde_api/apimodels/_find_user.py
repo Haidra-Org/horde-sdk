@@ -95,6 +95,12 @@ class FindUserResponse(HordeResponseBaseModel):
     contributions: ContributionsDetails | None = None
     """How many images and megapixelsteps this user has generated."""
 
+    customizer: bool | None = Field(
+        default=None,
+        description="If this user can run custom models.",
+        examples=[False],
+    )
+
     evaluating_kudos: float | None = Field(
         default=None,
         description=(
