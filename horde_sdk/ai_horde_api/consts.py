@@ -91,6 +91,12 @@ class KNOWN_CONTROLNETS(StrEnum):
     hough = auto()
 
 
+class KNOWN_WORKFLOWS(StrEnum):
+    """The controlnets that are known to the API."""
+
+    qr_code = auto()
+
+
 class KNOWN_SOURCE_PROCESSING(StrEnum):
     """The source processing methods that are known to the API.
 
