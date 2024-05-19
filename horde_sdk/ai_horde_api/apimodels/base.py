@@ -17,6 +17,7 @@ from horde_sdk.ai_horde_api.consts import (
     KNOWN_MISC_POST_PROCESSORS,
     KNOWN_SAMPLERS,
     KNOWN_UPSCALERS,
+    KNOWN_WORKFLOWS,
     METADATA_TYPE,
     METADATA_VALUE,
     POST_PROCESSOR_ORDER_TYPE,
@@ -142,6 +143,18 @@ class ExtraSourceImageEntry(HordeAPIDataObject):
     """The strength to apply to this image on various operations."""
 
 
+class ExtraTextEntry(HordeAPIDataObject):
+    """Represents a single extra text.
+
+    v2 API Model: `ExtraText`
+    """
+
+    text: str = Field(min_length=1)
+    """Extra text required for this generation."""
+    reference: str = Field(min_length=3)
+    """Reference pointing to how this text is to be used."""
+
+
 class SingleWarningEntry(HordeAPIDataObject):
     """Represents a single warning.
 
@@ -216,6 +229,10 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
     """A list of lora parameters to use."""
     tis: list[TIPayloadEntry] = Field(default_factory=list)
     """A list of textual inversion (embedding) parameters to use."""
+    extra_texts: list[ExtraTextEntry] = Field(default_factory=list)
+    """A list of extra texts and prompts to use in the comfyUI workflow."""
+    workflow: str | KNOWN_WORKFLOWS | None = None
+    """The specific comfyUI workflow to use."""
     special: dict[Any, Any] = Field(default_factory=dict)
     """Reserved for future use."""
 

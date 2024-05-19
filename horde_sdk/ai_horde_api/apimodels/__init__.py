@@ -67,6 +67,7 @@ from horde_sdk.ai_horde_api.apimodels.alchemy._status import (
 from horde_sdk.ai_horde_api.apimodels.alchemy._submit import AlchemyJobSubmitRequest, AlchemyJobSubmitResponse
 from horde_sdk.ai_horde_api.apimodels.base import (
     ExtraSourceImageEntry,
+    ExtraTextEntry,
     GenMetadataEntry,
     ImageGenerateParamMixin,
     JobRequestMixin,
@@ -181,6 +182,7 @@ __all__ = [
     "AlchemyJobSubmitRequest",
     "AlchemyJobSubmitResponse",
     "ExtraSourceImageEntry",
+    "ExtraTextEntry",
     "GenMetadataEntry",
     "ImageGenerateParamMixin",
     "JobRequestMixin",
