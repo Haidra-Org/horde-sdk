@@ -141,6 +141,9 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
     allow_controlnet: bool = False
     """Whether to allow the use of ControlNet. This requires img2img to be enabled."""
 
+    allow_sdxl_controlnet: bool = False
+    """Whether to allow the use of SDXL ControlNet. This requires controlnet to be enabled."""
+
     allow_img2img: bool = True
     """Whether to allow the use of img2img."""
 
@@ -297,6 +300,15 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
                 ),
             )
             self.allow_controlnet = False
+
+        if not self.allow_controlnet and self.allow_sdxl_controlnet:
+            logger.warning(
+                (
+                    "allow_sdxl_controlnet is set to True, but allow_controlnet is set to False. "
+                    "SDXL ControlNet requires allow_controlnet to be enabled. Setting allow_sdxl_controlnet to false."
+                ),
+            )
+            self.allow_sdxl_controlnet = False
 
         self.image_models_to_skip.append("SDXL_beta::stability.ai#6901")  # FIXME: no magic strings
 
