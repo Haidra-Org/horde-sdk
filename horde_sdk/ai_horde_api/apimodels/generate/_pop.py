@@ -492,6 +492,7 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     allow_unsafe_ipaddr: bool = True
     allow_post_processing: bool = True
     allow_controlnet: bool = False
+    allow_sdxl_controlnet: bool = False
     allow_lora: bool = False
 
     @override
