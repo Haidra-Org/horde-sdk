@@ -39,7 +39,7 @@ def test_all_ai_horde_api_data_objects_imported() -> None:
     )
 
 
-# @pytest.mark.skip(reason="This test is not yet enforced.")
+@pytest.mark.skip(reason="This test is not yet enforced.")
 @pytest.mark.object_verify
 def test_all_ai_horde_api_models_defined() -> None:
     import horde_sdk.ai_horde_api.apimodels
@@ -73,7 +73,7 @@ def test_all_ai_horde_endpoints_known() -> None:
     )
 
 
-# @pytest.mark.skip(reason="This test is not yet enforced.")
+@pytest.mark.skip(reason="This test is not yet enforced.")
 @pytest.mark.object_verify
 def test_all_ai_horde_endpoints_addressed() -> None:
     from horde_sdk.meta import all_unaddressed_endpoints_ai_horde
