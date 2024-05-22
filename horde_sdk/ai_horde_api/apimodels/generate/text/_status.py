@@ -32,6 +32,14 @@ class GenerationKobold(Generation):
 
         return v
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, GenerationKobold):
+            return False
+        return self.id_ == other.id_
+
+    def __hash__(self) -> int:
+        return hash(self.id_)
+
 
 class TextGenerateStatusResponse(
     HordeResponseBaseModel,
