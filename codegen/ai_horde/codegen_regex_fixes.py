@@ -12,8 +12,9 @@ def main(path: str) -> None:
     contents = re.sub(r"example=\"(.*)\"(,)", r'examples=["\1"]\2', contents)
     contents = re.sub(r"example=(\d*)(,|$|\))", r"examples=[\1]\2", contents)
     contents = re.sub(r"example=(\d*\.\d)(,|$|\))", r"examples=[\1]\2", contents)
-    contents = re.sub(r"id: ", r"id_: ", contents)
-    contents = re.sub(r"type: ", r"type_: ", contents)
+
+    contents = contents.replace("id: ", "id_: ")
+    contents = contents.replace("type: ", "type_: ")
     # Replace the literal string `\n` with a newline
 
     with open(path, "w", encoding="utf-8") as f:
