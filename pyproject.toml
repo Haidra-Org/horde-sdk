@@ -117,3 +117,9 @@ exclude = [
 
 [tool.coverage.run]
 concurrency = ["gevent"]
+
+[tool.pytest.ini_options]
+markers = [
+    # "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "object_verify: marks tests that verify the API object structure and layout",
+]

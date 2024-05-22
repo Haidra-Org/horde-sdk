@@ -1,6 +1,8 @@
 import json
 from typing import Any
 
+import pytest
+
 import horde_sdk.ai_horde_api.apimodels
 from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode, get_all_success_status_codes
@@ -14,6 +16,7 @@ from horde_sdk.generic_api.utils.swagger import (
 )
 
 
+@pytest.mark.object_verify
 def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     """Ensure all models defined in ai_horde_api are defined in the swagger doc."""
     all_request_types: list[type[HordeRequest]] = get_all_request_types(horde_sdk.ai_horde_api.apimodels.__name__)
@@ -159,6 +162,7 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
         f.write("\n")
 
 
+@pytest.mark.object_verify
 def test_all_ai_horde_model_defs_in_swagger_from_prod_swagger() -> None:
     swagger_doc: SwaggerDoc | None = None
     try:

@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from types import ModuleType
 
+import pytest
 from loguru import logger
 
 import horde_sdk.ai_horde_api.apimodels
@@ -190,6 +191,7 @@ class Test_reflection_and_dynamic:
                             print(f"Error: {e}")
                             raise e
 
+    @pytest.mark.object_verify
     def test_horde_api(self) -> None:
         """Test all models in the `horde_sdk.ai_horde_api.apimodels` module can be instantiated from example JSON."""
         self.dynamic_json_load(horde_sdk.ai_horde_api.apimodels)
