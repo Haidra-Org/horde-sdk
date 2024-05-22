@@ -16,7 +16,11 @@ from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin
 
 
-class ImageGenerationJobSubmitRequest(BaseAIHordeRequest, JobRequestMixin, APIKeyAllowedInRequestMixin):
+class ImageGenerationJobSubmitRequest(
+    BaseAIHordeRequest,
+    JobRequestMixin,
+    APIKeyAllowedInRequestMixin,
+):
     """Represents the data needed to make a job submit 'request' from a worker to the /v2/generate/submit endpoint.
 
     v2 API Model: `SubmitInputStable`

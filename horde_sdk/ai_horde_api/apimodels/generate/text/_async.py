@@ -5,16 +5,21 @@ from pydantic import Field, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
+    BaseAIHordeRequest,
     ExtraSourceImageEntry,
     JobResponseMixin,
     SingleWarningEntry,
 )
 from horde_sdk.ai_horde_api.apimodels.generate.text._status import DeleteTextGenerateRequest, TextGenerateStatusRequest
+from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
+from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
+    APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
     HordeAPIDataObject,
-    HordeAPIObject,
+    HordeResponse,
     HordeResponseBaseModel,
+    RequestUsesWorkerMixin,
     ResponseRequiringFollowUpMixin,
 )
 from horde_sdk.generic_api.decoration import Unhashable
@@ -158,12 +163,28 @@ class ModelGenerationInputKobold(ModelPayloadRootKobold):
     pass
 
 
+class TextGenerateAsyncDryRunResponse(HordeResponseBaseModel):
+    kudos: float
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "UNDOCUMENTED"
+
+
 @Unhashable
-class TextGenerateAsyncRequest(HordeAPIObject):
+class TextGenerateAsyncRequest(
+    BaseAIHordeRequest,
+    APIKeyAllowedInRequestMixin,
+    RequestUsesWorkerMixin,
+):
     """Represents the data needed to make a request to the `/v2/generate/async` endpoint.
 
     v2 API Model: `GenerationInputKobold`
     """
+
+    params: ModelGenerationInputKobold | None = None
+    prompt: str | None = Field(None, description="The prompt which will be sent to KoboldAI to generate text.")
 
     allow_downgrade: bool | None = Field(
         False,
@@ -179,14 +200,8 @@ class TextGenerateAsyncRequest(HordeAPIObject):
             " restricted to Trusted users and Patreons."
         ),
     )
-    dry_run: bool | None = Field(
-        False,
-        description="When true, the endpoint will simply return the cost of the request in kudos and exit.",
-    )
     extra_source_images: list[ExtraSourceImageEntry] | None = None
-    models: list[str] | None = None
-    params: ModelGenerationInputKobold | None = None
-    prompt: str | None = Field(None, description="The prompt which will be sent to KoboldAI to generate text.")
+
     proxied_account: str | None = Field(
         None,
         description=(
@@ -194,23 +209,10 @@ class TextGenerateAsyncRequest(HordeAPIObject):
             " request is coming from."
         ),
     )
-    slow_workers: bool | None = Field(
-        True,
-        description=(
-            "When True, allows slower workers to pick up this request. Disabling this incurs an extra kudos cost."
-        ),
-    )
     softprompt: str | None = Field(
         None,
-        description="Specify which softpompt needs to be used to service this request.",
+        description="Specify which softprompt needs to be used to service this request.",
         min_length=1,
-    )
-    trusted_workers: bool | None = Field(
-        False,
-        description=(
-            "When true, only trusted workers will serve this request. When False, Evaluating workers will also be used"
-            " which can increase speed but adds more risk!"
-        ),
     )
     webhook: str | None = Field(
         None,
@@ -219,13 +221,35 @@ class TextGenerateAsyncRequest(HordeAPIObject):
             " include the details of the job as well as the request ID."
         ),
     )
-    worker_blacklist: bool | None = Field(
-        False,
-        description="If true, the worker list will be treated as a blacklist instead of a whitelist.",
-    )
-    workers: list[str] | None = None
 
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "GenerationInputKobold"
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.POST
+
+    @override
+    @classmethod
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_text_async
+
+    @override
+    @classmethod
+    def get_default_success_response_type(cls) -> type[TextGenerateAsyncResponse]:
+        return TextGenerateAsyncResponse
+
+    @override
+    @classmethod
+    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponse]]:
+        return {
+            HTTPStatusCode.OK: TextGenerateAsyncDryRunResponse,
+            HTTPStatusCode.ACCEPTED: cls.get_default_success_response_type(),
+        }
+
+    @override
+    def get_extra_fields_to_exclude_from_log(self) -> set[str]:
+        return {"extra_source_images"}

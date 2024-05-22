@@ -108,14 +108,25 @@ from horde_sdk.ai_horde_api.apimodels.generate._submit import (
 from horde_sdk.ai_horde_api.apimodels.generate.text._async import (
     ModelGenerationInputKobold,
     ModelPayloadRootKobold,
+    TextGenerateAsyncDryRunResponse,
     TextGenerateAsyncRequest,
     TextGenerateAsyncResponse,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.text._pop import (
+    ModelPayloadKobold,
+    NoValidRequestFoundKobold,
+    TextGenerateJobPopRequest,
+    TextGenerateJobPopResponse,
+    _PopInputKobold,
 )
 from horde_sdk.ai_horde_api.apimodels.generate.text._status import (
     DeleteTextGenerateRequest,
     GenerationKobold,
     TextGenerateStatusRequest,
     TextGenerateStatusResponse,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.text._submit import (
+    TextGenerationJobSubmitRequest,
 )
 from horde_sdk.ai_horde_api.apimodels.workers._workers import (
     AllWorkersDetailsRequest,
@@ -217,10 +228,17 @@ __all__ = [
     "ModelPayloadRootKobold",
     "TextGenerateAsyncRequest",
     "TextGenerateAsyncResponse",
+    "ModelPayloadKobold",
+    "NoValidRequestFoundKobold",
+    "TextGenerateJobPopRequest",
+    "TextGenerateJobPopResponse",
+    "_PopInputKobold",
+    "TextGenerateAsyncDryRunResponse",
     "DeleteTextGenerateRequest",
     "GenerationKobold",
     "TextGenerateStatusRequest",
     "TextGenerateStatusResponse",
+    "TextGenerationJobSubmitRequest",
     "AllWorkersDetailsRequest",
     "AllWorkersDetailsResponse",
     "SingleWorkerDetailsRequest",
