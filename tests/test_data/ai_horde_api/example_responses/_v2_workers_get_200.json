@@ -41,6 +41,8 @@
         "painting": false,
         "post-processing": false,
         "lora": false,
+        "controlnet": false,
+        "sdxl_controlnet": false,
         "max_length": 80,
         "max_context_length": 80,
         "tokens_generated": 0.0
