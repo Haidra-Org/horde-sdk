@@ -1,28 +1,3 @@
-/* .md-main .md-grid {
-    max-width: 80rem;
-}
-
-.md-content {
-    min-width: 60%;
-}
-
-.md-sidebar {
-    width: unset;
-}
-
-.md-sidebar.md-sidebar--secondary {
-    width: 30%;
-}
-
-.md-sidebar.md-sidebar--primary .md-sidebar__scrollwrap .md-sidebar__inner {
-    padding-right: calc(100% - 14rem);
-}
-
-
-.md-sidebar.md-sidebar--secondary .md-sidebar__scrollwrap .md-sidebar__inner {
-    padding-right: calc(100% - 20rem);
-} */
-
 .doc-object-name {
     font-weight: bold;
     letter-spacing: 0.0em;
