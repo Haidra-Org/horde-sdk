@@ -1,7 +1,7 @@
 {
     "prompt": "a",
     "params": {
-        "sampler_name": "k_dpmpp_2m",
+        "sampler_name": "k_dpm_fast",
         "cfg_scale": 7.5,
         "denoising_strength": 0.75,
         "seed": "The little seed that could",
@@ -40,6 +40,13 @@
             "additionalProp2": {},
             "additionalProp3": {}
         },
+        "extra_texts": [
+            {
+                "text": "a",
+                "reference": "aaa"
+            }
+        ],
+        "workflow": "qr_code",
         "steps": 30,
         "n": 1
     },

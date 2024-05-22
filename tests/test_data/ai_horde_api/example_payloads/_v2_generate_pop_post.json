@@ -20,5 +20,6 @@
     "allow_unsafe_ipaddr": true,
     "allow_post_processing": true,
     "allow_controlnet": true,
+    "allow_sdxl_controlnet": true,
     "allow_lora": true
 }
