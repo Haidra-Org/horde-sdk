@@ -57,6 +57,19 @@
     "/v2/status/news": {
         "200": "horde_sdk.ai_horde_api.apimodels._status.NewsResponse"
     },
+    "/v2/workers/{worker_id}": {
+        "200": "horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsResponse"
+    },
+    "/v2/generate/text/async": {
+        "200": "horde_sdk.ai_horde_api.apimodels.generate.text._async.TextGenerateAsyncDryRunResponse",
+        "202": "horde_sdk.ai_horde_api.apimodels.generate.text._async.TextGenerateAsyncResponse"
+    },
+    "/v2/generate/text/pop": {
+        "200": "horde_sdk.ai_horde_api.apimodels.generate.text._pop.TextGenerateJobPopResponse"
+    },
+    "/v2/generate/text/submit": {
+        "200": "horde_sdk.ai_horde_api.apimodels.base.JobSubmitResponse"
+    },
     "/v2/stats/text/models": {
         "200": "horde_sdk.ai_horde_api.apimodels._stats.TextModelStatsResponse"
     },

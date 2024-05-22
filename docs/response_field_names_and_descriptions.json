@@ -491,6 +491,10 @@
     ],
     "ImageGenerateJobPopResponse": [
         [
+            "extra_source_images",
+            null
+        ],
+        [
             "id_",
             null
         ],
@@ -523,10 +527,6 @@
             null
         ],
         [
-            "extra_source_images",
-            null
-        ],
-        [
             "r2_upload",
             null
         ],
@@ -536,6 +536,10 @@
         ]
     ],
     "JobSubmitResponse": [
+        [
+            "reward",
+            null
+        ],
         [
             "reward",
             null
@@ -581,6 +585,198 @@
         [
             "root",
             null
+        ]
+    ],
+    "SingleWorkerDetailsResponse": [
+        [
+            "type_",
+            null
+        ],
+        [
+            "name",
+            null
+        ],
+        [
+            "id_",
+            null
+        ],
+        [
+            "online",
+            null
+        ],
+        [
+            "requests_fulfilled",
+            null
+        ],
+        [
+            "kudos_rewards",
+            null
+        ],
+        [
+            "kudos_details",
+            null
+        ],
+        [
+            "performance",
+            null
+        ],
+        [
+            "threads",
+            null
+        ],
+        [
+            "uptime",
+            null
+        ],
+        [
+            "maintenance_mode",
+            null
+        ],
+        [
+            "paused",
+            null
+        ],
+        [
+            "info",
+            null
+        ],
+        [
+            "nsfw",
+            null
+        ],
+        [
+            "owner",
+            null
+        ],
+        [
+            "ipaddr",
+            null
+        ],
+        [
+            "trusted",
+            null
+        ],
+        [
+            "flagged",
+            null
+        ],
+        [
+            "suspicious",
+            null
+        ],
+        [
+            "uncompleted_jobs",
+            null
+        ],
+        [
+            "models",
+            null
+        ],
+        [
+            "forms",
+            null
+        ],
+        [
+            "team",
+            null
+        ],
+        [
+            "contact",
+            null
+        ],
+        [
+            "bridge_agent",
+            null
+        ],
+        [
+            "max_pixels",
+            null
+        ],
+        [
+            "megapixelsteps_generated",
+            null
+        ],
+        [
+            "img2img",
+            null
+        ],
+        [
+            "painting",
+            null
+        ],
+        [
+            "post_processing",
+            null
+        ],
+        [
+            "lora",
+            null
+        ],
+        [
+            "max_length",
+            null
+        ],
+        [
+            "max_context_length",
+            null
+        ],
+        [
+            "tokens_generated",
+            null
+        ]
+    ],
+    "TextGenerateAsyncDryRunResponse": [
+        [
+            "kudos",
+            null
+        ]
+    ],
+    "TextGenerateAsyncResponse": [
+        [
+            "message",
+            null
+        ],
+        [
+            "id_",
+            null
+        ],
+        [
+            "kudos",
+            "The expected kudos consumption for this request."
+        ],
+        [
+            "warnings",
+            null
+        ]
+    ],
+    "TextGenerateJobPopResponse": [
+        [
+            "extra_source_images",
+            null
+        ],
+        [
+            "payload",
+            "The settings for this text generation."
+        ],
+        [
+            "id_",
+            "The UUID for this text generation."
+        ],
+        [
+            "ids",
+            "The UUIDs for this text generations."
+        ],
+        [
+            "skipped",
+            "The skipped requests that were not valid for this worker."
+        ],
+        [
+            "softprompt",
+            "The soft prompt requested for this generation."
+        ],
+        [
+            "model",
+            "The model requested for this generation."
         ]
     ],
     "TextModelStatsResponse": [
