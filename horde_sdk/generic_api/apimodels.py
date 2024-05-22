@@ -430,7 +430,7 @@ class RequestSpecifiesUserIDMixin(BaseModel):
         return value
 
 
-class RequestUsesImageWorkerMixin(BaseModel):
+class RequestUsesWorkerMixin(BaseModel):
     """Mix-in class to describe an endpoint for which you can specify workers."""
 
     trusted_workers: bool = False
@@ -453,7 +453,7 @@ __all__ = [
     "HordeAPIMessage",
     "RequestErrorResponse",
     "RequestSpecifiesUserIDMixin",
-    "RequestUsesImageWorkerMixin",
+    "RequestUsesWorkerMixin",
     "ResponseRequiringFollowUpMixin",
     "ResponseWithProgressMixin",
 ]

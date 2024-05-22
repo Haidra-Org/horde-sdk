@@ -22,7 +22,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeAPIObject,
     HordeResponse,
     HordeResponseBaseModel,
-    RequestUsesImageWorkerMixin,
+    RequestUsesWorkerMixin,
     ResponseRequiringFollowUpMixin,
 )
 
@@ -124,7 +124,7 @@ class ImageGenerationInputPayload(HordeAPIObject, ImageGenerateParamMixin):
 class ImageGenerateAsyncRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
-    RequestUsesImageWorkerMixin,
+    RequestUsesWorkerMixin,
 ):
     """Represents the data needed to make a request to the `/v2/generate/async` endpoint.
 

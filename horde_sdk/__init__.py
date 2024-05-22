@@ -73,7 +73,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeRequest,
     RequestErrorResponse,
     RequestSpecifiesUserIDMixin,
-    RequestUsesImageWorkerMixin,
+    RequestUsesWorkerMixin,
     ResponseRequiringFollowUpMixin,
     ResponseWithProgressMixin,
 )
@@ -95,7 +95,7 @@ __all__ = [
     "HordeAPIObject",
     "RequestErrorResponse",
     "RequestSpecifiesUserIDMixin",
-    "RequestUsesImageWorkerMixin",
+    "RequestUsesWorkerMixin",
     "ResponseRequiringFollowUpMixin",
     "ResponseWithProgressMixin",
     "ANON_API_KEY",
