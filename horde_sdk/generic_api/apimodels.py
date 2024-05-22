@@ -6,6 +6,7 @@ import abc
 import base64
 import os
 import uuid
+from typing import Any
 
 import aiohttp
 from loguru import logger
@@ -16,6 +17,15 @@ from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
+
+try:
+    from horde_sdk._version import __version__
+except ImportError:
+    __version__ = "0.0.0"
+    logger.warning(
+        "Could not import version from _version.py. If this is a development environment, this is normal."
+        " You can fix this by building the package with `python -m build`.",
+    )
 
 
 class HordeAPIObject(BaseModel, abc.ABC):
@@ -35,8 +45,9 @@ class HordeAPIObject(BaseModel, abc.ABC):
 class HordeAPIDataObject(BaseModel):
     """Base class for all Horde API data models which appear as objects within other data models.
 
-    These are objects which might not be specifically defined by the API docs, but (logically or otherwise) are
-    returned by the API.
+    These are objects which are not specifically defined by the API docs, but (logically or otherwise) are
+    returned by the API. Occasionally, objects derived from this class may also be used as a mixin to compose other
+    models.
     """
 
     model_config = (
@@ -48,13 +59,13 @@ class HordeAPIMessage(HordeAPIObject):
     """Represents any request or response from any Horde API."""
 
     @classmethod
-    def get_sensitive_fields(self) -> set[str]:
+    def get_sensitive_fields(cls) -> set[str]:
         return {"apikey"}
 
     def get_extra_fields_to_exclude_from_log(self) -> set[str]:
         return set()
 
-    def log_safe_model_dump(self) -> dict:
+    def log_safe_model_dump(self) -> dict[Any, Any]:
         """Return a dict of the model's fields, with any sensitive fields redacted."""
         return self.model_dump(exclude=self.get_sensitive_fields() | self.get_extra_fields_to_exclude_from_log())
 
@@ -64,6 +75,8 @@ class HordeResponse(HordeAPIMessage):
 
 
 class HordeResponseBaseModel(HordeResponse, BaseModel):
+    """Base class for all Horde API response data models (leveraging pydantic)."""
+
     model_config = (
         ConfigDict(frozen=True) if not os.getenv("TESTS_ONGOING") else ConfigDict(frozen=True, extra="forbid")
     )
@@ -293,7 +306,7 @@ class HordeRequest(HordeAPIMessage, BaseModel):
     # X_Fields # TODO
 
     client_agent: str = Field(
-        default="horde_sdk:0.7.10:https://githib.com/haidra-org/horde-sdk",  # FIXME
+        default=f"horde_sdk:{__version__}:https://githib.com/haidra-org/horde-sdk",
         alias="Client-Agent",
     )
 
@@ -335,6 +348,15 @@ class HordeRequest(HordeAPIMessage, BaseModel):
         """
         return []
 
+    @classmethod
+    def get_query_fields(cls) -> list[str]:
+        """Return a list of field names from this request object that should be sent as query parameters.
+
+        This is in addition to `GenericQueryFields`'s values, and possibly the API specific class
+        which inherits from `GenericQueryFields`, typically found in the `horde_sdk.<api_name>_api.metadata` module.
+        """
+        return []
+
     def get_number_of_results_expected(self) -> int:
         """Return the number of (job) results expected from this request.
 
@@ -357,7 +379,7 @@ class HordeRequest(HordeAPIMessage, BaseModel):
 
     @override
     @classmethod
-    def get_sensitive_fields(self) -> set[str]:
+    def get_sensitive_fields(cls) -> set[str]:
         return {"apikey"}
 
 
@@ -408,7 +430,7 @@ class RequestSpecifiesUserIDMixin(BaseModel):
         return value
 
 
-class RequestUsesImageWorkerMixin(BaseModel):
+class RequestUsesWorkerMixin(BaseModel):
     """Mix-in class to describe an endpoint for which you can specify workers."""
 
     trusted_workers: bool = False
@@ -431,7 +453,7 @@ __all__ = [
     "HordeAPIMessage",
     "RequestErrorResponse",
     "RequestSpecifiesUserIDMixin",
-    "RequestUsesImageWorkerMixin",
+    "RequestUsesWorkerMixin",
     "ResponseRequiringFollowUpMixin",
     "ResponseWithProgressMixin",
 ]

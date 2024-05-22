@@ -1,4 +1,14 @@
 {
+    "AIHordeHeartbeatResponse": [
+        [
+            "message",
+            null
+        ],
+        [
+            "version",
+            null
+        ]
+    ],
     "AlchemyAsyncResponse": [
         [
             "message",
@@ -24,6 +34,12 @@
         ],
         [
             "forms",
+            null
+        ]
+    ],
+    "AlchemyJobSubmitResponse": [
+        [
+            "reward",
             null
         ]
     ],
@@ -141,6 +157,96 @@
             null
         ]
     ],
+    "TextGenerateStatusResponse": [
+        [
+            "finished",
+            null
+        ],
+        [
+            "processing",
+            null
+        ],
+        [
+            "restarted",
+            null
+        ],
+        [
+            "waiting",
+            null
+        ],
+        [
+            "done",
+            null
+        ],
+        [
+            "faulted",
+            null
+        ],
+        [
+            "wait_time",
+            null
+        ],
+        [
+            "queue_position",
+            null
+        ],
+        [
+            "kudos",
+            null
+        ],
+        [
+            "is_possible",
+            null
+        ],
+        [
+            "generations",
+            "The generations that have been completed in this request."
+        ],
+        [
+            "finished",
+            null
+        ],
+        [
+            "processing",
+            null
+        ],
+        [
+            "restarted",
+            null
+        ],
+        [
+            "waiting",
+            null
+        ],
+        [
+            "done",
+            null
+        ],
+        [
+            "faulted",
+            null
+        ],
+        [
+            "wait_time",
+            null
+        ],
+        [
+            "queue_position",
+            null
+        ],
+        [
+            "kudos",
+            null
+        ],
+        [
+            "is_possible",
+            null
+        ],
+        [
+            "generations",
+            "The generations that have been completed in this request."
+        ]
+    ],
     "FindUserResponse": [
         [
             "admin_comment",
@@ -161,6 +267,10 @@
         [
             "contributions",
             null
+        ],
+        [
+            "customizer",
+            "If this user can run custom models."
         ],
         [
             "evaluating_kudos",
@@ -247,6 +357,72 @@
             "Whether this user has been invited to join a worker to the horde and how many of them. When 0, this user cannot add (new) workers to the horde."
         ]
     ],
+    "HordePerformanceResponse": [
+        [
+            "interrogator_count",
+            "How many workers are actively processing image interrogations in this {horde_noun} in the past 5 minutes."
+        ],
+        [
+            "interrogator_thread_count",
+            "How many worker threads are actively processing image interrogation in this {horde_noun} in the past 5 minutes."
+        ],
+        [
+            "past_minute_megapixelsteps",
+            "How many megapixelsteps this horde generated in the last minute."
+        ],
+        [
+            "past_minute_tokens",
+            "How many tokens this horde generated in the last minute."
+        ],
+        [
+            "queued_forms",
+            "The amount of image interrogations waiting and processing currently in this horde."
+        ],
+        [
+            "queued_megapixelsteps",
+            "The amount of megapixelsteps in waiting and processing requests currently in this horde."
+        ],
+        [
+            "queued_requests",
+            "The amount of waiting and processing image requests currently in this horde."
+        ],
+        [
+            "queued_text_requests",
+            "The amount of waiting and processing text requests currently in this horde."
+        ],
+        [
+            "queued_tokens",
+            "The amount of tokens in waiting and processing requests currently in this horde."
+        ],
+        [
+            "text_thread_count",
+            "How many worker threads are actively processing prompt generations in this {horde_noun} in the past 5 minutes."
+        ],
+        [
+            "text_worker_count",
+            "How many workers are actively processing prompt generations in this horde in the past 5 minutes."
+        ],
+        [
+            "thread_count",
+            "How many worker threads are actively processing prompt generations in this {horde_noun} in the past 5 minutes."
+        ],
+        [
+            "worker_count",
+            "How many workers are actively processing prompt generations in this horde in the past 5 minutes."
+        ]
+    ],
+    "HordeStatusModelsAllResponse": [
+        [
+            "root",
+            null
+        ]
+    ],
+    "HordeStatusModelsSingleResponse": [
+        [
+            "root",
+            null
+        ]
+    ],
     "ImageGenerateAsyncDryRunResponse": [
         [
             "kudos",
@@ -315,6 +491,10 @@
     ],
     "ImageGenerateJobPopResponse": [
         [
+            "extra_source_images",
+            null
+        ],
+        [
             "id_",
             null
         ],
@@ -347,10 +527,6 @@
             null
         ],
         [
-            "extra_source_images",
-            null
-        ],
-        [
             "r2_upload",
             null
         ],
@@ -363,9 +539,269 @@
         [
             "reward",
             null
+        ],
+        [
+            "reward",
+            null
         ]
     ],
-    "StatsModelsResponse": [
+    "ImageModelStatsResponse": [
+        [
+            "day",
+            null
+        ],
+        [
+            "month",
+            null
+        ],
+        [
+            "total",
+            null
+        ]
+    ],
+    "ImageStatsModelsTotalResponse": [
+        [
+            "day",
+            null
+        ],
+        [
+            "hour",
+            null
+        ],
+        [
+            "minute",
+            null
+        ],
+        [
+            "month",
+            null
+        ],
+        [
+            "total",
+            null
+        ]
+    ],
+    "NewsResponse": [
+        [
+            "root",
+            null
+        ]
+    ],
+    "SingleWorkerDetailsResponse": [
+        [
+            "type_",
+            null
+        ],
+        [
+            "name",
+            null
+        ],
+        [
+            "id_",
+            null
+        ],
+        [
+            "online",
+            null
+        ],
+        [
+            "requests_fulfilled",
+            null
+        ],
+        [
+            "kudos_rewards",
+            null
+        ],
+        [
+            "kudos_details",
+            null
+        ],
+        [
+            "performance",
+            null
+        ],
+        [
+            "threads",
+            null
+        ],
+        [
+            "uptime",
+            null
+        ],
+        [
+            "maintenance_mode",
+            null
+        ],
+        [
+            "paused",
+            null
+        ],
+        [
+            "info",
+            null
+        ],
+        [
+            "nsfw",
+            null
+        ],
+        [
+            "owner",
+            null
+        ],
+        [
+            "ipaddr",
+            null
+        ],
+        [
+            "trusted",
+            null
+        ],
+        [
+            "flagged",
+            null
+        ],
+        [
+            "suspicious",
+            null
+        ],
+        [
+            "uncompleted_jobs",
+            null
+        ],
+        [
+            "models",
+            null
+        ],
+        [
+            "forms",
+            null
+        ],
+        [
+            "team",
+            null
+        ],
+        [
+            "contact",
+            null
+        ],
+        [
+            "bridge_agent",
+            null
+        ],
+        [
+            "max_pixels",
+            null
+        ],
+        [
+            "megapixelsteps_generated",
+            null
+        ],
+        [
+            "img2img",
+            null
+        ],
+        [
+            "painting",
+            null
+        ],
+        [
+            "post_processing",
+            null
+        ],
+        [
+            "lora",
+            null
+        ],
+        [
+            "max_length",
+            null
+        ],
+        [
+            "max_context_length",
+            null
+        ],
+        [
+            "tokens_generated",
+            null
+        ]
+    ],
+    "TextGenerateAsyncDryRunResponse": [
+        [
+            "kudos",
+            null
+        ]
+    ],
+    "TextGenerateAsyncResponse": [
+        [
+            "message",
+            null
+        ],
+        [
+            "id_",
+            null
+        ],
+        [
+            "kudos",
+            "The expected kudos consumption for this request."
+        ],
+        [
+            "warnings",
+            null
+        ]
+    ],
+    "TextGenerateJobPopResponse": [
+        [
+            "extra_source_images",
+            null
+        ],
+        [
+            "payload",
+            "The settings for this text generation."
+        ],
+        [
+            "id_",
+            "The UUID for this text generation."
+        ],
+        [
+            "ids",
+            "The UUIDs for this text generations."
+        ],
+        [
+            "skipped",
+            "The skipped requests that were not valid for this worker."
+        ],
+        [
+            "softprompt",
+            "The soft prompt requested for this generation."
+        ],
+        [
+            "model",
+            "The model requested for this generation."
+        ]
+    ],
+    "TextModelStatsResponse": [
+        [
+            "day",
+            null
+        ],
+        [
+            "month",
+            null
+        ],
+        [
+            "total",
+            null
+        ]
+    ],
+    "TextStatsModelsTotalResponse": [
+        [
+            "minute",
+            null
+        ],
+        [
+            "hour",
+            null
+        ],
         [
             "day",
             null

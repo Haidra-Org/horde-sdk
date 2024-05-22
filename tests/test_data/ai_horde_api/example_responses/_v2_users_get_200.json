@@ -31,6 +31,7 @@
     "vpn": false,
     "service": false,
     "education": false,
+    "customizer": false,
     "special": false,
     "suspicious": 0,
     "pseudonymous": false,

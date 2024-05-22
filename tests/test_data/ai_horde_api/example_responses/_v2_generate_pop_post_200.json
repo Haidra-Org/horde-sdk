@@ -1,6 +1,6 @@
 {
     "payload": {
-        "sampler_name": "k_dpmpp_sde",
+        "sampler_name": "k_dpmpp_2m",
         "cfg_scale": 7.5,
         "denoising_strength": 0.75,
         "seed": "The little seed that could",
@@ -39,6 +39,13 @@
             "additionalProp2": {},
             "additionalProp3": {}
         },
+        "extra_texts": [
+            {
+                "text": "a",
+                "reference": "aaa"
+            }
+        ],
+        "workflow": "qr_code",
         "prompt": "",
         "ddim_steps": 30,
         "n_iter": 1,
@@ -69,6 +76,12 @@
     "source_image": "",
     "source_processing": "img2img",
     "source_mask": "",
+    "extra_source_images": [
+        {
+            "image": "a",
+            "strength": 1.0
+        }
+    ],
     "r2_upload": "",
     "r2_uploads": [
         ""

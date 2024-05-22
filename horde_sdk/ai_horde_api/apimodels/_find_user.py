@@ -7,6 +7,7 @@ from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, HordeAPIDataObject, HordeResponseBaseModel
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class ContributionsDetails(HordeAPIDataObject):
@@ -64,6 +65,8 @@ class UsageDetails(HordeAPIDataObject):
     requests: int | None = Field(default=None, description="How many images this user has requested.")
 
 
+@Unhashable
+@Unequatable
 class FindUserResponse(HordeResponseBaseModel):
     @override
     @classmethod
@@ -91,6 +94,12 @@ class FindUserResponse(HordeResponseBaseModel):
     """(Privileged) Contact details for the horde admins to reach the user in case of emergency."""
     contributions: ContributionsDetails | None = None
     """How many images and megapixelsteps this user has generated."""
+
+    customizer: bool | None = Field(
+        default=None,
+        description="If this user can run custom models.",
+        examples=[False],
+    )
 
     evaluating_kudos: float | None = Field(
         default=None,
@@ -193,12 +202,6 @@ class FindUserResponse(HordeResponseBaseModel):
     """Whether this user has been invited to join a worker to the horde and how many of them.
     When 0, this user cannot add (new) workers to the horde."""
 
-    def __eq__(self, other: object) -> bool:
-        raise NotImplementedError("TODO")
-
-    def __hash__(self) -> int:
-        raise NotImplementedError("TODO")
-
 
 class FindUserRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     @override
@@ -213,10 +216,10 @@ class FindUserRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 
     @override
     @classmethod
-    def get_http_method(self) -> HTTPMethod:
+    def get_http_method(cls) -> HTTPMethod:
         return HTTPMethod.GET
 
     @override
     @classmethod
-    def get_default_success_response_type(self) -> type[FindUserResponse]:
+    def get_default_success_response_type(cls) -> type[FindUserResponse]:
         return FindUserResponse

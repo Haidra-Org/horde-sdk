@@ -1,22 +1,22 @@
 {
     "minute": {
-        "images": 0,
-        "ps": 0
+        "requests": 0,
+        "tokens": 0
     },
     "hour": {
-        "images": 0,
-        "ps": 0
+        "requests": 0,
+        "tokens": 0
     },
     "day": {
-        "images": 0,
-        "ps": 0
+        "requests": 0,
+        "tokens": 0
     },
     "month": {
-        "images": 0,
-        "ps": 0
+        "requests": 0,
+        "tokens": 0
     },
     "total": {
-        "images": 0,
-        "ps": 0
+        "requests": 0,
+        "tokens": 0
     }
 }

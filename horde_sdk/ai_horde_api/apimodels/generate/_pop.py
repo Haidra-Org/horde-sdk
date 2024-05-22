@@ -26,40 +26,84 @@ from horde_sdk.ai_horde_api.fields import JobID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    HordeAPIDataObject,
+    HordeAPIObject,
     HordeResponseBaseModel,
     ResponseRequiringDownloadMixin,
     ResponseRequiringFollowUpMixin,
 )
 
 
-class ImageGenerateJobPopSkippedStatus(HordeAPIDataObject):
+class NoValidRequestFound(HordeAPIObject):
+    blacklist: int | None = Field(
+        None,
+        description=(
+            "How many waiting requests were skipped because they demanded a generation with a word that this worker"
+            " does not accept."
+        ),
+        ge=0,
+    )
+    bridge_version: int | None = Field(
+        None,
+        description=(
+            "How many waiting requests were skipped because they require a higher version of the bridge than this"
+            " worker is running (upgrade if you see this in your skipped list)."
+        ),
+        examples=[0],
+        ge=0,
+    )
+    kudos: int | None = Field(
+        None,
+        description=(
+            "How many waiting requests were skipped because the user didn't have enough kudos when this worker"
+            " requires upfront kudos."
+        ),
+    )
+    models: int | None = Field(
+        None,
+        description=(
+            "How many waiting requests were skipped because they demanded a different model than what this worker"
+            " provides."
+        ),
+        examples=[0],
+        ge=0,
+    )
+    nsfw: int | None = Field(
+        None,
+        description=(
+            "How many waiting requests were skipped because they demanded a nsfw generation which this worker does not"
+            " provide."
+        ),
+        ge=0,
+    )
+    performance: int | None = Field(
+        None,
+        description="How many waiting requests were skipped because they required higher performance.",
+        ge=0,
+    )
+    untrusted: int | None = Field(
+        None,
+        description=(
+            "How many waiting requests were skipped because they demanded a trusted worker which this worker is not."
+        ),
+        ge=0,
+    )
+    worker_id: int | None = Field(
+        None,
+        description="How many waiting requests were skipped because they demanded a specific worker.",
+        ge=0,
+    )
+
+    def is_empty(self) -> bool:
+        """Whether or not this object has any non-zero values."""
+        return len(self.model_fields_set) == 0
+
+
+class ImageGenerateJobPopSkippedStatus(NoValidRequestFound):
     """Represents the data returned from the `/v2/generate/pop` endpoint for why a worker was skipped.
 
     v2 API Model: `NoValidRequestFoundStable`
     """
 
-    worker_id: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they demanded a specific worker."""
-    performance: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they required higher performance."""
-    nsfw: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they demanded a nsfw generation which this worker
-    does not provide."""
-    blacklist: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they demanded a generation with a word that this worker does
-    not accept."""
-    untrusted: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they demanded a trusted worker which this worker is not."""
-    models: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they demanded a different model than what this worker
-    provides."""
-    bridge_version: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because they require a higher version of the bridge than this worker is
-    running (upgrade if you see this in your skipped list)."""
-    kudos: int = Field(default=0, ge=0)
-    """How many waiting requests were skipped because the user didn't have enough kudos when this worker requires
-     upfront kudos."""
     max_pixels: int = Field(default=0, ge=0)
     """How many waiting requests were skipped because they demanded a higher size than this worker provides."""
     unsafe_ip: int = Field(default=0, ge=0)
@@ -75,9 +119,10 @@ class ImageGenerateJobPopSkippedStatus(HordeAPIDataObject):
     controlnet: int = Field(default=0, ge=0)
     """How many waiting requests were skipped because they requested a controlnet."""
 
-    def is_empty(self) -> bool:
-        """Whether or not this object has any non-zero values."""
-        return len(self.model_fields_set) == 0
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "NoValidRequestFoundStable"
 
 
 class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
@@ -89,10 +134,104 @@ class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
     """The number of images to generate. Defaults to 1, maximum is 20."""
 
 
+class ExtraSourceImageMixin(ResponseRequiringDownloadMixin):
+    extra_source_images: list[ExtraSourceImageEntry] | None = None
+    """Additional uploaded images (as base64) which can be used for further operations."""
+    _downloaded_extra_source_images: list[ExtraSourceImageEntry] | None = None
+
+    async def async_download_extra_source_images(
+        self,
+        client_session: aiohttp.ClientSession,
+        *,
+        max_retries: int = 5,
+    ) -> list[ExtraSourceImageEntry] | None:
+        """Download the extra source images concurrently.
+
+        You can also use `get_downloaded_extra_source_images` to get the downloaded images later, if needed.
+
+        Args:
+            client_session: The aiohttp client session to use for downloading.
+            max_retries: The maximum number of times to retry downloading an image.
+
+        Returns:
+            The downloaded extra source images.
+        """
+        if not self.extra_source_images:
+            logger.info("No extra source images to download.")
+            return None
+
+        if self._downloaded_extra_source_images is not None:
+            logger.warning("Extra source images already downloaded.")
+            return self._downloaded_extra_source_images
+
+        self._downloaded_extra_source_images = []
+        for extra_source_image in self.extra_source_images:
+            await self._download_image_if_needed(client_session, extra_source_image, max_retries)
+
+        self._sort_downloaded_images()
+        return self._downloaded_extra_source_images.copy()
+
+    def get_downloaded_extra_source_images(self) -> list[ExtraSourceImageEntry] | None:
+        """Get the downloaded extra source images."""
+        return (
+            self._downloaded_extra_source_images.copy() if self._downloaded_extra_source_images is not None else None
+        )
+
+    async def _download_image_if_needed(
+        self,
+        client_session: aiohttp.ClientSession,
+        extra_source_image: ExtraSourceImageEntry,
+        max_retries: int,
+    ) -> None:
+        """Download an extra source image if it has not already been downloaded.
+
+        Args:
+            client_session: The aiohttp client session to use for downloading.
+            extra_source_image: The extra source image to download.
+            max_retries: The maximum number of times to retry downloading an image.
+        """
+        if self._downloaded_extra_source_images is None:
+            self._downloaded_extra_source_images = []
+
+        if extra_source_image.image in (entry.original_url for entry in self._downloaded_extra_source_images):
+            logger.debug(f"Extra source image {extra_source_image.image} already downloaded.")
+            return
+
+        for attempt in range(max_retries):
+            try:
+                downloaded_image = await self.download_file_as_base64(client_session, extra_source_image.image)
+                self._downloaded_extra_source_images.append(
+                    ExtraSourceImageEntry(
+                        image=downloaded_image,
+                        strength=extra_source_image.strength,
+                        original_url=extra_source_image.image,
+                    ),
+                )
+                break
+            except Exception as e:
+                logger.error(f"Error downloading extra source image {extra_source_image.image}: {e}")
+                if attempt == max_retries - 1:
+                    logger.error(f"Failed to download image {extra_source_image.image} after {max_retries} attempts.")
+
+    def _sort_downloaded_images(self) -> None:
+        """Sort the downloaded extra source images in the order they were requested."""
+
+        if self.extra_source_images is None or self._downloaded_extra_source_images is None:
+            return
+
+        _extra_source_images = self.extra_source_images.copy()
+        self._downloaded_extra_source_images.sort(
+            key=lambda entry: next(
+                (i for i, image in enumerate(_extra_source_images) if image.image == entry.original_url),
+                len(_extra_source_images),
+            ),
+        )
+
+
 class ImageGenerateJobPopResponse(
     HordeResponseBaseModel,
     ResponseRequiringFollowUpMixin,
-    ResponseRequiringDownloadMixin,
+    ExtraSourceImageMixin,
 ):
     """Represents the data returned from the `/v2/generate/pop` endpoint.
 
@@ -122,10 +261,6 @@ class ImageGenerateJobPopResponse(
     alpha channel."""
     _downloaded_source_mask: str | None = None
     """The downloaded source mask (as base64), if any. This is not part of the API response."""
-    extra_source_images: list[ExtraSourceImageEntry] | None = None
-    """Additional uploaded images (as base64) which can be used for further operations."""
-    _downloaded_extra_source_images: list[ExtraSourceImageEntry] | None = None
-    """The downloaded extra source images, if any. This is not part of the API response."""
     r2_upload: str | None = None
     """(Obsolete) The r2 upload link to use to upload this image."""
     r2_uploads: list[str] | None = None
@@ -134,8 +269,13 @@ class ImageGenerateJobPopResponse(
     @field_validator("source_processing")
     def source_processing_must_be_known(cls, v: str | KNOWN_SOURCE_PROCESSING) -> str | KNOWN_SOURCE_PROCESSING:
         """Ensure that the source processing is in this list of supported source processing."""
-        if v not in KNOWN_SOURCE_PROCESSING.__members__:
-            raise ValueError(f"Unknown source processing {v}")
+        if isinstance(v, KNOWN_SOURCE_PROCESSING):
+            return v
+
+        try:
+            KNOWN_SOURCE_PROCESSING(v)
+        except ValueError:
+            logger.warning(f"Unknown source processing {v}. Is your SDK out of date or did the API change?")
         return v
 
     @field_validator("id_", mode="before")
@@ -232,13 +372,7 @@ class ImageGenerateJobPopResponse(
         """Get the downloaded source mask."""
         return self._downloaded_source_mask
 
-    def get_downloaded_extra_source_images(self) -> list[ExtraSourceImageEntry] | None:
-        """Get the downloaded extra source images."""
-        return (
-            self._downloaded_extra_source_images.copy() if self._downloaded_extra_source_images is not None else None
-        )
-
-    def async_download_source_image(self, client_session: aiohttp.ClientSession) -> asyncio.Task:
+    def async_download_source_image(self, client_session: aiohttp.ClientSession) -> asyncio.Task[None]:
         """Download the source image concurrently."""
 
         # If the source image is not set, there is nothing to download.
@@ -254,7 +388,7 @@ class ImageGenerateJobPopResponse(
             self.download_file_to_field_as_base64(client_session, self.source_image, "_downloaded_source_image"),
         )
 
-    def async_download_source_mask(self, client_session: aiohttp.ClientSession) -> asyncio.Task:
+    def async_download_source_mask(self, client_session: aiohttp.ClientSession) -> asyncio.Task[None]:
         """Download the source mask concurrently."""
 
         # If the source mask is not set, there is nothing to download.
@@ -262,98 +396,13 @@ class ImageGenerateJobPopResponse(
             return asyncio.create_task(asyncio.sleep(0))
 
         # If the source mask is not a URL, it is already a base64 string.
-        if not self.source_mask.startswith("http"):
+        if urlparse(self.source_mask).scheme not in ["http", "https"]:
             self._downloaded_source_mask = self.source_mask
             return asyncio.create_task(asyncio.sleep(0))
 
         return asyncio.create_task(
             self.download_file_to_field_as_base64(client_session, self.source_mask, "_downloaded_source_mask"),
         )
-
-    async def async_download_extra_source_images(
-        self,
-        client_session: aiohttp.ClientSession,
-        *,
-        max_retries: int = 5,
-    ) -> list[ExtraSourceImageEntry] | None:
-        """Download all extra source images concurrently."""
-
-        if self.extra_source_images is None or len(self.extra_source_images) == 0:
-            logger.info("No extra source images to download.")
-            return None
-
-        if self._downloaded_extra_source_images is None:
-            self._downloaded_extra_source_images = []
-        else:
-            logger.warning("Extra source images already downloaded.")
-            return self._downloaded_extra_source_images
-
-        attempts = 0
-        while attempts < max_retries:
-            tasks: list[asyncio.Task] = []
-
-            for extra_source_image in self.extra_source_images:
-                if extra_source_image.image is None:
-                    continue
-
-                if urlparse(extra_source_image.image).scheme not in ["http", "https"]:
-                    self._downloaded_extra_source_images.append(extra_source_image)
-                    tasks.append(asyncio.create_task(asyncio.sleep(0)))
-                    continue
-
-                if any(
-                    extra_source_image.image == downloaded_extra_source_image.original_url
-                    for downloaded_extra_source_image in self._downloaded_extra_source_images
-                ):
-                    logger.debug(f"Extra source image {extra_source_image.image} already downloaded.")
-                    tasks.append(asyncio.create_task(asyncio.sleep(0)))
-                    continue
-
-                tasks.append(
-                    asyncio.create_task(
-                        self.download_file_as_base64(client_session, extra_source_image.image),
-                    ),
-                )
-
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-
-            for result, extra_source_image in zip(results, self.extra_source_images, strict=True):
-                if isinstance(result, Exception) or not isinstance(result, str):
-                    logger.error(f"Error downloading extra source image {extra_source_image.image}: {result}")
-                    continue
-
-                self._downloaded_extra_source_images.append(
-                    ExtraSourceImageEntry(
-                        image=result,
-                        strength=extra_source_image.strength,
-                        original_url=extra_source_image.image,
-                    ),
-                )
-
-            if len(self._downloaded_extra_source_images) == len(self.extra_source_images):
-                break
-
-            attempts += 1
-
-        # If there are any entries in _downloaded_extra_source_images,
-        # make sure the order matches the order of the original list.
-        if (
-            self.extra_source_images is not None
-            and self._downloaded_extra_source_images is not None
-            and len(self._downloaded_extra_source_images) > 0
-        ):
-
-            def _sort_key(x: ExtraSourceImageEntry) -> int:
-                if self.extra_source_images is not None:
-                    for i, extra_source_image in enumerate(self.extra_source_images):
-                        if extra_source_image.image == x.original_url:
-                            return i
-
-                return 0
-
-            self._downloaded_extra_source_images.sort(key=_sort_key)
-
-        return self._downloaded_extra_source_images.copy()
 
     @override
     async def async_download_additional_data(self, client_session: aiohttp.ClientSession) -> None:
@@ -395,20 +444,51 @@ class ImageGenerateJobPopResponse(
         return hash(0)
 
 
-class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
+class PopInput(HordeAPIObject):
+    amount: int | None = Field(1, description="How many jobvs to pop at the same time", ge=1, le=20)
+    bridge_agent: str | None = Field(
+        "unknown:0:unknown",
+        description="The worker name, version and website.",
+        examples=["AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen"],
+        max_length=1000,
+    )
+    models: list[str] | None = None
+    name: str | None = Field(None, description="The Name of the Worker.")
+    nsfw: bool | None = Field(False, description="Whether this worker can generate NSFW requests or not.")
+    priority_usernames: list[str] | None = None
+    require_upfront_kudos: bool | None = Field(
+        False,
+        description=(
+            "If True, this worker will only pick up requests where the owner has the required kudos to consume already"
+            " available."
+        ),
+        examples=[
+            False,
+        ],
+    )
+    threads: int | None = Field(
+        1,
+        description=(
+            "How many threads this worker is running. This is used to accurately the current power available in the"
+            " horde."
+        ),
+        ge=1,
+        le=50,
+    )
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "PopInput"
+
+
+class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin, PopInput):
     """Represents the data needed to make a job request from a worker to the /v2/generate/pop endpoint.
 
     v2 API Model: `PopInputStable`
     """
 
-    name: str
-    priority_usernames: list[str] = Field(default_factory=list)
-    nsfw: bool = True
-    models: list[str]
     bridge_version: int | None = None
-    bridge_agent: str
-    threads: int = 1
-    require_upfront_kudos: bool = False
     max_pixels: int
     blacklist: list[str] = Field(default_factory=list)
     allow_img2img: bool = True
@@ -416,8 +496,8 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     allow_unsafe_ipaddr: bool = True
     allow_post_processing: bool = True
     allow_controlnet: bool = False
+    allow_sdxl_controlnet: bool = False
     allow_lora: bool = False
-    amount: int = 1
 
     @override
     @classmethod

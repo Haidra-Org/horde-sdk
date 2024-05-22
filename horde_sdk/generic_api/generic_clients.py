@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import os
 from abc import ABC
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import aiohttp
 import requests
@@ -38,13 +38,13 @@ class ParsedRawRequest(BaseModel):
 
     endpoint_no_query: str
     """The endpoint URL without any query parameters."""
-    request_headers: dict
+    request_headers: dict[str, Any]
     """The headers to be sent with the request."""
-    request_queries: dict
+    request_queries: dict[str, Any]
     """The query parameters to be sent with the request."""
-    request_params: dict
+    request_params: dict[str, Any]
     """The path parameters to be sent with the request."""
-    request_body: dict | None
+    request_body: dict[str, Any] | None
     """The body to be sent with the request, or `None` if no body should be sent."""
 
 
@@ -82,7 +82,7 @@ class BaseHordeAPIClient(ABC):
         path_fields: type[GenericPathFields] = GenericPathFields,
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
-        **kwargs: dict,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """Initialize a new `GenericHordeAPIClient` instance.
 
@@ -147,7 +147,7 @@ class BaseHordeAPIClient(ABC):
         Raises:
             TypeError: If `api_request` is not of type `HordeRequest` or a subclass of it.
         """
-        if not issubclass(api_request.__class__, HordeRequest):
+        if not isinstance(api_request, HordeRequest):
             raise TypeError("`request` must be of type `HordeRequest` or a subclass of it!")
 
         # Define a helper function to extract specified data keys from the request
@@ -158,7 +158,7 @@ class BaseHordeAPIClient(ABC):
                 python_field_name:
                 # The value is the API field name, converted to a string. The python name may not match
                 # as is the case with `id`, which is reserved in python, and `id_` is used instead.
-                str(api_field_name)
+                api_field_name.value
                 for python_field_name, api_field_name in data_keys._member_map_.items()
                 if hasattr(api_request, python_field_name) and getattr(api_request, python_field_name) is not None
             }
@@ -182,28 +182,38 @@ class BaseHordeAPIClient(ABC):
 
         # Extract any extra header fields and the request body data from the request
         extra_header_keys: list[str] = api_request.get_header_fields()
+        extra_query_keys: list[str] = api_request.get_query_fields()
 
-        request_params_dict: dict[str, object] = {}
-        request_headers_dict: dict[str, object] = {}
-        request_queries_dict: dict[str, object] = {}
+        request_params_dict: dict[str, Any] = {}
+        request_headers_dict: dict[str, Any] = {}
+        request_queries_dict: dict[str, Any] = {}
 
         # Extract all fields from the request which are not specified headers, paths, or queries
         # Note: __dict__ allows access to *all* attributes of an instance
-        for request_key, request_value in api_request.__dict__.items():
+        for request_key, request_value in vars(api_request).items():
+            if request_value is None:
+                continue
             if request_key in specified_paths:
                 continue
             if request_key in specified_headers:
-                request_headers_dict[request_key] = request_value
+                request_headers_dict[specified_headers[request_key]] = request_value
                 continue
             if request_key in extra_header_keys:
                 # Remove any trailing underscores from the key as they are used to avoid python keyword conflicts
                 api_name = request_key if not request_key.endswith("_") else request_key[:-1]
                 specified_headers[request_key] = api_name
-                request_headers_dict[request_key] = request_value
+                request_headers_dict[api_name] = request_value
 
                 continue
             if request_key in specified_queries:
-                request_queries_dict[request_key] = request_value
+                request_queries_dict[specified_queries[request_key]] = request_value
+                continue
+
+            if request_key in extra_query_keys:
+                # Remove any trailing underscores from the key as they are used to avoid python keyword conflicts
+                api_name = request_key if not request_key.endswith("_") else request_key[:-1]
+                specified_queries[request_key] = api_name
+                request_queries_dict[api_name] = request_value
                 continue
 
             request_params_dict[request_key] = request_value
@@ -217,18 +227,20 @@ class BaseHordeAPIClient(ABC):
         )
 
         # Convert the request body data to a dictionary
-        request_body_data_dict: dict | None = api_request.model_dump(
+        request_body_data_dict: dict[str, Any] | None = api_request.model_dump(
             by_alias=True,
             exclude_none=True,
             exclude_unset=True,
             exclude=all_fields_to_exclude_from_body,
         )
 
-        if request_body_data_dict == {}:
+        if not request_body_data_dict:
+            # This is explicitly set to None for clarity that it is unspecified
+            # i.e., and empty body is not the same as an unspecified body
             request_body_data_dict = None
 
         # Add the API key to the request headers if the request is authenticated and an API key is provided
-        if request_headers_dict.get("apikey") is None and isinstance(api_request, APIKeyAllowedInRequestMixin):
+        if isinstance(api_request, APIKeyAllowedInRequestMixin) and "apikey" not in request_headers_dict:
             request_headers_dict["apikey"] = self._apikey
 
         return ParsedRawRequest(
@@ -242,7 +254,7 @@ class BaseHordeAPIClient(ABC):
     def _after_request_handling(
         self,
         *,
-        raw_response_json: dict,
+        raw_response_json: dict[str, Any],
         returned_status_code: int,
         expected_response_type: type[HordeResponseTypeVar],
     ) -> HordeResponseTypeVar | RequestErrorResponse:
@@ -386,7 +398,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
         path_fields: type[GenericPathFields] = GenericPathFields,
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
-        **kwargs: dict,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         super().__init__(
             apikey=apikey,
@@ -423,7 +435,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
 
         parsed_request = self._validate_and_prepare_request(api_request)
 
-        raw_response_json: dict = {}
+        raw_response_json: dict[str, Any] = {}
         response_status: int = 599
 
         if not self._aiohttp_session:
@@ -496,7 +508,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
             # Check if this request is a cleanup or follow up request for a prior request
             # Loop through each item in self._pending_follow_ups list
             for index, (prior_request, prior_response, cleanup_request) in enumerate(self._pending_follow_ups):
-                if api_request is cleanup_request:
+                if cleanup_request is not None and api_request in cleanup_request:
                     if not isinstance(response, RequestErrorResponse):
                         self._pending_follow_ups.pop(index)
                     else:
@@ -541,7 +553,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         """Enter the context manager."""
         return self
 
-    def __exit__(self, exc_type: type[Exception], exc_val: Exception, exc_tb: object) -> bool:
+    def __exit__(self, exc_type: type[BaseException], exc_val: Exception, exc_tb: object) -> bool:
         """Exit the context manager."""
         # If there was no exception, return True.
         if exc_type is None:
@@ -687,7 +699,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
 
                 # Loop through each item in self._pending_follow_ups list
                 for index, (prior_request, prior_response, cleanup_request) in enumerate(self._pending_follow_ups):
-                    if api_request is cleanup_request:
+                    if cleanup_request is not None and api_request in cleanup_request:
                         if not isinstance(response, RequestErrorResponse):
                             self._pending_follow_ups.pop(index)
                             break
@@ -734,7 +746,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
         """Enter the context manager asynchronously."""
         return self
 
-    async def __aexit__(self, exc_type: type[Exception], exc_val: Exception, exc_tb: object) -> bool:
+    async def __aexit__(self, exc_type: type[BaseException], exc_val: Exception, exc_tb: object) -> bool:
         """Exit the context manager asynchronously."""
         # If there are any requests that haven't been returned yet, log a warning.
         if self._awaiting_requests:

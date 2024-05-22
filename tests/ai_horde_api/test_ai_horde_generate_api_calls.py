@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any
 
 import aiohttp
 import pytest
@@ -390,7 +391,7 @@ class TestAIHordeGenerate:
             assert simple_image_gen_n_requests.params is not None
             assert len(image_generate_status_response.generations) < simple_image_gen_n_requests.params.n
 
-    async def delayed_cancel(self, task: asyncio.Task) -> None:
+    async def delayed_cancel(self, task: asyncio.Task[Any]) -> None:
         """Cancel the task after 4 seconds."""
         await asyncio.sleep(4)
         assert task.cancel("Test cancel")

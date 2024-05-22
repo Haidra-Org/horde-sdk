@@ -1,4 +1,14 @@
 {
+    "AIHordeHeartbeatRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
     "AlchemyAsyncRequest": [
         [
             "apikey",
@@ -36,6 +46,32 @@
         ],
         [
             "client_agent",
+            null
+        ]
+    ],
+    "AlchemyJobSubmitRequest": [
+        [
+            "apikey",
+            null
+        ],
+        [
+            "id_",
+            null
+        ],
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ],
+        [
+            "result",
+            null
+        ],
+        [
+            "state",
             null
         ]
     ],
@@ -115,6 +151,20 @@
             null
         ]
     ],
+    "DeleteTextGenerateRequest": [
+        [
+            "id_",
+            null
+        ],
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
     "FindUserRequest": [
         [
             "apikey",
@@ -126,6 +176,56 @@
         ],
         [
             "client_agent",
+            null
+        ]
+    ],
+    "HordePerformanceRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
+    "HordeStatusModelsAllRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ],
+        [
+            "type_",
+            "The type of model to filter by."
+        ],
+        [
+            "min_count",
+            null
+        ],
+        [
+            "max_count",
+            null
+        ],
+        [
+            "model_state",
+            null
+        ]
+    ],
+    "HordeStatusModelsSingleRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ],
+        [
+            "model_name",
             null
         ]
     ],
@@ -227,6 +327,38 @@
     ],
     "ImageGenerateJobPopRequest": [
         [
+            "amount",
+            "How many jobvs to pop at the same time"
+        ],
+        [
+            "bridge_agent",
+            "The worker name, version and website."
+        ],
+        [
+            "models",
+            null
+        ],
+        [
+            "name",
+            "The Name of the Worker."
+        ],
+        [
+            "nsfw",
+            "Whether this worker can generate NSFW requests or not."
+        ],
+        [
+            "priority_usernames",
+            null
+        ],
+        [
+            "require_upfront_kudos",
+            "If True, this worker will only pick up requests where the owner has the required kudos to consume already available."
+        ],
+        [
+            "threads",
+            "How many threads this worker is running. This is used to accurately the current power available in the horde."
+        ],
+        [
             "apikey",
             null
         ],
@@ -239,35 +371,7 @@
             null
         ],
         [
-            "name",
-            null
-        ],
-        [
-            "priority_usernames",
-            null
-        ],
-        [
-            "nsfw",
-            null
-        ],
-        [
-            "models",
-            null
-        ],
-        [
             "bridge_version",
-            null
-        ],
-        [
-            "bridge_agent",
-            null
-        ],
-        [
-            "threads",
-            null
-        ],
-        [
-            "require_upfront_kudos",
             null
         ],
         [
@@ -299,11 +403,11 @@
             null
         ],
         [
-            "allow_lora",
+            "allow_sdxl_controlnet",
             null
         ],
         [
-            "amount",
+            "allow_lora",
             null
         ]
     ],
@@ -359,7 +463,241 @@
             null
         ]
     ],
-    "StatsImageModelsRequest": [
+    "ImageStatsModelsRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ],
+        [
+            "model_state",
+            "The state of the models to get stats for. Known models are models that are known to the system."
+        ]
+    ],
+    "ImageStatsModelsTotalRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
+    "NewsRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
+    "SingleWorkerDetailsRequest": [
+        [
+            "apikey",
+            null
+        ],
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ],
+        [
+            "worker_id",
+            null
+        ]
+    ],
+    "TextGenerateAsyncRequest": [
+        [
+            "trusted_workers",
+            null
+        ],
+        [
+            "slow_workers",
+            null
+        ],
+        [
+            "workers",
+            null
+        ],
+        [
+            "worker_blacklist",
+            null
+        ],
+        [
+            "models",
+            null
+        ],
+        [
+            "dry_run",
+            null
+        ],
+        [
+            "apikey",
+            null
+        ],
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ],
+        [
+            "params",
+            null
+        ],
+        [
+            "prompt",
+            "The prompt which will be sent to KoboldAI to generate text."
+        ],
+        [
+            "allow_downgrade",
+            "When true and the request requires upfront kudos and the account does not have enough The request will be downgraded in max context and max tokens so that it does not need upfront kudos."
+        ],
+        [
+            "disable_batching",
+            "When true, This request will not use batching. This will allow you to retrieve accurate seeds. Feature is restricted to Trusted users and Patreons."
+        ],
+        [
+            "extra_source_images",
+            null
+        ],
+        [
+            "proxied_account",
+            "If using a service account as a proxy, provide this value to identify the actual account from which this request is coming from."
+        ],
+        [
+            "softprompt",
+            "Specify which softprompt needs to be used to service this request."
+        ],
+        [
+            "webhook",
+            "Provide a URL where the AI Horde will send a POST call after each delivered generation. The request will include the details of the job as well as the request ID."
+        ]
+    ],
+    "TextGenerateJobPopRequest": [
+        [
+            "amount",
+            "How many jobvs to pop at the same time"
+        ],
+        [
+            "bridge_agent",
+            "The worker name, version and website."
+        ],
+        [
+            "models",
+            null
+        ],
+        [
+            "name",
+            "The Name of the Worker."
+        ],
+        [
+            "nsfw",
+            "Whether this worker can generate NSFW requests or not."
+        ],
+        [
+            "priority_usernames",
+            null
+        ],
+        [
+            "require_upfront_kudos",
+            "If True, this worker will only pick up requests where the owner has the required kudos to consume already available."
+        ],
+        [
+            "threads",
+            "How many threads this worker is running. This is used to accurately the current power available in the horde."
+        ],
+        [
+            "max_length",
+            "The maximum amount of tokens this worker can generate."
+        ],
+        [
+            "max_context_length",
+            "The max amount of context to submit to this AI for sampling."
+        ],
+        [
+            "softprompts",
+            "The available softprompt files on this worker for the currently running model."
+        ],
+        [
+            "apikey",
+            null
+        ],
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
+    "TextGenerateStatusRequest": [
+        [
+            "id_",
+            null
+        ],
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
+    "TextGenerationJobSubmitRequest": [
+        [
+            "apikey",
+            null
+        ],
+        [
+            "id_",
+            null
+        ],
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ],
+        [
+            "generation",
+            null
+        ],
+        [
+            "state",
+            null
+        ],
+        [
+            "gen_metadata",
+            null
+        ]
+    ],
+    "TextStatsModelsRequest": [
+        [
+            "accept",
+            null
+        ],
+        [
+            "client_agent",
+            null
+        ]
+    ],
+    "TextStatsModelsTotalRequest": [
         [
             "accept",
             null

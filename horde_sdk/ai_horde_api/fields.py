@@ -55,7 +55,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
         if isinstance(other, uuid.UUID):
             return self.root == other
 
-        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+        return NotImplemented
 
     @override
     def __hash__(self) -> int:
@@ -71,7 +71,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
         if isinstance(other, uuid.UUID):
             return self.root < other
 
-        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+        return NotImplemented
 
     def __gt__(self, other: object) -> bool:
         if isinstance(other, UUID_Identifier):
@@ -83,7 +83,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
         if isinstance(other, uuid.UUID):
             return self.root > other
 
-        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+        return NotImplemented
 
     def __le__(self, other: object) -> bool:
         if isinstance(other, UUID_Identifier):
@@ -95,7 +95,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
         if isinstance(other, uuid.UUID):
             return self.root <= other
 
-        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+        return NotImplemented
 
     def __ge__(self, other: object) -> bool:
         if isinstance(other, UUID_Identifier):
@@ -107,7 +107,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
         if isinstance(other, uuid.UUID):
             return self.root >= other
 
-        raise NotImplementedError(f"Cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+        return NotImplemented
 
 
 class JobID(UUID_Identifier):

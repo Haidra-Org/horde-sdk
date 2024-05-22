@@ -42,6 +42,13 @@
     ],
     "dry_run": false,
     "proxied_account": "",
+    "extra_source_images": [
+        {
+            "image": "a",
+            "strength": 1.0
+        }
+    ],
     "disable_batching": false,
+    "allow_downgrade": false,
     "webhook": ""
 }

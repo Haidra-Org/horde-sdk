@@ -6,7 +6,7 @@ from horde_model_reference.model_reference_records import StableDiffusion_ModelR
 from loguru import logger
 
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient
-from horde_sdk.ai_horde_api.apimodels import StatsImageModelsRequest, StatsModelsResponse, StatsModelsTimeframe
+from horde_sdk.ai_horde_api.apimodels import ImageModelStatsResponse, ImageStatsModelsRequest, StatsModelsTimeframe
 from horde_sdk.ai_horde_worker.bridge_data import MetaInstruction
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
@@ -30,7 +30,7 @@ class ImageModelLoadResolver:
         client: AIHordeAPIManualClient,
     ) -> set[str]:
         # Get model stats from the API
-        stats_response = client.submit_request(StatsImageModelsRequest(), StatsModelsResponse)
+        stats_response = client.submit_request(ImageStatsModelsRequest(), ImageModelStatsResponse)
         if isinstance(stats_response, RequestErrorResponse):
             raise Exception(f"Error getting stats for models: {stats_response.message}")
 
@@ -253,7 +253,7 @@ class ImageModelLoadResolver:
     @staticmethod
     def resolve_top_n_model_names(
         number_of_top_models: int,
-        response: StatsModelsResponse,
+        response: ImageModelStatsResponse,
         timeframe: StatsModelsTimeframe,
     ) -> list[str]:
         """Get the names of the top N models based on usage statistics.
@@ -283,7 +283,7 @@ class ImageModelLoadResolver:
     @staticmethod
     def resolve_bottom_n_model_names(
         number_of_bottom_models: int,
-        response: StatsModelsResponse,
+        response: ImageModelStatsResponse,
         timeframe: StatsModelsTimeframe,
     ) -> list[str]:
         """Get the names of the bottom N models based on usage statistics.

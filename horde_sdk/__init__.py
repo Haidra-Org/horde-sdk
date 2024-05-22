@@ -11,7 +11,7 @@ dotenv.load_dotenv()
 import os
 
 # We import the horde_sdk logging module first so that we can use it to configure the logging system before importing
-from horde_sdk.logging import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL
+from horde_sdk.horde_logging import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL
 
 from loguru import logger
 
@@ -66,14 +66,14 @@ from horde_sdk.consts import (
 from horde_sdk.exceptions import HordeException
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    BaseModel,
     ContainsMessageResponseMixin,
+    HordeAPIDataObject,
     HordeAPIMessage,
     HordeAPIObject,
     HordeRequest,
     RequestErrorResponse,
     RequestSpecifiesUserIDMixin,
-    RequestUsesImageWorkerMixin,
+    RequestUsesWorkerMixin,
     ResponseRequiringFollowUpMixin,
     ResponseWithProgressMixin,
 )
@@ -88,14 +88,14 @@ __all__ = [
     "is_error_status_code",
     "is_success_status_code",
     "APIKeyAllowedInRequestMixin",
-    "BaseModel",
     "HordeRequest",
     "ContainsMessageResponseMixin",
+    "HordeAPIDataObject",
     "HordeAPIMessage",
     "HordeAPIObject",
     "RequestErrorResponse",
     "RequestSpecifiesUserIDMixin",
-    "RequestUsesImageWorkerMixin",
+    "RequestUsesWorkerMixin",
     "ResponseRequiringFollowUpMixin",
     "ResponseWithProgressMixin",
     "ANON_API_KEY",

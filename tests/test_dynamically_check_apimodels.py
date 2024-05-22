@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from types import ModuleType
 
+import pytest
 from loguru import logger
 
 import horde_sdk.ai_horde_api.apimodels
@@ -12,6 +13,7 @@ import horde_sdk.ratings_api.apimodels
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api._reflection import get_all_request_types
 from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponse
+from horde_sdk.generic_api.decoration import is_unhashable
 from horde_sdk.generic_api.utils.swagger import SwaggerDoc
 
 EXAMPLE_PAYLOADS: dict[ModuleType, Path] = {
@@ -110,6 +112,10 @@ class Test_reflection_and_dynamic:
             # Loop through each success status code and test the corresponding success response type.
             success_status_codes = request_type.get_success_status_response_pairs()
             for success_status_code, success_response_type in success_status_codes.items():
+                if len(success_response_type.model_fields) == 0:
+                    print(f"Response type {success_response_type.__name__} has no fields")
+                    continue
+
                 example_response_filename = SwaggerDoc.filename_from_endpoint_path(
                     request_type.get_api_endpoint_subpath(),
                     request_type.get_http_method(),
@@ -123,7 +129,10 @@ class Test_reflection_and_dynamic:
                     try:
                         parsed_model = success_response_type.model_validate(sample_data_json)
                         try:
-                            hash(parsed_model)
+                            if is_unhashable(parsed_model):
+                                logger.debug(f"Unhashable model for {example_response_file_path}")
+                            else:
+                                hash(parsed_model)
                         except NotImplementedError:
                             logger.debug(f"Hashing not implemented for {example_response_file_path}")
                         except Exception as e:
@@ -145,7 +154,10 @@ class Test_reflection_and_dynamic:
                         try:
                             parsed_model = success_response_type.model_validate(sample_data_json)
                             try:
-                                hash(parsed_model)
+                                if is_unhashable(parsed_model):
+                                    logger.debug(f"Unhashable model for {example_response_file_path}")
+                                else:
+                                    hash(parsed_model)
                             except NotImplementedError:
                                 logger.debug(f"Hashing not implemented for {example_response_file_path}")
                             except Exception as e:
@@ -168,7 +180,10 @@ class Test_reflection_and_dynamic:
                         sample_data_json = json.loads(sample_file_handle.read())
                         parsed_model = success_response_type.model_validate(sample_data_json)
                         try:
-                            hash(parsed_model)
+                            if is_unhashable(parsed_model):
+                                logger.debug(f"Unhashable model for {example_response_file_path}")
+                            else:
+                                hash(parsed_model)
                         except NotImplementedError:
                             logger.debug(f"Hashing not implemented for {example_response_file_path}")
                         except Exception as e:
@@ -176,6 +191,7 @@ class Test_reflection_and_dynamic:
                             print(f"Error: {e}")
                             raise e
 
+    @pytest.mark.object_verify
     def test_horde_api(self) -> None:
         """Test all models in the `horde_sdk.ai_horde_api.apimodels` module can be instantiated from example JSON."""
         self.dynamic_json_load(horde_sdk.ai_horde_api.apimodels)

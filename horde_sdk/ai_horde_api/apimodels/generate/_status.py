@@ -1,7 +1,7 @@
 import uuid
 
 from loguru import logger
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, GenMetadataEntry, JobRequestMixin
@@ -10,10 +10,28 @@ from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import JobID, WorkerID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import HordeResponseBaseModel, ResponseWithProgressMixin
+from horde_sdk.generic_api.apimodels import HordeAPIObject, HordeResponseBaseModel, ResponseWithProgressMixin
 
 
-class ImageGeneration(BaseModel):
+class Generation(HordeAPIObject):
+    model: str = Field(description="The model which generated this image.", title="Generation Model")
+    state: GENERATION_STATE = Field(
+        ...,
+        description="OBSOLETE (Use the gen_metadata field). The state of this generation.",
+        examples=["ok"],
+        title="Generation State",
+    )
+    worker_id: str | WorkerID = Field(
+        description="The UUID of the worker which generated this image.",
+        title="Worker ID",
+    )
+    worker_name: str = Field(
+        description="The name of the worker which generated this image.",
+        title="Worker Name",
+    )
+
+
+class ImageGeneration(Generation):
     """Represents the individual image generation responses in a ImageGenerateStatusResponse.
 
     v2 API Model: `GenerationStable`
@@ -22,14 +40,6 @@ class ImageGeneration(BaseModel):
     id_: JobID = Field(alias="id")
     """The UUID of this generation. Is always returned as a `JobID`, but can initialized from a `str`."""
     # todo: remove `str`?
-    worker_id: str | WorkerID
-    """The UUID of the worker which generated this image."""
-    worker_name: str
-    """The name of the worker which generated this image."""
-    model: str
-    """The model which generated this image."""
-    state: GENERATION_STATE
-    """The state of this generation."""
     img: str
     """The generated image as a Base64-encoded .webp file."""
     seed: str
@@ -38,6 +48,11 @@ class ImageGeneration(BaseModel):
     """When true this image has been censored by the worker's safety filter."""
     gen_metadata: list[GenMetadataEntry] | None = None
     """Extra metadata about faulted or defaulted components of the generation"""
+
+    @override
+    @classmethod
+    def get_api_model_name(self) -> str | None:
+        return "GenerationStable"
 
     @field_validator("id_", mode="before")
     def validate_id(cls, v: str | JobID) -> JobID | str:

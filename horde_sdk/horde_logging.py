@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import Any
 
 from loguru import logger
 
@@ -17,25 +18,25 @@ def set_logger_verbosity(count: int) -> None:
     verbosity = 20 - (count * 10)
 
 
-def is_stdout_log(record: dict) -> bool:
+def is_stdout_log(record: dict[str, Any]) -> bool:
     if record["level"].no < verbosity:
         return False
     return True
 
 
-def is_msg_log(record: dict) -> bool:
+def is_msg_log(record: dict[str, Any]) -> bool:
     if record["level"].no < verbosity:
         return False
     return True
 
 
-def is_stderr_log(record: dict) -> bool:
+def is_stderr_log(record: dict[str, Any]) -> bool:
     if record["level"].name not in error_levels:
         return False
     return True
 
 
-def is_trace_log(record: dict) -> bool:
+def is_trace_log(record: dict[str, Any]) -> bool:
     if record["level"].name not in error_levels:
         return False
     return True

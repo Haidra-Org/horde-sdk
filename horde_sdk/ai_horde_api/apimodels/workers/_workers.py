@@ -13,6 +13,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeAPIObject,
     HordeResponse,
 )
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class TeamDetailsLite(HordeAPIObject):
@@ -39,6 +40,7 @@ class WorkerKudosDetails(HordeAPIObject):
         return "WorkerKudosDetails"
 
 
+@Unhashable
 class WorkerDetailItem(HordeAPIObject):
     type_: WORKER_TYPE = Field(alias="type")
     name: str
@@ -124,10 +126,9 @@ class WorkerDetailItem(HordeAPIObject):
             and self.tokens_generated == other.tokens_generated
         )
 
-    def __hash__(self) -> int:
-        raise NotImplementedError("Hashing is not implemented for WorkerDetailItem")
 
-
+@Unhashable
+@Unequatable
 class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]):
     # @tazlin: The typing of __iter__ in BaseModel seems to assume that RootModel wouldn't also be a parent class.
     # without a `type: ignore``, mypy feels that this is a bad override. This is probably a sub-optimal solution
@@ -144,19 +145,11 @@ class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]
     def get_api_model_name(cls) -> str | None:
         return "WorkerDetails"
 
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, AllWorkersDetailsResponse):
-            return False
-        return all(worker in other.root for worker in self.root)
-
-    def __hash__(self) -> int:
-        return hash(tuple(self.root))
-
 
 class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     """Returns information on all works. If a moderator API key is specified, it will return additional information."""
 
-    type_: WORKER_TYPE = Field(alias="type")
+    type_: WORKER_TYPE = Field(WORKER_TYPE.all, alias="type")
 
     @override
     @classmethod
@@ -175,13 +168,55 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[HordeResponse]:
+    def get_default_success_response_type(cls) -> type[AllWorkersDetailsResponse]:
         return AllWorkersDetailsResponse
 
     @override
     @classmethod
-    def get_header_fields(cls) -> list[str]:
+    def get_query_fields(cls) -> list[str]:
         return ["type_"]
+
+    @classmethod
+    def is_api_key_required(cls) -> bool:
+        """Return whether this endpoint requires an API key."""
+        return False
+
+
+@Unhashable
+@Unequatable
+class SingleWorkerDetailsResponse(HordeResponse, WorkerDetailItem):
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "WorkerDetails"
+
+
+class SingleWorkerDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
+    """Returns information on a single worker.
+
+    If a moderator API key is specified, additional information is returned."""
+
+    worker_id: str | WorkerID = Field(alias="id")
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_workers_single
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
+
+    @override
+    @classmethod
+    def get_default_success_response_type(cls) -> type[SingleWorkerDetailsResponse]:
+        return SingleWorkerDetailsResponse
 
     @classmethod
     def is_api_key_required(cls) -> bool:

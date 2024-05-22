@@ -12,6 +12,7 @@ import urllib.parse
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Coroutine
 from enum import auto
+from typing import cast
 
 import aiohttp
 import PIL.Image
@@ -19,7 +20,7 @@ import requests
 from loguru import logger
 from strenum import StrEnum
 
-from horde_sdk import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL, ContainsMessageResponseMixin, HordeRequest
+from horde_sdk import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL
 from horde_sdk.ai_horde_api.apimodels import (
     AlchemyAsyncRequest,
     AlchemyStatusResponse,
@@ -38,8 +39,10 @@ from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.exceptions import AIHordeImageValidationError, AIHordeRequestError
 from horde_sdk.ai_horde_api.fields import JobID
-from horde_sdk.ai_horde_api.metadata import AIHordePathData
+from horde_sdk.ai_horde_api.metadata import AIHordePathData, AIHordeQueryData
 from horde_sdk.generic_api.apimodels import (
+    ContainsMessageResponseMixin,
+    HordeRequest,
     HordeResponse,
     RequestErrorResponse,
     ResponseRequiringFollowUpMixin,
@@ -188,6 +191,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient, BaseAIHordeClient):
         """Create a new instance of the AIHordeAPIManualClient."""
         super().__init__(
             path_fields=AIHordePathData,
+            query_fields=AIHordeQueryData,
         )
 
     def get_generate_check(
@@ -269,6 +273,7 @@ class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeC
         super().__init__(
             aiohttp_session=aiohttp_session,
             path_fields=AIHordePathData,
+            query_fields=AIHordeQueryData,
         )
 
     async def get_generate_check(
@@ -354,6 +359,7 @@ class AIHordeAPIClientSession(GenericHordeAPISession):
         """Create a new instance of the RatingsAPIClient."""
         super().__init__(
             path_fields=AIHordePathData,
+            query_fields=AIHordeQueryData,
         )
 
 
@@ -373,10 +379,11 @@ class AIHordeAPIAsyncClientSession(GenericAsyncHordeAPISession):
         super().__init__(
             aiohttp_session=aiohttp_session,
             path_fields=AIHordePathData,
+            query_fields=AIHordeQueryData,
         )
 
 
-class _PROGRESS_STATE(StrEnum):
+class PROGRESS_STATE(StrEnum):
     waiting = auto()
     finished = auto()
     timed_out = auto()
@@ -500,9 +507,9 @@ class BaseAIHordeSimpleClient(ABC):
         number_of_responses: int,
         start_time: float,
         timeout: int,
-        check_callback: Callable | None = None,
+        check_callback: Callable[[HordeResponse], None] | None = None,
         check_callback_type: type[ResponseWithProgressMixin | ResponseGenerationProgressCombinedMixin] | None = None,
-    ) -> _PROGRESS_STATE:
+    ) -> PROGRESS_STATE:
         """Handle a response from the API when checking the progress of a request.
 
         Typically, this is a response from a `check` or `status` request.
@@ -541,17 +548,17 @@ class BaseAIHordeSimpleClient(ABC):
         # If the number of finished images is equal to the number of images requested, we're done
         if check_response.is_job_complete(number_of_responses):
             logger.log(PROGRESS_LOGGER_LABEL, f"Job finished and available on the server: {job_id}")
-            return _PROGRESS_STATE.finished
+            return PROGRESS_STATE.finished
 
         # If we've timed out, stop waiting, log a warning, and break out of the loop
         if timeout and timeout > 0 and time.time() - start_time > timeout:
             logger.warning(
                 f"Timeout reached, cancelling generations still outstanding: {job_id}: {check_response}:",
             )
-            return _PROGRESS_STATE.timed_out
+            return PROGRESS_STATE.timed_out
 
         # If the job is not complete and the timeout has not been reached, continue waiting
-        return _PROGRESS_STATE.waiting
+        return PROGRESS_STATE.waiting
 
 
 class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
@@ -597,7 +604,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         *,
         number_of_responses: int = 1,
         timeout: int = GENERATION_MAX_LIFE,
-        check_callback: Callable | None = None,
+        check_callback: Callable[[HordeResponse], None] | None = None,
         check_callback_type: type[ResponseWithProgressMixin | ResponseGenerationProgressCombinedMixin] | None = None,
     ) -> tuple[HordeResponse, JobID]:
         """Submit a request which requires check/status polling to the AI-Horde API, and wait for it to complete.
@@ -657,7 +664,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                     check_callback_type=check_callback_type,
                 )
 
-                if progress_state == _PROGRESS_STATE.finished or progress_state == _PROGRESS_STATE.timed_out:
+                if progress_state == PROGRESS_STATE.finished or progress_state == PROGRESS_STATE.timed_out:
                     break
 
                 # Wait for 4 seconds before checking again
@@ -722,6 +729,11 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             RuntimeError: If the image couldn't be downloaded or parsed for any other reason.
         """
 
+        # `cast()` returns the value unchanged but tells coerces the type for mypy's benefit
+        # Static type checkers can't see that `_do_request_with_check` is reliably passing an object of the correct
+        # type, but we are guaranteed that it is due to the `ImageGenerateCheckResponse` type being passed as an arg.
+        generic_callback = cast(Callable[[HordeResponse], None], check_callback)
+
         timeout = self.validate_timeout(timeout, log_message=True)
 
         n = image_gen_request.params.n if image_gen_request.params and image_gen_request.params.n else 1
@@ -730,7 +742,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             image_gen_request,
             number_of_responses=n,
             timeout=timeout,
-            check_callback=check_callback,
+            check_callback=generic_callback,
             check_callback_type=ImageGenerateCheckResponse,
         )
 
@@ -781,6 +793,11 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
         """
+        # `cast()` returns the value unchanged but tells coerces the type for mypy's benefit
+        # Static type checkers can't see that `_do_request_with_check` is reliably passing an object of the correct
+        # type, but we are guaranteed that it is due to the `ImageGenerateCheckResponse` type being passed as an arg.
+        generic_callback = cast(Callable[[HordeResponse], None], check_callback)
+
         timeout = self.validate_timeout(timeout, log_message=True)
 
         logger.log(PROGRESS_LOGGER_LABEL, f"Requesting {len(alchemy_request.forms)} alchemy requests.")
@@ -791,7 +808,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             alchemy_request,
             number_of_responses=len(alchemy_request.forms),
             timeout=timeout,
-            check_callback=check_callback,
+            check_callback=generic_callback,
         )
 
         if isinstance(response, RequestErrorResponse):  # pragma: no cover
@@ -897,7 +914,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         *,
         number_of_responses: int = 1,
         timeout: int = GENERATION_MAX_LIFE,
-        check_callback: Callable | None = None,
+        check_callback: Callable[[HordeResponse], None] | None = None,
         check_callback_type: type[ResponseWithProgressMixin | ResponseGenerationProgressCombinedMixin] | None = None,
     ) -> tuple[HordeResponse, JobID]:
         """Submit a request which requires check/status polling to the AI-Horde API, and wait for it to complete.
@@ -906,7 +923,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             api_request (BaseAIHordeRequest): The request to submit.
             number_of_responses (int, optional): The number of responses to expect. Defaults to 1.
             timeout (int, optional): The number of seconds to wait before aborting.
-                returns any completed images at the end of the timeout. Defaults to DEFAULT_GENERATION_TIMEOUT.
+                returns any completed images at the end of the timeout. Defaults to GENERATION_MAX_LIFE.
 
         Returns:
             tuple[HordeResponse, JobID]: The final response and the corresponding job ID.
@@ -918,7 +935,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         if check_callback is not None and len(inspect.getfullargspec(check_callback).args) == 0:
             raise ValueError("Callback must take at least one argument")
 
-        context: contextlib.AbstractContextManager | AIHordeAPIAsyncClientSession
+        context: contextlib.nullcontext[None] | AIHordeAPIAsyncClientSession
         ai_horde_session: AIHordeAPIAsyncClientSession
 
         if self._horde_client_session is not None:
@@ -928,9 +945,11 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         elif self._aiohttp_session is not None:
             ai_horde_session = AIHordeAPIAsyncClientSession(self._aiohttp_session)
             context = ai_horde_session
+        else:
+            raise RuntimeError("No aiohttp session or AIHordeAPIAsyncClientSession provided")
 
         # This session class will cleanup incomplete requests in the event of an exception
-        async with context:  # type: ignore
+        async with context:
             # Submit the initial request
             logger.debug(
                 f"Submitting request: {api_request.log_safe_model_dump()} with timeout {timeout}",
@@ -971,7 +990,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
                     check_callback_type=check_callback_type,
                 )
 
-                if progress_state == _PROGRESS_STATE.finished or progress_state == _PROGRESS_STATE.timed_out:
+                if progress_state == PROGRESS_STATE.finished or progress_state == PROGRESS_STATE.timed_out:
                     break
 
                 # Wait for 4 seconds before checking again
@@ -1044,6 +1063,10 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
         """
+        # `cast()` returns the value unchanged but tells coerces the type for mypy's benefit
+        # Static type checkers can't see that `_do_request_with_check` is reliably passing an object of the correct
+        # type, but we are guaranteed that it is due to the `ImageGenerateCheckResponse` type being passed as an arg.
+        generic_callback = cast(Callable[[HordeResponse], None], check_callback)
 
         await asyncio.sleep(delay)
 
@@ -1054,7 +1077,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             image_gen_request,
             number_of_responses=n,
             timeout=timeout,
-            check_callback=check_callback,
+            check_callback=generic_callback,
             check_callback_type=ImageGenerateCheckResponse,
         )
 
@@ -1086,13 +1109,18 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
         """
+        # `cast()` returns the value unchanged but tells coerces the type for mypy's benefit
+        # Static type checkers can't see that `_do_request_with_check` is reliably passing an object of the correct
+        # type, but we are guaranteed that it is due to the `ImageGenerateCheckResponse` type being passed as an arg.
+        generic_callback = cast(Callable[[HordeResponse], None], check_callback)
+
         timeout = self.validate_timeout(timeout, log_message=True)
 
         response, job_id = await self._do_request_with_check(
             alchemy_request,
             number_of_responses=len(alchemy_request.forms),
             timeout=timeout,
-            check_callback=check_callback,
+            check_callback=generic_callback,
             check_callback_type=AlchemyStatusResponse,
         )
         if isinstance(response, RequestErrorResponse):  # pragma: no cover

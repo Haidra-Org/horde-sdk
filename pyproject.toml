@@ -99,6 +99,27 @@ exclude = '''
 plugins = [
   "pydantic.mypy"
 ]
+strict = true
+disallow_untyped_defs = true
+warn_unused_configs = true
+exclude = [
+  '^codegen',
+  '\.git',
+  '\.hg',
+  '\.mypy_cache',
+  '\.tox',
+  '\.venv',
+  '_build',
+  'buck-out',
+  'build',
+  'dist',
+]
 
 [tool.coverage.run]
 concurrency = ["gevent"]
+
+[tool.pytest.ini_options]
+markers = [
+    # "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "object_verify: marks tests that verify the API object structure and layout",
+]

@@ -4,10 +4,15 @@ from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequest
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, HordeResponse, HordeResponseBaseModel
+from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, HordeResponseBaseModel
 
 
 class AlchemyJobSubmitResponse(HordeResponseBaseModel):
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "GenerationSubmitted"
+
     reward: float
 
 
@@ -32,5 +37,5 @@ class AlchemyJobSubmitRequest(BaseAIHordeRequest, JobRequestMixin, APIKeyAllowed
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[HordeResponse]:
+    def get_default_success_response_type(cls) -> type[AlchemyJobSubmitResponse]:
         return AlchemyJobSubmitResponse

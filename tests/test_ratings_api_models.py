@@ -38,7 +38,7 @@ class Test_validators:
             )
             UserCheckRequest(
                 apikey="key",
-                accept="non-enum_accept_value",  # type: ignore
+                accept="non-enum_accept_value",
                 user_id="123",
                 divergence=3,
                 minutes=180,

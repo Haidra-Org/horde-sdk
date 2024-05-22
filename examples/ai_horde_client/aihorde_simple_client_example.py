@@ -6,7 +6,16 @@ from loguru import logger
 from horde_sdk import ANON_API_KEY
 from horde_sdk.ai_horde_api import KNOWN_SAMPLERS
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPISimpleClient
-from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest, ImageGenerationInputPayload, LorasPayloadEntry
+
+# isort: off
+from horde_sdk.ai_horde_api.apimodels import (
+    ImageGenerateAsyncRequest,
+    ImageGenerationInputPayload,
+    LorasPayloadEntry,
+    # TIPayloadEntry,
+)
+
+# isort: on
 
 
 def simple_generate_example(api_key: str = ANON_API_KEY) -> None:
@@ -15,7 +24,6 @@ def simple_generate_example(api_key: str = ANON_API_KEY) -> None:
     status_response, job_id = simple_client.image_generate_request(
         ImageGenerateAsyncRequest(
             apikey=api_key,
-            workers=["facf2d67-9e83-4a9e-a7ae-8e555d55af08"],
             params=ImageGenerationInputPayload(
                 sampler_name=KNOWN_SAMPLERS.k_euler,
                 cfg_scale=4,
@@ -63,7 +71,7 @@ if __name__ == "__main__":
     # Use arg parser to get the API key
     argParser = argparse.ArgumentParser()
 
-    argParser.add_argument("-k", "--api-key", required=False, default=ANON_API_KEY, help="Your horde API key.")
+    argParser.add_argument("-k", "--apikey", required=False, default=ANON_API_KEY, help="Your horde API key.")
     args = argParser.parse_args()
 
     api_key = args.api_key

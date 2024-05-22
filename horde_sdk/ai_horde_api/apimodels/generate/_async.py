@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from loguru import logger
 from pydantic import AliasChoices, Field, field_validator, model_validator
 from typing_extensions import override
@@ -20,7 +22,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeAPIObject,
     HordeResponse,
     HordeResponseBaseModel,
-    RequestUsesImageWorkerMixin,
+    RequestUsesWorkerMixin,
     ResponseRequiringFollowUpMixin,
 )
 
@@ -39,6 +41,16 @@ class ImageGenerateAsyncResponse(
     """The UUID for this image generation."""
     kudos: float
     warnings: list[SingleWarningEntry] | None = None
+
+    @model_validator(mode="after")
+    def validate_warnings(self) -> ImageGenerateAsyncResponse:
+        if self.warnings is None:
+            return self
+
+        for warning in self.warnings:
+            logger.warning(f"Warning from server ({warning.code}): {warning.message}")
+
+        return self
 
     @override
     def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
@@ -112,7 +124,7 @@ class ImageGenerationInputPayload(HordeAPIObject, ImageGenerateParamMixin):
 class ImageGenerateAsyncRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
-    RequestUsesImageWorkerMixin,
+    RequestUsesWorkerMixin,
 ):
     """Represents the data needed to make a request to the `/v2/generate/async` endpoint.
 
@@ -137,11 +149,11 @@ class ImageGenerateAsyncRequest(
     extra_source_images: list[ExtraSourceImageEntry] | None = None
     """Additional uploaded images which can be used for further operations."""
 
-    @model_validator(mode="before")
-    def validate_censor_nsfw(cls, values: dict) -> dict:
-        if values.get("censor_nsfw") and values.get("nsfw"):
-            raise ValueError("censor_nsfw is only valid when nsfw is False")
-        return values
+    @model_validator(mode="after")
+    def validate_censor_nsfw(self) -> ImageGenerateAsyncRequest:
+        if self.nsfw and self.censor_nsfw:
+            raise ValueError("Cannot censor NSFW content when NSFW detection is enabled.")
+        return self
 
     @override
     @classmethod

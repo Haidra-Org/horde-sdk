@@ -44,11 +44,9 @@ class BaseHordeBridgeData(BaseModel):
     @model_validator(mode="after")
     def validate_extra_params_warning(self) -> BaseHordeBridgeData:
         """Warn on extra parameters being passed."""
-        if not self.model_extra:
-            return self
-
-        for key in self.model_extra:
-            logger.warning(f"Unknown parameter {key} in bridge data file.")
+        if self.model_extra is not None:
+            for key in self.model_extra:
+                logger.warning(f"Unknown parameter {key} in bridge data file.")
 
         return self
 
@@ -143,6 +141,9 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
     allow_controlnet: bool = False
     """Whether to allow the use of ControlNet. This requires img2img to be enabled."""
 
+    allow_sdxl_controlnet: bool = False
+    """Whether to allow the use of SDXL ControlNet. This requires controlnet to be enabled."""
+
     allow_img2img: bool = True
     """Whether to allow the use of img2img."""
 
@@ -224,7 +225,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
     """A list of models to load. This can be a list of model names, or a list of model loading instructions, such as
     `top 100` or `all models`."""
 
-    image_models_to_skip: list = Field(
+    image_models_to_skip: list[str] = Field(
         default_factory=list,
         alias="models_to_skip",
     )
@@ -300,6 +301,15 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
             )
             self.allow_controlnet = False
 
+        if not self.allow_controlnet and self.allow_sdxl_controlnet:
+            logger.warning(
+                (
+                    "allow_sdxl_controlnet is set to True, but allow_controlnet is set to False. "
+                    "SDXL ControlNet requires allow_controlnet to be enabled. Setting allow_sdxl_controlnet to false."
+                ),
+            )
+            self.allow_sdxl_controlnet = False
+
         self.image_models_to_skip.append("SDXL_beta::stability.ai#6901")  # FIXME: no magic strings
 
         return self
@@ -344,7 +354,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
         return self
 
     @field_validator("image_models_to_load")
-    def validate_models_to_load(cls, v: list) -> list:
+    def validate_models_to_load(cls, v: list[str]) -> list[str]:
         """Validate and parse the models to load."""
         if not isinstance(v, list):
             v = [v]
@@ -369,7 +379,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
         return v
 
     @field_validator("forms")
-    def validate_alchemy_forms(cls, v: list) -> list:
+    def validate_alchemy_forms(cls, v: list[str]) -> list[str | ALCHEMY_FORMS]:
         """Validate the alchemy forms (services offered)."""
         if not isinstance(v, list):
             raise ValueError("forms must be a list")
