@@ -13,7 +13,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeAPIObject,
     HordeResponse,
 )
-from horde_sdk.generic_api.decoration import Unhashable
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class TeamDetailsLite(HordeAPIObject):
@@ -128,6 +128,7 @@ class WorkerDetailItem(HordeAPIObject):
 
 
 @Unhashable
+@Unequatable
 class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]):
     # @tazlin: The typing of __iter__ in BaseModel seems to assume that RootModel wouldn't also be a parent class.
     # without a `type: ignore``, mypy feels that this is a bad override. This is probably a sub-optimal solution
@@ -143,11 +144,6 @@ class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "WorkerDetails"
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, AllWorkersDetailsResponse):
-            return False
-        return all(worker in other.root for worker in self.root)
 
 
 class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
@@ -179,6 +175,48 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     @classmethod
     def get_query_fields(cls) -> list[str]:
         return ["type_"]
+
+    @classmethod
+    def is_api_key_required(cls) -> bool:
+        """Return whether this endpoint requires an API key."""
+        return False
+
+
+@Unhashable
+@Unequatable
+class SingleWorkerDetailsResponse(HordeResponse, WorkerDetailItem):
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "WorkerDetails"
+
+
+class SingleWorkerDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
+    """Returns information on a single worker.
+
+    If a moderator API key is specified, additional information is returned."""
+
+    worker_id: str | WorkerID = Field(alias="id")
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_workers_single
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
+
+    @override
+    @classmethod
+    def get_default_success_response_type(cls) -> type[SingleWorkerDetailsResponse]:
+        return SingleWorkerDetailsResponse
 
     @classmethod
     def is_api_key_required(cls) -> bool:

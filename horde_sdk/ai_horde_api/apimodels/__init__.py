@@ -120,6 +120,8 @@ from horde_sdk.ai_horde_api.apimodels.generate.text._status import (
 from horde_sdk.ai_horde_api.apimodels.workers._workers import (
     AllWorkersDetailsRequest,
     AllWorkersDetailsResponse,
+    SingleWorkerDetailsRequest,
+    SingleWorkerDetailsResponse,
     TeamDetailsLite,
     WorkerDetailItem,
     WorkerKudosDetails,
@@ -221,6 +223,8 @@ __all__ = [
     "TextGenerateStatusResponse",
     "AllWorkersDetailsRequest",
     "AllWorkersDetailsResponse",
+    "SingleWorkerDetailsRequest",
+    "SingleWorkerDetailsResponse",
     "TeamDetailsLite",
     "WorkerDetailItem",
     "WorkerKudosDetails",
