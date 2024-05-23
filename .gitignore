@@ -141,7 +141,8 @@ out.json
 
 examples/requested_images/*.*
 _version.py
-_version.md # to prevent mkdocs from including this file in the documentation
+# to prevent mkdocs from including this file in the documentation
+_version.md
 
 tests/testing_result_images/*
 !tests/testing_result_images/.results_go_here
