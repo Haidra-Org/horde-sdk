@@ -31,6 +31,7 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/status/news | GET | [NewsRequest][horde_sdk.ai_horde_api.apimodels._status.NewsRequest] |
 | /v2/status/performance | GET | [HordePerformanceRequest][horde_sdk.ai_horde_api.apimodels._status.HordePerformanceRequest] |
 | /v2/workers | GET | [AllWorkersDetailsRequest][horde_sdk.ai_horde_api.apimodels.workers._workers.AllWorkersDetailsRequest] |
+| /v2/workers/{worker_id} | PUT | [ModifyWorkerInput][horde_sdk.ai_horde_api.apimodels.workers._workers.ModifyWorkerInput] |
 | /v2/workers/{worker_id} | GET | [SingleWorkerDetailsRequest][horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsRequest] |
 
 
