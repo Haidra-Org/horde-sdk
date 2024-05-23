@@ -257,3 +257,58 @@ class SingleWorkerDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     def is_api_key_required(cls) -> bool:
         """Return whether this endpoint requires an API key."""
         return False
+
+
+class ModifyWorker(HordeResponse):
+    info: str | None = Field(None)
+    """The new state of the 'info' var for this worker."""
+    maintenance: bool | None = Field(None)
+    """The new state of the 'maintenance' var for this worker. When True, this worker will not pick up any new
+    requests."""
+    name: str | None = Field(None)
+    """The new name for this this worker. No profanity allowed!"""
+    paused: bool | None = Field(None)
+    """The new state of the 'paused' var for this worker. When True, this worker will not be given any new requests."""
+    team: str | None = Field(None, examples=["Direct Action"])
+    """The new team of this worker."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ModifyWorker"
+
+
+class ModifyWorkerInput(BaseAIHordeRequest):
+    info: str | None = Field(None, max_length=1000)
+    """You can optionally provide a server note which will be seen in the server details. No profanity allowed!"""
+    maintenance: bool | None = Field(None)
+    """Set to true to put this worker into maintenance."""
+    maintenance_msg: str | None = Field(None)
+    """If maintenance is True, you can optionally provide a message to be used instead of the default maintenance
+    message, so that the owner is informed."""
+    name: str | None = Field(None, max_length=100, min_length=5)
+    """When this is set, it will change the worker's name. No profanity allowed!"""
+    paused: bool | None = Field(None)
+    """(Mods only) Set to true to pause this worker."""
+    team: str | None = Field(None, examples=["0bed257b-e57c-4327-ac64-40cdfb1ac5e6"], max_length=36)
+    """The team towards which this worker contributes kudos.  It an empty string ('') is passed, it will leave the"""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ModifyWorkerInput"
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.PUT
+
+    @override
+    @classmethod
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_workers_single
+
+    @override
+    @classmethod
+    def get_default_success_response_type(cls) -> type[ModifyWorker]:
+        return ModifyWorker
