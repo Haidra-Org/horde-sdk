@@ -20,6 +20,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
 
     @model_serializer
     def ser_model(self) -> str:
+        """Serialize the model to a string."""
         return str(self.root)
 
     @field_validator("root", mode="after")

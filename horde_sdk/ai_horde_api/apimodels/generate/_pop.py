@@ -77,7 +77,6 @@ class NoValidRequestFound(HordeAPIObject):
     )
     performance: int | None = Field(
         None,
-        description="How many waiting requests were skipped because they required higher performance.",
         ge=0,
     )
     untrusted: int | None = Field(
@@ -89,7 +88,6 @@ class NoValidRequestFound(HordeAPIObject):
     )
     worker_id: int | None = Field(
         None,
-        description="How many waiting requests were skipped because they demanded a specific worker.",
         ge=0,
     )
 
@@ -215,7 +213,6 @@ class ExtraSourceImageMixin(ResponseRequiringDownloadMixin):
 
     def _sort_downloaded_images(self) -> None:
         """Sort the downloaded extra source images in the order they were requested."""
-
         if self.extra_source_images is None or self._downloaded_extra_source_images is None:
             return
 
@@ -374,7 +371,6 @@ class ImageGenerateJobPopResponse(
 
     def async_download_source_image(self, client_session: aiohttp.ClientSession) -> asyncio.Task[None]:
         """Download the source image concurrently."""
-
         # If the source image is not set, there is nothing to download.
         if self.source_image is None:
             return asyncio.create_task(asyncio.sleep(0))
@@ -390,7 +386,6 @@ class ImageGenerateJobPopResponse(
 
     def async_download_source_mask(self, client_session: aiohttp.ClientSession) -> asyncio.Task[None]:
         """Download the source mask concurrently."""
-
         # If the source mask is not set, there is nothing to download.
         if self.source_mask is None:
             return asyncio.create_task(asyncio.sleep(0))
@@ -445,17 +440,26 @@ class ImageGenerateJobPopResponse(
 
 
 class PopInput(HordeAPIObject):
-    amount: int | None = Field(1, description="How many jobvs to pop at the same time", ge=1, le=20)
+    amount: int | None = Field(1, ge=1, le=20)
+    """The number of jobs to pop at the same time."""
     bridge_agent: str | None = Field(
         "unknown:0:unknown",
-        description="The worker name, version and website.",
         examples=["AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen"],
         max_length=1000,
     )
+    """The worker name, version and website."""
     models: list[str] | None = None
-    name: str | None = Field(None, description="The Name of the Worker.")
-    nsfw: bool | None = Field(False, description="Whether this worker can generate NSFW requests or not.")
+    """The models this worker can generate."""
+    name: str | None = Field(
+        None,
+    )
+    """The Name of the Worker."""
+    nsfw: bool | None = Field(
+        False,
+    )
+    """Whether this worker can generate NSFW requests or not."""
     priority_usernames: list[str] | None = None
+    """The usernames that should be prioritized by this worker."""
     require_upfront_kudos: bool | None = Field(
         False,
         description=(
@@ -466,6 +470,8 @@ class PopInput(HordeAPIObject):
             False,
         ],
     )
+    """If True, this worker will only pick up requests where the owner has the required kudos to consume already
+    available."""
     threads: int | None = Field(
         1,
         description=(
@@ -475,6 +481,7 @@ class PopInput(HordeAPIObject):
         ge=1,
         le=50,
     )
+    """How many threads this worker is running. This is used to accurately the current power available in the horde."""
 
     @override
     @classmethod
@@ -489,15 +496,25 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     """
 
     bridge_version: int | None = None
-    max_pixels: int
+    """The version of the bridge this worker is running."""
+    max_pixels: int = Field(examples=[262144])
+    """The maximum number of pixels this worker can generate."""
     blacklist: list[str] = Field(default_factory=list)
+    """The list of words this worker will not accept in a prompt."""
     allow_img2img: bool = True
+    """Whether this worker can generate img2img."""
     allow_painting: bool = False
+    """Whether this worker can generate inpainting/outpainting."""
     allow_unsafe_ipaddr: bool = True
+    """Whether this worker will generate from unsafe/VPN IP addresses."""
     allow_post_processing: bool = True
+    """Whether this worker can do post-processing."""
     allow_controlnet: bool = False
+    """Whether this worker can generate using controlnets."""
     allow_sdxl_controlnet: bool = False
+    """Whether this worker can generate using SDXL controlnets."""
     allow_lora: bool = False
+    """Whether this worker can generate using Loras."""
 
     @override
     @classmethod

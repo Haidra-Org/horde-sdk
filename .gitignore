@@ -145,3 +145,5 @@ _version.md # to prevent mkdocs from including this file in the documentation
 
 tests/testing_result_images/*
 !tests/testing_result_images/.results_go_here
+
+ai_horde_codegen.py

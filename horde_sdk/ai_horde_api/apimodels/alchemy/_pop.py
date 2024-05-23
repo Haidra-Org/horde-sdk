@@ -32,9 +32,18 @@ class AlchemyFormPayloadStable(HordeAPIObject):
     def get_api_model_name(cls) -> str | None:
         return "ModelInterrogationFormPayloadStable"
 
-    additionalProp1: str = Field(validation_alias="additionalProp1", description="Currently unsupported")
-    additionalProp2: str = Field(validation_alias="additionalProp2", description="Currently unsupported")
-    additionalProp3: str = Field(validation_alias="additionalProp3", description="Currently unsupported")
+    additionalProp1: str = Field(
+        validation_alias="additionalProp1",
+    )
+    """Currently unsupported."""
+    additionalProp2: str = Field(
+        validation_alias="additionalProp2",
+    )
+    """Currently unsupported."""
+    additionalProp3: str = Field(
+        validation_alias="additionalProp3",
+    )
+    """Currently unsupported."""
 
 
 class AlchemyPopFormPayload(HordeAPIObject, JobRequestMixin):
@@ -46,9 +55,9 @@ class AlchemyPopFormPayload(HordeAPIObject, JobRequestMixin):
         return "InterrogationPopFormPayload"
 
     form: KNOWN_ALCHEMY_TYPES | str = Field(
-        description="The name of this interrogation form",
         examples=["caption"],
     )
+    """The name of this interrogation form."""
 
     @field_validator("form", mode="before")
     def validate_form(cls, v: str | KNOWN_ALCHEMY_TYPES) -> KNOWN_ALCHEMY_TYPES | str:
@@ -59,8 +68,15 @@ class AlchemyPopFormPayload(HordeAPIObject, JobRequestMixin):
         return v
 
     payload: AlchemyFormPayloadStable | None = None
-    r2_upload: str | None = Field(None, description="The URL in which the post-processed image can be uploaded.")
-    source_image: str | None = Field(None, description="The URL From which the source image can be downloaded.")
+    """The setting for this interrogation form."""
+    r2_upload: str | None = Field(
+        None,
+    )
+    """The URL in which the post-processed image can be uploaded."""
+    source_image: str | None = Field(
+        None,
+    )
+    """The URL From which the source image can be downloaded."""
 
 
 class NoValidAlchemyFound(HordeAPIObject):
@@ -80,6 +96,8 @@ class NoValidAlchemyFound(HordeAPIObject):
         examples=[0],
         ge=0,
     )
+    """How many waiting requests were skipped because they require a higher version of the bridge than this worker is
+    running (upgrade if you see this in your skipped list)."""
     untrusted: int | None = Field(
         None,
         description=(
@@ -87,11 +105,12 @@ class NoValidAlchemyFound(HordeAPIObject):
         ),
         ge=0,
     )
+    """How many waiting requests were skipped because they demanded a trusted worker which this worker is not."""
     worker_id: int | None = Field(
         None,
-        description="How many waiting requests were skipped because they demanded a specific worker.",
         ge=0,
     )
+    """How many waiting requests were skipped because they demanded a specific worker."""
 
 
 class AlchemyPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin):
@@ -99,7 +118,9 @@ class AlchemyPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin)
 
     # and not actually specifying a schema
     forms: list[AlchemyPopFormPayload] | None = None
+    """The forms that to be generated"""
     skipped: NoValidAlchemyFound | None = None
+    """The requests that were skipped because this worker were not eligible for them."""
 
     @override
     @classmethod
@@ -176,8 +197,11 @@ class AlchemyPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     """
 
     name: str
+    """The name of the request. This is used to identify the request in the logs."""
     priority_usernames: list[str]
+    """The usernames that should be prioritized for this request."""
     forms: list[KNOWN_ALCHEMY_TYPES]
+    """The types of alchemy that should be generated."""
 
     @override
     @classmethod

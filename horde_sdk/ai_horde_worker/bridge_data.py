@@ -19,6 +19,8 @@ _UNREASONABLE_NUMBER_OF_MODELS = 1000
 
 
 class MetaInstruction(StrEnum):
+    """Model load instructions which requiring further processing to resolve."""
+
     ALL_REGEX = r"all$|all models?$"
 
     ALL_SDXL_REGEX = r"all sdxl$|all sdxl models?$"
@@ -283,6 +285,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
 
     @field_validator("forms", mode="before")
     def default_forms(cls, v: list[str]) -> list[str]:
+        """Set the default forms if none are specified."""
         if v is None or len(v) == 0:
             logger.info("Using the default alchemy forms as none were specified.")
             return ["caption", "nsfw", "interrogation", "post-process"]
@@ -324,6 +327,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
 
     @model_validator(mode="after")
     def handle_meta_instructions(self) -> ImageWorkerBridgeData:
+        """Handle the meta instructions by resolving and applying them."""
         # See if any entries are meta instructions, and if so, remove them and place them in _meta_load_instructions
         for instruction_regex in MetaInstruction.__members__.values():
             for i, model in enumerate(self.image_models_to_load):
@@ -342,6 +346,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
 
     @model_validator(mode="after")
     def handle_meta_skip_instructions(self) -> ImageWorkerBridgeData:
+        """Handle the meta skip instructions by resolving and applying them."""
         # See if any entries are meta instructions, and if so, remove them and place them in _meta_skip_instructions
         for instruction_regex in MetaInstruction.__members__.values():
             for i, model in enumerate(self.image_models_to_skip):

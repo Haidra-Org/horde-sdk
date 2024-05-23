@@ -14,21 +14,22 @@ from horde_sdk.generic_api.apimodels import HordeAPIObject, HordeResponseBaseMod
 
 
 class Generation(HordeAPIObject):
-    model: str = Field(description="The model which generated this image.", title="Generation Model")
+    model: str = Field(title="Generation Model")
+    """The model which generated this image."""
     state: GENERATION_STATE = Field(
         ...,
-        description="OBSOLETE (Use the gen_metadata field). The state of this generation.",
         examples=["ok"],
         title="Generation State",
     )
+    """OBSOLETE (Use the gen_metadata field). The state of this generation."""
     worker_id: str | WorkerID = Field(
-        description="The UUID of the worker which generated this image.",
         title="Worker ID",
     )
+    """The UUID of the worker which generated this image."""
     worker_name: str = Field(
-        description="The name of the worker which generated this image.",
         title="Worker Name",
     )
+    """The name of the worker which generated this image."""
 
 
 class ImageGeneration(Generation):

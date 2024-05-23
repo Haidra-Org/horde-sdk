@@ -54,11 +54,11 @@
     "/v2/stats/img/totals": {
         "200": "horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsTotalResponse"
     },
-    "/v2/status/news": {
-        "200": "horde_sdk.ai_horde_api.apimodels._status.NewsResponse"
-    },
     "/v2/workers/{worker_id}": {
         "200": "horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsResponse"
+    },
+    "/v2/status/news": {
+        "200": "horde_sdk.ai_horde_api.apimodels._status.NewsResponse"
     },
     "/v2/generate/text/async": {
         "200": "horde_sdk.ai_horde_api.apimodels.generate.text._async.TextGenerateAsyncDryRunResponse",

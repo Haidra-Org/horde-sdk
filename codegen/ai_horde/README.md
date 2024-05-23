@@ -25,7 +25,7 @@ api-spec-converter --from=swagger_2 --to=openapi_3 swagger.json > swagger_openap
 
 Generate the code:
 ```bash
-datamodel-codegen --input codegen/swagger_openapi3.json --output codegen/ai_horde_codegen.py --output-model-type pydantic_v2.BaseModel --use-union-operator --field-constraints
+datamodel-codegen --input swagger_openapi3.json --output ai_horde_codegen.py --output-model-type pydantic_v2.BaseModel --use-union-operator --field-constraints
 ```
 
 Standardize quotes with black:
@@ -35,15 +35,15 @@ black codegen/ai_horde_codegen.py
 
 Clean up issues with datamodel-code-generator v0.21.1
 ```bash
-python codegen/codegen_regex_fixes.py codegen/ai_horde_codegen.py
+python codegen_regex_fixes.py ai_horde_codegen.py
 ```
 
 Format again, this time truncating the lines with `--preview`, and auto-fix lint problems
 ```bash
-black codegen/ai_horde_codegen.py --unstable --enable-unstable-feature string_processing
-ruff codegen/ai_horde_codegen.py --fix
-black codegen/ai_horde_codegen.py --unstable --enable-unstable-feature string_processing # for good measure
-ruff codegen/ai_horde_codegen.py --fix # for good measure
+black ai_horde_codegen.py --unstable --enable-unstable-feature string_processing
+ruff ai_horde_codegen.py --fix
+black ai_horde_codegen.py --unstable --enable-unstable-feature string_processing # for good measure
+ruff ai_horde_codegen.py --fix # for good measure
 ```
 
 * Fix Enum classes

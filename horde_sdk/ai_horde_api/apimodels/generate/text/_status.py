@@ -14,10 +14,13 @@ from horde_sdk.generic_api.apimodels import HordeResponseBaseModel, ResponseWith
 
 
 class GenerationKobold(Generation):
-    id_: str | None = Field(None, description="The ID for this image.", title="Generation ID")
+    id_: str | None = Field(None, title="Generation ID")
+    """The ID for this generation."""
     gen_metadata: list[GenMetadataEntry] | None = None  # FIXME: API declares a `GenerationMetadataKobold` here
-    seed: int | None = Field(0, description="The seed which generated this text.", title="Generation Seed")
-    text: str | None = Field(None, description="The generated text.", min_length=0, title="Generated Text")
+    seed: int | None = Field(0, title="Generation Seed")
+    """The seed which generated this text."""
+    text: str | None = Field(None, min_length=0, title="Generated Text")
+    """The generated text."""
 
     @override
     @classmethod
@@ -48,9 +51,9 @@ class TextGenerateStatusResponse(
 ):
     generations: list[GenerationKobold] = Field(
         default_factory=list,
-        description="The generations that have been completed in this request.",
         title="Generations",
     )
+    """The generations that have been completed in this request."""
 
     @override
     @classmethod

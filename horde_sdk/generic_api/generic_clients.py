@@ -141,6 +141,7 @@ class BaseHordeAPIClient(ABC):
         Args:
             api_request (HordeRequest): The `HordeRequest` instance to be validated and prepared.
             expected_response_type (type[HordeResponse]): The expected response type.
+
         Returns:
             _ParsedRequest: A `_ParsedRequest` instance with the extracted data to be sent in the request.
 
@@ -389,7 +390,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
 
     _aiohttp_session: aiohttp.ClientSession
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         *,
         apikey: str | None = None,
@@ -493,7 +494,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         )
         self._pending_follow_ups = []
 
-    def submit_request(
+    def submit_request(  # noqa: D102
         self,
         api_request: HordeRequest,
         expected_response_type: type[HordeResponseTypeVar],
@@ -649,7 +650,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
     it."""
     _pending_follow_ups_lock: asyncio.Lock = asyncio.Lock()
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         aiohttp_session: aiohttp.ClientSession,
         *,

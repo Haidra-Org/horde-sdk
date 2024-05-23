@@ -6,7 +6,7 @@
         ],
         [
             "version",
-            null
+            "The version of the AI Horde API that this node is running."
         ]
     ],
     "AlchemyAsyncResponse": [
@@ -16,7 +16,7 @@
         ],
         [
             "id_",
-            null
+            "The UUID for this job."
         ]
     ],
     "AlchemyStatusResponse": [
@@ -46,11 +46,11 @@
     "AlchemyPopResponse": [
         [
             "forms",
-            null
+            "The forms that to be generated"
         ],
         [
             "skipped",
-            null
+            "The requests that were skipped because this worker were not eligible for them."
         ]
     ],
     "AllWorkersDetailsResponse": [
@@ -62,141 +62,141 @@
     "ImageGenerateStatusResponse": [
         [
             "finished",
-            null
+            "The amount of finished jobs in this request."
         ],
         [
             "processing",
-            null
+            "The amount of still processing jobs in this request."
         ],
         [
             "restarted",
-            null
+            "The amount of jobs that timed out and had to be restarted or were reported as failed by a worker."
         ],
         [
             "waiting",
-            null
+            "The amount of jobs waiting to be picked up by a worker."
         ],
         [
             "done",
-            null
+            "True when all jobs in this request are done. Else False."
         ],
         [
             "faulted",
-            null
+            "True when this request caused an internal server error and could not be completed."
         ],
         [
             "wait_time",
-            null
+            "The expected amount to wait (in seconds) to generate all jobs in this request."
         ],
         [
             "queue_position",
-            null
+            "The position in the requests queue. This position is determined by relative Kudos amounts."
         ],
         [
             "kudos",
-            null
+            "The amount of total Kudos this request has consumed until now."
         ],
         [
             "is_possible",
-            null
+            "If False, this request will not be able to be completed with the pool of workers currently available."
         ],
         [
             "generations",
-            null
+            "The individual image generation responses in this request."
         ],
         [
             "shared",
-            null
+            "If True, These images have been shared with LAION."
         ],
         [
             "finished",
-            null
+            "The amount of finished jobs in this request."
         ],
         [
             "processing",
-            null
+            "The amount of still processing jobs in this request."
         ],
         [
             "restarted",
-            null
+            "The amount of jobs that timed out and had to be restarted or were reported as failed by a worker."
         ],
         [
             "waiting",
-            null
+            "The amount of jobs waiting to be picked up by a worker."
         ],
         [
             "done",
-            null
+            "True when all jobs in this request are done. Else False."
         ],
         [
             "faulted",
-            null
+            "True when this request caused an internal server error and could not be completed."
         ],
         [
             "wait_time",
-            null
+            "The expected amount to wait (in seconds) to generate all jobs in this request."
         ],
         [
             "queue_position",
-            null
+            "The position in the requests queue. This position is determined by relative Kudos amounts."
         ],
         [
             "kudos",
-            null
+            "The amount of total Kudos this request has consumed until now."
         ],
         [
             "is_possible",
-            null
+            "If False, this request will not be able to be completed with the pool of workers currently available."
         ],
         [
             "generations",
-            null
+            "The individual image generation responses in this request."
         ],
         [
             "shared",
-            null
+            "If True, These images have been shared with LAION."
         ]
     ],
     "TextGenerateStatusResponse": [
         [
             "finished",
-            null
+            "The amount of finished jobs in this request."
         ],
         [
             "processing",
-            null
+            "The amount of still processing jobs in this request."
         ],
         [
             "restarted",
-            null
+            "The amount of jobs that timed out and had to be restarted or were reported as failed by a worker."
         ],
         [
             "waiting",
-            null
+            "The amount of jobs waiting to be picked up by a worker."
         ],
         [
             "done",
-            null
+            "True when all jobs in this request are done. Else False."
         ],
         [
             "faulted",
-            null
+            "True when this request caused an internal server error and could not be completed."
         ],
         [
             "wait_time",
-            null
+            "The expected amount to wait (in seconds) to generate all jobs in this request."
         ],
         [
             "queue_position",
-            null
+            "The position in the requests queue. This position is determined by relative Kudos amounts."
         ],
         [
             "kudos",
-            null
+            "The amount of total Kudos this request has consumed until now."
         ],
         [
             "is_possible",
-            null
+            "If False, this request will not be able to be completed with the pool of workers currently available."
         ],
         [
             "generations",
@@ -204,43 +204,43 @@
         ],
         [
             "finished",
-            null
+            "The amount of finished jobs in this request."
         ],
         [
             "processing",
-            null
+            "The amount of still processing jobs in this request."
         ],
         [
             "restarted",
-            null
+            "The amount of jobs that timed out and had to be restarted or were reported as failed by a worker."
         ],
         [
             "waiting",
-            null
+            "The amount of jobs waiting to be picked up by a worker."
         ],
         [
             "done",
-            null
+            "True when all jobs in this request are done. Else False."
         ],
         [
             "faulted",
-            null
+            "True when this request caused an internal server error and could not be completed."
         ],
         [
             "wait_time",
-            null
+            "The expected amount to wait (in seconds) to generate all jobs in this request."
         ],
         [
             "queue_position",
-            null
+            "The position in the requests queue. This position is determined by relative Kudos amounts."
         ],
         [
             "kudos",
-            null
+            "The amount of total Kudos this request has consumed until now."
         ],
         [
             "is_possible",
-            null
+            "If False, this request will not be able to be completed with the pool of workers currently available."
         ],
         [
             "generations",
@@ -266,7 +266,7 @@
         ],
         [
             "contributions",
-            null
+            "How many images and megapixelsteps this user has generated."
         ],
         [
             "customizer",
@@ -290,7 +290,7 @@
         ],
         [
             "kudos_details",
-            null
+            "How much Kudos this user has accumulated or used for generating images."
         ],
         [
             "moderator",
@@ -298,7 +298,7 @@
         ],
         [
             "monthly_kudos",
-            null
+            "How much recurring Kudos this user receives monthly."
         ],
         [
             "pseudonymous",
@@ -306,11 +306,11 @@
         ],
         [
             "records",
-            null
+            "How many images, texts, megapixelsteps and tokens this user has generated or requested."
         ],
         [
             "sharedkey_ids",
-            null
+            "The IDs of the shared keys this user has access to."
         ],
         [
             "service",
@@ -330,7 +330,7 @@
         ],
         [
             "usage",
-            null
+            "How many images and megapixelsteps this user has requested."
         ],
         [
             "username",
@@ -342,7 +342,7 @@
         ],
         [
             "education",
-            "This user has been given education VPN role."
+            "(This user has been given the education role."
         ],
         [
             "worker_count",
@@ -350,7 +350,7 @@
         ],
         [
             "worker_ids",
-            null
+            "The IDs of the workers this user has created (active or inactive)."
         ],
         [
             "worker_invited",
@@ -436,7 +436,7 @@
         ],
         [
             "id_",
-            null
+            "The UUID for this job."
         ],
         [
             "kudos",
@@ -450,43 +450,43 @@
     "ImageGenerateCheckResponse": [
         [
             "finished",
-            null
+            "The amount of finished jobs in this request."
         ],
         [
             "processing",
-            null
+            "The amount of still processing jobs in this request."
         ],
         [
             "restarted",
-            null
+            "The amount of jobs that timed out and had to be restarted or were reported as failed by a worker."
         ],
         [
             "waiting",
-            null
+            "The amount of jobs waiting to be picked up by a worker."
         ],
         [
             "done",
-            null
+            "True when all jobs in this request are done. Else False."
         ],
         [
             "faulted",
-            null
+            "True when this request caused an internal server error and could not be completed."
         ],
         [
             "wait_time",
-            null
+            "The expected amount to wait (in seconds) to generate all jobs in this request."
         ],
         [
             "queue_position",
-            null
+            "The position in the requests queue. This position is determined by relative Kudos amounts."
         ],
         [
             "kudos",
-            null
+            "The amount of total Kudos this request has consumed until now."
         ],
         [
             "is_possible",
-            null
+            "If False, this request will not be able to be completed with the pool of workers currently available."
         ]
     ],
     "ImageGenerateJobPopResponse": [
@@ -496,89 +496,111 @@
         ],
         [
             "id_",
-            null
+            "(Obsolete) The UUID for this image generation."
         ],
         [
             "ids",
-            null
+            "A list of UUIDs for image generation."
         ],
         [
             "payload",
-            null
+            "The parameters used to generate this image."
         ],
         [
             "skipped",
-            null
+            "The reasons this worker was not issued certain jobs, and the number of jobs for each reason."
         ],
         [
             "model",
-            null
+            "Which of the available models to use for this request."
         ],
         [
             "source_image",
-            null
+            "The URL or Base64-encoded webp to use for img2img."
         ],
         [
             "source_processing",
-            null
+            "If source_image is provided, specifies how to process it."
         ],
         [
             "source_mask",
-            null
+            "If img_processing is set to 'inpainting' or 'outpainting', this parameter can be optionally provided as the\nmask of the areas to inpaint. If this arg is not passed, the inpainting/outpainting mask has to be embedded as\nalpha channel."
         ],
         [
             "r2_upload",
-            null
+            "(Obsolete) The r2 upload link to use to upload this image."
         ],
         [
             "r2_uploads",
-            null
+            "The r2 upload links for each this image. Each index matches the ID in self.ids"
         ]
     ],
     "JobSubmitResponse": [
         [
             "reward",
-            null
+            "The amount of kudos gained for submitting this request."
         ],
         [
             "reward",
-            null
+            "The amount of kudos gained for submitting this request."
         ]
     ],
     "ImageModelStatsResponse": [
         [
             "day",
-            null
+            "The stats for the past day."
         ],
         [
             "month",
-            null
+            "The stats for the past month."
         ],
         [
             "total",
-            null
+            "The total stats for all time."
         ]
     ],
     "ImageStatsModelsTotalResponse": [
         [
             "day",
-            null
+            "The total stats for the past day."
         ],
         [
             "hour",
-            null
+            "The total stats for the past hour."
         ],
         [
             "minute",
-            null
+            "The total stats for the past minute."
         ],
         [
             "month",
-            null
+            "The total stats for the past month."
         ],
         [
             "total",
-            null
+            "The total stats for all time."
+        ]
+    ],
+    "ModifyWorker": [
+        [
+            "info",
+            "The new state of the 'info' var for this worker."
+        ],
+        [
+            "maintenance",
+            "The new state of the 'maintenance' var for this worker. When True, this worker will not pick up any new\nrequests."
+        ],
+        [
+            "name",
+            "The new name for this this worker. No profanity allowed!"
+        ],
+        [
+            "paused",
+            "The new state of the 'paused' var for this worker. When True, this worker will not be given any new requests."
+        ],
+        [
+            "team",
+            "The new team of this worker."
         ]
     ],
     "NewsResponse": [
@@ -594,135 +616,135 @@
         ],
         [
             "name",
-            null
+            "The Name given to this worker."
         ],
         [
             "id_",
-            null
+            "The UUID of this worker."
         ],
         [
             "online",
-            null
+            "True if the worker has checked-in the past 5 minutes."
         ],
         [
             "requests_fulfilled",
-            null
+            "How many images this worker has generated."
         ],
         [
             "kudos_rewards",
-            null
+            "How many Kudos this worker has been rewarded in total."
         ],
         [
             "kudos_details",
-            null
+            "How much Kudos this worker has accumulated or used for generating images."
         ],
         [
             "performance",
-            null
+            "The average performance of this worker in human readable form."
         ],
         [
             "threads",
-            null
+            "How many threads this worker is running."
         ],
         [
             "uptime",
-            null
+            "The amount of seconds this worker has been online for this AI Horde."
         ],
         [
             "maintenance_mode",
-            null
+            "When True, this worker will not pick up any new requests."
         ],
         [
             "paused",
-            null
+            "When True, this worker not be given any new requests."
         ],
         [
             "info",
-            null
+            "Extra information or comments about this worker provided by its owner."
         ],
         [
             "nsfw",
-            null
+            "Whether this worker can generate NSFW requests or not."
         ],
         [
             "owner",
-            null
+            "Privileged or public if the owner has allowed it. The alias of the owner of this worker."
         ],
         [
             "ipaddr",
-            null
+            "Privileged. The last known IP this worker has connected from."
         ],
         [
             "trusted",
-            null
+            "The worker is trusted to return valid generations."
         ],
         [
             "flagged",
-            null
+            "The worker's owner has been flagged for suspicious activity.\nThis worker will not be given any jobs to process."
         ],
         [
             "suspicious",
-            null
+            "(Privileged) How much suspicion this worker has accumulated."
         ],
         [
             "uncompleted_jobs",
-            null
+            "How many jobs this worker has left uncompleted after it started them."
         ],
         [
             "models",
-            null
+            "The models this worker supports."
         ],
         [
             "forms",
-            null
+            "The forms this worker supports."
         ],
         [
             "team",
-            null
+            "The team this worker belongs to."
         ],
         [
             "contact",
-            null
+            "(Privileged) Contact details for the horde admins to reach the owner of this worker in emergencies."
         ],
         [
             "bridge_agent",
-            null
+            "The bridge agent name, version and website. Example: AI Horde Worker reGen:4.1.0:"
         ],
         [
             "max_pixels",
-            null
+            "The maximum pixels in resolution this worker can generate. Example: 262144"
         ],
         [
             "megapixelsteps_generated",
-            null
+            "How many megapixelsteps this worker has generated until now."
         ],
         [
             "img2img",
-            null
+            "If True, this worker supports and allows img2img requests."
         ],
         [
             "painting",
-            null
+            "If True, this worker supports and allows inpainting requests."
         ],
         [
             "post_processing",
-            null
+            "If True, this worker supports and allows post-processing requests."
         ],
         [
             "lora",
-            null
+            "If True, this worker supports and allows lora requests."
         ],
         [
             "max_length",
-            null
+            "The maximum tokens this worker can generate."
         ],
         [
             "max_context_length",
-            null
+            "The maximum tokens this worker can read."
         ],
         [
             "tokens_generated",
-            null
+            "How many tokens this worker has generated until now. "
         ]
     ],
     "TextGenerateAsyncDryRunResponse": [
@@ -738,7 +760,7 @@
         ],
         [
             "id_",
-            null
+            "The UUID for this job."
         ],
         [
             "kudos",
@@ -746,7 +768,7 @@
         ],
         [
             "warnings",
-            null
+            "Any warnings that were generated by the server or a serving worker."
         ]
     ],
     "TextGenerateJobPopResponse": [
@@ -782,37 +804,37 @@
     "TextModelStatsResponse": [
         [
             "day",
-            null
+            "The stats for the past day."
         ],
         [
             "month",
-            null
+            "The stats for the past month."
         ],
         [
             "total",
-            null
+            "The total stats for all time."
         ]
     ],
     "TextStatsModelsTotalResponse": [
         [
             "minute",
-            null
+            "The total stats for the past minute."
         ],
         [
             "hour",
-            null
+            "The total stats for the past hour."
         ],
         [
             "day",
-            null
+            "The total stats for the past day."
         ],
         [
             "month",
-            null
+            "The total stats for the past month."
         ],
         [
             "total",
-            null
+            "The total stats for all time."
         ]
     ]
 }
