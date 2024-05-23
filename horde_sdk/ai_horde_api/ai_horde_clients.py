@@ -203,7 +203,6 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient, BaseAIHordeClient):
         Not to be confused with `get_generate_status` which returns the images too.
 
         Args:
-            apikey (str): The API key to use for authentication.
             job_id (JobID | str): The ID of the request to check.
 
         Returns:
@@ -228,7 +227,6 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient, BaseAIHordeClient):
         Use `get_generate_check` instead to check the status of a pending image request.
 
         Args:
-            apikey (str): The API key to use for authentication.
             job_id (JobID): The ID of the request to check.
 
         Returns:
@@ -285,7 +283,6 @@ class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeC
         Not to be confused with `get_generate_status` which returns the images too.
 
         Args:
-            apikey (str): The API key to use for authentication.
             job_id (JobID | str): The ID of the request to check.
 
         Returns:
@@ -310,7 +307,6 @@ class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeC
         Use `get_generate_check` instead to check the status of a pending image request.
 
         Args:
-            apikey (str): The API key to use for authentication.
             job_id (JobID): The ID of the request to check.
 
         Returns:
@@ -726,7 +722,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         Args:
             image_gen_request (ImageGenerateAsyncRequest): The request to submit.
             timeout (int, optional): The number of seconds to wait before aborting.
-            returns any completed images at the end of the timeout. Defaults to -1.
+                returns any completed images at the end of the timeout. Defaults to -1.
             check_callback (Callable[[ImageGenerateCheckResponse], None], optional): A callback to call with the check
                 response.
 
