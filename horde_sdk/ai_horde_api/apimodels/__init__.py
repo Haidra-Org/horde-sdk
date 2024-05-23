@@ -131,6 +131,8 @@ from horde_sdk.ai_horde_api.apimodels.generate.text._submit import (
 from horde_sdk.ai_horde_api.apimodels.workers._workers import (
     AllWorkersDetailsRequest,
     AllWorkersDetailsResponse,
+    ModifyWorker,
+    ModifyWorkerInput,
     SingleWorkerDetailsRequest,
     SingleWorkerDetailsResponse,
     TeamDetailsLite,
@@ -241,6 +243,8 @@ __all__ = [
     "TextGenerationJobSubmitRequest",
     "AllWorkersDetailsRequest",
     "AllWorkersDetailsResponse",
+    "ModifyWorker",
+    "ModifyWorkerInput",
     "SingleWorkerDetailsRequest",
     "SingleWorkerDetailsResponse",
     "TeamDetailsLite",
