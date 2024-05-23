@@ -88,20 +88,15 @@ class BaseHordeAPIClient(ABC):
 
         Args:
             apikey (str, optional): The API key to use for authenticated requests. Defaults to None, which will use the
-            anonymous API key.
-
+                anonymous API key.
             header_fields (type[GenericHeaderFields], optional): Pass this to define the API's Header fields.
-            Defaults to GenericHeaderFields.
-
+                Defaults to GenericHeaderFields.
             path_fields (type[GenericPathFields], optional): Pass this to define the API's URL path fields.
-            Defaults to GenericPathFields.
-
+                Defaults to GenericPathFields.
             query_fields (type[GenericQueryFields], optional): Pass this to define the API's URL query fields.
-            Defaults to GenericQueryFields.
-
+                Defaults to GenericQueryFields.
             accept_types (type[GenericAcceptTypes], optional): Pass this to define the API's accept types.
-            Defaults to GenericAcceptTypes.
-
+                Defaults to GenericAcceptTypes.
             kwargs: Any additional keyword arguments are ignored.
 
         Raises:
