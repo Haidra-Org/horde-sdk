@@ -19,7 +19,7 @@ class ImageModelLoadResolver:
 
     _model_reference_manager: ModelReferenceManager
 
-    def __init__(self, model_reference_manager: ModelReferenceManager) -> None:
+    def __init__(self, model_reference_manager: ModelReferenceManager) -> None:  # noqa: D107
         if not isinstance(model_reference_manager, ModelReferenceManager):
             raise TypeError("model_reference_manager must be of type ModelReferenceManager")
         self._model_reference_manager = model_reference_manager
@@ -29,6 +29,15 @@ class ImageModelLoadResolver:
         possible_meta_instructions: list[str],
         client: AIHordeAPIManualClient,
     ) -> set[str]:
+        """Return a set of model names based on the given meta instructions.
+
+        Args:
+            possible_meta_instructions: A list of strings representing meta instructions.
+            client: An AIHordeAPIManualClient object to use for making requests.
+
+        Returns:
+            A set of strings representing the names of models to load.
+        """
         # Get model stats from the API
         stats_response = client.submit_request(ImageStatsModelsRequest(), ImageModelStatsResponse)
         if isinstance(stats_response, RequestErrorResponse):

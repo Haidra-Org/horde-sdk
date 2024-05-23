@@ -384,6 +384,8 @@ class AIHordeAPIAsyncClientSession(GenericAsyncHordeAPISession):
 
 
 class PROGRESS_STATE(StrEnum):
+    """The state of a request as seen on the server."""
+
     waiting = auto()
     finished = auto()
     timed_out = auto()
@@ -394,11 +396,16 @@ class BaseAIHordeSimpleClient(ABC):
 
     reasonable_minimum_timeout = 20
 
-    def validate_timeout(self, timeout: int, log_message: bool = False) -> int:
+    def validate_timeout(
+        self,
+        timeout: int,
+        log_message: bool = False,
+    ) -> int:
         """Check if a timeout is reasonable.
 
         Args:
             timeout (int): The timeout to check.
+            log_message (bool, optional): Whether to log a message if the timeout is too short. Defaults to False.
 
         Returns:
             bool: True if the timeout is reasonable, False otherwise.
@@ -514,7 +521,6 @@ class BaseAIHordeSimpleClient(ABC):
 
         Typically, this is a response from a `check` or `status` request.
         """
-
         # Check for error responses
         if isinstance(check_response, RequestErrorResponse):
             raise AIHordeRequestError(check_response)
@@ -565,7 +571,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
     """A simple client for the AI-Horde API. This is the easiest way to get started."""
 
     def download_image_from_generation(self, generation: ImageGeneration) -> PIL.Image.Image:
-        """Synchronously convert from base64 or download an image from a response.
+        """Convert from base64 or download an image from a response synchronously.
 
         Args:
             generation (ImageGeneration): The image generation to convert.
@@ -582,7 +588,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         return download_image_from_generation(generation)
 
     def download_image_from_url(self, url: str) -> PIL.Image.Image:
-        """Synchronously download an image from a URL.
+        """Download an image from a URL synchronously.
 
         Args:
             url (str): The URL to download the image from.
@@ -614,11 +620,13 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             number_of_responses (int, optional): The number of responses to expect. Defaults to 1.
             timeout (int, optional): The number of seconds to wait before aborting.
                 returns any completed images at the end of the timeout. Defaults to DEFAULT_GENERATION_TIMEOUT.
+            check_callback (Callable[[HordeResponse], None], optional): A callback to call with the check response.
+            check_callback_type (type[ResponseWithProgressMixin | ResponseGenerationProgressCombinedMixin], optional):
+                The type of response expected by the callback.
 
         Returns:
             tuple[HordeResponse, JobID]: The final response and the corresponding job ID.
         """
-
         if check_callback is not None and len(inspect.getfullargspec(check_callback).args) == 0:
             raise ValueError("Callback must take at least one argument")
 
@@ -719,6 +727,8 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             image_gen_request (ImageGenerateAsyncRequest): The request to submit.
             timeout (int, optional): The number of seconds to wait before aborting.
             returns any completed images at the end of the timeout. Defaults to -1.
+            check_callback (Callable[[ImageGenerateCheckResponse], None], optional): A callback to call with the check
+                response.
 
         Returns:
             list[ImageGeneration]: The completed images.
@@ -728,7 +738,6 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             binascii.Error: If the image couldn't be parsed from base 64.
             RuntimeError: If the image couldn't be downloaded or parsed for any other reason.
         """
-
         # `cast()` returns the value unchanged but tells coerces the type for mypy's benefit
         # Static type checkers can't see that `_do_request_with_check` is reliably passing an object of the correct
         # type, but we are guaranteed that it is due to the `ImageGenerateCheckResponse` type being passed as an arg.
@@ -759,6 +768,14 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         self,
         image_gen_request: ImageGenerateAsyncRequest,
     ) -> ImageGenerateAsyncDryRunResponse:
+        """Submit a dry run image generation, which will return the kudos cost without actually generating images.
+
+        Args:
+            image_gen_request (ImageGenerateAsyncRequest): The request to submit.
+
+        Returns:
+            ImageGenerateAsyncDryRunResponse: The response from the API.
+        """
         if not image_gen_request.dry_run:
             raise RuntimeError("Dry run request must have dry_run set to True")
 
@@ -786,6 +803,10 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
 
         Args:
             alchemy_request (AlchemyAsyncRequest): The request to submit.
+            timeout (int, optional): The number of seconds to wait before aborting.
+                returns any completed images at the end of the timeout. Defaults to -1.
+            check_callback (Callable[[AlchemyStatusResponse], None], optional): A callback to call with the check
+                response.
 
         Returns:
             AlchemyStatusResponse: The completed alchemy request(s).
@@ -924,6 +945,9 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             number_of_responses (int, optional): The number of responses to expect. Defaults to 1.
             timeout (int, optional): The number of seconds to wait before aborting.
                 returns any completed images at the end of the timeout. Defaults to GENERATION_MAX_LIFE.
+            check_callback (Callable[[HordeResponse], None], optional): A callback to call with the check response.
+            check_callback_type (type[ResponseWithProgressMixin | ResponseGenerationProgressCombinedMixin], optional):
+                The type of response expected by the callback.
 
         Returns:
             tuple[HordeResponse, JobID]: The final response and the corresponding job ID.
@@ -931,7 +955,6 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
         """
-
         if check_callback is not None and len(inspect.getfullargspec(check_callback).args) == 0:
             raise ValueError("Callback must take at least one argument")
 
@@ -1054,8 +1077,12 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         Args:
             image_gen_request (ImageGenerateAsyncRequest): The request to submit.
             timeout (int, optional): The number of seconds to wait before aborting.
-            returns any completed images at the end of the timeout. Any value 0 or less will wait indefinitely.
-            Defaults to -1.
+                returns any completed images at the end of the timeout. Any value 0 or less will wait indefinitely.
+                Defaults to -1.
+            check_callback (Callable[[ImageGenerateCheckResponse], None], optional): A callback to call with the check
+                response.
+            delay (float, optional): The number of seconds to wait before checking the status. Defaults to 0.0.
+
 
         Returns:
             tuple[ImageGenerateStatusResponse, JobID]: The final status response and the corresponding job ID.
@@ -1102,6 +1129,10 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
 
         Args:
             alchemy_request (AlchemyAsyncRequest): The request to submit.
+            timeout (int, optional): The number of seconds to wait before aborting.
+                returns any completed images at the end of the timeout. Defaults to -1.
+            check_callback (Callable[[AlchemyStatusResponse], None], optional): A callback to call with the check
+                response.
 
         Returns:
             tuple[ImageGenerateStatusResponse, JobID]: The final status response and the corresponding job ID.

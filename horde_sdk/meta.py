@@ -17,6 +17,15 @@ from horde_sdk.generic_api.utils.swagger import SwaggerParser
 
 @cache
 def find_subclasses(module_or_package: types.ModuleType, super_type: type) -> list[type]:
+    """Find all subclasses of a given type in a module or package.
+
+    Args:
+        module_or_package (types.ModuleType): The module or package to search in.
+        super_type (type): The super type of the classes to search for.
+
+    Returns:
+        list[type]: A list of all the subclasses of the super type in the module or package.
+    """
     subclasses: list[type] = []
 
     if hasattr(module_or_package, "__package__") and module_or_package.__package__ is not None:
@@ -64,7 +73,6 @@ def any_unimported_classes(module: types.ModuleType, super_type: type) -> tuple[
 
 def all_undefined_classes(module: types.ModuleType) -> dict[str, str]:
     """Return all of the models defined on the API but not in the SDK."""
-
     module_found_classes = find_subclasses(module, HordeAPIObject)
 
     defined_api_object_names: set[str] = set()

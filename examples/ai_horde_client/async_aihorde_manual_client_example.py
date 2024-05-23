@@ -2,6 +2,7 @@ import asyncio
 import time
 from pathlib import Path
 
+import aiofiles
 import aiohttp
 
 from horde_sdk import ANON_API_KEY
@@ -98,8 +99,8 @@ async def main() -> None:
 
             filepath_to_write_to = example_path / f"{image_gen.id_}_man_async_example.webp"
 
-            with open(filepath_to_write_to, "wb") as image_file:
-                image_file.write(image_bytes)
+            async with aiofiles.open(filepath_to_write_to, "wb") as file:
+                await file.write(image_bytes)
 
             print(f"Image downloaded to {filepath_to_write_to}!")
 

@@ -5,6 +5,7 @@ requests
 StrEnum
 loguru
 aiohttp
+aiofiles
 aiodns
 pillow
 python-dotenv

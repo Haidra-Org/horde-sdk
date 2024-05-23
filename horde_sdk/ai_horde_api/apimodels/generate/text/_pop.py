@@ -22,27 +22,20 @@ from horde_sdk.generic_api.apimodels import (
 
 
 class ModelPayloadKobold(ModelPayloadRootKobold):
-    prompt: str | None = Field(None, description="The prompt for the text generation.")
+    prompt: str | None = None
+    """The prompt for the text generation."""
 
 
 class NoValidRequestFoundKobold(NoValidRequestFound):
-    max_context_length: int | None = Field(
-        None,
-        description="How many waiting requests were skipped because they demanded a higher max_context_length than "
-        "what this worker provides.",
-    )
+    max_context_length: int | None = Field(None)
     """How many waiting requests were skipped because they demanded a higher max_context_length than what this
     worker provides."""
-    max_length: int | None = Field(
-        None,
-        description="How many waiting requests were skipped because they demanded a higher max_length than what this "
-        "worker provides.",
-    )
-    matching_softprompt: int | None = Field(
-        None,
-        description="How many waiting requests were skipped because they demanded an available soft-prompt which this "
-        "worker does not have.",
-    )
+    max_length: int | None = Field(None)
+    """How many waiting requests were skipped because they demanded a higher max_length than what this
+    worker provides."""
+    matching_softprompt: int | None = Field(None)
+    """How many waiting requests were skipped because they demanded an available soft-prompt which this worker does not
+    have."""
 
     @override
     @classmethod
@@ -55,18 +48,17 @@ class TextGenerateJobPopResponse(
     ResponseRequiringFollowUpMixin,
     ExtraSourceImageMixin,
 ):
-    payload: ModelPayloadKobold = Field(..., description="The settings for this text generation.")
-    id_: JobID | None = Field(None, alias="id", description="The UUID for this text generation.")
+    payload: ModelPayloadKobold
+    """The settings for this text generation."""
+    id_: JobID | None = Field(None, alias="id")
     """The UUID for this text generation."""
-    ids: list[JobID] = Field(description="The UUIDs for this text generations.")
+    ids: list[JobID]
     """The UUIDs for this text generations."""
-    skipped: NoValidRequestFoundKobold = Field(
-        NoValidRequestFoundKobold(),
-        description="The skipped requests that were not valid for this worker.",
-    )
-    softprompt: str | None = Field(None, description="The soft prompt requested for this generation.")
+    skipped: NoValidRequestFoundKobold = Field(NoValidRequestFoundKobold())
+    """The skipped requests that were not valid for this worker."""
+    softprompt: str | None = Field(None)
     """The soft prompt requested for this generation."""
-    model: str | None = Field(None, description="The model requested for this generation.")
+    model: str | None = Field(None)
     """The model requested for this generation."""
 
     @field_validator("id_", mode="before")
@@ -142,14 +134,11 @@ class TextGenerateJobPopResponse(
 
 
 class _PopInputKobold(PopInput):
-    max_length: int = Field(512, description="The maximum amount of tokens this worker can generate.")
+    max_length: int = Field(512)
     """The maximum amount of tokens this worker can generate."""
-    max_context_length: int = Field(2048, description="The max amount of context to submit to this AI for sampling.")
+    max_context_length: int = Field(2048)
     """The max amount of context to submit to this AI for sampling."""
-    softprompts: list[str] | None = Field(
-        None,
-        description="The available softprompt files on this worker for the currently running model.",
-    )
+    softprompts: list[str] | None = Field(None)
     """The available softprompt files on this worker for the currently running model."""
 
 

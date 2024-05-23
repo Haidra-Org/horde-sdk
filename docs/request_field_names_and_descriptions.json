@@ -2,7 +2,7 @@
     "AIHordeHeartbeatRequest": [
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -16,7 +16,7 @@
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -28,21 +28,21 @@
         ],
         [
             "source_image",
-            null
+            "The public URL of the source image or a base64 string to use."
         ],
         [
             "slow_workers",
-            null
+            "Whether to use the slower workers. Costs additional kudos if `False`."
         ]
     ],
     "AlchemyDeleteRequest": [
         [
             "id_",
-            null
+            "The UUID for this job. Use this to post the results in the future."
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -56,11 +56,11 @@
         ],
         [
             "id_",
-            null
+            "The UUID for this job. Use this to post the results in the future."
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -82,7 +82,7 @@
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -90,15 +90,15 @@
         ],
         [
             "name",
-            null
+            "The name of the request. This is used to identify the request in the logs."
         ],
         [
             "priority_usernames",
-            null
+            "The usernames that should be prioritized for this request."
         ],
         [
             "forms",
-            null
+            "The types of alchemy that should be generated."
         ]
     ],
     "AlchemyStatusRequest": [
@@ -108,11 +108,11 @@
         ],
         [
             "id_",
-            null
+            "The UUID for this job. Use this to post the results in the future."
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -126,7 +126,7 @@
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -140,11 +140,11 @@
     "DeleteImageGenerateRequest": [
         [
             "id_",
-            null
+            "The UUID for this job. Use this to post the results in the future."
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -154,11 +154,11 @@
     "DeleteTextGenerateRequest": [
         [
             "id_",
-            null
+            "The UUID for this job. Use this to post the results in the future."
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -172,7 +172,7 @@
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -182,7 +182,7 @@
     "HordePerformanceRequest": [
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -192,7 +192,7 @@
     "HordeStatusModelsAllRequest": [
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -204,21 +204,21 @@
         ],
         [
             "min_count",
-            null
+            "Filter only models that have at least this amount of threads serving."
         ],
         [
             "max_count",
-            null
+            "Filter only models that have at most this amount of threads serving."
         ],
         [
             "model_state",
-            null
+            "If 'known', only show stats for known models in the model reference. If 'custom' only show stats for custom\nmodels. If 'all' shows stats for all models."
         ]
     ],
     "HordeStatusModelsSingleRequest": [
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -226,7 +226,7 @@
         ],
         [
             "model_name",
-            null
+            "The name of the model to request."
         ]
     ],
     "ImageGenerateAsyncRequest": [
@@ -260,7 +260,7 @@
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -308,17 +308,17 @@
         ],
         [
             "extra_source_images",
-            null
+            "Additional uploaded images which can be used for further operations."
         ]
     ],
     "ImageGenerateCheckRequest": [
         [
             "id_",
-            null
+            "The UUID for this job. Use this to post the results in the future."
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -328,7 +328,7 @@
     "ImageGenerateJobPopRequest": [
         [
             "amount",
-            "How many jobvs to pop at the same time"
+            "The number of jobs to pop at the same time."
         ],
         [
             "bridge_agent",
@@ -336,7 +336,7 @@
         ],
         [
             "models",
-            null
+            "The models this worker can generate."
         ],
         [
             "name",
@@ -348,7 +348,7 @@
         ],
         [
             "priority_usernames",
-            null
+            "The usernames that should be prioritized by this worker."
         ],
         [
             "require_upfront_kudos",
@@ -364,7 +364,7 @@
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -372,53 +372,53 @@
         ],
         [
             "bridge_version",
-            null
+            "The version of the bridge this worker is running."
         ],
         [
             "max_pixels",
-            null
+            "The maximum number of pixels this worker can generate."
         ],
         [
             "blacklist",
-            null
+            "The list of words this worker will not accept in a prompt."
         ],
         [
             "allow_img2img",
-            null
+            "Whether this worker can generate img2img."
         ],
         [
             "allow_painting",
-            null
+            "Whether this worker can generate inpainting/outpainting."
         ],
         [
             "allow_unsafe_ipaddr",
-            null
+            "Whether this worker will generate from unsafe/VPN IP addresses."
         ],
         [
             "allow_post_processing",
-            null
+            "Whether this worker can do post-processing."
         ],
         [
             "allow_controlnet",
-            null
+            "Whether this worker can generate using controlnets."
         ],
         [
             "allow_sdxl_controlnet",
-            null
+            "Whether this worker can generate using SDXL controlnets."
         ],
         [
             "allow_lora",
-            null
+            "Whether this worker can generate using Loras."
         ]
     ],
     "ImageGenerateStatusRequest": [
         [
             "id_",
-            null
+            "The UUID for this job. Use this to post the results in the future."
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -432,11 +432,11 @@
         ],
         [
             "id_",
-            null
+            "The UUID for this job. Use this to post the results in the future."
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -444,29 +444,29 @@
         ],
         [
             "generation",
-            null
+            "R2 result was uploaded to R2, else the string of the result."
         ],
         [
             "state",
-            null
+            "The state of this generation."
         ],
         [
             "seed",
-            null
+            "The seed for this generation."
         ],
         [
             "censored",
-            null
+            "If True, this resulting image has been censored."
         ],
         [
             "gen_metadata",
-            null
+            "Extra metadata about faulted or defaulted components of the generation"
         ]
     ],
     "ImageStatsModelsRequest": [
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -480,17 +480,51 @@
     "ImageStatsModelsTotalRequest": [
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
             null
         ]
     ],
+    "ModifyWorkerInput": [
+        [
+            "accept",
+            "The 'accept' header field."
+        ],
+        [
+            "client_agent",
+            null
+        ],
+        [
+            "info",
+            "You can optionally provide a server note which will be seen in the server details. No profanity allowed!"
+        ],
+        [
+            "maintenance",
+            "Set to true to put this worker into maintenance."
+        ],
+        [
+            "maintenance_msg",
+            "If maintenance is True, you can optionally provide a message to be used instead of the default maintenance\nmessage, so that the owner is informed."
+        ],
+        [
+            "name",
+            "When this is set, it will change the worker's name. No profanity allowed!"
+        ],
+        [
+            "paused",
+            "(Mods only) Set to true to pause this worker."
+        ],
+        [
+            "team",
+            "The team towards which this worker contributes kudos.  It an empty string ('') is passed, it will leave the"
+        ]
+    ],
     "NewsRequest": [
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -504,7 +538,7 @@
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -546,7 +580,7 @@
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -554,7 +588,7 @@
         ],
         [
             "params",
-            null
+            "The parameters to use for the generation."
         ],
         [
             "prompt",
@@ -562,19 +596,19 @@
         ],
         [
             "allow_downgrade",
-            "When true and the request requires upfront kudos and the account does not have enough The request will be downgraded in max context and max tokens so that it does not need upfront kudos."
+            "When true and the request requires upfront kudos and the account does not have enough The request will be\ndowngraded in max context and max tokens so that it does not need upfront kudos."
         ],
         [
             "disable_batching",
-            "When true, This request will not use batching. This will allow you to retrieve accurate seeds. Feature is restricted to Trusted users and Patreons."
+            "When true, This request will not use batching. This will allow you to retrieve accurate seeds.\nFeature is restricted to Trusted users and Patreons."
         ],
         [
             "extra_source_images",
-            null
+            "Any extra source images that should be used for this request; e.g., for multi-modal models."
         ],
         [
             "proxied_account",
-            "If using a service account as a proxy, provide this value to identify the actual account from which this request is coming from."
+            "If using a service account as a proxy, provide this value to identify the actual account from which this\nrequest is coming from."
         ],
         [
             "softprompt",
@@ -582,13 +616,13 @@
         ],
         [
             "webhook",
-            "Provide a URL where the AI Horde will send a POST call after each delivered generation. The request will include the details of the job as well as the request ID."
+            "Provide a URL where the AI Horde will send a POST call after each delivered generation.\nThe request will include the details of the job as well as the request ID."
         ]
     ],
     "TextGenerateJobPopRequest": [
         [
             "amount",
-            "How many jobvs to pop at the same time"
+            "The number of jobs to pop at the same time."
         ],
         [
             "bridge_agent",
@@ -596,7 +630,7 @@
         ],
         [
             "models",
-            null
+            "The models this worker can generate."
         ],
         [
             "name",
@@ -608,7 +642,7 @@
         ],
         [
             "priority_usernames",
-            null
+            "The usernames that should be prioritized by this worker."
         ],
         [
             "require_upfront_kudos",
@@ -636,7 +670,7 @@
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -646,11 +680,11 @@
     "TextGenerateStatusRequest": [
         [
             "id_",
-            null
+            "The UUID for this job. Use this to post the results in the future."
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -664,11 +698,11 @@
         ],
         [
             "id_",
-            null
+            "The UUID for this job. Use this to post the results in the future."
         ],
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -676,21 +710,21 @@
         ],
         [
             "generation",
-            null
+            "R2 result was uploaded to R2, else the string of the result."
         ],
         [
             "state",
-            null
+            "The state of this generation."
         ],
         [
             "gen_metadata",
-            null
+            "Extra metadata about faulted or defaulted components of the generation"
         ]
     ],
     "TextStatsModelsRequest": [
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",
@@ -700,7 +734,7 @@
     "TextStatsModelsTotalRequest": [
         [
             "accept",
-            null
+            "The 'accept' header field."
         ],
         [
             "client_agent",

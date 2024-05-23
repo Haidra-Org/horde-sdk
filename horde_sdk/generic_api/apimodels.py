@@ -39,7 +39,10 @@ class HordeAPIObject(BaseModel, abc.ABC):
         If none, there is no payload, such as for a GET request.
         """
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(
+        frozen=True,
+        use_attribute_docstrings=True,
+    )
 
 
 class HordeAPIDataObject(BaseModel):
@@ -51,7 +54,16 @@ class HordeAPIDataObject(BaseModel):
     """
 
     model_config = (
-        ConfigDict(frozen=True) if not os.getenv("TESTS_ONGOING") else ConfigDict(frozen=True, extra="forbid")
+        ConfigDict(
+            frozen=True,
+            use_attribute_docstrings=True,
+        )
+        if not os.getenv("TESTS_ONGOING")
+        else ConfigDict(
+            frozen=True,
+            use_attribute_docstrings=True,
+            extra="forbid",
+        )
     )
 
 
@@ -60,9 +72,11 @@ class HordeAPIMessage(HordeAPIObject):
 
     @classmethod
     def get_sensitive_fields(cls) -> set[str]:
+        """Return a set of fields which should be redacted from logs."""
         return {"apikey"}
 
     def get_extra_fields_to_exclude_from_log(self) -> set[str]:
+        """Return an additional set of fields to exclude from the log_safe_model_dump method."""
         return set()
 
     def log_safe_model_dump(self) -> dict[Any, Any]:
@@ -185,7 +199,6 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
         Returns:
             bool: Whether the `target_request` would follow up on this request.
         """
-
         follow_up_returned_params = self.get_follow_up_returned_params(as_python_field_name=True)
 
         if len(follow_up_returned_params) == 0:
@@ -369,6 +382,7 @@ class HordeRequest(HordeAPIMessage, BaseModel):
 
     def get_requires_follow_up(self) -> bool:
         """Return whether this request requires a follow up request(s).
+
         Returns:
             bool: Whether this request requires a follow up request to close the job on the server.
         """
