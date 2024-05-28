@@ -81,6 +81,7 @@ class AlchemyAsyncRequest(
     APIKeyAllowedInRequestMixin,
 ):
     forms: list[AlchemyAsyncRequestFormItem]
+    """The list of forms (types of post-processing/interrogation/captioning/etc) to request."""
     source_image: str
     """The public URL of the source image or a base64 string to use."""
     slow_workers: bool = True

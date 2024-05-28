@@ -213,7 +213,7 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
         return all_match
 
 
-class ResponseWithProgressMixin(BaseModel):
+class ResponseWithProgressMixin(HordeAPIDataObject):
     """Represents any response from any Horde API which contains progress information."""
 
     @abc.abstractmethod
@@ -246,7 +246,7 @@ class ResponseWithProgressMixin(BaseModel):
         """Return the request type for this response to finalize the job on success, or `None` if not needed."""
 
 
-class ResponseRequiringDownloadMixin(BaseModel):
+class ResponseRequiringDownloadMixin(HordeAPIDataObject):
     """Represents any response which may require downloading additional data."""
 
     async def download_file_as_base64(self, client_session: aiohttp.ClientSession, url: str) -> str:
@@ -281,10 +281,11 @@ class ResponseRequiringDownloadMixin(BaseModel):
         """Download any additional data required for this response."""
 
 
-class ContainsMessageResponseMixin(BaseModel):
+class ContainsMessageResponseMixin(HordeAPIDataObject):
     """Represents any response from any Horde API which contains a message."""
 
     message: str = ""
+    """A message from the API. This is typically an error or warning message, but may also be informational."""
 
 
 class RequestErrorResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
@@ -322,6 +323,8 @@ class HordeRequest(HordeAPIMessage, BaseModel):
         default=f"horde_sdk:{__version__}:https://githib.com/haidra-org/horde-sdk",
         alias="Client-Agent",
     )
+    """The requesting client's agent. You should set this to reflect the name, version and contact information
+    for your client."""
 
     @classmethod
     def get_api_endpoint_url(cls) -> str:
@@ -397,7 +400,7 @@ class HordeRequest(HordeAPIMessage, BaseModel):
         return {"apikey"}
 
 
-class APIKeyAllowedInRequestMixin(BaseModel):
+class APIKeyAllowedInRequestMixin(HordeAPIDataObject):
     """Mix-in class to describe an endpoint which may require authentication."""
 
     apikey: str | None = None
@@ -427,7 +430,7 @@ class APIKeyAllowedInRequestMixin(BaseModel):
         return v
 
 
-class RequestSpecifiesUserIDMixin(BaseModel):
+class RequestSpecifiesUserIDMixin(HordeAPIDataObject):
     """Mix-in class to describe an endpoint for which you can specify a user."""
 
     user_id: str
@@ -444,17 +447,24 @@ class RequestSpecifiesUserIDMixin(BaseModel):
         return value
 
 
-class RequestUsesWorkerMixin(BaseModel):
+class RequestUsesWorkerMixin(HordeAPIDataObject):
     """Mix-in class to describe an endpoint for which you can specify workers."""
 
     trusted_workers: bool = False
+    """When true, only trusted workers will serve this request. When False, Evaluating workers will also be used
+     which can increase speed but adds more risk!"""
     slow_workers: bool = True
+    """When True, allows slower workers to pick up this request. Disabling this incurs an extra kudos cost."""
     workers: list[str] = Field(default_factory=list)
+    """A list of worker IDs to use for this request. If empty, any worker can pick up the request. Using this incurs
+    and extra kudos cost."""
     worker_blacklist: list[str] = Field(default_factory=list)
-
+    """If true, the worker list will be treated as a blacklist instead of a whitelist."""
     models: list[str]
+    """The generative models to use for this request."""
 
     dry_run: bool = False
+    """If true, the request will not be processed, but will return a response with the estimated kudos cost."""
 
 
 __all__ = [

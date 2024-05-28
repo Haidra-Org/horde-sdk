@@ -17,6 +17,7 @@ class GenerationKobold(Generation):
     id_: str | None = Field(None, title="Generation ID")
     """The ID for this generation."""
     gen_metadata: list[GenMetadataEntry] | None = None  # FIXME: API declares a `GenerationMetadataKobold` here
+    """Extra metadata about faulted or defaulted components of the generation."""
     seed: int | None = Field(0, title="Generation Seed")
     """The seed which generated this text."""
     text: str | None = Field(None, min_length=0, title="Generated Text")

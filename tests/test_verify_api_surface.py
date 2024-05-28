@@ -54,6 +54,16 @@ def test_all_ai_horde_api_models_defined() -> None:
     # Pretty print the undefined classes sorted by dict values, NOT by keys
     import json
 
+    error_responses = {
+        "RequestError",
+        "RequestValidationError",
+    }
+
+    for error_response in error_responses:
+        if error_response in undefined_classes:
+            print(f"Warning: {error_response} is an error response which may not be handled.")
+            undefined_classes.pop(error_response)
+
     undefined_classes_sorted = dict(sorted(undefined_classes.items(), key=lambda x: x[1]))
     print(json.dumps(undefined_classes_sorted, indent=4))
 
@@ -101,3 +111,17 @@ def test_all_ratings_api_models_imported() -> None:
         f"namespace: : {missing_imports}"
         f"\n\nMissing import names: {missing_import_names}"
     )
+
+
+@pytest.mark.object_verify
+def test_all_models_have_docstrings() -> None:
+    import horde_sdk.meta
+
+    missing_docstrings = horde_sdk.meta.all_model_and_fields_missing_docstrings()
+
+    import json
+
+    stringified_missing_docstrings = {k.__name__: list(v) for k, v in missing_docstrings.items()}
+    jsonified_missing_docstrings = json.dumps(stringified_missing_docstrings, indent=4)
+
+    assert not missing_docstrings, "The following models are missing docstrings: " f"{jsonified_missing_docstrings}"
