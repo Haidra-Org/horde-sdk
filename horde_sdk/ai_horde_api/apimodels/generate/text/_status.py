@@ -41,7 +41,7 @@ class GenerationKobold(Generation):
         return self.id_ == other.id_
 
     def __hash__(self) -> int:
-        return hash(self.id_)
+        return hash(GenerationKobold.__name__) + hash(self.id_)
 
 
 class TextGenerateStatusResponse(
@@ -113,6 +113,17 @@ class DeleteTextGenerateRequest(
     def get_default_success_response_type(cls) -> type[TextGenerateStatusResponse]:
         return TextGenerateStatusResponse
 
+    @override
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, DeleteTextGenerateRequest):
+            return False
+
+        return self.id_ == value.id_
+
+    @override
+    def __hash__(self) -> int:
+        return hash(DeleteTextGenerateRequest.__name__) + hash(self.id_)
+
 
 class TextGenerateStatusRequest(BaseAIHordeRequest, JobRequestMixin):
     """Represents a GET request to the `/v2/generate/status/{id}` endpoint."""
@@ -136,3 +147,14 @@ class TextGenerateStatusRequest(BaseAIHordeRequest, JobRequestMixin):
     @classmethod
     def get_default_success_response_type(cls) -> type[TextGenerateStatusResponse]:
         return TextGenerateStatusResponse
+
+    @override
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, TextGenerateStatusRequest):
+            return False
+
+        return self.id_ == value.id_
+
+    @override
+    def __hash__(self) -> int:
+        return hash(TextGenerateStatusRequest.__name__) + hash(self.id_)

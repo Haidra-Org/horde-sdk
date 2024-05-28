@@ -60,7 +60,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
 
     @override
     def __hash__(self) -> int:
-        return self.root.__hash__()
+        return hash(UUID_Identifier.__name__) + self.root.__hash__()
 
     def __lt__(self, other: object) -> bool:
         if isinstance(other, UUID_Identifier):

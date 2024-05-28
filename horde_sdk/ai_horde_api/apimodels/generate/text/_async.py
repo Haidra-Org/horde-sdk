@@ -76,7 +76,7 @@ class TextGenerateAsyncResponse(
         return "RequestAsync"
 
     def __hash__(self) -> int:
-        return hash(self.id_)
+        return hash(TextGenerateAsyncResponse.__name__) + hash(self.id_)
 
     def __eq__(self, __value: object) -> bool:
         return isinstance(__value, TextGenerateAsyncResponse) and self.id_ == __value.id_

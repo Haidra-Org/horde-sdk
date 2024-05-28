@@ -430,10 +430,10 @@ class ImageGenerateJobPopResponse(
 
     def __hash__(self) -> int:
         if self.id_ is not None:
-            return hash(self.id_)
+            return hash(ImageGenerateJobPopResponse.__name__) + hash(self.id_)
 
         if len(self.ids) > 0:
-            return hash(tuple(self.ids))
+            return hash(ImageGenerateJobPopResponse.__name__) + hash(tuple(self.ids))
 
         logger.warning("No ID or IDs found in response. This is a bug.")
         return hash(0)

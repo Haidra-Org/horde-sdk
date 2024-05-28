@@ -69,7 +69,7 @@ class ImageGeneration(Generation):
         return self.id_ == other.id_
 
     def __hash__(self) -> int:
-        return hash(self.id_)
+        return hash(ImageGeneration.__name__) + hash(self.id_)
 
 
 class ImageGenerateStatusResponse(
@@ -145,6 +145,17 @@ class DeleteImageGenerateRequest(
     def get_default_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
         return ImageGenerateStatusResponse
 
+    @override
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, DeleteImageGenerateRequest):
+            return False
+
+        return self.id_ == value.id_
+
+    @override
+    def __hash__(self) -> int:
+        return hash(DeleteImageGenerateRequest.__name__) + hash(self.id_)
+
 
 class ImageGenerateStatusRequest(BaseAIHordeRequest, JobRequestMixin):
     """Represents a GET request to the `/v2/generate/status/{id}` endpoint."""
@@ -168,3 +179,14 @@ class ImageGenerateStatusRequest(BaseAIHordeRequest, JobRequestMixin):
     @classmethod
     def get_default_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
         return ImageGenerateStatusResponse
+
+    @override
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, ImageGenerateStatusRequest):
+            return False
+
+        return self.id_ == value.id_
+
+    @override
+    def __hash__(self) -> int:
+        return hash(ImageGenerateStatusRequest.__name__) + hash(self.id_)

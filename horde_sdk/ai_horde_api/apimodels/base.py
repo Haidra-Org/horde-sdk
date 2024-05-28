@@ -59,7 +59,7 @@ class JobRequestMixin(HordeAPIDataObject):
         return False
 
     def __hash__(self) -> int:
-        return hash(self.id_)
+        return hash(JobRequestMixin.__name__) + hash(self.id_)
 
 
 class JobResponseMixin(HordeAPIDataObject):
@@ -242,6 +242,8 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
     """The specific comfyUI workflow to use."""
     special: dict[Any, Any] = Field(default_factory=dict)
     """Reserved for future use."""
+    use_nsfw_censor: bool = False
+    """If the request is SFW, and the worker accidentally generates NSFW, it will send back a censored image."""
 
     @field_validator("width", "height", mode="before")
     def width_divisible_by_64(cls, value: int) -> int:
@@ -249,8 +251,6 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
         if value % 64 != 0:
             raise ValueError("width must be divisible by 64")
         return value
-
-    use_nsfw_censor: bool = False
 
     @field_validator("sampler_name")
     def sampler_name_must_be_known(cls, v: str | KNOWN_SAMPLERS) -> str | KNOWN_SAMPLERS:
