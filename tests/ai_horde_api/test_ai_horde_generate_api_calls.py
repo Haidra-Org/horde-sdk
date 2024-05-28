@@ -2,6 +2,7 @@ import asyncio
 from typing import Any
 
 import aiohttp
+from loguru import logger
 import pytest
 
 from horde_sdk.ai_horde_api.ai_horde_clients import (
@@ -480,6 +481,24 @@ class TestAIHordeGenerate:
             image = await simple_client.download_image_from_generation(image_generate_status_response.generations[0])
 
             assert image is not None
+
+    @pytest.mark.asyncio
+    async def test_check_image_gen_callback_keyboard_interrupt(
+        self,
+        simple_image_gen_request: ImageGenerateAsyncRequest,
+    ) -> None:
+        with pytest.raises(KeyboardInterrupt, match="Test KeyboardInterrupt"):
+            async with aiohttp.ClientSession() as aiohttp_session:
+                simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
+
+                def check_callback(response: ImageGenerateCheckResponse) -> None:
+                    logger.debug(f"Response: {response}")
+                    raise KeyboardInterrupt("Test KeyboardInterrupt")
+
+                image_generate_status_response, job_id = await simple_client.image_generate_request(
+                    simple_image_gen_request,
+                    check_callback=check_callback,  # type: ignore
+                )
 
     @pytest.mark.asyncio
     async def test_check_alchemy_callback(
