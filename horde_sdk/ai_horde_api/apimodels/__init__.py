@@ -140,6 +140,15 @@ from horde_sdk.ai_horde_api.apimodels.workers._workers import (
     WorkerKudosDetails,
 )
 from horde_sdk.ai_horde_api.consts import KNOWN_ALCHEMY_TYPES
+from horde_sdk.generic_api.apimodels import (
+    APIKeyAllowedInRequestMixin,
+    ContainsMessageResponseMixin,
+    RequestSpecifiesUserIDMixin,
+    RequestUsesWorkerMixin,
+    ResponseRequiringDownloadMixin,
+    ResponseRequiringFollowUpMixin,
+    ResponseWithProgressMixin,
+)
 
 __all__ = [
     "ContributionsDetails",
@@ -250,4 +259,11 @@ __all__ = [
     "TeamDetailsLite",
     "WorkerDetailItem",
     "WorkerKudosDetails",
+    "APIKeyAllowedInRequestMixin",
+    "ContainsMessageResponseMixin",
+    "RequestSpecifiesUserIDMixin",
+    "RequestUsesWorkerMixin",
+    "ResponseRequiringDownloadMixin",
+    "ResponseRequiringFollowUpMixin",
+    "ResponseWithProgressMixin",
 ]

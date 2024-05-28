@@ -43,6 +43,7 @@ class WorkerKudosDetails(HordeAPIObject):
 @Unhashable
 class WorkerDetailItem(HordeAPIObject):
     type_: WORKER_TYPE = Field(alias="type")
+    """The type of worker."""
     name: str
     """The Name given to this worker."""
     id_: str | WorkerID = Field(alias="id")
@@ -168,6 +169,10 @@ class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]
     # without a `type: ignore``, mypy feels that this is a bad override. This is probably a sub-optimal solution
     # on my part with me hoping to come up with a more elegant path in the future.
     # TODO: fix this?
+
+    root: list[WorkerDetailItem]
+    """The underlying list of worker details."""
+
     def __iter__(self) -> Iterator[WorkerDetailItem]:  # type: ignore
         return iter(self.root)
 
@@ -184,6 +189,7 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     """Returns information on all works. If a moderator API key is specified, it will return additional information."""
 
     type_: WORKER_TYPE = Field(WORKER_TYPE.all, alias="type")
+    """Filter workers by type. Default is 'all' which returns all workers."""
 
     @override
     @classmethod
@@ -232,6 +238,7 @@ class SingleWorkerDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     """
 
     worker_id: str | WorkerID = Field(alias="id")
+    """The UUID of the worker to get details for."""
 
     @override
     @classmethod

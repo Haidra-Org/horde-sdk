@@ -133,3 +133,39 @@ def all_unaddressed_endpoints_ai_horde() -> set[AI_HORDE_API_ENDPOINT_SUBPATH]:
             unaddressed_paths.add(path)
 
     return unaddressed_paths
+
+
+def all_models_missing_docstrings() -> set[type]:
+    """Return all of the models that do not have docstrings."""
+    all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
+
+    missing_docstrings = set()
+
+    for class_type in all_classes:
+        if not class_type.__doc__:
+            missing_docstrings.add(class_type)
+
+    return missing_docstrings
+
+
+def all_model_and_fields_missing_docstrings() -> dict[type, set[str]]:
+    """Return all of the models' fields that do not have docstrings."""
+    all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
+
+    missing_docstrings: dict[type, set[str]] = {}
+
+    from pydantic import BaseModel
+
+    for class_type in all_classes:
+        if not issubclass(class_type, BaseModel):
+            continue
+
+        missing_fields = set()
+        for field_name, field_info in class_type.model_fields.items():
+            if not field_info.description:
+                missing_fields.add(field_name)
+
+        if missing_fields:
+            missing_docstrings[class_type] = missing_fields
+
+    return missing_docstrings

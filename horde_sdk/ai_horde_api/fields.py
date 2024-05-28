@@ -17,6 +17,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
     model_config: ClassVar[ConfigDict] = {"frozen": True}
 
     root: uuid.UUID
+    """The underlying UUID object."""
 
     @model_serializer
     def ser_model(self) -> str:

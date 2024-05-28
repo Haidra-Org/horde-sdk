@@ -192,6 +192,7 @@ class ModelGenerationInputKobold(ModelPayloadRootKobold):
 
 class TextGenerateAsyncDryRunResponse(HordeResponseBaseModel):
     kudos: float
+    """The expected kudos consumption for this request."""
 
     @override
     @classmethod

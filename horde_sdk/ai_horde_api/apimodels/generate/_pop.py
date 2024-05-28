@@ -34,62 +34,32 @@ from horde_sdk.generic_api.apimodels import (
 
 
 class NoValidRequestFound(HordeAPIObject):
-    blacklist: int | None = Field(
-        None,
-        description=(
-            "How many waiting requests were skipped because they demanded a generation with a word that this worker"
-            " does not accept."
-        ),
-        ge=0,
-    )
-    bridge_version: int | None = Field(
-        None,
-        description=(
-            "How many waiting requests were skipped because they require a higher version of the bridge than this"
-            " worker is running (upgrade if you see this in your skipped list)."
-        ),
-        examples=[0],
-        ge=0,
-    )
-    kudos: int | None = Field(
-        None,
-        description=(
-            "How many waiting requests were skipped because the user didn't have enough kudos when this worker"
-            " requires upfront kudos."
-        ),
-    )
-    models: int | None = Field(
-        None,
-        description=(
-            "How many waiting requests were skipped because they demanded a different model than what this worker"
-            " provides."
-        ),
-        examples=[0],
-        ge=0,
-    )
-    nsfw: int | None = Field(
-        None,
-        description=(
-            "How many waiting requests were skipped because they demanded a nsfw generation which this worker does not"
-            " provide."
-        ),
-        ge=0,
-    )
+    blacklist: int | None = Field(None, ge=0)
+    """How many waiting requests were skipped because they demanded a generation with a word that this worker does
+    not accept."""
+    bridge_version: int | None = Field(None, examples=[0], ge=0)
+    """How many waiting requests were skipped because they require a higher version of the bridge than this worker
+    is running (upgrade if you see this in your skipped list)."""
+    kudos: int | None = Field(None)
+    """How many waiting requests were skipped because the user didn't have enough kudos when this worker requires"""
+    models: int | None = Field(None, examples=[0], ge=0)
+    """How many waiting requests were skipped because they demanded a different model than what this worker
+    provides."""
+    nsfw: int | None = Field(None, ge=0)
+    """How many waiting requests were skipped because they demanded a nsfw generation which this worker does not
+    provide."""
     performance: int | None = Field(
         None,
         ge=0,
     )
-    untrusted: int | None = Field(
-        None,
-        description=(
-            "How many waiting requests were skipped because they demanded a trusted worker which this worker is not."
-        ),
-        ge=0,
-    )
+    """How many waiting requests were skipped because they demanded a higher performance than this worker provides."""
+    untrusted: int | None = Field(None, ge=0)
+    """How many waiting requests were skipped because they demanded a trusted worker which this worker is not."""
     worker_id: int | None = Field(
         None,
         ge=0,
     )
+    """How many waiting requests were skipped because they demanded a specific worker."""
 
     def is_empty(self) -> bool:
         """Whether or not this object has any non-zero values."""

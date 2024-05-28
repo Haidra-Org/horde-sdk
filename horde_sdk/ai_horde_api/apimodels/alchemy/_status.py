@@ -107,7 +107,9 @@ class AlchemyStatusResponse(HordeResponseBaseModel, ResponseWithProgressMixin):
     """
 
     state: GENERATION_STATE
+    """The state of the job. See `GENERATION_STATE` for possible values."""
     forms: list[AlchemyFormStatus]
+    """The status of each form in the job."""
 
     @property
     def all_interrogation_results(self) -> list[AlchemyInterrogationDetails]:

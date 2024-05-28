@@ -168,6 +168,9 @@ class Newspiece(HordeAPIObject):
 
 @Unhashable
 class NewsResponse(HordeResponse, RootModel[list[Newspiece]]):
+    root: list[Newspiece]
+    """The underlying list of newspieces."""
+
     def __iter__(self) -> Iterator[Newspiece]:  # type: ignore
         return iter(self.root)
 
@@ -254,6 +257,9 @@ class ActiveModel(ActiveModelLite):
 
 @Unhashable
 class HordeStatusModelsAllResponse(HordeResponse, RootModel[list[ActiveModel]]):
+    root: list[ActiveModel]
+    """The underlying list of models."""
+
     def __iter__(self) -> Iterator[ActiveModel]:  # type: ignore
         return iter(self.root)
 
@@ -321,6 +327,10 @@ class HordeStatusModelsAllRequest(BaseAIHordeRequest):
 @Unhashable
 class HordeStatusModelsSingleResponse(HordeResponse, RootModel[list[ActiveModel]]):
     # This is a list because of an oversight in the structure of the API response. # FIXME
+
+    root: list[ActiveModel]
+    """The underlying list of models."""
+
     def __iter__(self) -> Iterator[ActiveModel]:  # type: ignore
         return iter(self.root)
 
