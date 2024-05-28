@@ -85,6 +85,7 @@ ignore = [
 "tests/*" = ["D"] # Ignore D rules for tests
 "examples/*" = ["D"] # Ignore D rules for examples
 "docs/*" = ["D"] # Ignore D rules for docs
+"codegen/*" = ["D"] # Ignore D rules for codegen
 
 [tool.black]
 line-length = 119
