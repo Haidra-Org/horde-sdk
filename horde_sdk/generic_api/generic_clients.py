@@ -555,8 +555,12 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         if exc_type is None:
             return True
 
-        # Log the error.
-        logger.error(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
+        # Log the error
+        logger.error(f"Error: {exc_val}, Type: {exc_type}")
+
+        # Show the traceback if there is one
+        if exc_tb and hasattr(exc_tb, "print_exc"):
+            exc_tb.print_exc()
 
         # If there are no pending follow-up requests, return True if the exception was a CancelledError.
         if not self._pending_follow_ups:
@@ -754,9 +758,12 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
             for request in self._awaiting_requests:
                 logger.warning(f"Request Unhandled: {request.log_safe_model_dump()}")
 
-        # If there was an exception, log it.
-        if exc_type is not None:
-            logger.debug(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
+        # Log the error
+        logger.error(f"Error: {exc_val}, Type: {exc_type}")
+
+        # Show the traceback if there is one
+        if exc_tb and hasattr(exc_tb, "print_exc"):
+            exc_tb.print_exc()
 
         # If there are no pending follow-up requests, return True if the exception was a CancelledError.
         if not self._pending_follow_ups:
