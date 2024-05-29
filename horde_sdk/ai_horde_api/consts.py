@@ -44,7 +44,7 @@ class WORKER_TYPE(StrEnum):
     (alchemy, image, text, etc...)
     """
 
-    all = auto()
+    all = ""
     """All worker types."""
     image = auto()
     """Image generation worker."""
