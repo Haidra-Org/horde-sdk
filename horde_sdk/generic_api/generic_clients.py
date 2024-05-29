@@ -758,8 +758,9 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
             for request in self._awaiting_requests:
                 logger.warning(f"Request Unhandled: {request.log_safe_model_dump()}")
 
-        # Log the error
-        logger.error(f"Error: {exc_val}, Type: {exc_type}")
+        # Log the error if there was one.
+        if exc_type:
+            logger.error(f"Error: {exc_val}, Type: {exc_type}")
 
         # Show the traceback if there is one
         if exc_tb and hasattr(exc_tb, "print_exc"):
