@@ -3,7 +3,7 @@ from collections.abc import Iterator
 from pydantic import AliasChoices, Field, RootModel
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
+from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, WorkerRequestMixin
 from horde_sdk.ai_horde_api.consts import WORKER_TYPE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import TeamID, WorkerID
@@ -179,6 +179,9 @@ class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]
     def __getitem__(self, item: int) -> WorkerDetailItem:
         return self.root[item]
 
+    def __len__(self) -> int:
+        return len(self.root)
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -231,14 +234,11 @@ class SingleWorkerDetailsResponse(HordeResponse, WorkerDetailItem):
         return "WorkerDetails"
 
 
-class SingleWorkerDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
+class SingleWorkerDetailsRequest(BaseAIHordeRequest, WorkerRequestMixin, APIKeyAllowedInRequestMixin):
     """Returns information on a single worker.
 
     If a moderator API key is specified, additional information is returned.
     """
-
-    worker_id: str | WorkerID = Field(alias="id")
-    """The UUID of the worker to get details for."""
 
     @override
     @classmethod
@@ -266,7 +266,7 @@ class SingleWorkerDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
         return False
 
 
-class ModifyWorker(HordeResponse):
+class ModifyWorkerResponse(HordeResponse):
     info: str | None = Field(None)
     """The new state of the 'info' var for this worker."""
     maintenance: bool | None = Field(None)
@@ -285,7 +285,11 @@ class ModifyWorker(HordeResponse):
         return "ModifyWorker"
 
 
-class ModifyWorkerInput(BaseAIHordeRequest):
+class ModifyWorkerRequest(
+    BaseAIHordeRequest,
+    APIKeyAllowedInRequestMixin,
+    WorkerRequestMixin,
+):
     info: str | None = Field(None, max_length=1000)
     """You can optionally provide a server note which will be seen in the server details. No profanity allowed!"""
     maintenance: bool | None = Field(None)
@@ -317,5 +321,48 @@ class ModifyWorkerInput(BaseAIHordeRequest):
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[ModifyWorker]:
-        return ModifyWorker
+    def get_default_success_response_type(cls) -> type[ModifyWorkerResponse]:
+        return ModifyWorkerResponse
+
+
+class DeleteWorkerResponse(HordeResponse):
+    deleted_id_: str | None = None
+    """The ID of the deleted worker."""
+    deleted_name: str | None = None
+    """The Name of the deleted worker."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "DeletedWorker"
+
+
+class DeleteWorkerRequest(
+    BaseAIHordeRequest,
+    APIKeyAllowedInRequestMixin,
+    WorkerRequestMixin,
+):
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.DELETE
+
+    @override
+    @classmethod
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_workers_single
+
+    @override
+    @classmethod
+    def get_default_success_response_type(cls) -> type[DeleteWorkerResponse]:
+        return DeleteWorkerResponse
+
+    @classmethod
+    def is_api_key_required(cls) -> bool:
+        """Return whether this endpoint requires an API key."""
+        return True
