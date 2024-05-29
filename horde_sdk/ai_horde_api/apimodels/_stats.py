@@ -1,5 +1,6 @@
 from enum import auto
 
+from loguru import logger
 from pydantic import ConfigDict, Field, field_validator
 from strenum import StrEnum
 from typing_extensions import override
@@ -20,7 +21,7 @@ class StatsModelsTimeframe(StrEnum):
 
 @Unequatable
 @Unhashable
-class ImageModelStatsResponse(HordeResponseBaseModel):
+class ImageStatsModelsResponse(HordeResponseBaseModel):
     """Represents the data returned from the `/v2/stats/img/models` endpoint.
 
     v2 API Model: `ImgModelStats`
@@ -48,6 +49,10 @@ class ImageModelStatsResponse(HordeResponseBaseModel):
             dict[str, int]: The data for a timeframe.
         """
         if v is None:
+            return {}
+
+        if "additionalProp1" in v:
+            logger.warning("Found `additionalProp` in stats data, this is a dummy result. Ignoring.")
             return {}
 
         return_v = {}
@@ -113,8 +118,8 @@ class ImageStatsModelsRequest(BaseAIHordeRequest):
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[ImageModelStatsResponse]:
-        return ImageModelStatsResponse
+    def get_default_success_response_type(cls) -> type[ImageStatsModelsResponse]:
+        return ImageStatsModelsResponse
 
 
 class SinglePeriodImgStat(HordeAPIDataObject):
@@ -181,7 +186,8 @@ class ImageStatsModelsTotalRequest(BaseAIHordeRequest):
 
 
 @Unhashable
-class TextModelStatsResponse(HordeResponseBaseModel):
+class TextStatsModelResponse(HordeResponseBaseModel):
+    """Represents the data returned from the `/v2/stats/text/models` endpoint."""
 
     day: dict[str, int]
     """The stats for the past day."""
@@ -243,8 +249,8 @@ class TextStatsModelsRequest(BaseAIHordeRequest):
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[TextModelStatsResponse]:
-        return TextModelStatsResponse
+    def get_default_success_response_type(cls) -> type[TextStatsModelResponse]:
+        return TextStatsModelResponse
 
 
 class SinglePeriodTxtStat(HordeAPIDataObject):
