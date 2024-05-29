@@ -5,7 +5,7 @@ import pytest
 
 import horde_sdk.ai_horde_api.apimodels
 from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
-from horde_sdk.consts import HTTPMethod, HTTPStatusCode, get_all_success_status_codes
+from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod, HTTPStatusCode, get_all_success_status_codes
 from horde_sdk.generic_api._reflection import get_all_request_types
 from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponse
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH
@@ -66,9 +66,17 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
         # Otherwise, the request type has a payload, and is (probably) supposed to be a POST, PUT, or PATCH with
         # a payload
         else:
-            assert (
-                request_type.get_api_model_name() in swagger_defined_models
-            ), f"Model is defined in horde_sdk, but not in swagger: {request_type.get_api_model_name()}"
+            if request_type.get_api_model_name() == _ANONYMOUS_MODEL:
+                print(
+                    f"Request type {request_type.__name__} has an anonymous model name. "
+                    "This is probably not what you want. "
+                    "Consider giving it a unique name on the API.",
+                )
+            else:
+
+                assert (
+                    request_type.get_api_model_name() in swagger_defined_models
+                ), f"Model is defined in horde_sdk, but not in swagger: {request_type.get_api_model_name()}"
 
             assert endpoint_subpath in swagger_doc.paths, f"Missing {request_type.__name__} in swagger"
 

@@ -6,12 +6,12 @@ from horde_sdk.ai_horde_api.ai_horde_clients import (
     AIHordeAPIAsyncClientSession,
 )
 from horde_sdk.ai_horde_api.apimodels._stats import (
-    ImageModelStatsResponse,
     ImageStatsModelsRequest,
+    ImageStatsModelsResponse,
     ImageStatsModelsTotalRequest,
     ImageStatsModelsTotalResponse,
     SinglePeriodImgStat,
-    TextModelStatsResponse,
+    TextStatsModelResponse,
     TextStatsModelsRequest,
     TextStatsModelsTotalRequest,
     TextStatsModelsTotalResponse,
@@ -29,14 +29,14 @@ class TestAIHordeStats:
             request = ImageStatsModelsRequest()
             response = await client.submit_request(
                 request,
-                expected_response_type=ImageModelStatsResponse,
+                expected_response_type=ImageStatsModelsResponse,
             )
 
             if isinstance(response, RequestErrorResponse):
                 raise AssertionError(f"Request failed: {response}")
 
             assert response is not None
-            assert isinstance(response, ImageModelStatsResponse)
+            assert isinstance(response, ImageStatsModelsResponse)
             assert isinstance(response.day, dict)
             assert isinstance(response.month, dict)
             assert isinstance(response.total, dict)
@@ -44,14 +44,14 @@ class TestAIHordeStats:
             request_known = ImageStatsModelsRequest(model_state="known")
             response_known = await client.submit_request(
                 request_known,
-                expected_response_type=ImageModelStatsResponse,
+                expected_response_type=ImageStatsModelsResponse,
             )
 
             if isinstance(response_known, RequestErrorResponse):
                 raise AssertionError(f"Request failed: {response_known}")
 
             assert response_known is not None
-            assert isinstance(response_known, ImageModelStatsResponse)
+            assert isinstance(response_known, ImageStatsModelsResponse)
             assert isinstance(response_known.day, dict)
             assert isinstance(response_known.month, dict)
             assert isinstance(response_known.total, dict)
@@ -59,20 +59,20 @@ class TestAIHordeStats:
             request_custom = ImageStatsModelsRequest(model_state="custom")
             response_custom = await client.submit_request(
                 request_custom,
-                expected_response_type=ImageModelStatsResponse,
+                expected_response_type=ImageStatsModelsResponse,
             )
 
             if isinstance(response_custom, RequestErrorResponse):
                 raise AssertionError(f"Request failed: {response_custom}")
 
             assert response_custom is not None
-            assert isinstance(response_custom, ImageModelStatsResponse)
+            assert isinstance(response_custom, ImageStatsModelsResponse)
             assert isinstance(response_custom.day, dict)
             assert isinstance(response_custom.month, dict)
             assert isinstance(response_custom.total, dict)
 
-            if (not isinstance(response, ImageModelStatsResponse) or response.month is None) or (
-                not isinstance(response_custom, ImageModelStatsResponse) or response_custom.month is None
+            if (not isinstance(response, ImageStatsModelsResponse) or response.month is None) or (
+                not isinstance(response_custom, ImageStatsModelsResponse) or response_custom.month is None
             ):
                 pytest.skip("No data to compare. Is this a development environment?")
             else:
@@ -113,14 +113,14 @@ class TestAIHordeStats:
             request = TextStatsModelsRequest()
             response = await client.submit_request(
                 request,
-                expected_response_type=TextModelStatsResponse,
+                expected_response_type=TextStatsModelResponse,
             )
 
             if isinstance(response, RequestErrorResponse):
                 raise AssertionError(f"Request failed: {response}")
 
             assert response is not None
-            assert isinstance(response, TextModelStatsResponse)
+            assert isinstance(response, TextStatsModelResponse)
             assert isinstance(response.day, dict)
             assert isinstance(response.month, dict)
             assert isinstance(response.total, dict)

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from strenum import StrEnum
 from typing_extensions import override
 
-from horde_sdk.consts import _UNDEFINED_MODEL, HTTPMethod
+from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     HordeRequest,
@@ -63,7 +63,7 @@ class ImageRatingsResponse(HordeResponseBaseModel):
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
-        return _UNDEFINED_MODEL
+        return _ANONYMOUS_MODEL
 
 
 class UserRatingsResponseSubRecord(BaseImageRatingRecord):
@@ -84,7 +84,7 @@ class UserRatingsResponse(HordeResponseBaseModel):
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
-        return _UNDEFINED_MODEL
+        return _ANONYMOUS_MODEL
 
 
 class UserValidateResponseRecord(BaseImageRatingRecord):
@@ -102,7 +102,7 @@ class UserValidateResponse(HordeResponseBaseModel):
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
-        return _UNDEFINED_MODEL
+        return _ANONYMOUS_MODEL
 
 
 class UserCheckResponse(HordeResponseBaseModel):
@@ -124,7 +124,7 @@ class UserCheckResponse(HordeResponseBaseModel):
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
-        return _UNDEFINED_MODEL
+        return _ANONYMOUS_MODEL
 
 
 # endregion

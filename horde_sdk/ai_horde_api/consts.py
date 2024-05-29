@@ -510,3 +510,11 @@ class RC(StrEnum):
     """The text request has an excessive stop sequence."""
     TokenOverflow = auto()
     MoreThanMinExtraSourceImage = auto()
+
+
+class PROGRESS_STATE(StrEnum):
+    """The state of a request as seen on the server."""
+
+    waiting = auto()
+    finished = auto()
+    timed_out = auto()

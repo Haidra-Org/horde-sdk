@@ -10,20 +10,28 @@ import time
 import urllib.parse
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Coroutine
-from enum import auto
 from typing import cast
 
 import aiohttp
 import PIL.Image
 import requests
 from loguru import logger
-from strenum import StrEnum
 
 from horde_sdk import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL
 from horde_sdk.ai_horde_api.apimodels import (
+    AIHordeHeartbeatRequest,
+    AIHordeHeartbeatResponse,
     AlchemyAsyncRequest,
     AlchemyStatusResponse,
+    AllWorkersDetailsRequest,
+    AllWorkersDetailsResponse,
     DeleteImageGenerateRequest,
+    DeleteWorkerRequest,
+    DeleteWorkerResponse,
+    HordeStatusModelsAllRequest,
+    HordeStatusModelsAllResponse,
+    HordeStatusModelsSingleRequest,
+    HordeStatusModelsSingleResponse,
     ImageGenerateAsyncDryRunResponse,
     ImageGenerateAsyncRequest,
     ImageGenerateCheckRequest,
@@ -31,16 +39,30 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerateStatusRequest,
     ImageGenerateStatusResponse,
     ImageGeneration,
+    ImageStatsModelsRequest,
+    ImageStatsModelsResponse,
+    ImageStatsModelsTotalRequest,
+    ImageStatsModelsTotalResponse,
+    ModifyWorkerRequest,
+    ModifyWorkerResponse,
+    NewsRequest,
+    NewsResponse,
     ResponseGenerationProgressCombinedMixin,
+    SingleWorkerDetailsRequest,
+    SingleWorkerDetailsResponse,
     TextGenerateAsyncDryRunResponse,
     TextGenerateAsyncRequest,
     TextGenerateStatusResponse,
+    TextStatsModelResponse,
+    TextStatsModelsRequest,
+    TextStatsModelsTotalRequest,
+    TextStatsModelsTotalResponse,
 )
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
-from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE
+from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE, PROGRESS_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.exceptions import AIHordeImageValidationError, AIHordeRequestError
-from horde_sdk.ai_horde_api.fields import JobID
+from horde_sdk.ai_horde_api.fields import JobID, WorkerID
 from horde_sdk.ai_horde_api.metadata import AIHordePathData, AIHordeQueryData
 from horde_sdk.generic_api.apimodels import (
     ContainsMessageResponseMixin,
@@ -381,14 +403,6 @@ class AIHordeAPIAsyncClientSession(GenericAsyncHordeAPISession):
         )
 
 
-class PROGRESS_STATE(StrEnum):
-    """The state of a request as seen on the server."""
-
-    waiting = auto()
-    finished = auto()
-    timed_out = auto()
-
-
 class BaseAIHordeSimpleClient(ABC):
     """The base class for the most straightforward clients which interact with the AI-Horde API."""
 
@@ -713,6 +727,26 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         logger.error(f"Request: {api_request.log_safe_model_dump()}")
         raise RuntimeError("Something went wrong with the request")
 
+    def heartbeat_request(
+        self,
+    ) -> AIHordeHeartbeatResponse:
+        """Submit a heartbeat request to the AI-Horde API.
+
+        Returns:
+            AIHordeHeartbeatResponse: The response from the API.
+        """
+        api_request = AIHordeHeartbeatRequest()
+
+        with AIHordeAPIClientSession() as horde_session:
+            api_response = horde_session.submit_request(api_request, api_request.get_default_success_response_type())
+
+            if isinstance(api_response, RequestErrorResponse):
+                raise AIHordeRequestError(api_response)
+
+            return api_response
+
+        raise RuntimeError("Something went wrong with the request")
+
     def image_generate_request(
         self,
         image_gen_request: ImageGenerateAsyncRequest,
@@ -916,6 +950,230 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                 raise AIHordeRequestError(dry_run_response)
 
             return dry_run_response
+
+        raise RuntimeError("Something went wrong with the request")
+
+    def workers_all_details(
+        self,
+    ) -> AllWorkersDetailsResponse:
+        """Get all the details for all workers.
+
+        Returns:
+            WorkersAllDetailsResponse: The response from the API.
+        """
+        with AIHordeAPIClientSession() as horde_session:
+            response = horde_session.submit_request(AllWorkersDetailsRequest(), AllWorkersDetailsResponse)
+
+            if isinstance(response, RequestErrorResponse):
+                raise AIHordeRequestError(response)
+
+            return response
+
+        raise RuntimeError("Something went wrong with the request")
+
+    def worker_details(
+        self,
+        worker_id: WorkerID | str,
+    ) -> SingleWorkerDetailsResponse:
+        """Get the details for a worker.
+
+        Args:
+            worker_id (WorkerID): The ID of the worker to get the details for.
+
+        Returns:
+            SingleWorkerDetailsResponse: The response from the API.
+        """
+        with AIHordeAPIClientSession() as horde_session:
+            response = horde_session.submit_request(
+                SingleWorkerDetailsRequest(worker_id=worker_id),
+                SingleWorkerDetailsResponse,
+            )
+
+            if isinstance(response, RequestErrorResponse):
+                raise AIHordeRequestError(response)
+
+            return response
+
+        raise RuntimeError("Something went wrong with the request")
+
+    def worker_modify(
+        self,
+        modify_worker_request: ModifyWorkerRequest,
+    ) -> ModifyWorkerResponse:
+        """Update a worker.
+
+        Args:
+            worker_id (WorkerID): The ID of the worker to update.
+            modify_worker_request (ModifyWorkerRequest): The request to update the worker.
+
+        Returns:
+            ModifyWorkerResponse: The response from the API.
+        """
+        with AIHordeAPIClientSession() as horde_session:
+            response = horde_session.submit_request(
+                modify_worker_request,
+                ModifyWorkerResponse,
+            )
+
+            if isinstance(response, RequestErrorResponse):
+                raise AIHordeRequestError(response)
+
+            return response
+
+        raise RuntimeError("Something went wrong with the request")
+
+    def worker_delete(
+        self,
+        worker_id: WorkerID | str,
+    ) -> DeleteWorkerResponse:
+        """Delete a worker.
+
+        Args:
+            worker_id (WorkerID): The ID of the worker to delete.
+
+        Returns:
+            DeleteWorkerResponse: The response from the API.
+        """
+        with AIHordeAPIClientSession() as horde_session:
+            response = horde_session.submit_request(DeleteWorkerRequest(worker_id=worker_id), DeleteWorkerResponse)
+
+            if isinstance(response, RequestErrorResponse):
+                raise AIHordeRequestError(response)
+
+            return response
+
+        raise RuntimeError("Something went wrong with the request")
+
+    def image_stats_totals(
+        self,
+    ) -> ImageStatsModelsTotalResponse:
+        """Get the total stats for images.
+
+        Returns:
+            ImageStatsTotalsResponse: The response from the API.
+        """
+        with AIHordeAPIClientSession() as horde_session:
+            response = horde_session.submit_request(ImageStatsModelsTotalRequest(), ImageStatsModelsTotalResponse)
+
+            if isinstance(response, RequestErrorResponse):
+                raise AIHordeRequestError(response)
+
+            return response
+
+        raise RuntimeError("Something went wrong with the request")
+
+    def image_stats_models(
+        self,
+    ) -> ImageStatsModelsResponse:
+        """Get the stats for images by model.
+
+        Returns:
+            ImageStatsModelsResponse: The response from the API.
+        """
+        with AIHordeAPIClientSession() as horde_session:
+            response = horde_session.submit_request(ImageStatsModelsRequest(), ImageStatsModelsResponse)
+
+            if isinstance(response, RequestErrorResponse):
+                raise AIHordeRequestError(response)
+
+            return response
+
+        raise RuntimeError("Something went wrong with the request")
+
+    def text_stats_totals(
+        self,
+    ) -> TextStatsModelsTotalResponse:
+        """Get the total stats for text.
+
+        Returns:
+            TextStatsTotalsResponse: The response from the API.
+        """
+        with AIHordeAPIClientSession() as horde_session:
+            response = horde_session.submit_request(TextStatsModelsTotalRequest(), TextStatsModelsTotalResponse)
+
+            if isinstance(response, RequestErrorResponse):
+                raise AIHordeRequestError(response)
+
+            return response
+
+        raise RuntimeError("Something went wrong with the request")
+
+    def text_stats_models(
+        self,
+    ) -> TextStatsModelResponse:
+        """Get the stats for text by model.
+
+        Returns:
+            TextModelStatsResponse: The response from the API.
+        """
+        with AIHordeAPIClientSession() as horde_session:
+            response = horde_session.submit_request(TextStatsModelsRequest(), TextStatsModelResponse)
+
+            if isinstance(response, RequestErrorResponse):
+                raise AIHordeRequestError(response)
+
+            return response
+
+        raise RuntimeError("Something went wrong with the request")
+
+    def image_status_models_all(
+        self,
+    ) -> HordeStatusModelsAllResponse:
+        """Get the status of all image models.
+
+        Returns:
+            ImageStatusModelsAllResponse: The response from the API.
+        """
+        with AIHordeAPIClientSession() as horde_session:
+            response = horde_session.submit_request(HordeStatusModelsAllRequest(), HordeStatusModelsAllResponse)
+
+            if isinstance(response, RequestErrorResponse):
+                raise AIHordeRequestError(response)
+
+            return response
+
+        raise RuntimeError("Something went wrong with the request")
+
+    def image_status_models_single(
+        self,
+        model_name: str,
+    ) -> HordeStatusModelsSingleResponse:
+        """Get the status of a single image model.
+
+        Args:
+            model_name (str): The name of the model to get the status of.
+
+        Returns:
+            ImageStatusModelsSingleResponse: The response from the API.
+        """
+        with AIHordeAPIClientSession() as horde_session:
+            response = horde_session.submit_request(
+                HordeStatusModelsSingleRequest(model_name=model_name),
+                HordeStatusModelsSingleResponse,
+            )
+
+            if isinstance(response, RequestErrorResponse):
+                raise AIHordeRequestError(response)
+
+            return response
+
+        raise RuntimeError("Something went wrong with the request")
+
+    def get_news(
+        self,
+    ) -> NewsResponse:
+        """Get the latest news from the AI-Horde API.
+
+        Returns:
+            NewsResponse: The response from the API.
+        """
+        with AIHordeAPIClientSession() as horde_session:
+            response = horde_session.submit_request(NewsRequest(), NewsResponse)
+
+            if isinstance(response, RequestErrorResponse):
+                raise AIHordeRequestError(response)
+
+            return response
 
         raise RuntimeError("Something went wrong with the request")
 
@@ -1135,6 +1393,29 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
 
         # Return the final response and job ID
         return (final_response, job_id)
+
+    async def heartbeat_request(
+        self,
+    ) -> AIHordeHeartbeatResponse:
+        """Submit a heartbeat request to the AI-Horde API.
+
+        Returns:
+            AIHordeHeartbeatResponse: The response from the API.
+        """
+        api_request = AIHordeHeartbeatRequest()
+
+        if self._horde_client_session is not None:
+            api_response = await self._horde_client_session.submit_request(
+                api_request,
+                api_request.get_default_success_response_type(),
+            )
+
+            if isinstance(api_response, RequestErrorResponse):
+                raise AIHordeRequestError(api_response)
+
+            return api_response
+
+        raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
 
     async def image_generate_request(
         self,
@@ -1359,3 +1640,251 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             raise AIHordeRequestError(dry_run_response)
 
         return dry_run_response
+
+    async def workers_all_details(
+        self,
+    ) -> AllWorkersDetailsResponse:
+        """Get all the details for all workers.
+
+        Returns:
+            WorkersAllDetailsResponse: The response from the API.
+        """
+        if self._horde_client_session is not None:
+            response = await self._horde_client_session.submit_request(
+                AllWorkersDetailsRequest(),
+                AllWorkersDetailsResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        return response
+
+    async def worker_details(
+        self,
+        worker_id: WorkerID | str,
+    ) -> SingleWorkerDetailsResponse:
+        """Get the details for a worker.
+
+        Args:
+            worker_id (WorkerID): The ID of the worker to get the details for.
+
+        Returns:
+            SingleWorkerDetailsResponse: The response from the API.
+        """
+        if self._horde_client_session is not None:
+            response = await self._horde_client_session.submit_request(
+                SingleWorkerDetailsRequest(worker_id=worker_id),
+                SingleWorkerDetailsResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        return response
+
+    async def worker_modify(
+        self,
+        modify_worker_request: ModifyWorkerRequest,
+    ) -> ModifyWorkerResponse:
+        """Update a worker.
+
+        Args:
+            worker_id (WorkerID): The ID of the worker to update.
+            modify_worker_request (ModifyWorkerRequest): The request to update the worker.
+
+        Returns:
+            ModifyWorkerResponse: The response from the API.
+        """
+        if self._horde_client_session is not None:
+            response = await self._horde_client_session.submit_request(
+                modify_worker_request,
+                ModifyWorkerResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        return response
+
+    async def worker_delete(
+        self,
+        worker_id: WorkerID | str,
+    ) -> DeleteWorkerResponse:
+        """Delete a worker.
+
+        Args:
+            worker_id (WorkerID): The ID of the worker to delete.
+
+        Returns:
+            DeleteWorkerResponse: The response from the API.
+        """
+        if self._horde_client_session is not None:
+            response = await self._horde_client_session.submit_request(
+                DeleteWorkerRequest(worker_id=worker_id),
+                DeleteWorkerResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        return response
+
+    async def image_stats_totals(
+        self,
+    ) -> ImageStatsModelsTotalResponse:
+        """Get the total stats for images.
+
+        Returns:
+            ImageStatsTotalsResponse: The response from the API.
+        """
+        if self._horde_client_session is not None:
+            response = await self._horde_client_session.submit_request(
+                ImageStatsModelsTotalRequest(),
+                ImageStatsModelsTotalResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        return response
+
+    async def image_stats_models(
+        self,
+    ) -> ImageStatsModelsResponse:
+        """Get the stats for images by model.
+
+        Returns:
+            ImageStatsModelsResponse: The response from the API.
+        """
+        if self._horde_client_session is not None:
+            response = await self._horde_client_session.submit_request(
+                ImageStatsModelsRequest(),
+                ImageStatsModelsResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        return response
+
+    async def text_stats_totals(
+        self,
+    ) -> TextStatsModelsTotalResponse:
+        """Get the total stats for text.
+
+        Returns:
+            TextStatsTotalsResponse: The response from the API.
+        """
+        if self._horde_client_session is not None:
+            response = await self._horde_client_session.submit_request(
+                TextStatsModelsTotalRequest(),
+                TextStatsModelsTotalResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        return response
+
+    async def text_stats_models(
+        self,
+    ) -> TextStatsModelResponse:
+        """Get the stats for text by model.
+
+        Returns:
+            TextModelStatsResponse: The response from the API.
+        """
+        if self._horde_client_session is not None:
+            response = await self._horde_client_session.submit_request(
+                TextStatsModelsRequest(),
+                TextStatsModelResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        return response
+
+    async def image_status_models_all(
+        self,
+    ) -> HordeStatusModelsAllResponse:
+        """Get the status of all image models.
+
+        Returns:
+            ImageStatusModelsAllResponse: The response from the API.
+        """
+        if self._horde_client_session is not None:
+            response = await self._horde_client_session.submit_request(
+                HordeStatusModelsAllRequest(),
+                HordeStatusModelsAllResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        return response
+
+    async def image_status_models_single(
+        self,
+        model_name: str,
+    ) -> HordeStatusModelsSingleResponse:
+        """Get the status of a single image model.
+
+        Args:
+            model_name (str): The name of the model to get the status of.
+
+        Returns:
+            ImageStatusModelsSingleResponse: The response from the API.
+        """
+        if self._horde_client_session is not None:
+            response = await self._horde_client_session.submit_request(
+                HordeStatusModelsSingleRequest(model_name=model_name),
+                HordeStatusModelsSingleResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        return response
+
+    async def get_news(
+        self,
+    ) -> NewsResponse:
+        """Get the latest news from the AI-Horde API.
+
+        Returns:
+            NewsResponse: The response from the API.
+        """
+        if self._horde_client_session is not None:
+            response = await self._horde_client_session.submit_request(
+                NewsRequest(),
+                NewsResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        return response

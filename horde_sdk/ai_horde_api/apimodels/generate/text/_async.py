@@ -12,7 +12,7 @@ from horde_sdk.ai_horde_api.apimodels.base import (
 )
 from horde_sdk.ai_horde_api.apimodels.generate.text._status import DeleteTextGenerateRequest, TextGenerateStatusRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
-from horde_sdk.consts import HTTPMethod, HTTPStatusCode
+from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
@@ -197,7 +197,7 @@ class TextGenerateAsyncDryRunResponse(HordeResponseBaseModel):
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
-        return "UNDOCUMENTED"
+        return _ANONYMOUS_MODEL
 
 
 @Unhashable
