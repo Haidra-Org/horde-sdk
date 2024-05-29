@@ -165,6 +165,24 @@
             "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
+    "DeleteWorkerRequest": [
+        [
+            "worker_id",
+            "The UUID of the worker in question for this request."
+        ],
+        [
+            "apikey",
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
+        ],
+        [
+            "accept",
+            "The 'accept' header field."
+        ],
+        [
+            "client_agent",
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
+        ]
+    ],
     "FindUserRequest": [
         [
             "apikey",
@@ -487,7 +505,149 @@
             "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
-    "ModifyWorkerInput": [
+    "KudosTransferRequest": [
+        [
+            "apikey",
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
+        ],
+        [
+            "accept",
+            "The 'accept' header field."
+        ],
+        [
+            "client_agent",
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
+        ],
+        [
+            "username",
+            "The username of the user to transfer Kudos to."
+        ],
+        [
+            "amount",
+            "The amount of Kudos to transfer."
+        ]
+    ],
+    "ListUsersDetailsRequest": [
+        [
+            "accept",
+            "The 'accept' header field."
+        ],
+        [
+            "client_agent",
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
+        ],
+        [
+            "page",
+            "The page number to request. There are up to 25 users per page."
+        ],
+        [
+            "sort",
+            "The field to sort the users by. The default is by kudos."
+        ]
+    ],
+    "ModifyUserRequest": [
+        [
+            "apikey",
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
+        ],
+        [
+            "admin_comment",
+            "Add further information about this user for the other admins."
+        ],
+        [
+            "concurrency",
+            "The amount of concurrent request this user can have."
+        ],
+        [
+            "contact",
+            "Contact details for the horde admins to reach the user in case of emergency. This is only visible to horde\nmoderators."
+        ],
+        [
+            "customizer",
+            "When set to true, the user will be able to serve custom Stable Diffusion models which do not exist in the\nOfficial AI Horde Model Reference."
+        ],
+        [
+            "education",
+            "When set to true, the user is considered an education account and some options become more restrictive."
+        ],
+        [
+            "filtered",
+            "When set to true, the replacement filter will always be applied against this user"
+        ],
+        [
+            "flagged",
+            "When set to true, the user cannot transfer kudos and all their workers are put into permanent maintenance."
+        ],
+        [
+            "moderator",
+            "Set to true to make this user a horde moderator."
+        ],
+        [
+            "monthly_kudos",
+            "When specified, will start assigning the user monthly kudos, starting now!"
+        ],
+        [
+            "public_workers",
+            "Set to true to make this user display their worker IDs."
+        ],
+        [
+            "service",
+            "When set to true, the user is considered a service account proxying the requests for other users."
+        ],
+        [
+            "special",
+            "When set to true, The user can send special payloads."
+        ],
+        [
+            "trusted",
+            "When set to true,the user and their servers will not be affected by suspicion."
+        ],
+        [
+            "usage_multiplier",
+            "The amount by which to multiply the users kudos consumption."
+        ],
+        [
+            "username",
+            "When specified, will change the username. No profanity allowed!"
+        ],
+        [
+            "vpn",
+            "When set to true, the user will be able to onboard workers behind a VPN. This should be used as a temporary\nsolution until the user is trusted."
+        ],
+        [
+            "worker_invited",
+            "Set to the amount of workers this user is allowed to join to the horde when in worker invite-only mode."
+        ],
+        [
+            "kudos",
+            "The amount of kudos to modify (can be negative)."
+        ],
+        [
+            "reset_suspicion",
+            "Set the user's suspicion back to 0."
+        ],
+        [
+            "user_id",
+            "The user's ID, as a `str`, but only containing numeric values."
+        ],
+        [
+            "accept",
+            "The 'accept' header field."
+        ],
+        [
+            "client_agent",
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
+        ]
+    ],
+    "ModifyWorkerRequest": [
+        [
+            "worker_id",
+            "The UUID of the worker in question for this request."
+        ],
+        [
+            "apikey",
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
+        ],
         [
             "accept",
             "The 'accept' header field."
@@ -531,10 +691,10 @@
             "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
-    "SingleWorkerDetailsRequest": [
+    "SingleUserDetailsRequest": [
         [
-            "apikey",
-            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
+            "user_id",
+            "The user's ID, as a `str`, but only containing numeric values."
         ],
         [
             "accept",
@@ -543,10 +703,24 @@
         [
             "client_agent",
             "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
+        ]
+    ],
+    "SingleWorkerDetailsRequest": [
+        [
+            "apikey",
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "worker_id",
-            "The UUID of the worker to get details for."
+            "The UUID of the worker in question for this request."
+        ],
+        [
+            "accept",
+            "The 'accept' header field."
+        ],
+        [
+            "client_agent",
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "TextGenerateAsyncRequest": [
