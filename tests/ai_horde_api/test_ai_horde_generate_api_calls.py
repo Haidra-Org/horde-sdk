@@ -2,8 +2,8 @@ import asyncio
 from typing import Any
 
 import aiohttp
-from loguru import logger
 import pytest
+from loguru import logger
 
 from horde_sdk.ai_horde_api.ai_horde_clients import (
     AIHordeAPIAsyncClientSession,
@@ -497,7 +497,7 @@ class TestAIHordeGenerate:
 
                 image_generate_status_response, job_id = await simple_client.image_generate_request(
                     simple_image_gen_request,
-                    check_callback=check_callback,  # type: ignore
+                    check_callback=check_callback,
                 )
 
     @pytest.mark.asyncio

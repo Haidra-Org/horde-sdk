@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import base64
-import contextlib
 import inspect
 import io
 import time
@@ -33,6 +32,9 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerateStatusResponse,
     ImageGeneration,
     ResponseGenerationProgressCombinedMixin,
+    TextGenerateAsyncDryRunResponse,
+    TextGenerateAsyncRequest,
+    TextGenerateStatusResponse,
 )
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
 from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE
@@ -836,6 +838,87 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
 
         return (response, job_id)
 
+    def text_generate_request(
+        self,
+        text_gen_request: TextGenerateAsyncRequest,
+        timeout: int = GENERATION_MAX_LIFE,
+        check_callback: Callable[[TextGenerateStatusResponse], None] | None = None,
+    ) -> tuple[TextGenerateStatusResponse, JobID]:
+        """Submit a text generation request to the AI-Horde API, and wait for it to complete.
+
+        Args:
+            text_gen_request (TextGenerateAsyncRequest): The request to submit.
+            timeout (int, optional): The number of seconds to wait before aborting.
+                returns any completed images at the end of the timeout. Defaults to -1.
+            check_callback (Callable[[TextGenerateStatusResponse], None], optional): A callback to call with the check
+                response.
+
+        Returns:
+            TextGenerateStatusResponse: The completed text generation request.
+
+        Raises:
+            AIHordeRequestError: If the request failed. The error response is included in the exception.
+        """
+        # `cast()` returns the value unchanged but tells coerces the type for mypy's benefit
+        # Static type checkers can't see that `_do_request_with_check` is reliably passing an object of the correct
+        # type, but we are guaranteed that it is due to the `ImageGenerateCheckResponse` type being passed as an arg.
+        generic_callback = cast(Callable[[HordeResponse], None], check_callback)
+
+        timeout = self.validate_timeout(timeout, log_message=True)
+
+        num_gens_requested = 1
+
+        if text_gen_request.params and text_gen_request.params.n:
+            num_gens_requested = text_gen_request.params.n
+
+        logger.log(PROGRESS_LOGGER_LABEL, f"Requesting {num_gens_requested} text generation.")
+        logger.debug(f"Request: {text_gen_request}")
+
+        response, job_id = self._do_request_with_check(
+            text_gen_request,
+            number_of_responses=1,
+            timeout=timeout,
+            check_callback=generic_callback,
+            check_callback_type=TextGenerateStatusResponse,
+        )
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        if not isinstance(response, TextGenerateStatusResponse):  # pragma: no cover
+            raise RuntimeError("Response was not a TextGenerateStatusResponse")
+
+        return (response, job_id)
+
+    def text_generate_request_dry_run(
+        self,
+        text_gen_request: TextGenerateAsyncRequest,
+    ) -> TextGenerateAsyncDryRunResponse:
+        """Submit a dry run text generation, which will return the kudos cost without actually generating text.
+
+        Args:
+            text_gen_request (TextGenerateAsyncRequest): The request to submit.
+
+        Returns:
+            TextGenerateAsyncDryRunResponse: The response from the API.
+        """
+        if not text_gen_request.dry_run:
+            raise RuntimeError("Dry run request must have dry_run set to True")
+
+        logger.log(PROGRESS_LOGGER_LABEL, "Requesting dry run text generation.")
+        logger.debug(f"Request: {text_gen_request}")
+
+        with AIHordeAPIClientSession() as horde_session:
+            dry_run_response = horde_session.submit_request(text_gen_request, TextGenerateAsyncDryRunResponse)
+
+            if isinstance(dry_run_response, RequestErrorResponse):  # pragma: no cover
+                logger.error(f"Error response received: {dry_run_response.message}")
+                raise AIHordeRequestError(dry_run_response)
+
+            return dry_run_response
+
+        raise RuntimeError("Something went wrong with the request")
+
 
 class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
     """An asyncio based simple client for the AI-Horde API. Start with this class if you want asyncio capabilities.."""
@@ -1107,6 +1190,38 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
 
         return (final_response, job_id)
 
+    async def image_generate_request_dry_run(
+        self,
+        image_gen_request: ImageGenerateAsyncRequest,
+    ) -> ImageGenerateAsyncDryRunResponse:
+        """Submit a dry run image generation, which will return the kudos cost without actually generating images.
+
+        Args:
+            image_gen_request (ImageGenerateAsyncRequest): The request to submit.
+
+        Returns:
+            ImageGenerateAsyncDryRunResponse: The response from the API.
+        """
+        if not image_gen_request.dry_run:
+            raise RuntimeError("Dry run request must have dry_run set to True")
+
+        n = image_gen_request.params.n if image_gen_request.params and image_gen_request.params.n else 1
+        logger.log(PROGRESS_LOGGER_LABEL, f"Requesting dry run for {n} images.")
+
+        if self._horde_client_session is not None:
+            dry_run_response = await self._horde_client_session.submit_request(
+                image_gen_request,
+                ImageGenerateAsyncDryRunResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(dry_run_response, RequestErrorResponse):
+            logger.error(f"Error response received: {dry_run_response.message}")
+            raise AIHordeRequestError(dry_run_response)
+
+        return dry_run_response
+
     async def alchemy_request(
         self,
         alchemy_request: AlchemyAsyncRequest,
@@ -1152,3 +1267,95 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             raise RuntimeError("Response was not an AlchemyAsyncResponse")
 
         return (response, job_id)
+
+    async def text_generate_request(
+        self,
+        text_gen_request: TextGenerateAsyncRequest,
+        timeout: int = GENERATION_MAX_LIFE,
+        check_callback: Callable[[TextGenerateStatusResponse], None] | None = None,
+        delay: float = 0.0,
+    ) -> tuple[TextGenerateStatusResponse, JobID]:
+        """Submit a text generation request to the AI-Horde API, and wait for it to complete.
+
+        *Be warned* that using this method too frequently could trigger a rate limit from the AI-Horde API.
+        Space concurrent requests apart slightly to allow them to be less than 10/second.
+
+        Args:
+            text_gen_request (TextGenerateAsyncRequest): The request to submit.
+            timeout (int, optional): The number of seconds to wait before aborting.
+                returns any completed images at the end of the timeout. Any value 0 or less will wait indefinitely.
+                Defaults to -1.
+            check_callback (Callable[[TextGenerateStatusResponse], None], optional): A callback to call with the check
+                response.
+            delay (float, optional): The number of seconds to wait before checking the status. Defaults to 0.0.
+
+        Returns:
+            tuple[TextGenerateStatusResponse, JobID]: The final status response and the corresponding job ID.
+
+        Raises:
+            AIHordeRequestError: If the request failed. The error response is included in the exception.
+        """
+        # `cast()` returns the value unchanged but tells coerces the type for mypy's benefit
+        # Static type checkers can't see that `_do_request_with_check` is reliably passing an object of the correct
+        # type, but we are guaranteed that it is due to the `ImageGenerateCheckResponse` type being passed as an arg.
+        generic_callback = cast(Callable[[HordeResponse], None], check_callback)
+
+        await asyncio.sleep(delay)
+
+        timeout = self.validate_timeout(timeout, log_message=True)
+
+        num_gens_requested = 1
+
+        if text_gen_request.params and text_gen_request.params.n:
+            num_gens_requested = text_gen_request.params.n
+
+        logger.log(PROGRESS_LOGGER_LABEL, f"Requesting {num_gens_requested} text generation.")
+        logger.debug(f"Request: {text_gen_request}")
+
+        response, job_id = await self._do_request_with_check(
+            text_gen_request,
+            number_of_responses=1,
+            timeout=timeout,
+            check_callback=generic_callback,
+            check_callback_type=TextGenerateStatusResponse,
+        )
+
+        if isinstance(response, RequestErrorResponse):
+            raise AIHordeRequestError(response)
+
+        if not isinstance(response, TextGenerateStatusResponse):  # pragma: no cover
+            raise RuntimeError("Response was not a TextGenerateStatusResponse")
+
+        return (response, job_id)
+
+    async def text_generate_request_dry_run(
+        self,
+        text_gen_request: TextGenerateAsyncRequest,
+    ) -> TextGenerateAsyncDryRunResponse:
+        """Submit a dry run text generation, which will return the kudos cost without actually generating text.
+
+        Args:
+            text_gen_request (TextGenerateAsyncRequest): The request to submit.
+
+        Returns:
+            TextGenerateAsyncDryRunResponse: The response from the API.
+        """
+        if not text_gen_request.dry_run:
+            raise RuntimeError("Dry run request must have dry_run set to True")
+
+        logger.log(PROGRESS_LOGGER_LABEL, "Requesting dry run text generation.")
+        logger.debug(f"Request: {text_gen_request}")
+
+        if self._horde_client_session is not None:
+            dry_run_response = await self._horde_client_session.submit_request(
+                text_gen_request,
+                TextGenerateAsyncDryRunResponse,
+            )
+        else:
+            raise RuntimeError("No AIHordeAPIAsyncClientSession provided")
+
+        if isinstance(dry_run_response, RequestErrorResponse):
+            logger.error(f"Error response received: {dry_run_response.message}")
+            raise AIHordeRequestError(dry_run_response)
+
+        return dry_run_response
