@@ -4,8 +4,8 @@ from enum import IntEnum
 
 from strenum import StrEnum
 
-_UNDEFINED_MODEL = "_UNDEFINED_MODEL"
-"""This model is logically present on the API, but not defined in the swagger."""
+_ANONYMOUS_MODEL = "_ANONYMOUS_MODEL"
+"""This model is on the API but does not have a name."""
 
 
 class HTTPMethod(StrEnum):

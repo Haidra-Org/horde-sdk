@@ -15,7 +15,7 @@ from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckR
 from horde_sdk.ai_horde_api.apimodels.generate._status import DeleteImageGenerateRequest, ImageGenerateStatusRequest
 from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
-from horde_sdk.consts import HTTPMethod, HTTPStatusCode
+from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
@@ -95,7 +95,7 @@ class ImageGenerateAsyncDryRunResponse(HordeResponseBaseModel):
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
-        return "UNDOCUMENTED"
+        return _ANONYMOUS_MODEL
 
 
 class ImageGenerationInputPayload(HordeAPIObject, ImageGenerateParamMixin):
