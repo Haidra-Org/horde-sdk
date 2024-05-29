@@ -6,13 +6,13 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "AlchemyAsyncRequest": [
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "accept",
@@ -20,11 +20,11 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "forms",
-            null
+            "The list of forms (types of post-processing/interrogation/captioning/etc) to request."
         ],
         [
             "source_image",
@@ -46,13 +46,13 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "AlchemyJobSubmitRequest": [
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "id_",
@@ -64,21 +64,21 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "result",
-            null
+            "The result of the alchemy job."
         ],
         [
             "state",
-            null
+            "The state of this generation. See `GENERATION_STATE` for more information."
         ]
     ],
     "AlchemyPopRequest": [
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "accept",
@@ -86,7 +86,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "name",
@@ -104,7 +104,7 @@
     "AlchemyStatusRequest": [
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "id_",
@@ -116,13 +116,13 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "AllWorkersDetailsRequest": [
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "accept",
@@ -130,11 +130,11 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "type_",
-            null
+            "Filter workers by type. Default is 'all' which returns all workers."
         ]
     ],
     "DeleteImageGenerateRequest": [
@@ -148,7 +148,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "DeleteTextGenerateRequest": [
@@ -162,13 +162,13 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "FindUserRequest": [
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "accept",
@@ -176,7 +176,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "HordePerformanceRequest": [
@@ -186,7 +186,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "HordeStatusModelsAllRequest": [
@@ -196,7 +196,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "type_",
@@ -222,7 +222,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "model_name",
@@ -232,31 +232,31 @@
     "ImageGenerateAsyncRequest": [
         [
             "trusted_workers",
-            null
+            "When true, only trusted workers will serve this request. When False, Evaluating workers will also be used\nwhich can increase speed but adds more risk!"
         ],
         [
             "slow_workers",
-            null
+            "When True, allows slower workers to pick up this request. Disabling this incurs an extra kudos cost."
         ],
         [
             "workers",
-            null
+            "A list of worker IDs to use for this request. If empty, any worker can pick up the request. Using this incurs\nand extra kudos cost."
         ],
         [
             "worker_blacklist",
-            null
+            "If true, the worker list will be treated as a blacklist instead of a whitelist."
         ],
         [
             "models",
-            null
+            "The generative models to use for this request."
         ],
         [
             "dry_run",
-            null
+            "If true, the request will not be processed, but will return a response with the estimated kudos cost."
         ],
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "accept",
@@ -264,47 +264,47 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "prompt",
-            null
+            "The prompt which will be sent to Stable Diffusion to generate an image."
         ],
         [
             "params",
-            null
+            "The parameters for the image generation."
         ],
         [
             "nsfw",
-            null
+            "Set to true if this request is NSFW. This will skip workers which censor images."
         ],
         [
             "censor_nsfw",
-            null
+            "If the request is SFW, and the worker accidentally generates NSFW, it will send back a censored image."
         ],
         [
             "r2",
-            null
+            "If True, the image will be sent via cloudflare r2 download link."
         ],
         [
             "shared",
-            null
+            "If True, The image will be shared with LAION for improving their dataset. This will also reduce your\nkudos consumption by 2. For anonymous users, this is always True."
         ],
         [
             "replacement_filter",
-            null
+            "If enabled, suspicious prompts are sanitized through a string replacement filter instead."
         ],
         [
             "source_image",
-            null
+            "The public URL of the source image or a base64 string to use."
         ],
         [
             "source_processing",
-            null
+            "If source_image is provided, specifies how to process it."
         ],
         [
             "source_mask",
-            null
+            "If source_processing is set to 'inpainting' or 'outpainting', this parameter can be optionally provided as the\nBase64-encoded webp mask of the areas to inpaint. If this arg is not passed, the inpainting/outpainting mask has to\nbe embedded as alpha channel."
         ],
         [
             "extra_source_images",
@@ -322,7 +322,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "ImageGenerateJobPopRequest": [
@@ -360,7 +360,7 @@
         ],
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "accept",
@@ -368,7 +368,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "bridge_version",
@@ -422,13 +422,13 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "ImageGenerationJobSubmitRequest": [
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "id_",
@@ -440,7 +440,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "generation",
@@ -470,7 +470,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "model_state",
@@ -484,7 +484,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "ModifyWorkerInput": [
@@ -494,7 +494,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "info",
@@ -528,13 +528,13 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "SingleWorkerDetailsRequest": [
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "accept",
@@ -542,41 +542,41 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "worker_id",
-            null
+            "The UUID of the worker to get details for."
         ]
     ],
     "TextGenerateAsyncRequest": [
         [
             "trusted_workers",
-            null
+            "When true, only trusted workers will serve this request. When False, Evaluating workers will also be used\nwhich can increase speed but adds more risk!"
         ],
         [
             "slow_workers",
-            null
+            "When True, allows slower workers to pick up this request. Disabling this incurs an extra kudos cost."
         ],
         [
             "workers",
-            null
+            "A list of worker IDs to use for this request. If empty, any worker can pick up the request. Using this incurs\nand extra kudos cost."
         ],
         [
             "worker_blacklist",
-            null
+            "If true, the worker list will be treated as a blacklist instead of a whitelist."
         ],
         [
             "models",
-            null
+            "The generative models to use for this request."
         ],
         [
             "dry_run",
-            null
+            "If true, the request will not be processed, but will return a response with the estimated kudos cost."
         ],
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "accept",
@@ -584,7 +584,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "params",
@@ -666,7 +666,7 @@
         ],
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "accept",
@@ -674,7 +674,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "TextGenerateStatusRequest": [
@@ -688,13 +688,13 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "TextGenerationJobSubmitRequest": [
         [
             "apikey",
-            null
+            "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`"
         ],
         [
             "id_",
@@ -706,7 +706,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ],
         [
             "generation",
@@ -728,7 +728,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ],
     "TextStatsModelsTotalRequest": [
@@ -738,7 +738,7 @@
         ],
         [
             "client_agent",
-            null
+            "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client."
         ]
     ]
 }
