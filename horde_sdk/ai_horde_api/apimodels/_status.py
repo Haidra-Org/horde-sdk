@@ -18,6 +18,7 @@ from horde_sdk.generic_api.decoration import Unhashable
 
 class AIHordeHeartbeatResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
     version: str
+    """The version of the AI Horde API that this node is running."""
 
     @override
     @classmethod
@@ -54,6 +55,7 @@ class HordePerformanceResponse(HordeResponseBaseModel):
             "How many workers are actively processing image interrogations in this {horde_noun} in the past 5 minutes."
         ),
     )
+    """How many workers are actively processing image interrogations in this {horde_noun} in the past 5 minutes."""
     interrogator_thread_count: int | None = Field(
         None,
         description=(
@@ -61,34 +63,36 @@ class HordePerformanceResponse(HordeResponseBaseModel):
             " minutes."
         ),
     )
+    """How many worker threads are actively processing image interrogation in this {horde_noun} in the past 5
+    minutes."""
     past_minute_megapixelsteps: float | None = Field(
         None,
-        description="How many megapixelsteps this horde generated in the last minute.",
     )
+    """How many megapixelsteps this horde generated in the last minute."""
     past_minute_tokens: float | None = Field(
         None,
-        description="How many tokens this horde generated in the last minute.",
     )
+    """How many tokens this horde generated in the last minute."""
     queued_forms: float | None = Field(
         None,
-        description="The amount of image interrogations waiting and processing currently in this horde.",
     )
+    """The amount of image interrogations waiting and processing currently in this horde."""
     queued_megapixelsteps: float | None = Field(
         None,
-        description="The amount of megapixelsteps in waiting and processing requests currently in this horde.",
     )
+    """The amount of megapixelsteps in waiting and processing requests currently in this horde."""
     queued_requests: int | None = Field(
         None,
-        description="The amount of waiting and processing image requests currently in this horde.",
     )
+    """The amount of waiting and processing image requests currently in this horde."""
     queued_text_requests: int | None = Field(
         None,
-        description="The amount of waiting and processing text requests currently in this horde.",
     )
+    """The amount of waiting and processing text requests currently in this horde."""
     queued_tokens: float | None = Field(
         None,
-        description="The amount of tokens in waiting and processing requests currently in this horde.",
     )
+    """The amount of tokens in waiting and processing requests currently in this horde."""
     text_thread_count: int | None = Field(
         None,
         description=(
@@ -96,10 +100,12 @@ class HordePerformanceResponse(HordeResponseBaseModel):
             " minutes."
         ),
     )
+    """How many worker threads are actively processing prompt generations in this {horde_noun} in the past 5
+    minutes."""
     text_worker_count: int | None = Field(
         None,
-        description="How many workers are actively processing prompt generations in this horde in the past 5 minutes.",
     )
+    """How many workers are actively processing prompt generations in this horde in the past 5 minutes."""
     thread_count: int | None = Field(
         None,
         description=(
@@ -107,10 +113,12 @@ class HordePerformanceResponse(HordeResponseBaseModel):
             " minutes."
         ),
     )
+    """How many worker threads are actively processing prompt generations in this {horde_noun} in the past 5
+    minutes."""
     worker_count: int | None = Field(
         None,
-        description="How many workers are actively processing prompt generations in this horde in the past 5 minutes.",
     )
+    """How many workers are actively processing prompt generations in this horde in the past 5 minutes."""
 
     @override
     @classmethod
@@ -141,9 +149,16 @@ class HordePerformanceRequest(BaseAIHordeRequest):
 
 
 class Newspiece(HordeAPIObject):
-    date_published: str | None = Field(None, description="The date this newspiece was published.")
-    importance: str | None = Field(None, description="How critical this piece of news is.", examples=["Information"])
-    newspiece: str | None = Field(None, description="The actual piece of news.")
+    date_published: str | None = Field(
+        None,
+    )
+    """The date this newspiece was published."""
+    importance: str | None = Field(None, examples=["Information"])
+    """How critical this piece of news is."""
+    newspiece: str | None = Field(
+        None,
+    )
+    """The actual piece of news."""
 
     @override
     @classmethod
@@ -153,6 +168,9 @@ class Newspiece(HordeAPIObject):
 
 @Unhashable
 class NewsResponse(HordeResponse, RootModel[list[Newspiece]]):
+    root: list[Newspiece]
+    """The underlying list of newspieces."""
+
     def __iter__(self) -> Iterator[Newspiece]:  # type: ignore
         return iter(self.root)
 
@@ -193,8 +211,14 @@ class NewsRequest(BaseAIHordeRequest):
 
 
 class ActiveModelLite(HordeAPIObject):
-    count: int | None = Field(None, description="How many of workers in this horde are running this model.")
-    name: str | None = Field(None, description="The Name of a model available by workers in this horde.")
+    count: int | None = Field(
+        None,
+    )
+    """How many of workers in this horde are running this model."""
+    name: str | None = Field(
+        None,
+    )
+    """The Name of a model available by workers in this horde."""
 
     @override
     @classmethod
@@ -203,15 +227,27 @@ class ActiveModelLite(HordeAPIObject):
 
 
 class ActiveModel(ActiveModelLite):
-    eta: int | None = Field(None, description="Estimated time in seconds for this model's queue to be cleared.")
-    jobs: float | None = Field(None, description="The job count waiting to be generated by this model.")
-    performance: float | None = Field(None, description="The average speed of generation for this model.")
-    queued: float | None = Field(None, description="The amount waiting to be generated by this model.")
+    eta: int | None = Field(
+        None,
+    )
+    """Estimated time in seconds for this model's queue to be cleared."""
+    jobs: float | None = Field(
+        None,
+    )
+    """The job count waiting to be generated by this model."""
+    performance: float | None = Field(
+        None,
+    )
+    """The average speed of generation for this model."""
+    queued: float | None = Field(
+        None,
+    )
+    """The amount waiting to be generated by this model."""
     type_: MODEL_TYPE | None = Field(
-        description="The model type (text or image).",
         examples=[MODEL_TYPE.image, MODEL_TYPE.text],
         alias="type",
     )
+    """The model type (text or image)."""
 
     @override
     @classmethod
@@ -221,6 +257,9 @@ class ActiveModel(ActiveModelLite):
 
 @Unhashable
 class HordeStatusModelsAllResponse(HordeResponse, RootModel[list[ActiveModel]]):
+    root: list[ActiveModel]
+    """The underlying list of models."""
+
     def __iter__(self) -> Iterator[ActiveModel]:  # type: ignore
         return iter(self.root)
 
@@ -245,15 +284,19 @@ class HordeStatusModelsAllRequest(BaseAIHordeRequest):
 
     type_: MODEL_TYPE = Field(
         MODEL_TYPE.image,
-        description="The type of model to filter by.",
         examples=[MODEL_TYPE.image, MODEL_TYPE.text],
         alias="type",
     )
+    """The type of model to filter by."""
 
     min_count: int | None = None
+    """Filter only models that have at least this amount of threads serving."""
     max_count: int | None = None
+    """Filter only models that have at most this amount of threads serving."""
 
     model_state: MODEL_STATE = MODEL_STATE.all
+    """If 'known', only show stats for known models in the model reference. If 'custom' only show stats for custom
+    models. If 'all' shows stats for all models."""
 
     @override
     @classmethod
@@ -284,6 +327,10 @@ class HordeStatusModelsAllRequest(BaseAIHordeRequest):
 @Unhashable
 class HordeStatusModelsSingleResponse(HordeResponse, RootModel[list[ActiveModel]]):
     # This is a list because of an oversight in the structure of the API response. # FIXME
+
+    root: list[ActiveModel]
+    """The underlying list of models."""
+
     def __iter__(self) -> Iterator[ActiveModel]:  # type: ignore
         return iter(self.root)
 
@@ -307,6 +354,7 @@ class HordeStatusModelsSingleRequest(BaseAIHordeRequest):
     )
 
     model_name: str
+    """The name of the model to request."""
 
     @override
     @classmethod
@@ -332,18 +380,18 @@ class HordeStatusModelsSingleRequest(BaseAIHordeRequest):
 class HordeModes(HordeAPIObject):
     maintenance_mode: bool = Field(
         False,
-        description="Whether the horde is in maintenance mode.",
     )
+    """Whether the horde is in maintenance mode."""
 
     invite_only_mode: bool = Field(
         False,
-        description="Whether the horde is in invite-only mode.",
     )
+    """Whether the horde is in invite-only mode."""
 
     raid_mode: bool = Field(
         False,
-        description="Whether the horde is in raid mode.",
     )
+    """Whether the horde is in raid mode."""
 
     @override
     @classmethod

@@ -79,7 +79,7 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
     """Note that this is an API key lookup, not a user ID lookup."""
 
     v2_users_all = "/v2/users"
-    v2_users = "/v2/users/{user_id}"
+    v2_users_single = "/v2/users/{user_id}"
 
     v2_workers_all = "/v2/workers"
     v2_workers_single = "/v2/workers/{worker_id}"

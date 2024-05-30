@@ -27,5 +27,6 @@ repos:
             types-pytz,
             types-setuptools,
             types-urllib3,
+            types-aiofiles,
             StrEnum
         ]

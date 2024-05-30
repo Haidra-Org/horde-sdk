@@ -139,8 +139,19 @@ out.json
 .vscode/launch.json
 .vscode/settings.json
 
-examples/requested_images/*.*
+requested_images/*.*
+examples/ai_horde_client/image/requested_images/*.*
+
+requested_text/*.*
+examples/ai_horde_client/text/requested_text/*.*
+
 _version.py
+# to prevent mkdocs from including this file in the documentation
+_version.md
 
 tests/testing_result_images/*
 !tests/testing_result_images/.results_go_here
+
+workers.txt
+
+ai_horde_codegen.py

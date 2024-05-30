@@ -88,20 +88,15 @@ class BaseHordeAPIClient(ABC):
 
         Args:
             apikey (str, optional): The API key to use for authenticated requests. Defaults to None, which will use the
-            anonymous API key.
-
+                anonymous API key.
             header_fields (type[GenericHeaderFields], optional): Pass this to define the API's Header fields.
-            Defaults to GenericHeaderFields.
-
+                Defaults to GenericHeaderFields.
             path_fields (type[GenericPathFields], optional): Pass this to define the API's URL path fields.
-            Defaults to GenericPathFields.
-
+                Defaults to GenericPathFields.
             query_fields (type[GenericQueryFields], optional): Pass this to define the API's URL query fields.
-            Defaults to GenericQueryFields.
-
+                Defaults to GenericQueryFields.
             accept_types (type[GenericAcceptTypes], optional): Pass this to define the API's accept types.
-            Defaults to GenericAcceptTypes.
-
+                Defaults to GenericAcceptTypes.
             kwargs: Any additional keyword arguments are ignored.
 
         Raises:
@@ -141,6 +136,7 @@ class BaseHordeAPIClient(ABC):
         Args:
             api_request (HordeRequest): The `HordeRequest` instance to be validated and prepared.
             expected_response_type (type[HordeResponse]): The expected response type.
+
         Returns:
             _ParsedRequest: A `_ParsedRequest` instance with the extracted data to be sent in the request.
 
@@ -389,7 +385,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
 
     _aiohttp_session: aiohttp.ClientSession
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         *,
         apikey: str | None = None,
@@ -493,7 +489,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         )
         self._pending_follow_ups = []
 
-    def submit_request(
+    def submit_request(  # noqa: D102
         self,
         api_request: HordeRequest,
         expected_response_type: type[HordeResponseTypeVar],
@@ -559,8 +555,12 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         if exc_type is None:
             return True
 
-        # Log the error.
-        logger.error(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
+        # Log the error
+        logger.error(f"Error: {exc_val}, Type: {exc_type}")
+
+        # Show the traceback if there is one
+        if exc_tb and hasattr(exc_tb, "print_exc"):
+            exc_tb.print_exc()
 
         # If there are no pending follow-up requests, return True if the exception was a CancelledError.
         if not self._pending_follow_ups:
@@ -649,7 +649,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
     it."""
     _pending_follow_ups_lock: asyncio.Lock = asyncio.Lock()
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         aiohttp_session: aiohttp.ClientSession,
         *,
@@ -758,9 +758,13 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
             for request in self._awaiting_requests:
                 logger.warning(f"Request Unhandled: {request.log_safe_model_dump()}")
 
-        # If there was an exception, log it.
-        if exc_type is not None:
-            logger.debug(f"Error: {exc_val}, Type: {exc_type}, Traceback: {exc_tb}")
+        # Log the error if there was one.
+        if exc_type:
+            logger.error(f"Error: {exc_val}, Type: {exc_type}")
+
+        # Show the traceback if there is one
+        if exc_tb and hasattr(exc_tb, "print_exc"):
+            exc_tb.print_exc()
 
         # If there are no pending follow-up requests, return True if the exception was a CancelledError.
         if not self._pending_follow_ups:

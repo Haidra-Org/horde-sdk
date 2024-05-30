@@ -17,6 +17,15 @@ from horde_sdk.generic_api.utils.swagger import SwaggerParser
 
 @cache
 def find_subclasses(module_or_package: types.ModuleType, super_type: type) -> list[type]:
+    """Find all subclasses of a given type in a module or package.
+
+    Args:
+        module_or_package (types.ModuleType): The module or package to search in.
+        super_type (type): The super type of the classes to search for.
+
+    Returns:
+        list[type]: A list of all the subclasses of the super type in the module or package.
+    """
     subclasses: list[type] = []
 
     if hasattr(module_or_package, "__package__") and module_or_package.__package__ is not None:
@@ -64,7 +73,6 @@ def any_unimported_classes(module: types.ModuleType, super_type: type) -> tuple[
 
 def all_undefined_classes(module: types.ModuleType) -> dict[str, str]:
     """Return all of the models defined on the API but not in the SDK."""
-
     module_found_classes = find_subclasses(module, HordeAPIObject)
 
     defined_api_object_names: set[str] = set()
@@ -125,3 +133,39 @@ def all_unaddressed_endpoints_ai_horde() -> set[AI_HORDE_API_ENDPOINT_SUBPATH]:
             unaddressed_paths.add(path)
 
     return unaddressed_paths
+
+
+def all_models_missing_docstrings() -> set[type]:
+    """Return all of the models that do not have docstrings."""
+    all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
+
+    missing_docstrings = set()
+
+    for class_type in all_classes:
+        if not class_type.__doc__:
+            missing_docstrings.add(class_type)
+
+    return missing_docstrings
+
+
+def all_model_and_fields_missing_docstrings() -> dict[type, set[str]]:
+    """Return all of the models' fields that do not have docstrings."""
+    all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
+
+    missing_docstrings: dict[type, set[str]] = {}
+
+    from pydantic import BaseModel
+
+    for class_type in all_classes:
+        if not issubclass(class_type, BaseModel):
+            continue
+
+        missing_fields = set()
+        for field_name, field_info in class_type.model_fields.items():
+            if not field_info.description:
+                missing_fields.add(field_name)
+
+        if missing_fields:
+            missing_docstrings[class_type] = missing_fields
+
+    return missing_docstrings

@@ -4,7 +4,7 @@ T = TypeVar("T")
 
 
 def Unhashable(cls: type[T]) -> type[T]:
-    """A decorator that makes a class unhashable.
+    """Make a class unhashable.
 
     Args:
         cls (Any): The class to make unhashable.
@@ -12,7 +12,6 @@ def Unhashable(cls: type[T]) -> type[T]:
     Returns:
         Any: The unhashable class.
     """
-
     cls._unhashable = True  # type: ignore
 
     cls.__hash__ = None  # type: ignore
@@ -35,7 +34,7 @@ def is_unhashable(obj: type | Any) -> bool:  # noqa: ANN401
 
 
 def Unequatable(cls: type[T]) -> type[T]:
-    """A decorator that makes a class unequatable
+    """Mark a class as unequatable.
 
     Args:
         cls (type[T]): The class to make unequatable
@@ -43,7 +42,6 @@ def Unequatable(cls: type[T]) -> type[T]:
     Returns:
         type[T]: The unequatable class
     """
-
     cls._unequatable = True  # type: ignore
 
     def __eq__(self, other: Any) -> bool:  # type: ignore # noqa: ANN001, ANN401

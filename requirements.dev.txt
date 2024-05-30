@@ -18,3 +18,4 @@ types-pytz
 types-requests
 types-setuptools
 types-urllib3
+types-aiofiles

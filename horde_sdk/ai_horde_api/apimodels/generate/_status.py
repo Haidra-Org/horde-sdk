@@ -14,21 +14,22 @@ from horde_sdk.generic_api.apimodels import HordeAPIObject, HordeResponseBaseMod
 
 
 class Generation(HordeAPIObject):
-    model: str = Field(description="The model which generated this image.", title="Generation Model")
+    model: str = Field(title="Generation Model")
+    """The model which generated this image."""
     state: GENERATION_STATE = Field(
         ...,
-        description="OBSOLETE (Use the gen_metadata field). The state of this generation.",
         examples=["ok"],
         title="Generation State",
     )
+    """OBSOLETE (Use the gen_metadata field). The state of this generation."""
     worker_id: str | WorkerID = Field(
-        description="The UUID of the worker which generated this image.",
         title="Worker ID",
     )
+    """The UUID of the worker which generated this image."""
     worker_name: str = Field(
-        description="The name of the worker which generated this image.",
         title="Worker Name",
     )
+    """The name of the worker which generated this image."""
 
 
 class ImageGeneration(Generation):
@@ -68,7 +69,7 @@ class ImageGeneration(Generation):
         return self.id_ == other.id_
 
     def __hash__(self) -> int:
-        return hash(self.id_)
+        return hash(ImageGeneration.__name__) + hash(self.id_)
 
 
 class ImageGenerateStatusResponse(
@@ -144,6 +145,17 @@ class DeleteImageGenerateRequest(
     def get_default_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
         return ImageGenerateStatusResponse
 
+    @override
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, DeleteImageGenerateRequest):
+            return False
+
+        return self.id_ == value.id_
+
+    @override
+    def __hash__(self) -> int:
+        return hash(DeleteImageGenerateRequest.__name__) + hash(self.id_)
+
 
 class ImageGenerateStatusRequest(BaseAIHordeRequest, JobRequestMixin):
     """Represents a GET request to the `/v2/generate/status/{id}` endpoint."""
@@ -167,3 +179,14 @@ class ImageGenerateStatusRequest(BaseAIHordeRequest, JobRequestMixin):
     @classmethod
     def get_default_success_response_type(cls) -> type[ImageGenerateStatusResponse]:
         return ImageGenerateStatusResponse
+
+    @override
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, ImageGenerateStatusRequest):
+            return False
+
+        return self.id_ == value.id_
+
+    @override
+    def __hash__(self) -> int:
+        return hash(ImageGenerateStatusRequest.__name__) + hash(self.id_)

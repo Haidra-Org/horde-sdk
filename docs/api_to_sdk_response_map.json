@@ -23,8 +23,11 @@
     "/v2/generate/text/status/{id}": {
         "200": "horde_sdk.ai_horde_api.apimodels.generate.text._status.TextGenerateStatusResponse"
     },
+    "/v2/workers/{worker_id}": {
+        "200": "horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsResponse"
+    },
     "/v2/find_user": {
-        "200": "horde_sdk.ai_horde_api.apimodels._find_user.FindUserResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels._users.UserDetailsResponse"
     },
     "/v2/status/performance": {
         "200": "horde_sdk.ai_horde_api.apimodels._status.HordePerformanceResponse"
@@ -49,16 +52,22 @@
         "200": "horde_sdk.ai_horde_api.apimodels.base.JobSubmitResponse"
     },
     "/v2/stats/img/models": {
-        "200": "horde_sdk.ai_horde_api.apimodels._stats.ImageModelStatsResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsResponse"
     },
     "/v2/stats/img/totals": {
         "200": "horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsTotalResponse"
     },
+    "/v2/kudos/transfer": {
+        "200": "horde_sdk.ai_horde_api.apimodels._kudos.KudosTransferResponse"
+    },
+    "/v2/users": {
+        "200": "horde_sdk.ai_horde_api.apimodels._users.ListUsersDetailsResponse"
+    },
+    "/v2/users/{user_id}": {
+        "200": "horde_sdk.ai_horde_api.apimodels._users.UserDetailsResponse"
+    },
     "/v2/status/news": {
         "200": "horde_sdk.ai_horde_api.apimodels._status.NewsResponse"
-    },
-    "/v2/workers/{worker_id}": {
-        "200": "horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsResponse"
     },
     "/v2/generate/text/async": {
         "200": "horde_sdk.ai_horde_api.apimodels.generate.text._async.TextGenerateAsyncDryRunResponse",
@@ -71,7 +80,7 @@
         "200": "horde_sdk.ai_horde_api.apimodels.base.JobSubmitResponse"
     },
     "/v2/stats/text/models": {
-        "200": "horde_sdk.ai_horde_api.apimodels._stats.TextModelStatsResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels._stats.TextStatsModelResponse"
     },
     "/v2/stats/text/totals": {
         "200": "horde_sdk.ai_horde_api.apimodels._stats.TextStatsModelsTotalResponse"

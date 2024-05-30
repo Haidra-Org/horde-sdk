@@ -4,7 +4,7 @@ title: Frequently Asked Questions
 
 > The objects returned by horde_sdk are immutable. If you need to change
 > something, you'll need to create a new object with the changes you
-> want. See the [section in getting started](../getting_started/#faux-immutability-or-why-cant-i-change-this-attribute) for more info.
+> want. See the [section in getting started](getting_started.md#faux-immutability) for more info.
 
 # I don't like types. Why is this library so focused on them?
 

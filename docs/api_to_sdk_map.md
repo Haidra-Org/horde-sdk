@@ -21,6 +21,7 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/interrogate/status/{id} | DELETE | [AlchemyDeleteRequest][horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyDeleteRequest] |
 | /v2/interrogate/status/{id} | GET | [AlchemyStatusRequest][horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyStatusRequest] |
 | /v2/interrogate/submit | POST | [AlchemyJobSubmitRequest][horde_sdk.ai_horde_api.apimodels.alchemy._submit.AlchemyJobSubmitRequest] |
+| /v2/kudos/transfer | POST | [KudosTransferRequest][horde_sdk.ai_horde_api.apimodels._kudos.KudosTransferRequest] |
 | /v2/stats/img/models | GET | [ImageStatsModelsRequest][horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsRequest] |
 | /v2/stats/img/totals | GET | [ImageStatsModelsTotalRequest][horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsTotalRequest] |
 | /v2/stats/text/models | GET | [TextStatsModelsRequest][horde_sdk.ai_horde_api.apimodels._stats.TextStatsModelsRequest] |
@@ -30,14 +31,19 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/status/models/{model_name} | GET | [HordeStatusModelsSingleRequest][horde_sdk.ai_horde_api.apimodels._status.HordeStatusModelsSingleRequest] |
 | /v2/status/news | GET | [NewsRequest][horde_sdk.ai_horde_api.apimodels._status.NewsRequest] |
 | /v2/status/performance | GET | [HordePerformanceRequest][horde_sdk.ai_horde_api.apimodels._status.HordePerformanceRequest] |
+| /v2/users | GET | [ListUsersDetailsRequest][horde_sdk.ai_horde_api.apimodels._users.ListUsersDetailsRequest] |
+| /v2/users/{user_id} | PUT | [ModifyUserRequest][horde_sdk.ai_horde_api.apimodels._users.ModifyUserRequest] |
+| /v2/users/{user_id} | GET | [SingleUserDetailsRequest][horde_sdk.ai_horde_api.apimodels._users.SingleUserDetailsRequest] |
 | /v2/workers | GET | [AllWorkersDetailsRequest][horde_sdk.ai_horde_api.apimodels.workers._workers.AllWorkersDetailsRequest] |
+| /v2/workers/{worker_id} | DELETE | [DeleteWorkerRequest][horde_sdk.ai_horde_api.apimodels.workers._workers.DeleteWorkerRequest] |
+| /v2/workers/{worker_id} | PUT | [ModifyWorkerRequest][horde_sdk.ai_horde_api.apimodels.workers._workers.ModifyWorkerRequest] |
 | /v2/workers/{worker_id} | GET | [SingleWorkerDetailsRequest][horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsRequest] |
 
 
 ## Responses
 | API Endpoint | HTTP Status Code | SDK Response Type |
 | ------------ | ----------- | ----------------- |
-| /v2/find_user | 200 | [FindUserResponse][horde_sdk.ai_horde_api.apimodels._find_user.FindUserResponse] |
+| /v2/find_user | 200 | [UserDetailsResponse][horde_sdk.ai_horde_api.apimodels._users.UserDetailsResponse] |
 | /v2/generate/async | 200 | [ImageGenerateAsyncDryRunResponse][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncDryRunResponse] |
 | /v2/generate/async | 202 | [ImageGenerateAsyncResponse][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse] |
 | /v2/generate/check/{id} | 200 | [ImageGenerateCheckResponse][horde_sdk.ai_horde_api.apimodels.generate._check.ImageGenerateCheckResponse] |
@@ -53,14 +59,17 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/interrogate/pop | 200 | [AlchemyPopResponse][horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyPopResponse] |
 | /v2/interrogate/status/{id} | 200 | [AlchemyStatusResponse][horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyStatusResponse] |
 | /v2/interrogate/submit | 200 | [AlchemyJobSubmitResponse][horde_sdk.ai_horde_api.apimodels.alchemy._submit.AlchemyJobSubmitResponse] |
-| /v2/stats/img/models | 200 | [ImageModelStatsResponse][horde_sdk.ai_horde_api.apimodels._stats.ImageModelStatsResponse] |
+| /v2/kudos/transfer | 200 | [KudosTransferResponse][horde_sdk.ai_horde_api.apimodels._kudos.KudosTransferResponse] |
+| /v2/stats/img/models | 200 | [ImageStatsModelsResponse][horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsResponse] |
 | /v2/stats/img/totals | 200 | [ImageStatsModelsTotalResponse][horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsTotalResponse] |
-| /v2/stats/text/models | 200 | [TextModelStatsResponse][horde_sdk.ai_horde_api.apimodels._stats.TextModelStatsResponse] |
+| /v2/stats/text/models | 200 | [TextStatsModelResponse][horde_sdk.ai_horde_api.apimodels._stats.TextStatsModelResponse] |
 | /v2/stats/text/totals | 200 | [TextStatsModelsTotalResponse][horde_sdk.ai_horde_api.apimodels._stats.TextStatsModelsTotalResponse] |
 | /v2/status/heartbeat | 200 | [AIHordeHeartbeatResponse][horde_sdk.ai_horde_api.apimodels._status.AIHordeHeartbeatResponse] |
 | /v2/status/models | 200 | [HordeStatusModelsAllResponse][horde_sdk.ai_horde_api.apimodels._status.HordeStatusModelsAllResponse] |
 | /v2/status/models/{model_name} | 200 | [HordeStatusModelsSingleResponse][horde_sdk.ai_horde_api.apimodels._status.HordeStatusModelsSingleResponse] |
 | /v2/status/news | 200 | [NewsResponse][horde_sdk.ai_horde_api.apimodels._status.NewsResponse] |
 | /v2/status/performance | 200 | [HordePerformanceResponse][horde_sdk.ai_horde_api.apimodels._status.HordePerformanceResponse] |
+| /v2/users | 200 | [ListUsersDetailsResponse][horde_sdk.ai_horde_api.apimodels._users.ListUsersDetailsResponse] |
+| /v2/users/{user_id} | 200 | [UserDetailsResponse][horde_sdk.ai_horde_api.apimodels._users.UserDetailsResponse] |
 | /v2/workers | 200 | [AllWorkersDetailsResponse][horde_sdk.ai_horde_api.apimodels.workers._workers.AllWorkersDetailsResponse] |
 | /v2/workers/{worker_id} | 200 | [SingleWorkerDetailsResponse][horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsResponse] |

@@ -21,7 +21,7 @@ pip install horde_sdk
 
         - [AIHordeAPIManualClient][horde_sdk.ai_horde_api.ai_horde_clients.AIHordeAPIManualClient] (more control, manual cleanup required)
 
-2. Find the `*Request` object type appropriate to what you want to do. (see also: [naming](../getting_started/#naming))
+2. Find the `*Request` object type appropriate to what you want to do. (see also: [naming](getting_started.md#naming))
     - These objects types are always found in the `apimodels` namespace of the `*_api` sub package.
     - e.g., [ImageGenerateAsyncRequest][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest]
     - **Note** that there is always one or more response types mapped to a request. You can get the default success response `type` like so:
@@ -147,7 +147,8 @@ A few endpoints, such as `/v2/generate/async` ([ImageGenerateAsyncRequest][horde
     trailing underscore, as in `id_`. Ingested json still will work with
     the field <span class="title-ref">`id`</span> (its a alias).
 
-### Faux Immutability (or 'Why can't I change this attribute?!')
+### Faux Immutability
+> 'Why can't I change this attribute?!
 
 -   All of the \*Request and \*Response class, and many other classes,
     implement faux immutability, and their attributes are **read only**.

@@ -6,7 +6,7 @@ from horde_model_reference.model_reference_records import StableDiffusion_ModelR
 from loguru import logger
 
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient
-from horde_sdk.ai_horde_api.apimodels import ImageModelStatsResponse, ImageStatsModelsRequest, StatsModelsTimeframe
+from horde_sdk.ai_horde_api.apimodels import ImageStatsModelsRequest, ImageStatsModelsResponse, StatsModelsTimeframe
 from horde_sdk.ai_horde_worker.bridge_data import MetaInstruction
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
@@ -19,7 +19,7 @@ class ImageModelLoadResolver:
 
     _model_reference_manager: ModelReferenceManager
 
-    def __init__(self, model_reference_manager: ModelReferenceManager) -> None:
+    def __init__(self, model_reference_manager: ModelReferenceManager) -> None:  # noqa: D107
         if not isinstance(model_reference_manager, ModelReferenceManager):
             raise TypeError("model_reference_manager must be of type ModelReferenceManager")
         self._model_reference_manager = model_reference_manager
@@ -29,8 +29,17 @@ class ImageModelLoadResolver:
         possible_meta_instructions: list[str],
         client: AIHordeAPIManualClient,
     ) -> set[str]:
+        """Return a set of model names based on the given meta instructions.
+
+        Args:
+            possible_meta_instructions: A list of strings representing meta instructions.
+            client: An AIHordeAPIManualClient object to use for making requests.
+
+        Returns:
+            A set of strings representing the names of models to load.
+        """
         # Get model stats from the API
-        stats_response = client.submit_request(ImageStatsModelsRequest(), ImageModelStatsResponse)
+        stats_response = client.submit_request(ImageStatsModelsRequest(), ImageStatsModelsResponse)
         if isinstance(stats_response, RequestErrorResponse):
             raise Exception(f"Error getting stats for models: {stats_response.message}")
 
@@ -253,7 +262,7 @@ class ImageModelLoadResolver:
     @staticmethod
     def resolve_top_n_model_names(
         number_of_top_models: int,
-        response: ImageModelStatsResponse,
+        response: ImageStatsModelsResponse,
         timeframe: StatsModelsTimeframe,
     ) -> list[str]:
         """Get the names of the top N models based on usage statistics.
@@ -283,7 +292,7 @@ class ImageModelLoadResolver:
     @staticmethod
     def resolve_bottom_n_model_names(
         number_of_bottom_models: int,
-        response: ImageModelStatsResponse,
+        response: ImageStatsModelsResponse,
         timeframe: StatsModelsTimeframe,
     ) -> list[str]:
         """Get the names of the bottom N models based on usage statistics.

@@ -14,11 +14,14 @@ class AlchemyJobSubmitResponse(HordeResponseBaseModel):
         return "GenerationSubmitted"
 
     reward: float
+    """The kudos reward for this job."""
 
 
 class AlchemyJobSubmitRequest(BaseAIHordeRequest, JobRequestMixin, APIKeyAllowedInRequestMixin):
     result: str  # FIXME
+    """The result of the alchemy job."""
     state: GENERATION_STATE
+    """The state of this generation. See `GENERATION_STATE` for more information."""
 
     @override
     @classmethod

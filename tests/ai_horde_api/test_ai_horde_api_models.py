@@ -16,11 +16,9 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerateAsyncResponse,
 )
 from horde_sdk.ai_horde_api.apimodels._find_user import (
-    ContributionsDetails,
     FindUserRequest,
-    FindUserResponse,
-    UsageDetails,
 )
+from horde_sdk.ai_horde_api.apimodels._users import ContributionsDetails, UsageDetails, UserDetailsResponse
 from horde_sdk.ai_horde_api.apimodels.base import GenMetadataEntry
 from horde_sdk.ai_horde_api.apimodels.generate._async import (
     ImageGenerateAsyncRequest,
@@ -287,7 +285,7 @@ def test_FindUserRequest(ai_horde_api_key: str) -> None:
 
 
 def test_FindUserResponse() -> None:
-    FindUserResponse(
+    UserDetailsResponse(
         account_age=1,
         concurrency=1,
         contributions=ContributionsDetails(

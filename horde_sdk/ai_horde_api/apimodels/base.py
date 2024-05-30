@@ -46,6 +46,7 @@ class JobRequestMixin(HordeAPIDataObject):
 
     @field_validator("id_", mode="before")
     def validate_id(cls, v: str | JobID) -> JobID | str:
+        """Ensure that the job ID is not empty."""
         if isinstance(v, str) and v == "":
             logger.warning("Job ID is empty")
             return JobID(root=uuid.uuid4())
@@ -58,7 +59,7 @@ class JobRequestMixin(HordeAPIDataObject):
         return False
 
     def __hash__(self) -> int:
-        return hash(self.id_)
+        return hash(JobRequestMixin.__name__) + hash(self.id_)
 
 
 class JobResponseMixin(HordeAPIDataObject):
@@ -69,6 +70,7 @@ class JobResponseMixin(HordeAPIDataObject):
 
     @field_validator("id_", mode="before")
     def validate_id(cls, v: str | JobID) -> JobID | str:
+        """Ensure that the job ID is not empty."""
         if isinstance(v, str) and v == "":
             logger.warning("Job ID is empty")
             return JobID(root=uuid.uuid4())
@@ -102,12 +104,15 @@ class LorasPayloadEntry(HordeAPIDataObject):
 
 
 class TIPayloadEntry(HordeAPIDataObject):
+    """Represents a single textual inversion (embedding) parameter."""
+
     name: str = Field(min_length=1, max_length=255)
     inject_ti: str | None = None
     strength: float = Field(default=1, ge=-5, le=5)
 
     @field_validator("inject_ti")
     def validate_inject_ti(cls, v: str | None) -> str | None:
+        """Ensure that the inject_ti is either 'prompt' or 'negprompt'."""
         if v is None:
             return None
         if v not in ["prompt", "negprompt"]:
@@ -116,6 +121,7 @@ class TIPayloadEntry(HordeAPIDataObject):
 
     @field_validator("strength")
     def validate_strength(cls, v: float) -> float:
+        """Ensure that the strength is non-zero."""
         if v == 0:
             raise ValueError("strength must be non-zero")
 
@@ -123,6 +129,7 @@ class TIPayloadEntry(HordeAPIDataObject):
 
     @model_validator(mode="after")
     def strength_only_if_inject_ti(self) -> TIPayloadEntry:
+        """Ensure that the strength is only set if the inject_ti is set."""
         if self.strength and self.inject_ti is None:
             logger.debug("strength is only valid when inject_ti is set")
         return self
@@ -235,6 +242,8 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
     """The specific comfyUI workflow to use."""
     special: dict[Any, Any] = Field(default_factory=dict)
     """Reserved for future use."""
+    use_nsfw_censor: bool = False
+    """If the request is SFW, and the worker accidentally generates NSFW, it will send back a censored image."""
 
     @field_validator("width", "height", mode="before")
     def width_divisible_by_64(cls, value: int) -> int:
@@ -242,8 +251,6 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
         if value % 64 != 0:
             raise ValueError("width must be divisible by 64")
         return value
-
-    use_nsfw_censor: bool = False
 
     @field_validator("sampler_name")
     def sampler_name_must_be_known(cls, v: str | KNOWN_SAMPLERS) -> str | KNOWN_SAMPLERS:
@@ -280,7 +287,6 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
         v: list[str | KNOWN_UPSCALERS | KNOWN_FACEFIXERS | KNOWN_MISC_POST_PROCESSORS],
     ) -> list[str | KNOWN_UPSCALERS | KNOWN_FACEFIXERS | KNOWN_MISC_POST_PROCESSORS]:
         """Ensure that the post processors are in this list of supported post processors."""
-
         _valid_types: list[type] = [str, KNOWN_UPSCALERS, KNOWN_FACEFIXERS, KNOWN_MISC_POST_PROCESSORS]
         for post_processor in v:
             if post_processor not in _all_valid_post_processors_names_and_values or (

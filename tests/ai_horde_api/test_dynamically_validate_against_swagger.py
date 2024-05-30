@@ -1,11 +1,13 @@
 import json
+from types import NoneType, UnionType
 from typing import Any
 
 import pytest
+from pydantic import BaseModel
 
 import horde_sdk.ai_horde_api.apimodels
 from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
-from horde_sdk.consts import HTTPMethod, HTTPStatusCode, get_all_success_status_codes
+from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod, HTTPStatusCode, get_all_success_status_codes
 from horde_sdk.generic_api._reflection import get_all_request_types
 from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponse
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH
@@ -14,6 +16,43 @@ from horde_sdk.generic_api.utils.swagger import (
     SwaggerEndpoint,
     SwaggerParser,
 )
+
+
+def get_fields_descriptions_and_types(class_type: type[BaseModel]) -> dict[str, dict[str, str | list[str] | None]]:
+    field_names_and_descriptions: dict[str, dict[str, str | list[str] | None]] = {}
+    for field_name, field_info in class_type.model_fields.items():
+        if field_info.description is not None:
+            field_names_and_descriptions[field_name] = {"description": field_info.description}
+        else:
+            field_names_and_descriptions[field_name] = {"description": None}
+
+        if field_info.annotation is not None:
+            # Builtin-types should use their simple name while horde_sdk classes should use their fully qualified name
+            # dict and list types should use their string representation
+            types_list = []
+            if isinstance(field_info.annotation, UnionType):
+                for anno_type in field_info.annotation.__args__:
+                    if "horde_sdk" in anno_type.__module__:
+                        types_list.append(anno_type.__module__ + "." + anno_type.__name__)
+                    elif hasattr(anno_type, "__origin__") and (
+                        anno_type.__origin__ is dict or anno_type.__origin__ is list
+                    ):
+                        types_list.append(str(anno_type))
+                    else:
+                        types_list.append(anno_type.__name__ if anno_type is not NoneType else "None")
+            else:
+                if "horde_sdk" in field_info.annotation.__module__:
+                    types_list.append(field_info.annotation.__module__ + "." + field_info.annotation.__name__)
+                elif hasattr(field_info.annotation, "__origin__") and (
+                    field_info.annotation.__origin__ is dict or field_info.annotation.__origin__ is list
+                ):
+                    types_list.append(str(field_info.annotation))
+                else:
+                    types_list.append(field_info.annotation.__name__)
+
+            field_names_and_descriptions[field_name]["types"] = types_list
+
+    return field_names_and_descriptions
 
 
 @pytest.mark.object_verify
@@ -35,8 +74,8 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     api_to_sdk_payload_model_map: dict[str, dict[HTTPMethod, type[HordeRequest]]] = {}
     api_to_sdk_response_model_map: dict[str, dict[HTTPStatusCode, type[HordeResponse]]] = {}
 
-    request_field_names_and_descriptions: dict[str, list[tuple[str, str | None]]] = {}
-    response_field_names_and_descriptions: dict[str, list[tuple[str, str | None]]] = {}
+    request_field_names_and_descriptions: dict[str, dict[str, dict[str, str | list[str] | None]]] = {}
+    response_field_names_and_descriptions: dict[str, dict[str, dict[str, str | list[str] | None]]] = {}
 
     default_num_request_fields = len(HordeRequest.model_fields)
 
@@ -66,9 +105,17 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
         # Otherwise, the request type has a payload, and is (probably) supposed to be a POST, PUT, or PATCH with
         # a payload
         else:
-            assert (
-                request_type.get_api_model_name() in swagger_defined_models
-            ), f"Model is defined in horde_sdk, but not in swagger: {request_type.get_api_model_name()}"
+            if request_type.get_api_model_name() == _ANONYMOUS_MODEL:
+                print(
+                    f"Request type {request_type.__name__} has an anonymous model name. "
+                    "This is probably not what you want. "
+                    "Consider giving it a unique name on the API.",
+                )
+            else:
+
+                assert (
+                    request_type.get_api_model_name() in swagger_defined_models
+                ), f"Model is defined in horde_sdk, but not in swagger: {request_type.get_api_model_name()}"
 
             assert endpoint_subpath in swagger_doc.paths, f"Missing {request_type.__name__} in swagger"
 
@@ -92,11 +139,8 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
 
         api_to_sdk_payload_model_map[endpoint_subpath][request_type.get_http_method()] = request_type
 
-        for field_name, field_info in request_type.model_fields.items():
-            if request_type.__name__ not in request_field_names_and_descriptions:
-                request_field_names_and_descriptions[request_type.__name__] = []
-
-            request_field_names_and_descriptions[request_type.__name__].append((field_name, field_info.description))
+        request_field_dict = get_fields_descriptions_and_types(request_type)
+        request_field_names_and_descriptions[request_type.__name__] = request_field_dict
 
         endpoint_success_http_status_codes: list[HTTPStatusCode] = []
 
@@ -126,16 +170,8 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
                 print(f"Response type {response_type.__name__} has no fields")
                 continue
 
-            for field_name, field_info in response_type.model_fields.items():
-                if response_type.__name__ not in response_field_names_and_descriptions:
-                    response_field_names_and_descriptions[response_type.__name__] = []
-
-                if field_info.description is not None:
-                    response_field_names_and_descriptions[response_type.__name__].append(
-                        (field_name, field_info.description),
-                    )
-                else:
-                    response_field_names_and_descriptions[response_type.__name__].append((field_name, None))
+            response_field_dict = get_fields_descriptions_and_types(response_type)
+            response_field_names_and_descriptions[response_type.__name__] = response_field_dict
 
     def json_serializer(obj: object) -> object:
         if isinstance(obj, str):

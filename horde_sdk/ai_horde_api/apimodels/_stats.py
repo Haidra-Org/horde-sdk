@@ -1,5 +1,6 @@
 from enum import auto
 
+from loguru import logger
 from pydantic import ConfigDict, Field, field_validator
 from strenum import StrEnum
 from typing_extensions import override
@@ -20,20 +21,23 @@ class StatsModelsTimeframe(StrEnum):
 
 @Unequatable
 @Unhashable
-class ImageModelStatsResponse(HordeResponseBaseModel):
+class ImageStatsModelsResponse(HordeResponseBaseModel):
     """Represents the data returned from the `/v2/stats/img/models` endpoint.
 
     v2 API Model: `ImgModelStats`
     """
 
     day: dict[str, int]
+    """The stats for the past day."""
     month: dict[str, int]
+    """The stats for the past month."""
     total: dict[str, int]
+    """The total stats for all time."""
 
     @field_validator("day", "month", "total", mode="before")
     @classmethod
     def validate_timeframe_data(cls, v: dict[str, int | None]) -> dict[str, int]:
-        """Validates the data for a timeframe.
+        """Validate the data for a timeframe.
 
         Args:
             v (dict[str, int | None]): The data for a timeframe.
@@ -45,6 +49,10 @@ class ImageModelStatsResponse(HordeResponseBaseModel):
             dict[str, int]: The data for a timeframe.
         """
         if v is None:
+            return {}
+
+        if "additionalProp1" in v:
+            logger.warning("Found `additionalProp` in stats data, this is a dummy result. Ignoring.")
             return {}
 
         return_v = {}
@@ -63,7 +71,7 @@ class ImageModelStatsResponse(HordeResponseBaseModel):
         return "ImgModelStats"
 
     def get_timeframe(self, timeframe: StatsModelsTimeframe) -> dict[str, int]:
-        """Returns the data for the given timeframe.
+        """Return the data for the given timeframe.
 
         Args:
             timeframe (StatsModelsTimeframe): The timeframe to get the data for.
@@ -90,8 +98,8 @@ class ImageStatsModelsRequest(BaseAIHordeRequest):
 
     model_state: MODEL_STATE = Field(
         MODEL_STATE.all,
-        description="The state of the models to get stats for. Known models are models that are known to the system.",
     )
+    """The state of the models to get stats for. Known models are models that are known to the system."""
 
     @override
     @classmethod
@@ -110,13 +118,19 @@ class ImageStatsModelsRequest(BaseAIHordeRequest):
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[ImageModelStatsResponse]:
-        return ImageModelStatsResponse
+    def get_default_success_response_type(cls) -> type[ImageStatsModelsResponse]:
+        return ImageStatsModelsResponse
 
 
 class SinglePeriodImgStat(HordeAPIDataObject):
-    images: int | None = Field(None, description="The amount of images generated during this period.")
-    ps: int | None = Field(None, description="The amount of pixelsteps generated during this period.")
+    images: int | None = Field(
+        None,
+    )
+    """The amount of images generated during this period."""
+    ps: int | None = Field(
+        None,
+    )
+    """The amount of pixelsteps generated during this period."""
 
     @property
     def mps(self) -> int | None:
@@ -131,10 +145,15 @@ class ImageStatsModelsTotalResponse(HordeResponseBaseModel):
     """Represents the data returned from the `/v2/stats/img/totals` endpoint."""
 
     day: SinglePeriodImgStat | None = None
+    """The total stats for the past day."""
     hour: SinglePeriodImgStat | None = None
+    """The total stats for the past hour."""
     minute: SinglePeriodImgStat | None = None
+    """The total stats for the past minute."""
     month: SinglePeriodImgStat | None = None
+    """The total stats for the past month."""
     total: SinglePeriodImgStat | None = None
+    """The total stats for all time."""
 
     @override
     @classmethod
@@ -167,16 +186,20 @@ class ImageStatsModelsTotalRequest(BaseAIHordeRequest):
 
 
 @Unhashable
-class TextModelStatsResponse(HordeResponseBaseModel):
+class TextStatsModelResponse(HordeResponseBaseModel):
+    """Represents the data returned from the `/v2/stats/text/models` endpoint."""
 
     day: dict[str, int]
+    """The stats for the past day."""
     month: dict[str, int]
+    """The stats for the past month."""
     total: dict[str, int]
+    """The total stats for all time."""
 
     @field_validator("day", "month", "total", mode="before")
     @classmethod
     def validate_timeframe_data(cls, v: dict[str, int | None]) -> dict[str, int]:
-        """Validates the data for a timeframe.
+        """Validate the data for a timeframe.
 
         Args:
             v (dict[str, int | None]): The data for a timeframe.
@@ -226,13 +249,19 @@ class TextStatsModelsRequest(BaseAIHordeRequest):
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[TextModelStatsResponse]:
-        return TextModelStatsResponse
+    def get_default_success_response_type(cls) -> type[TextStatsModelResponse]:
+        return TextStatsModelResponse
 
 
 class SinglePeriodTxtStat(HordeAPIDataObject):
-    requests: int | None = Field(None, description="The number of requests made during this period.")
-    tokens: int | None = Field(None, description="The number of tokens generated during this period.")
+    requests: int | None = Field(
+        None,
+    )
+    """The number of requests made during this period."""
+    tokens: int | None = Field(
+        None,
+    )
+    """The number of tokens generated during this period."""
 
 
 @Unhashable
@@ -240,10 +269,15 @@ class TextStatsModelsTotalResponse(HordeResponseBaseModel):
     """Represents the data returned from the `/v2/stats/text/totals` endpoint."""
 
     minute: dict[str, int]
+    """The total stats for the past minute."""
     hour: dict[str, int]
+    """The total stats for the past hour."""
     day: dict[str, int]
+    """The total stats for the past day."""
     month: dict[str, int]
+    """The total stats for the past month."""
     total: dict[str, int]
+    """The total stats for all time."""
 
     @override
     @classmethod
