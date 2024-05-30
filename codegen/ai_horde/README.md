@@ -30,7 +30,7 @@ datamodel-codegen --input swagger_openapi3.json --output ai_horde_codegen.py --o
 
 Standardize quotes with black:
 ```bash
-black codegen/ai_horde_codegen.py
+black ai_horde_codegen.py
 ```
 
 Clean up issues with datamodel-code-generator v0.21.1
