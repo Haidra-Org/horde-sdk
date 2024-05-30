@@ -1,9 +1,11 @@
+import argparse
 import asyncio
 import time
 from pathlib import Path
 
 import aiofiles
 import aiohttp
+from loguru import logger
 
 from horde_sdk import ANON_API_KEY
 from horde_sdk.ai_horde_api import AIHordeAPIAsyncManualClient
@@ -11,28 +13,27 @@ from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest, ImageGen
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 
-async def main() -> None:
-    print("Starting...")
-
+async def main(apikey: str = ANON_API_KEY) -> None:
+    logger.info("Starting...")
     async with aiohttp.ClientSession() as aiohttp_session:
         manual_client = AIHordeAPIAsyncManualClient(aiohttp_session=aiohttp_session)
 
         image_generate_async_request = ImageGenerateAsyncRequest(
-            apikey=ANON_API_KEY,
+            apikey=apikey,
             prompt="A cat in a hat",
             models=["Deliberate"],
         )
-        print("Submitting image generation request...")
+        logger.info("Submitting image generation request...")
         response = await manual_client.submit_request(
             image_generate_async_request,
             image_generate_async_request.get_default_success_response_type(),
         )
 
         if isinstance(response, RequestErrorResponse):
-            print(f"Error: {response.message}")
+            logger.error(f"Error: {response.message}")
             return
 
-        print("Image generation request submitted!")
+        logger.info("Image generation request submitted!")
         image_done = False
 
         start_time = time.time()
@@ -43,7 +44,7 @@ async def main() -> None:
         while not image_done:
             current_time = time.time()
             if current_time - cycle_time > 20 or check_counter == 0:
-                print(f"{current_time - start_time} seconds elapsed ({check_counter} checks made)...")
+                logger.info(f"{current_time - start_time} seconds elapsed ({check_counter} checks made)...")
                 cycle_time = current_time
 
             check_counter += 1
@@ -52,12 +53,13 @@ async def main() -> None:
             )
 
             if isinstance(check_response, RequestErrorResponse):
-                print(f"Error: {check_response.message}")
+                logger.error(f"Error: {check_response.message}")
                 return
 
             if check_response.done:
-                print("Image is done!")
-                print(f"{time.time() - cycle_time} seconds elapsed ({check_counter} checks made)...")
+                logger.info("Image generation done!")
+                logger.info(f"{check_response}")
+                logger.info(f"{time.time() - cycle_time} seconds elapsed ({check_counter} checks made)...")
 
                 image_done = True
                 break
@@ -75,15 +77,15 @@ async def main() -> None:
         )
 
         if isinstance(status_response, RequestErrorResponse):
-            print(f"Error: {status_response.message}")
+            logger.error(f"Error: {status_response.message}")
             return
 
         for image_gen in status_response.generations:
-            print("Image generation:")
-            print(f"ID: {image_gen.id_}")
-            print(f"URL: {image_gen.img}")
-            #  debug(image_gen)
-            print("Downloading image...")
+            logger.info("Image generation:")
+            logger.info(f"ID: {image_gen.id_}")
+            logger.info(f"URL: {image_gen.img}")
+
+            logger.info("Downloading image...")
 
             image_bytes = None
             # image_gen.img is a url, download it using aiohttp.
@@ -91,10 +93,10 @@ async def main() -> None:
                 image_bytes = await resp.read()
 
             if image_bytes is None:
-                print("Error: Could not download image.")
+                logger.error("Failed to download image.")
                 return
 
-            example_path = Path("examples/requested_images")
+            example_path = Path("requested_images")
             example_path.mkdir(exist_ok=True, parents=True)
 
             filepath_to_write_to = example_path / f"{image_gen.id_}_man_async_example.webp"
@@ -102,8 +104,19 @@ async def main() -> None:
             async with aiofiles.open(filepath_to_write_to, "wb") as file:
                 await file.write(image_bytes)
 
-            print(f"Image downloaded to {filepath_to_write_to}!")
+            logger.info(f"Image saved to {filepath_to_write_to}")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    parser = argparse.ArgumentParser(description="AI Horde API Manual Client Example")
+    parser.add_argument(
+        "--apikey",
+        "--api-key",
+        "-k",
+        type=str,
+        default=ANON_API_KEY,
+        help="The API key to use. Defaults to the anon key.",
+    )
+    args = parser.parse_args()
+
+    asyncio.run(main(args.apikey))
