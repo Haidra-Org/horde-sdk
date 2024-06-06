@@ -1,4 +1,13 @@
 {
+    "/v2/documents/privacy": {
+        "200": "horde_sdk.ai_horde_api.apimodels._documents.HordeDocument"
+    },
+    "/v2/documents/sponsors": {
+        "200": "horde_sdk.ai_horde_api.apimodels._documents.HordeDocument"
+    },
+    "/v2/documents/terms": {
+        "200": "horde_sdk.ai_horde_api.apimodels._documents.HordeDocument"
+    },
     "/v2/status/heartbeat": {
         "200": "horde_sdk.ai_horde_api.apimodels._status.AIHordeHeartbeatResponse"
     },
