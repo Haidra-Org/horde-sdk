@@ -1,4 +1,20 @@
 {
+    "HordeDocument": {
+        "html": {
+            "description": "The HTML content of the document, if requested.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "markdown": {
+            "description": "The markdown content of the document, if requested.",
+            "types": [
+                "str",
+                "None"
+            ]
+        }
+    },
     "AIHordeHeartbeatResponse": {
         "message": {
             "description": "A message from the API. This is typically an error or warning message, but may also be informational.",

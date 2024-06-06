@@ -4,6 +4,9 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 ## Payloads
 | API Endpoint | HTTP Method | SDK Request Type |
 | ------------ | ----------- | ---------------- |
+| /v2/documents/privacy | GET | [AIHordeGetPrivacyPolicyRequest][horde_sdk.ai_horde_api.apimodels._documents.AIHordeGetPrivacyPolicyRequest] |
+| /v2/documents/sponsors | GET | [AIHordeGetSponsorsRequest][horde_sdk.ai_horde_api.apimodels._documents.AIHordeGetSponsorsRequest] |
+| /v2/documents/terms | GET | [AIHordeGetTermsRequest][horde_sdk.ai_horde_api.apimodels._documents.AIHordeGetTermsRequest] |
 | /v2/find_user | GET | [FindUserRequest][horde_sdk.ai_horde_api.apimodels._find_user.FindUserRequest] |
 | /v2/generate/async | POST | [ImageGenerateAsyncRequest][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest] |
 | /v2/generate/check/{id} | GET | [ImageGenerateCheckRequest][horde_sdk.ai_horde_api.apimodels.generate._check.ImageGenerateCheckRequest] |
@@ -43,6 +46,9 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 ## Responses
 | API Endpoint | HTTP Status Code | SDK Response Type |
 | ------------ | ----------- | ----------------- |
+| /v2/documents/privacy | 200 | [HordeDocument][horde_sdk.ai_horde_api.apimodels._documents.HordeDocument] |
+| /v2/documents/sponsors | 200 | [HordeDocument][horde_sdk.ai_horde_api.apimodels._documents.HordeDocument] |
+| /v2/documents/terms | 200 | [HordeDocument][horde_sdk.ai_horde_api.apimodels._documents.HordeDocument] |
 | /v2/find_user | 200 | [UserDetailsResponse][horde_sdk.ai_horde_api.apimodels._users.UserDetailsResponse] |
 | /v2/generate/async | 200 | [ImageGenerateAsyncDryRunResponse][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncDryRunResponse] |
 | /v2/generate/async | 202 | [ImageGenerateAsyncResponse][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse] |

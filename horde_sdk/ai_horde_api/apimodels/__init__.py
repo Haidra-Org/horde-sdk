@@ -1,5 +1,13 @@
 """All requests, responses and API models defined for the AI Horde API."""
 
+from horde_sdk.ai_horde_api.apimodels._documents import (
+    AIHordeDocumentRequestMixin,
+    AIHordeGetPrivacyPolicyRequest,
+    AIHordeGetSponsorsRequest,
+    AIHordeGetTermsRequest,
+    DocumentFormat,
+    HordeDocument,
+)
 from horde_sdk.ai_horde_api.apimodels._find_user import (
     FindUserRequest,
 )
@@ -167,6 +175,12 @@ from horde_sdk.generic_api.apimodels import (
 )
 
 __all__ = [
+    "AIHordeDocumentRequestMixin",
+    "AIHordeGetPrivacyPolicyRequest",
+    "AIHordeGetSponsorsRequest",
+    "AIHordeGetTermsRequest",
+    "DocumentFormat",
+    "HordeDocument",
     "ContributionsDetails",
     "FindUserRequest",
     "KudosTransferRequest",

@@ -1,4 +1,67 @@
 {
+    "AIHordeGetPrivacyPolicyRequest": {
+        "format": {
+            "description": "The format of the document to return. Default is markdown.",
+            "types": [
+                "horde_sdk.ai_horde_api.apimodels._documents.DocumentFormat",
+                "str"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "AIHordeGetSponsorsRequest": {
+        "format": {
+            "description": "The format of the document to return. Default is markdown.",
+            "types": [
+                "horde_sdk.ai_horde_api.apimodels._documents.DocumentFormat",
+                "str"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "AIHordeGetTermsRequest": {
+        "format": {
+            "description": "The format of the document to return. Default is markdown.",
+            "types": [
+                "horde_sdk.ai_horde_api.apimodels._documents.DocumentFormat",
+                "str"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
     "AIHordeHeartbeatRequest": {
         "accept": {
             "description": "The 'accept' header field.",
