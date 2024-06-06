@@ -92,6 +92,10 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
     v2_operations_ipaddr = "/v2/operations/ipaddr"
     v2_operations_ipaddr_single = "/v2/operations/ipaddr/{ipaddr}"
 
+    v2_documents_privacy = "/v2/documents/privacy"
+    v2_documents_sponsors = "/v2/documents/sponsors"
+    vs_documents_terms = "/v2/documents/terms"
+
 
 def get_ai_horde_swagger_url() -> str:
     """Get the URL for the AI Horde API swagger docs."""

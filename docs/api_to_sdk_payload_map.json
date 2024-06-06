@@ -1,4 +1,13 @@
 {
+    "/v2/documents/privacy": {
+        "GET": "horde_sdk.ai_horde_api.apimodels._documents.AIHordeGetPrivacyPolicyRequest"
+    },
+    "/v2/documents/sponsors": {
+        "GET": "horde_sdk.ai_horde_api.apimodels._documents.AIHordeGetSponsorsRequest"
+    },
+    "/v2/documents/terms": {
+        "GET": "horde_sdk.ai_horde_api.apimodels._documents.AIHordeGetTermsRequest"
+    },
     "/v2/status/heartbeat": {
         "GET": "horde_sdk.ai_horde_api.apimodels._status.AIHordeHeartbeatRequest"
     },
