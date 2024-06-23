@@ -1,0 +1,150 @@
+import asyncio
+import base64
+from typing import Any
+
+import aiohttp
+import PIL.Image
+import pytest
+from loguru import logger
+import yarl
+
+from horde_sdk.ai_horde_api.ai_horde_clients import (
+    AIHordeAPIAsyncClientSession,
+    AIHordeAPIAsyncSimpleClient,
+    AIHordeAPISimpleClient,
+)
+from horde_sdk.ai_horde_api.apimodels import (
+    KNOWN_ALCHEMY_TYPES,
+    AlchemyAsyncRequest,
+    AlchemyAsyncRequestFormItem,
+    AlchemyStatusResponse,
+    ImageGenerateAsyncRequest,
+    ImageGenerateAsyncResponse,
+    ImageGenerateCheckResponse,
+    ImageGenerateJobPopPayload,
+    ImageGenerateJobPopRequest,
+    ImageGenerateJobPopResponse,
+    ImageGenerateJobPopSkippedStatus,
+    ImageGenerateStatusResponse,
+    ImageGenerationInputPayload,
+    ImageGenerationJobSubmitRequest,
+    JobSubmitResponse,
+    LorasPayloadEntry,
+)
+from horde_sdk.ai_horde_api.apimodels.base import ExtraSourceImageEntry
+from horde_sdk.ai_horde_api.consts import (
+    GENERATION_STATE,
+    KNOWN_FACEFIXERS,
+    KNOWN_MISC_POST_PROCESSORS,
+    KNOWN_SOURCE_PROCESSING,
+    KNOWN_UPSCALERS,
+    POST_PROCESSOR_ORDER_TYPE,
+)
+from horde_sdk.ai_horde_api.fields import JobID
+from horde_sdk.generic_api.apimodels import RequestErrorResponse
+
+
+class TestImageWorkerRoundtrip:
+    async def fake_worker(
+        self,
+        aiohttp_session: aiohttp.ClientSession,
+        horde_client_session: AIHordeAPIAsyncClientSession,
+        image_gen_request: ImageGenerateAsyncRequest,
+    ) -> None:
+        assert image_gen_request.params is not None
+
+        await asyncio.sleep(5)
+
+        effective_resolution = image_gen_request.params.width * image_gen_request.params.height * 2
+
+        job_pop_request = ImageGenerateJobPopRequest(
+            name="fake CI worker",
+            bridge_agent="AI Horde Worker reGen:8.0.1-citests:https://github.com/Haidra-Org/horde-worker-reGen",
+            max_pixels=effective_resolution,
+            models=image_gen_request.models,
+        )
+
+        job_pop_response = await horde_client_session.submit_request(
+            job_pop_request,
+            job_pop_request.get_default_success_response_type(),
+        )
+
+        assert isinstance(job_pop_response, ImageGenerateJobPopResponse)
+        logger.info(f"{job_pop_response.log_safe_model_dump()}")
+
+        assert job_pop_response.ids_present
+
+        # We're going to send a blank image base64 encoded
+        fake_image = PIL.Image.new(
+            "RGB",
+            (image_gen_request.params.width, image_gen_request.params.height),
+            (255, 255, 255),
+        )
+
+        fake_image_bytes = fake_image.tobytes()
+
+        r2_url = job_pop_response.r2_upload
+
+        assert r2_url is not None
+
+        async with aiohttp_session.put(
+            yarl.URL(r2_url, encoded=True),
+            data=fake_image_bytes,
+            skip_auto_headers=["content-type"],
+            timeout=aiohttp.ClientTimeout(total=10),
+        ) as response:
+            assert response.status == 200
+
+        assert job_pop_response.ids is not None
+        assert len(job_pop_response.ids) == 1
+
+        job_submit_request = ImageGenerationJobSubmitRequest(
+            id=job_pop_response.ids[0],
+            state=GENERATION_STATE.ok,
+            generation="R2",
+            seed="1312",
+        )
+
+        job_submit_response = await horde_client_session.submit_request(
+            job_submit_request,
+            job_submit_request.get_default_success_response_type(),
+        )
+
+        assert isinstance(job_submit_response, JobSubmitResponse)
+
+        assert job_submit_response.reward is not None and job_submit_response.reward > 0
+
+    @pytest.mark.api_side_ci
+    @pytest.mark.asyncio
+    async def test_basic_image_roundtrip(self, simple_image_gen_request: ImageGenerateAsyncRequest) -> None:
+        aiohttp_session = aiohttp.ClientSession()
+        horde_client_session = AIHordeAPIAsyncClientSession(aiohttp_session)
+
+        async with aiohttp_session, horde_client_session:
+            simple_client = AIHordeAPIAsyncSimpleClient(horde_client_session=horde_client_session)
+
+            image_gen_task = asyncio.create_task(simple_client.image_generate_request(simple_image_gen_request))
+
+            fake_worker_task = asyncio.create_task(
+                self.fake_worker(
+                    aiohttp_session,
+                    horde_client_session,
+                    simple_image_gen_request,
+                ),
+            )
+
+            await asyncio.gather(image_gen_task, fake_worker_task)
+
+            image_gen_response, job_id = image_gen_task.result()
+
+            assert isinstance(image_gen_response, ImageGenerateStatusResponse)
+            assert isinstance(job_id, JobID)
+
+            assert len(image_gen_response.generations) == 1
+
+            generation = image_gen_response.generations[0]
+            assert generation.seed == "1312"
+            assert generation.img is not None
+            assert not generation.gen_metadata
+
+            assert generation.censored is False
