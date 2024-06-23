@@ -219,7 +219,7 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
     karras: bool = True
     """Set to True if you want to use the Karras scheduling."""
     tiling: bool = False
-    """Deprecated."""
+    """Set to True if you want to use seamless tiling."""
     hires_fix: bool = False
     """Set to True if you want to use the hires fix."""
     clip_skip: int = Field(default=1, ge=1, le=12)
@@ -232,15 +232,15 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
     """Set to True if you want the ControlNet map returned instead of a generated image."""
     facefixer_strength: float | None = Field(default=None, ge=0, le=1)
     """The strength of the facefixer model."""
-    loras: list[LorasPayloadEntry] = Field(default_factory=list)
+    loras: list[LorasPayloadEntry] | None = None
     """A list of lora parameters to use."""
-    tis: list[TIPayloadEntry] = Field(default_factory=list)
+    tis: list[TIPayloadEntry] | None = None
     """A list of textual inversion (embedding) parameters to use."""
-    extra_texts: list[ExtraTextEntry] = Field(default_factory=list)
+    extra_texts: list[ExtraTextEntry] | None = None
     """A list of extra texts and prompts to use in the comfyUI workflow."""
     workflow: str | KNOWN_WORKFLOWS | None = None
     """The specific comfyUI workflow to use."""
-    special: dict[Any, Any] = Field(default_factory=dict)
+    special: dict[Any, Any] | None = None
     """Reserved for future use."""
     use_nsfw_censor: bool = False
     """If the request is SFW, and the worker accidentally generates NSFW, it will send back a censored image."""
