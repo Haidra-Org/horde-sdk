@@ -418,11 +418,9 @@ class PopInput(HordeAPIObject):
         max_length=1000,
     )
     """The worker name, version and website."""
-    models: list[str] | None = None
+    models: list[str]
     """The models this worker can generate."""
-    name: str | None = Field(
-        None,
-    )
+    name: str
     """The Name of the Worker."""
     nsfw: bool | None = Field(
         False,
