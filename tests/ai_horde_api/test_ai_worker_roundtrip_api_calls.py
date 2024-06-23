@@ -83,8 +83,6 @@ class TestImageWorkerRoundtrip:
     ) -> None:
         assert image_gen_request.params is not None
 
-        await asyncio.sleep(5)
-
         effective_resolution = image_gen_request.params.width * image_gen_request.params.height
 
         job_pop_request = ImageGenerateJobPopRequest(
@@ -94,55 +92,67 @@ class TestImageWorkerRoundtrip:
             models=image_gen_request.models,
         )
 
-        job_pop_response = await horde_client_session.submit_request(
-            job_pop_request,
-            job_pop_request.get_default_success_response_type(),
-        )
+        max_tries = 5
+        try_wait = 5
+        current_try = 0
 
-        assert isinstance(job_pop_response, ImageGenerateJobPopResponse)
-        logger.info(f"{job_pop_response.log_safe_model_dump()}")
+        while True:
+            job_pop_response = await horde_client_session.submit_request(
+                job_pop_request,
+                job_pop_request.get_default_success_response_type(),
+            )
 
-        assert job_pop_response.ids_present
+            assert isinstance(job_pop_response, ImageGenerateJobPopResponse)
+            logger.info(f"{job_pop_response.log_safe_model_dump()}")
 
-        # We're going to send a blank image base64 encoded
-        fake_image = PIL.Image.new(
-            "RGB",
-            (image_gen_request.params.width, image_gen_request.params.height),
-            (255, 255, 255),
-        )
+            if not job_pop_response.ids_present:
+                if current_try >= max_tries:
+                    raise RuntimeError("Max tries exceeded")
 
-        fake_image_bytes = fake_image.tobytes()
+                logger.info(f"Waiting {try_wait} seconds before retrying")
+                await asyncio.sleep(try_wait)
+                current_try += 1
+                continue
 
-        r2_url = job_pop_response.r2_upload
+            # We're going to send a blank image base64 encoded
+            fake_image = PIL.Image.new(
+                "RGB",
+                (image_gen_request.params.width, image_gen_request.params.height),
+                (255, 255, 255),
+            )
 
-        assert r2_url is not None
+            fake_image_bytes = fake_image.tobytes()
 
-        async with aiohttp_session.put(
-            yarl.URL(r2_url, encoded=True),
-            data=fake_image_bytes,
-            skip_auto_headers=["content-type"],
-            timeout=aiohttp.ClientTimeout(total=10),
-        ) as response:
-            assert response.status == 200
+            r2_url = job_pop_response.r2_upload
 
-        assert job_pop_response.ids is not None
-        assert len(job_pop_response.ids) == 1
+            assert r2_url is not None
 
-        job_submit_request = ImageGenerationJobSubmitRequest(
-            id=job_pop_response.ids[0],
-            state=GENERATION_STATE.ok,
-            generation="R2",
-            seed="1312",
-        )
+            async with aiohttp_session.put(
+                yarl.URL(r2_url, encoded=True),
+                data=fake_image_bytes,
+                skip_auto_headers=["content-type"],
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as response:
+                assert response.status == 200
 
-        job_submit_response = await horde_client_session.submit_request(
-            job_submit_request,
-            job_submit_request.get_default_success_response_type(),
-        )
+            assert job_pop_response.ids is not None
+            assert len(job_pop_response.ids) == 1
 
-        assert isinstance(job_submit_response, JobSubmitResponse)
+            job_submit_request = ImageGenerationJobSubmitRequest(
+                id=job_pop_response.ids[0],
+                state=GENERATION_STATE.ok,
+                generation="R2",
+                seed="1312",
+            )
 
-        assert job_submit_response.reward is not None and job_submit_response.reward > 0
+            job_submit_response = await horde_client_session.submit_request(
+                job_submit_request,
+                job_submit_request.get_default_success_response_type(),
+            )
+
+            assert isinstance(job_submit_response, JobSubmitResponse)
+
+            assert job_submit_response.reward is not None and job_submit_response.reward > 0
 
     @pytest.mark.api_side_ci
     @pytest.mark.asyncio
