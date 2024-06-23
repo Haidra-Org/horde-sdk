@@ -53,7 +53,7 @@ class TestImageWorkerRoundtrip:
     ) -> None:
         assert image_gen_request.params is not None
 
-        effective_resolution = image_gen_request.params.width * image_gen_request.params.height
+        effective_resolution = (image_gen_request.params.width * image_gen_request.params.height) * 2
 
         job_pop_request = ImageGenerateJobPopRequest(
             name="fake CI worker",
@@ -83,7 +83,7 @@ class TestImageWorkerRoundtrip:
     ) -> None:
         assert image_gen_request.params is not None
 
-        effective_resolution = image_gen_request.params.width * image_gen_request.params.height
+        effective_resolution = (image_gen_request.params.width * image_gen_request.params.height) * 2
 
         job_pop_request = ImageGenerateJobPopRequest(
             name="fake CI worker",
