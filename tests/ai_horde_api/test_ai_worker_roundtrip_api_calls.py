@@ -151,8 +151,9 @@ class TestImageWorkerRoundtrip:
             )
 
             assert isinstance(job_submit_response, JobSubmitResponse)
-
             assert job_submit_response.reward is not None and job_submit_response.reward > 0
+
+            break
 
     @pytest.mark.api_side_ci
     @pytest.mark.asyncio
