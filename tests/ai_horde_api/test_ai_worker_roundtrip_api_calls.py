@@ -45,6 +45,36 @@ from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 
 class TestImageWorkerRoundtrip:
+    async def fake_worker_checkin(
+        self,
+        aiohttp_session: aiohttp.ClientSession,
+        horde_client_session: AIHordeAPIAsyncClientSession,
+        image_gen_request: ImageGenerateAsyncRequest,
+    ) -> None:
+        assert image_gen_request.params is not None
+
+        effective_resolution = image_gen_request.params.width * image_gen_request.params.height
+
+        job_pop_request = ImageGenerateJobPopRequest(
+            name="fake CI worker",
+            bridge_agent="AI Horde Worker reGen:8.0.1-citests:https://github.com/Haidra-Org/horde-worker-reGen",
+            max_pixels=effective_resolution,
+            models=image_gen_request.models,
+        )
+
+        job_pop_response = await horde_client_session.submit_request(
+            job_pop_request,
+            job_pop_request.get_default_success_response_type(),
+        )
+
+        assert isinstance(job_pop_response, ImageGenerateJobPopResponse)
+        logger.info(f"{job_pop_response.log_safe_model_dump()}")
+
+        assert not job_pop_response.ids_present
+        assert job_pop_response.skipped is not None
+
+        logger.info(f"Checked in as fake worker ({effective_resolution}): {job_pop_response.skipped}")
+
     async def fake_worker(
         self,
         aiohttp_session: aiohttp.ClientSession,
@@ -55,7 +85,7 @@ class TestImageWorkerRoundtrip:
 
         await asyncio.sleep(5)
 
-        effective_resolution = image_gen_request.params.width * image_gen_request.params.height * 2
+        effective_resolution = image_gen_request.params.width * image_gen_request.params.height
 
         job_pop_request = ImageGenerateJobPopRequest(
             name="fake CI worker",
@@ -122,6 +152,8 @@ class TestImageWorkerRoundtrip:
 
         async with aiohttp_session, horde_client_session:
             simple_client = AIHordeAPIAsyncSimpleClient(horde_client_session=horde_client_session)
+
+            await self.fake_worker_checkin(aiohttp_session, horde_client_session, simple_image_gen_request)
 
             image_gen_task = asyncio.create_task(simple_client.image_generate_request(simple_image_gen_request))
 
