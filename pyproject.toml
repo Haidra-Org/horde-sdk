@@ -128,7 +128,9 @@ exclude = [
 concurrency = ["gevent"]
 
 [tool.pytest.ini_options]
+# You can use `and`, `or`, `not` and parentheses to filter with the `-m` option
 markers = [
-    # "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "object_verify: marks tests that verify the API object structure and layout",
+    "api_side_ci: indicates that the test is intended to run during CI for the API",
 ]
