@@ -68,7 +68,7 @@ class TestImageWorkerRoundtrip:
         )
 
         assert isinstance(job_pop_response, ImageGenerateJobPopResponse)
-        logger.info(f"{job_pop_response.log_safe_model_dump()}")
+        logger.info(f"{job_pop_response.log_safe_model_dump({'skipped'})}")
 
         assert not job_pop_response.ids_present
         assert job_pop_response.skipped is not None
@@ -103,7 +103,8 @@ class TestImageWorkerRoundtrip:
             )
 
             assert isinstance(job_pop_response, ImageGenerateJobPopResponse)
-            logger.info(f"{job_pop_response.log_safe_model_dump()}")
+            logger.info(f"{job_pop_response.log_safe_model_dump({'skipped'})}")
+            logger.info(f"Checked in as fake worker ({effective_resolution}): {job_pop_response.skipped}")
 
             if not job_pop_response.ids_present:
                 if current_try >= max_tries:
