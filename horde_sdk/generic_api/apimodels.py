@@ -79,9 +79,14 @@ class HordeAPIMessage(HordeAPIObject):
         """Return an additional set of fields to exclude from the log_safe_model_dump method."""
         return set()
 
-    def log_safe_model_dump(self) -> dict[Any, Any]:
+    def log_safe_model_dump(self, extra_exclude: set[str] | None = None) -> dict[Any, Any]:
         """Return a dict of the model's fields, with any sensitive fields redacted."""
-        return self.model_dump(exclude=self.get_sensitive_fields() | self.get_extra_fields_to_exclude_from_log())
+        if extra_exclude is None:
+            extra_exclude = set()
+
+        return self.model_dump(
+            exclude=self.get_sensitive_fields() | self.get_extra_fields_to_exclude_from_log() | extra_exclude,
+        )
 
 
 class HordeResponse(HordeAPIMessage):
