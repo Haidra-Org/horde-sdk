@@ -240,6 +240,8 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
     """A list of extra texts and prompts to use in the comfyUI workflow."""
     workflow: str | KNOWN_WORKFLOWS | None = None
     """The specific comfyUI workflow to use."""
+    transparent: bool | None = None
+    """When true, will generate an image with a transparent background"""
     special: dict[Any, Any] = Field(default_factory=dict)
     """Reserved for future use."""
     use_nsfw_censor: bool = False
