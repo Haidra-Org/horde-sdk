@@ -222,6 +222,8 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
     """Deprecated."""
     hires_fix: bool = False
     """Set to True if you want to use the hires fix."""
+    hires_fix_denoising_strength: float | None = Field(default=None, ge=0, le=1)
+    """The strength of the denoising for the hires fix second pass."""
     clip_skip: int = Field(default=1, ge=1, le=12)
     """The number of clip layers to skip."""
     control_type: str | KNOWN_CONTROLNETS | None = None
