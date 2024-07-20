@@ -1,47 +1,27 @@
 import asyncio
-import base64
-from typing import Any
 
 import aiohttp
 import PIL.Image
 import pytest
-from loguru import logger
 import yarl
+from loguru import logger
 
 from horde_sdk.ai_horde_api.ai_horde_clients import (
     AIHordeAPIAsyncClientSession,
     AIHordeAPIAsyncSimpleClient,
-    AIHordeAPISimpleClient,
 )
 from horde_sdk.ai_horde_api.apimodels import (
-    KNOWN_ALCHEMY_TYPES,
-    AlchemyAsyncRequest,
-    AlchemyAsyncRequestFormItem,
-    AlchemyStatusResponse,
     ImageGenerateAsyncRequest,
-    ImageGenerateAsyncResponse,
-    ImageGenerateCheckResponse,
-    ImageGenerateJobPopPayload,
     ImageGenerateJobPopRequest,
     ImageGenerateJobPopResponse,
-    ImageGenerateJobPopSkippedStatus,
     ImageGenerateStatusResponse,
-    ImageGenerationInputPayload,
     ImageGenerationJobSubmitRequest,
     JobSubmitResponse,
-    LorasPayloadEntry,
 )
-from horde_sdk.ai_horde_api.apimodels.base import ExtraSourceImageEntry
 from horde_sdk.ai_horde_api.consts import (
     GENERATION_STATE,
-    KNOWN_FACEFIXERS,
-    KNOWN_MISC_POST_PROCESSORS,
-    KNOWN_SOURCE_PROCESSING,
-    KNOWN_UPSCALERS,
-    POST_PROCESSOR_ORDER_TYPE,
 )
 from horde_sdk.ai_horde_api.fields import JobID
-from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 
 class TestImageWorkerRoundtrip:

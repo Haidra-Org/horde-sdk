@@ -2,8 +2,8 @@ import base64
 import os
 import pathlib
 
-from loguru import logger
 import pytest
+from loguru import logger
 
 os.environ["TESTS_ONGOING"] = "1"
 
