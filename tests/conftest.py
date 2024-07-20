@@ -3,6 +3,7 @@ import os
 import pathlib
 
 import pytest
+from loguru import logger
 
 os.environ["TESTS_ONGOING"] = "1"
 
@@ -14,6 +15,21 @@ from horde_sdk.generic_api.consts import ANON_API_KEY
 def check_tests_ongoing_env_var() -> None:
     """Checks that the TESTS_ONGOING environment variable is set."""
     assert os.getenv("TESTS_ONGOING", None) is not None, "TESTS_ONGOING environment variable not set"
+
+    AI_HORDE_TESTING = os.getenv("AI_HORDE_TESTING", None)
+    HORDE_SDK_TESTING = os.getenv("HORDE_SDK_TESTING", None)
+    if AI_HORDE_TESTING is None and HORDE_SDK_TESTING is None:
+        logger.warning(
+            "Neither AI_HORDE_TESTING nor HORDE_SDK_TESTING environment variables are set. "
+            "Is this a local development test run? If so, set AI_HORDE_TESTING=1 or HORDE_SDK_TESTING=1 to suppress "
+            "this warning",
+        )
+
+    if AI_HORDE_TESTING is not None:
+        logger.info("AI_HORDE_TESTING environment variable set.")
+
+    if HORDE_SDK_TESTING is not None:
+        logger.info("HORDE_SDK_TESTING environment variable set.")
 
 
 @pytest.fixture(scope="session")
@@ -30,7 +46,7 @@ def simple_image_gen_request(ai_horde_api_key: str) -> ImageGenerateAsyncRequest
         prompt="a cat in a hat",
         models=["Deliberate"],
         params=ImageGenerationInputPayload(
-            steps=1,
+            steps=5,
             n=1,
         ),
     )

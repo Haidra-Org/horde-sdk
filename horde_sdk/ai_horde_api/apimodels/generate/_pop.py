@@ -253,8 +253,15 @@ class ImageGenerateJobPopResponse(
 
         return v
 
+    _ids_present: bool = False
+
+    @property
+    def ids_present(self) -> bool:
+        """Whether or not the IDs are present."""
+        return self._ids_present
+
     @model_validator(mode="after")
-    def ids_present(self) -> ImageGenerateJobPopResponse:
+    def validate_ids_present(self) -> ImageGenerateJobPopResponse:
         """Ensure that either id_ or ids is present."""
         if self.model is None:
             if self.skipped.is_empty():
@@ -269,6 +276,8 @@ class ImageGenerateJobPopResponse(
         if len(self.ids) > 1:
             logger.debug("Sorting IDs")
             self.ids.sort()
+
+        self._ids_present = True
 
         return self
 
@@ -418,11 +427,9 @@ class PopInput(HordeAPIObject):
         max_length=1000,
     )
     """The worker name, version and website."""
-    models: list[str] | None = None
+    models: list[str]
     """The models this worker can generate."""
-    name: str | None = Field(
-        None,
-    )
+    name: str
     """The Name of the Worker."""
     nsfw: bool | None = Field(
         False,

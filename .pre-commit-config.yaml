@@ -21,12 +21,13 @@ repos:
         pass_filenames: false
         additional_dependencies: [
             pytest,
-            pydantic,
+            pydantic==2.7.4,
             types-Pillow,
             types-requests,
             types-pytz,
             types-setuptools,
             types-urllib3,
             types-aiofiles,
-            StrEnum
+            StrEnum,
+            horde_model_reference==0.8.1,
         ]
