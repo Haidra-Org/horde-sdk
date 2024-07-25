@@ -325,7 +325,7 @@ class HordeRequest(HordeAPIMessage, BaseModel):
     # X_Fields # TODO
 
     client_agent: str = Field(
-        default=f"horde_sdk:{__version__}:https://githib.com/haidra-org/horde-sdk",
+        default=f"horde_sdk:{__version__}:https://github.com/haidra-org/horde-sdk",
         alias="Client-Agent",
     )
     """The requesting client's agent. You should set this to reflect the name, version and contact information
