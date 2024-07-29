@@ -7,6 +7,7 @@ by providing additional type hints for the request and response payloads and val
 import uuid
 from typing import Any, ClassVar
 
+from loguru import logger
 from pydantic import ConfigDict, RootModel, field_validator, model_serializer
 from typing_extensions import override
 
@@ -48,6 +49,12 @@ class UUID_Identifier(RootModel[uuid.UUID]):
 
     @override
     def __eq__(self, other: Any) -> bool:
+        if (
+            not (isinstance(self.__class__, uuid.UUID) or isinstance(other, uuid.UUID))
+            and self.__class__ != other.__class__
+        ):
+            logger.warning(f"Comparing {self.root.__class__} with {other.__class__}")
+
         if isinstance(other, UUID_Identifier):
             return self.root == other.root
 
