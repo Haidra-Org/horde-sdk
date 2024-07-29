@@ -19,6 +19,7 @@ from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
+
 try:
     from horde_sdk._version import __version__
 except ImportError:
@@ -531,7 +532,7 @@ class APIKeyAllowedInRequestMixin(HordeAPIObjectBaseModel):
         return v
 
 
-class RequestSpecifiesUserIDMixin(HordeAPIData):
+class MessageSpecifiesUserIDMixin(HordeAPIDataObject):
     """Mix-in class to describe an endpoint for which you can specify a user."""
 
     user_id: str
@@ -580,7 +581,7 @@ __all__ = [
     "HordeAPIObject",
     "HordeAPIMessage",
     "RequestErrorResponse",
-    "RequestSpecifiesUserIDMixin",
+    "MessageSpecifiesUserIDMixin",
     "RequestUsesWorkerMixin",
     "ResponseRequiringFollowUpMixin",
     "ResponseWithProgressMixin",

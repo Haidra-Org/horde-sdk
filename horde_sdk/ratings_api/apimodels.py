@@ -12,7 +12,7 @@ from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     HordeRequest,
     HordeResponseBaseModel,
-    RequestSpecifiesUserIDMixin,
+    MessageSpecifiesUserIDMixin,
 )
 from horde_sdk.ratings_api.endpoints import RATING_API_BASE_URL, RATING_API_ENDPOINT_SUBPATH
 
@@ -206,7 +206,7 @@ class ImageRatingsFilterableRequestBase(BaseSelectableReturnTypeRequest):
 class UserValidateRequest(
     BaseRatingsAPIRequest,
     APIKeyAllowedInRequestMixin,
-    RequestSpecifiesUserIDMixin,
+    MessageSpecifiesUserIDMixin,
     ImageRatingsFilterableRequestBase,
 ):
     """Represents the data needed to make a request to the `/v1/user/validate/{user_id}` endpoint."""
@@ -235,7 +235,7 @@ class UserValidateRequest(
 class UserCheckRequest(
     BaseRatingsAPIRequest,
     APIKeyAllowedInRequestMixin,
-    RequestSpecifiesUserIDMixin,
+    MessageSpecifiesUserIDMixin,
 ):
     """Represents the data needed to make a request to the `/v1/user/check/` endpoint."""
 

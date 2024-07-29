@@ -13,7 +13,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
     HordeResponseRootModel,
-    RequestSpecifiesUserIDMixin,
+    MessageSpecifiesUserIDMixin,
 )
 from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
@@ -560,7 +560,7 @@ class ModifyUserResponse(HordeResponseBaseModel, ModifyUserReply):
 
 class ModifyUserRequest(
     BaseAIHordeRequest,
-    RequestSpecifiesUserIDMixin,
+    MessageSpecifiesUserIDMixin,
     ModifyUser,
     APIKeyAllowedInRequestMixin,
 ):

@@ -171,7 +171,7 @@ from horde_sdk.ai_horde_api.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
-    RequestSpecifiesUserIDMixin,
+    MessageSpecifiesUserIDMixin,
     RequestUsesWorkerMixin,
     ResponseRequiringDownloadMixin,
     ResponseRequiringFollowUpMixin,
@@ -311,7 +311,7 @@ __all__ = [
     "WorkerKudosDetails",
     "APIKeyAllowedInRequestMixin",
     "ContainsMessageResponseMixin",
-    "RequestSpecifiesUserIDMixin",
+    "MessageSpecifiesUserIDMixin",
     "RequestUsesWorkerMixin",
     "ResponseRequiringDownloadMixin",
     "ResponseRequiringFollowUpMixin",
