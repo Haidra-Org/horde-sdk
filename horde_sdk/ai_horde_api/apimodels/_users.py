@@ -13,7 +13,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
     HordeResponseRootModel,
-    RequestSpecifiesUserIDMixin,
+    MessageSpecifiesUserIDMixin,
 )
 from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
@@ -413,7 +413,7 @@ class ListUsersDetailsRequest(BaseAIHordeRequest):
         return ["page", "sort"]
 
 
-class SingleUserDetailsRequest(BaseAIHordeRequest, RequestSpecifiesUserIDMixin):
+class SingleUserDetailsRequest(BaseAIHordeRequest, MessageSpecifiesUserIDMixin):
 
     @override
     @classmethod
@@ -561,7 +561,7 @@ class ModifyUserResponse(HordeResponseBaseModel, ModifyUserReply):
 
 class ModifyUserRequest(
     BaseAIHordeRequest,
-    RequestSpecifiesUserIDMixin,
+    MessageSpecifiesUserIDMixin,
     ModifyUser,
     APIKeyAllowedInRequestMixin,
 ):
