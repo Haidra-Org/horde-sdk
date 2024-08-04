@@ -15,6 +15,15 @@ from horde_sdk.ai_horde_api.apimodels._kudos import (
     KudosTransferRequest,
     KudosTransferResponse,
 )
+from horde_sdk.ai_horde_api.apimodels._sharedkeys import (
+    SharedKeyCreateRequest,
+    SharedKeyDeleteRequest,
+    SharedKeyDeleteResponse,
+    SharedKeyDetailsRequest,
+    SharedKeyDetailsResponse,
+    SharedKeyModifyRequest,
+    SharedKeySettings,
+)
 from horde_sdk.ai_horde_api.apimodels._stats import (
     ImageStatsModelsRequest,
     ImageStatsModelsResponse,
@@ -190,6 +199,13 @@ __all__ = [
     "FindUserRequest",
     "KudosTransferRequest",
     "KudosTransferResponse",
+    "SharedKeyCreateRequest",
+    "SharedKeyDeleteRequest",
+    "SharedKeyDeleteResponse",
+    "SharedKeyDetailsRequest",
+    "SharedKeyDetailsResponse",
+    "SharedKeyModifyRequest",
+    "SharedKeySettings",
     "UserDetailsResponse",
     "MonthlyKudos",
     "UsageDetails",
