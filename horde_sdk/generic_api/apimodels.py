@@ -19,7 +19,6 @@ from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
-
 try:
     from horde_sdk._version import __version__
 except ImportError:

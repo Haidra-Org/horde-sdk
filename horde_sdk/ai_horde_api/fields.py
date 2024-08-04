@@ -119,7 +119,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
         return NotImplemented
 
 
-class JobID(UUID_Identifier):
+class GenerationID(UUID_Identifier):
     """Represents the ID of a generation job. Instances of this class can be compared with a `str` or a UUID object."""
 
 
@@ -140,7 +140,7 @@ class SharedKeyID(UUID_Identifier):
 
 
 __all__ = [
-    "JobID",
+    "GenerationID",
     "WorkerID",
     "ImageID",
     "TeamID",

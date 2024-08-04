@@ -45,7 +45,7 @@ from horde_sdk.ai_horde_api.consts import (
     METADATA_VALUE,
     WORKER_TYPE,
 )
-from horde_sdk.ai_horde_api.fields import JobID
+from horde_sdk.ai_horde_api.fields import GenerationID
 
 
 def test_api_endpoint() -> None:
@@ -342,7 +342,7 @@ def test_ImageGenerateJobPopResponse() -> None:
 
     test_response = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
@@ -357,7 +357,7 @@ def test_ImageGenerateJobPopResponse() -> None:
 
     test_response = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             prompt="A cat in a hat",
         ),
@@ -370,7 +370,7 @@ def test_ImageGenerateJobPopResponse() -> None:
 
     test_response = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_FACEFIXERS.CodeFormers],
             prompt="A cat in a hat",
@@ -384,7 +384,7 @@ def test_ImageGenerateJobPopResponse() -> None:
 
     test_response = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_FACEFIXERS.CodeFormers, KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
@@ -398,7 +398,7 @@ def test_ImageGenerateJobPopResponse() -> None:
 
     test_response = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=["unknown post processor"],
             control_type="unknown control type",
@@ -410,7 +410,7 @@ def test_ImageGenerateJobPopResponse() -> None:
     )
     test_response = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=["unknown post processor"],
             control_type=KNOWN_CONTROLNETS.canny,
@@ -421,7 +421,7 @@ def test_ImageGenerateJobPopResponse() -> None:
     )
     test_response = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=["unknown post processor"],
             control_type="canny",
@@ -433,7 +433,7 @@ def test_ImageGenerateJobPopResponse() -> None:
 
     test_response = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=["4x_AnimeSharp"],
             prompt="A cat in a hat",
@@ -449,7 +449,7 @@ def test_ImageGenerateJobPopResponse() -> None:
 
     test_response = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_UPSCALERS.four_4x_AnimeSharp],
             prompt="A cat in a hat",
@@ -494,7 +494,7 @@ def test_ImageGenerateJobPopResponse() -> None:
 def test_ImageGenerateJobPopResponse_hashability() -> None:
     test_response_ids = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
@@ -506,7 +506,7 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
 
     test_response_ids_copy = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
@@ -518,7 +518,7 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
 
     test_response2_ids = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000001"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000001"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
@@ -541,7 +541,7 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
     assert test_response2_ids in combined_container
 
     test_response_no_ids = ImageGenerateJobPopResponse(
-        id=JobID(root=UUID("00000000-0000-0000-0000-000000000000")),
+        id=GenerationID(root=UUID("00000000-0000-0000-0000-000000000000")),
         ids=[],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
@@ -552,7 +552,7 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
     )
 
     test_response_no_ids2 = ImageGenerateJobPopResponse(
-        id=JobID(root=UUID("00000000-0000-0000-0000-000000000001")),
+        id=GenerationID(root=UUID("00000000-0000-0000-0000-000000000001")),
         ids=[],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
@@ -577,8 +577,8 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
     test_response_multiple_ids = ImageGenerateJobPopResponse(
         id=None,
         ids=[
-            JobID(root=UUID("00000000-0000-0000-0000-000000000000")),
-            JobID(root=UUID("00000000-0000-0000-0000-000000000001")),
+            GenerationID(root=UUID("00000000-0000-0000-0000-000000000000")),
+            GenerationID(root=UUID("00000000-0000-0000-0000-000000000001")),
         ],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
@@ -592,8 +592,8 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
     test_response_multiple_ids_copy = ImageGenerateJobPopResponse(
         id=None,
         ids=[
-            JobID(root=UUID("00000000-0000-0000-0000-000000000001")),
-            JobID(root=UUID("00000000-0000-0000-0000-000000000000")),
+            GenerationID(root=UUID("00000000-0000-0000-0000-000000000001")),
+            GenerationID(root=UUID("00000000-0000-0000-0000-000000000000")),
         ],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
@@ -607,8 +607,8 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
     test_response_multiple_ids_2 = ImageGenerateJobPopResponse(
         id=None,
         ids=[
-            JobID(root=UUID("00000000-0000-0000-0000-000000000002")),
-            JobID(root=UUID("00000000-0000-0000-0000-000000000003")),
+            GenerationID(root=UUID("00000000-0000-0000-0000-000000000002")),
+            GenerationID(root=UUID("00000000-0000-0000-0000-000000000003")),
         ],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
@@ -636,7 +636,7 @@ async def test_ImageGenerateJobPop_download_addtl_data() -> None:
 
     test_response = ImageGenerateJobPopResponse(
         id=None,
-        ids=[JobID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
             prompt="A cat in a hat",
@@ -693,7 +693,7 @@ def test_AlchemyPopResponse() -> None:
     test_alchemy_pop_response = AlchemyPopResponse(
         forms=[
             AlchemyPopFormPayload(
-                id=JobID(root=UUID("00000000-0000-0000-0000-000000000000")),
+                id=GenerationID(root=UUID("00000000-0000-0000-0000-000000000000")),
                 form=KNOWN_ALCHEMY_TYPES.RealESRGAN_x2plus,
                 r2_upload="r2 download link",
                 source_image="r2 download link",
@@ -702,7 +702,7 @@ def test_AlchemyPopResponse() -> None:
     )
 
     assert test_alchemy_pop_response.forms is not None
-    assert test_alchemy_pop_response.forms[0].id_ == JobID(root=UUID("00000000-0000-0000-0000-000000000000"))
+    assert test_alchemy_pop_response.forms[0].id_ == GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))
     assert test_alchemy_pop_response.forms[0].form == KNOWN_ALCHEMY_TYPES.RealESRGAN_x2plus
     assert test_alchemy_pop_response.forms[0].r2_upload == "r2 download link"
     assert test_alchemy_pop_response.forms[0].source_image == "r2 download link"
@@ -714,13 +714,13 @@ def test_AlchemyPopResponse() -> None:
     test_alchemy_pop_response_multiple_forms = AlchemyPopResponse(
         forms=[
             AlchemyPopFormPayload(
-                id=JobID(root=UUID("00000000-0000-0000-0000-000000000010")),
+                id=GenerationID(root=UUID("00000000-0000-0000-0000-000000000010")),
                 form=KNOWN_ALCHEMY_TYPES.RealESRGAN_x2plus,
                 r2_upload="r2 download link",
                 source_image="r2 download link",
             ),
             AlchemyPopFormPayload(
-                id=JobID(root=UUID("00000000-0000-0000-0000-000000000020")),
+                id=GenerationID(root=UUID("00000000-0000-0000-0000-000000000020")),
                 form=KNOWN_ALCHEMY_TYPES.fourx_AnimeSharp,
                 r2_upload="r2 download link",
                 source_image="r2 download link",
@@ -731,13 +731,13 @@ def test_AlchemyPopResponse() -> None:
     test_alchemy_pop_response_multiple_forms_copy = AlchemyPopResponse(
         forms=[
             AlchemyPopFormPayload(
-                id=JobID(root=UUID("00000000-0000-0000-0000-000000000020")),
+                id=GenerationID(root=UUID("00000000-0000-0000-0000-000000000020")),
                 form=KNOWN_ALCHEMY_TYPES.RealESRGAN_x2plus,
                 r2_upload="r2 download link",
                 source_image="r2 download link",
             ),
             AlchemyPopFormPayload(
-                id=JobID(root=UUID("00000000-0000-0000-0000-000000000010")),
+                id=GenerationID(root=UUID("00000000-0000-0000-0000-000000000010")),
                 form=KNOWN_ALCHEMY_TYPES.fourx_AnimeSharp,
                 r2_upload="r2 download link",
                 source_image="r2 download link",

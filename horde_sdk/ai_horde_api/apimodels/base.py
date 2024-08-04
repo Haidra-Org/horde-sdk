@@ -25,7 +25,7 @@ from horde_sdk.ai_horde_api.consts import (
     _all_valid_post_processors_names_and_values,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
-from horde_sdk.ai_horde_api.fields import JobID, WorkerID, SharedKeyID
+from horde_sdk.ai_horde_api.fields import GenerationID, SharedKeyID, WorkerID
 from horde_sdk.generic_api.apimodels import (
     HordeAPIData,
     HordeAPIObjectBaseModel,
@@ -46,15 +46,15 @@ class BaseAIHordeRequest(HordeRequest):
 class JobRequestMixin(HordeAPIData):
     """Mix-in class for data relating to any generation jobs."""
 
-    id_: JobID = Field(alias="id")
+    id_: GenerationID = Field(alias="id")
     """The UUID for this job. Use this to post the results in the future."""
 
     @field_validator("id_", mode="before")
-    def validate_id(cls, v: str | JobID) -> JobID | str:
+    def validate_id(cls, v: str | GenerationID) -> GenerationID | str:
         """Ensure that the job ID is not empty."""
         if isinstance(v, str) and v == "":
             logger.warning("Job ID is empty")
-            return JobID(root=uuid.uuid4())
+            return GenerationID(root=uuid.uuid4())
 
         return v
 
@@ -70,15 +70,15 @@ class JobRequestMixin(HordeAPIData):
 class JobResponseMixin(HordeAPIData):
     """Mix-in class for data relating to any generation jobs."""
 
-    id_: JobID = Field(alias="id")
+    id_: GenerationID = Field(alias="id")
     """The UUID for this job."""
 
     @field_validator("id_", mode="before")
-    def validate_id(cls, v: str | JobID) -> JobID | str:
+    def validate_id(cls, v: str | GenerationID) -> GenerationID | str:
         """Ensure that the job ID is not empty."""
         if isinstance(v, str) and v == "":
             logger.warning("Job ID is empty")
-            return JobID(root=uuid.uuid4())
+            return GenerationID(root=uuid.uuid4())
 
         return v
 
