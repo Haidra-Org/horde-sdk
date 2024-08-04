@@ -133,3 +133,16 @@ class ImageID(UUID_Identifier):
 
 class TeamID(UUID_Identifier):
     """Represents the ID of a team. Instances of this class can be compared with a `str` or a UUID object."""
+
+
+class SharedKeyID(UUID_Identifier):
+    """Represents the ID of a shared key. Instances of this class can be compared with a `str` or a UUID object."""
+
+
+__all__ = [
+    "JobID",
+    "WorkerID",
+    "ImageID",
+    "TeamID",
+    "SharedKeyID",
+]

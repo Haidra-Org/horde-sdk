@@ -25,7 +25,7 @@ from horde_sdk.ai_horde_api.consts import (
     _all_valid_post_processors_names_and_values,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
-from horde_sdk.ai_horde_api.fields import JobID, WorkerID
+from horde_sdk.ai_horde_api.fields import JobID, WorkerID, SharedKeyID
 from horde_sdk.generic_api.apimodels import HordeAPIDataObject, HordeRequest, HordeResponseBaseModel
 
 
@@ -371,3 +371,10 @@ class GenMetadataEntry(HordeAPIDataObject):
         if isinstance(v, str) and v not in METADATA_VALUE.__members__:
             logger.warning(f"Unknown metadata value {v}. Is your SDK out of date or did the API change?")
         return v
+
+
+class MessageSpecifiesSharedKeyMixin(HordeAPIDataObject):
+    """Mix-in class to describe an endpoint for which you can specify a shared key."""
+
+    sharedkey_id: SharedKeyID
+    """The shared key ID to use for this request."""
