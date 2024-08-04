@@ -15,7 +15,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     TextGenerateStatusResponse,
 )
 from horde_sdk.ai_horde_api.exceptions import AIHordeRequestError
-from horde_sdk.ai_horde_api.fields import JobID
+from horde_sdk.ai_horde_api.fields import GenerationID
 
 
 def check_callback(response: TextGenerateStatusResponse) -> None:
@@ -30,10 +30,10 @@ async def async_text_generate_example(
 ) -> None:
 
     status_response: TextGenerateStatusResponse
-    job_id: JobID
+    gen_id: GenerationID
 
     try:
-        status_response, job_id = await simple_client.text_generate_request(
+        status_response, gen_id = await simple_client.text_generate_request(
             TextGenerateAsyncRequest(
                 apikey=apikey,
                 prompt="Hello, world!",
@@ -78,7 +78,7 @@ async def async_text_generate_example(
     if len(status_response.generations) == 0:
         raise ValueError("No generations returned in the response.")
 
-    logger.debug(f"Job ID: {job_id}")
+    logger.debug(f"Job ID: {gen_id}")
     logger.debug(f"Response: {status_response}")
 
     text_generated = status_response.generations[0].text
@@ -88,10 +88,10 @@ async def async_text_generate_example(
     example_path = Path("requested_text")
     example_path.mkdir(exist_ok=True, parents=True)
 
-    async with aiofiles.open(example_path / f"{job_id}_async_example.txt", "w") as f:
+    async with aiofiles.open(example_path / f"{gen_id}_async_example.txt", "w") as f:
         await f.write(status_response.model_dump_json(indent=4))
 
-    logger.info(f"Wrote full response JSON to {example_path / f'{job_id}_async_example.txt'}")
+    logger.info(f"Wrote full response JSON to {example_path / f'{gen_id}_async_example.txt'}")
 
 
 async def main(apikey: str) -> None:

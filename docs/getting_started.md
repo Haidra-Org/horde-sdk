@@ -66,7 +66,7 @@ image_generate_async_request = ImageGenerateAsyncRequest(
     Simple Client:
     ``` python
     simple_client = AIHordeAPISimpleClient()
-    status_response, job_id = simple_client.image_generate_request(
+    status_response, gen_id = simple_client.image_generate_request(
         ImageGenerateAsyncRequest(
             apikey=ANON_API_KEY,
             prompt="A cat in a hat",

@@ -8,7 +8,7 @@ from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, GenMetadat
 from horde_sdk.ai_horde_api.apimodels.generate._progress import ResponseGenerationProgressInfoMixin
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
-from horde_sdk.ai_horde_api.fields import JobID, WorkerID
+from horde_sdk.ai_horde_api.fields import GenerationID, WorkerID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import HordeAPIObject, HordeResponseBaseModel, ResponseWithProgressMixin
 
@@ -38,7 +38,7 @@ class ImageGeneration(Generation):
     v2 API Model: `GenerationStable`
     """
 
-    id_: JobID = Field(alias="id")
+    id_: GenerationID = Field(alias="id")
     """The UUID of this generation. Is always returned as a `JobID`, but can initialized from a `str`."""
     # todo: remove `str`?
     img: str
@@ -56,10 +56,10 @@ class ImageGeneration(Generation):
         return "GenerationStable"
 
     @field_validator("id_", mode="before")
-    def validate_id(cls, v: str | JobID) -> JobID | str:
+    def validate_id(cls, v: str | GenerationID) -> GenerationID | str:
         if isinstance(v, str) and v == "":
             logger.warning("Job ID is empty")
-            return JobID(root=uuid.uuid4())
+            return GenerationID(root=uuid.uuid4())
 
         return v
 

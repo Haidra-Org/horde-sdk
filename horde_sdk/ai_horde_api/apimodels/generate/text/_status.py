@@ -8,7 +8,7 @@ from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, GenMetadat
 from horde_sdk.ai_horde_api.apimodels.generate._progress import ResponseGenerationProgressInfoMixin
 from horde_sdk.ai_horde_api.apimodels.generate._status import Generation
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
-from horde_sdk.ai_horde_api.fields import JobID
+from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import HordeResponseBaseModel, ResponseWithProgressMixin
 
@@ -29,10 +29,10 @@ class GenerationKobold(Generation):
         return "GenerationKobold"
 
     @field_validator("id_", mode="before")
-    def validate_id(cls, v: str | JobID) -> JobID | str:
+    def validate_id(cls, v: str | GenerationID) -> GenerationID | str:
         if isinstance(v, str) and v == "":
             logger.warning("Job ID is empty")
-            return JobID(root=uuid.uuid4())
+            return GenerationID(root=uuid.uuid4())
 
         return v
 

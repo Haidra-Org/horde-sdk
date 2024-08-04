@@ -28,7 +28,7 @@ from horde_sdk.ai_horde_api.exceptions import (
     AIHordeRequestError,
     AIHordeServerException,
 )
-from horde_sdk.ai_horde_api.fields import ImageID, JobID, TeamID, WorkerID
+from horde_sdk.ai_horde_api.fields import GenerationID, ImageID, TeamID, WorkerID
 
 __all__ = [
     "AIHordeAPIManualClient",
@@ -52,7 +52,7 @@ __all__ = [
     "AIHordeServerException",
     "AIHordePayloadValidationError",
     "ImageID",
-    "JobID",
+    "GenerationID",
     "TeamID",
     "WorkerID",
 ]
