@@ -109,7 +109,7 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
     """Represents any response from any Horde API which requires a follow up request of some kind."""
 
     @abc.abstractmethod
-    def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
+    def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, Any]]:
         """Return the information required from this response to submit a follow up request.
 
         Note that this dict uses the alias field names (as seen on the API), not the python field names.
