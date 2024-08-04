@@ -30,7 +30,7 @@ from horde_sdk.ai_horde_api.consts import (
     KNOWN_UPSCALERS,
     POST_PROCESSOR_ORDER_TYPE,
 )
-from horde_sdk.ai_horde_api.fields import JobID
+from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 
@@ -75,7 +75,7 @@ class TestAIHordeGenerate:
         """Test that a simple image generation request can be submitted and cancelled."""
         simple_client = AIHordeAPISimpleClient()
 
-        image_generate_status_respons, job_id = simple_client.image_generate_request(simple_image_gen_request)
+        image_generate_status_respons, gen_id = simple_client.image_generate_request(simple_image_gen_request)
 
         if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
             raise AssertionError(image_generate_status_respons.generations.message)
@@ -104,7 +104,7 @@ class TestAIHordeGenerate:
             models=["Deliberate"],
         )
 
-        image_generate_status_respons, job_id = simple_client.image_generate_request(pp_image_gen_request)
+        image_generate_status_respons, gen_id = simple_client.image_generate_request(pp_image_gen_request)
 
         if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
             raise AssertionError(image_generate_status_respons.generations.message)
@@ -138,7 +138,7 @@ class TestAIHordeGenerate:
             models=["Deliberate"],
         )
 
-        image_generate_status_respons, job_id = simple_client.image_generate_request(pp_image_gen_request)
+        image_generate_status_respons, gen_id = simple_client.image_generate_request(pp_image_gen_request)
 
         if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
             raise AssertionError(image_generate_status_respons.generations.message)
@@ -172,7 +172,7 @@ class TestAIHordeGenerate:
             models=["Deliberate"],
         )
 
-        image_generate_status_respons, job_id = simple_client.image_generate_request(pp_image_gen_request)
+        image_generate_status_respons, gen_id = simple_client.image_generate_request(pp_image_gen_request)
 
         if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
             raise AssertionError(image_generate_status_respons.generations.message)
@@ -189,7 +189,7 @@ class TestAIHordeGenerate:
         """Test that a simple image generation request can be submitted and cancelled when no API key is specified."""
         simple_client = AIHordeAPISimpleClient()
 
-        image_generate_status_respons, job_id = simple_client.image_generate_request(
+        image_generate_status_respons, gen_id = simple_client.image_generate_request(
             ImageGenerateAsyncRequest(
                 prompt="a cat in a hat",
                 params=ImageGenerationInputPayload(
@@ -225,7 +225,7 @@ class TestAIHordeGenerate:
 
         simple_client = AIHordeAPISimpleClient()
 
-        image_generate_status_respons, job_id = simple_client.image_generate_request(
+        image_generate_status_respons, gen_id = simple_client.image_generate_request(
             lora_image_gen_request,
         )
 
@@ -244,7 +244,7 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            image_generate_status_respons, job_id = await simple_client.image_generate_request(
+            image_generate_status_respons, gen_id = await simple_client.image_generate_request(
                 simple_image_gen_request,
             )
 
@@ -261,7 +261,7 @@ class TestAIHordeGenerate:
         """Test that a batch of image generation requests can be submitted and cancelled."""
         simple_client = AIHordeAPISimpleClient()
 
-        image_generate_status_respons, job_id = simple_client.image_generate_request(simple_image_gen_n_requests)
+        image_generate_status_respons, gen_id = simple_client.image_generate_request(simple_image_gen_n_requests)
 
         assert simple_image_gen_n_requests.params is not None
         assert len(image_generate_status_respons.generations) == simple_image_gen_n_requests.params.n
@@ -278,7 +278,7 @@ class TestAIHordeGenerate:
         simple_client = AIHordeAPISimpleClient()
 
         for _ in range(5):
-            image_generate_status_respons, job_id = simple_client.image_generate_request(simple_image_gen_request)
+            image_generate_status_respons, gen_id = simple_client.image_generate_request(simple_image_gen_request)
 
             if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
                 raise AssertionError(image_generate_status_respons.generations.message)
@@ -357,7 +357,7 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            image_generate_status_response, job_id = await simple_client.image_generate_request(
+            image_generate_status_response, gen_id = await simple_client.image_generate_request(
                 simple_image_gen_n_requests,
             )
 
@@ -381,7 +381,7 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            image_generate_status_response, job_id = await simple_client.image_generate_request(
+            image_generate_status_response, gen_id = await simple_client.image_generate_request(
                 simple_image_gen_n_requests,
                 timeout=7,  # 7 seconds isn't (generally) going to be enough time for 3 generations to complete
             )
@@ -405,20 +405,20 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            async def _submit_request(delay: int) -> tuple[ImageGenerateStatusResponse, JobID] | None:
+            async def _submit_request(delay: int) -> tuple[ImageGenerateStatusResponse, GenerationID] | None:
                 try:
                     await asyncio.sleep(delay)
-                    image_generate_status_response, job_id = await simple_client.image_generate_request(
+                    image_generate_status_response, gen_id = await simple_client.image_generate_request(
                         simple_image_gen_request,
                         timeout=-1,
                     )
-                    return image_generate_status_response, job_id
+                    return image_generate_status_response, gen_id
                 except asyncio.CancelledError:
                     return None
 
             # Run 5 concurrent requests using asyncio
             tasks = [asyncio.create_task(_submit_request(delay=delay)) for delay in range(5)]
-            all_generations: list[tuple[ImageGenerateStatusResponse, JobID] | None] = await asyncio.gather(
+            all_generations: list[tuple[ImageGenerateStatusResponse, GenerationID] | None] = await asyncio.gather(
                 *tasks,
                 self.delayed_cancel(tasks[0]),
             )
@@ -437,7 +437,7 @@ class TestAIHordeGenerate:
             async def submit_request(delay: int) -> ImageGenerateStatusResponse | None:
                 try:
                     await asyncio.sleep(delay)
-                    image_generate_status_response, job_id = await simple_client.image_generate_request(
+                    image_generate_status_response, gen_id = await simple_client.image_generate_request(
                         simple_image_gen_request,
                         timeout=-1,
                     )
@@ -468,7 +468,7 @@ class TestAIHordeGenerate:
                 print(f"Callback: {generation}")
                 assert generation
 
-            image_generate_status_response, job_id = await simple_client.image_generate_request(
+            image_generate_status_response, gen_id = await simple_client.image_generate_request(
                 simple_image_gen_request,
                 check_callback=example_callback,
             )
@@ -495,7 +495,7 @@ class TestAIHordeGenerate:
                     logger.debug(f"Response: {response}")
                     raise KeyboardInterrupt("Test KeyboardInterrupt")
 
-                image_generate_status_response, job_id = await simple_client.image_generate_request(
+                image_generate_status_response, gen_id = await simple_client.image_generate_request(
                     simple_image_gen_request,
                     check_callback=check_callback,
                 )
@@ -538,7 +538,7 @@ class TestAIHordeGenerate:
                 pass
 
             with pytest.raises(ValueError, match="Callback"):
-                image_generate_status_response, job_id = await simple_client.image_generate_request(
+                image_generate_status_response, gen_id = await simple_client.image_generate_request(
                     simple_image_gen_request,
                     check_callback=bad_callback,  # type: ignore
                 )
@@ -609,9 +609,9 @@ class TestAIHordeGenerate:
 
                 assert len(response[0].generations) == n
                 for generation in response[0].generations:
-                    image, job_id = await simple_client.download_image_from_generation(generation)
+                    image, gen_id = await simple_client.download_image_from_generation(generation)
                     assert image is not None
-                    image.save(f"tests/testing_result_images/remix_woman_default_{job_id}.webp")
+                    image.save(f"tests/testing_result_images/remix_woman_default_{gen_id}.webp")
 
                 response = await asyncio.create_task(
                     simple_client.image_generate_request(
@@ -638,6 +638,6 @@ class TestAIHordeGenerate:
 
                 assert len(response[0].generations) == n
                 for generation in response[0].generations:
-                    image, job_id = await simple_client.download_image_from_generation(generation)
+                    image, gen_id = await simple_client.download_image_from_generation(generation)
                     assert image is not None
-                    image.save(f"tests/testing_result_images/remix_default_woman_{job_id}.webp")
+                    image.save(f"tests/testing_result_images/remix_default_woman_{gen_id}.webp")

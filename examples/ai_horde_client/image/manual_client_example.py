@@ -59,7 +59,7 @@ def manual_image_generation(apikey: str = ANON_API_KEY) -> None:
         check_counter += 1
         check_response: ImageGenerateCheckResponse | RequestErrorResponse
         check_response = manual_client.get_generate_check(
-            job_id=response.id_,
+            gen_id=response.id_,
         )
 
         # The above is short hand for:

@@ -21,7 +21,7 @@ from horde_sdk.ai_horde_api.apimodels import (
 from horde_sdk.ai_horde_api.consts import (
     GENERATION_STATE,
 )
-from horde_sdk.ai_horde_api.fields import JobID
+from horde_sdk.ai_horde_api.fields import GenerationID
 
 
 class TestImageWorkerRoundtrip:
@@ -159,10 +159,10 @@ class TestImageWorkerRoundtrip:
 
             await asyncio.gather(image_gen_task, fake_worker_task)
 
-            image_gen_response, job_id = image_gen_task.result()
+            image_gen_response, gen_id = image_gen_task.result()
 
             assert isinstance(image_gen_response, ImageGenerateStatusResponse)
-            assert isinstance(job_id, JobID)
+            assert isinstance(gen_id, GenerationID)
 
             assert len(image_gen_response.generations) == 1
 

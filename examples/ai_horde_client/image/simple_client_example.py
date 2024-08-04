@@ -23,7 +23,7 @@ from horde_sdk.ai_horde_api.apimodels import (
 def simple_generate_example(api_key: str = ANON_API_KEY) -> None:
     simple_client = AIHordeAPISimpleClient()
 
-    status_response, job_id = simple_client.image_generate_request(
+    status_response, gen_id = simple_client.image_generate_request(
         ImageGenerateAsyncRequest(
             apikey=api_key,
             params=ImageGenerationInputPayload(
@@ -81,7 +81,7 @@ def simple_generate_example(api_key: str = ANON_API_KEY) -> None:
 
         logger.info(f"Response JSON saved to {example_path / f'{filename_base}.json'}")
 
-    filename_base = f"{job_id}_simple_sync_example"
+    filename_base = f"{gen_id}_simple_sync_example"
 
     for generation in status_response.generations:
         logger.info("Image generation:")

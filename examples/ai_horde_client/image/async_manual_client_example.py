@@ -50,7 +50,7 @@ async def main(apikey: str = ANON_API_KEY) -> None:
 
             check_counter += 1
             check_response = await manual_client.get_generate_check(
-                job_id=response.id_,
+                gen_id=response.id_,
             )
 
             if isinstance(check_response, RequestErrorResponse):
