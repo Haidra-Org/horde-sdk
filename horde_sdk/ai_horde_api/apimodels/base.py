@@ -123,7 +123,7 @@ class TIPayloadEntry(HordeAPIDataObject):
     def validate_strength(cls, v: float) -> float:
         """Ensure that the strength is non-zero."""
         if v == 0:
-            raise ValueError("strength must be non-zero")
+            logger.debug("strength should be non-zero")
 
         return v
 
