@@ -2,6 +2,13 @@
     {
         "date_published": "",
         "newspiece": "",
-        "importance": "Information"
+        "importance": "Information",
+        "tags": [
+            ""
+        ],
+        "title": "",
+        "more_info_urls": [
+            ""
+        ]
     }
 ]

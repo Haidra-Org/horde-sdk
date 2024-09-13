@@ -32,6 +32,7 @@
     },
     "softprompt": "a",
     "trusted_workers": false,
+    "validated_backends": true,
     "slow_workers": true,
     "workers": [
         ""
@@ -50,5 +51,6 @@
     ],
     "disable_batching": false,
     "allow_downgrade": false,
-    "webhook": ""
+    "webhook": "",
+    "extra_slow_workers": false
 }
