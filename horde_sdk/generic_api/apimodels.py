@@ -460,6 +460,8 @@ class RequestUsesWorkerMixin(HordeAPIDataObject):
      which can increase speed but adds more risk!"""
     slow_workers: bool = True
     """When True, allows slower workers to pick up this request. Disabling this incurs an extra kudos cost."""
+    extra_slow_workers: bool = False
+    """When True, allows extra slow workers to pick up this request."""
     workers: list[str] = Field(default_factory=list)
     """A list of worker IDs to use for this request. If empty, any worker can pick up the request. Using this incurs
     and extra kudos cost."""

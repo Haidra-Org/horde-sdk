@@ -492,6 +492,10 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     """Whether this worker can generate using SDXL controlnets."""
     allow_lora: bool = False
     """Whether this worker can generate using Loras."""
+    extra_slow_worker: bool = False
+    """Marks the worker as extra slow."""
+    limit_max_steps: bool = False
+    """Prevents the worker picking up jobs with more steps than the model average."""
 
     @override
     @classmethod
