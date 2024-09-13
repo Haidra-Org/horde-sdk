@@ -5,6 +5,7 @@ from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
+from horde_sdk.ai_horde_api.fields import UUID_Identifier
 from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
@@ -96,11 +97,29 @@ class UsageDetails(HordeAPIDataObject):
 
 @Unhashable
 @Unequatable
+class ActiveGenerations(HordeAPIDataObject):
+    """A list of generations that are currently active for this user."""
+
+    text: list[UUID_Identifier] | None = None
+    """The IDs of the text generations that are currently active for this user."""
+
+    image: list[UUID_Identifier] | None = None
+    """The IDs of the image generations that are currently active for this user."""
+
+    alchemy: list[UUID_Identifier] | None = None
+    """The IDs of the alchemy generations that are currently active for this user."""
+
+
+@Unhashable
+@Unequatable
 class UserDetailsResponse(HordeResponseBaseModel):
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "UserDetails"
+
+    active_generations: ActiveGenerations | None = None
+    """The active generations this user has requested."""
 
     admin_comment: str | None = Field(
         default=None,

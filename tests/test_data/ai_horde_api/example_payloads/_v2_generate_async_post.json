@@ -1,9 +1,10 @@
 {
     "prompt": "a",
     "params": {
-        "sampler_name": "k_dpm_fast",
+        "sampler_name": "dpmsolver",
         "cfg_scale": 7.5,
         "denoising_strength": 0.75,
+        "hires_fix_denoising_strength": 0.75,
         "seed": "The little seed that could",
         "height": 512,
         "width": 512,
@@ -47,12 +48,15 @@
             }
         ],
         "workflow": "qr_code",
+        "transparent": false,
         "steps": 30,
         "n": 1
     },
     "nsfw": false,
     "trusted_workers": false,
+    "validated_backends": true,
     "slow_workers": true,
+    "extra_slow_workers": false,
     "censor_nsfw": false,
     "workers": [
         ""

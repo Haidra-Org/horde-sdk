@@ -24,3 +24,14 @@
 
   * The `AI_HORDE_DEV_URL` environment variable overrides `AI_HORDE_URL`. This is useful for testing changes locally.
   * pytest files which end in `_api_calls.py` run last, and never run during the CI. It is currently incumbent on individual developers to confirm that these tests run successfully locally. In the future, part of the CI will be to spawn an AI-Horde and worker instances and test it there.
+
+
+## When the API adds an endpoint or changes a model
+With the top level directory (the one that contains `pyproject.toml`) as your working directory:
+```python
+python horde_sdk/scripts/write_all_payload_examples_for_tests.py
+python horde_sdk/scripts/write_all_response_examples_for_tests.py
+```
+This will update the data found in `tests/test_data/` from the default horde URL, or if any of the override environment variables are set, from there.
+
+Be sure to run the test suite (without any `*_api_calls.py` tests) after.

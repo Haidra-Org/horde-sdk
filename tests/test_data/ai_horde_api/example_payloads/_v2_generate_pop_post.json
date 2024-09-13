@@ -11,6 +11,7 @@
     "threads": 1,
     "require_upfront_kudos": false,
     "amount": 1,
+    "extra_slow_worker": true,
     "max_pixels": 262144,
     "blacklist": [
         ""
@@ -21,5 +22,6 @@
     "allow_post_processing": true,
     "allow_controlnet": true,
     "allow_sdxl_controlnet": true,
-    "allow_lora": true
+    "allow_lora": true,
+    "limit_max_steps": true
 }

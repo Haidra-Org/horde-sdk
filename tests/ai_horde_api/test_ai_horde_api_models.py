@@ -86,6 +86,7 @@ def test_ImageGenerateAsyncRequest(ai_horde_api_key: str) -> None:
         nsfw=True,
         trusted_workers=False,
         slow_workers=False,
+        extra_slow_workers=False,
         workers=[],
         censor_nsfw=False,
         source_image="test source image (usually base64)",
@@ -125,6 +126,7 @@ def test_ImageGenerateAsyncRequest(ai_horde_api_key: str) -> None:
     assert test_async_request.nsfw is True
     assert test_async_request.trusted_workers is False
     assert test_async_request.slow_workers is False
+    assert test_async_request.extra_slow_workers is False
     assert test_async_request.workers == []
     assert test_async_request.censor_nsfw is False
     assert test_async_request.source_image == "test source image (usually base64)"
@@ -167,6 +169,7 @@ def test_ImageGenerateAsyncRequest_unknown_sampler(ai_horde_api_key: str) -> Non
         nsfw=True,
         trusted_workers=False,
         slow_workers=False,
+        extra_slow_workers=False,
         workers=[],
         censor_nsfw=False,
         source_image="test source image (usually base64)",

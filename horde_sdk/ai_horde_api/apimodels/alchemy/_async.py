@@ -86,6 +86,8 @@ class AlchemyAsyncRequest(
     """The public URL of the source image or a base64 string to use."""
     slow_workers: bool = True
     """Whether to use the slower workers. Costs additional kudos if `False`."""
+    extra_slow_workers: bool = False
+    """Whether to use the super slow workers."""
 
     @field_validator("forms")
     def check_at_least_one_form(cls, v: list[AlchemyAsyncRequestFormItem]) -> list[AlchemyAsyncRequestFormItem]:

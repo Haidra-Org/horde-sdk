@@ -249,6 +249,13 @@
         }
     },
     "UserDetailsResponse": {
+        "active_generations": {
+            "description": "The active generations this user has requested.",
+            "types": [
+                "horde_sdk.ai_horde_api.apimodels._users.ActiveGenerations",
+                "None"
+            ]
+        },
         "admin_comment": {
             "description": "(Privileged) Comments from the horde admins about this user.",
             "types": [
