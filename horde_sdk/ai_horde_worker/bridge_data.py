@@ -152,6 +152,12 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
     allow_lora: bool = False
     """Whether to allow the use of LoRA."""
 
+    extra_slow_worker: bool = False
+    """Marks the worker as extra slow."""
+
+    limit_max_steps: bool = False
+    """Prevents the worker picking up jobs with more steps than the model average."""
+
     max_lora_cache_size: int = Field(
         default=10,
         ge=10,
