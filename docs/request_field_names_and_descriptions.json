@@ -113,6 +113,12 @@
             "types": [
                 "bool"
             ]
+        },
+        "extra_slow_workers": {
+            "description": "Whether to use the super slow workers.",
+            "types": [
+                "bool"
+            ]
         }
     },
     "AlchemyDeleteRequest": {
@@ -443,6 +449,12 @@
                 "bool"
             ]
         },
+        "extra_slow_workers": {
+            "description": "When True, allows extra slow workers to pick up this request.",
+            "types": [
+                "bool"
+            ]
+        },
         "workers": {
             "description": "A list of worker IDs to use for this request. If empty, any worker can pick up the request. Using this incurs\nand extra kudos cost.",
             "types": [
@@ -596,15 +608,13 @@
         "models": {
             "description": "The models this worker can generate.",
             "types": [
-                "list[str]",
-                "None"
+                "list[str]"
             ]
         },
         "name": {
             "description": "The Name of the Worker.",
             "types": [
-                "str",
-                "None"
+                "str"
             ]
         },
         "nsfw": {
@@ -711,6 +721,18 @@
         },
         "allow_lora": {
             "description": "Whether this worker can generate using Loras.",
+            "types": [
+                "bool"
+            ]
+        },
+        "extra_slow_worker": {
+            "description": "Marks the worker as extra slow.",
+            "types": [
+                "bool"
+            ]
+        },
+        "limit_max_steps": {
+            "description": "Prevents the worker picking up jobs with more steps than the model average.",
             "types": [
                 "bool"
             ]
@@ -1192,6 +1214,12 @@
                 "bool"
             ]
         },
+        "extra_slow_workers": {
+            "description": "When True, allows extra slow workers to pick up this request.",
+            "types": [
+                "bool"
+            ]
+        },
         "workers": {
             "description": "A list of worker IDs to use for this request. If empty, any worker can pick up the request. Using this incurs\nand extra kudos cost.",
             "types": [
@@ -1310,15 +1338,13 @@
         "models": {
             "description": "The models this worker can generate.",
             "types": [
-                "list[str]",
-                "None"
+                "list[str]"
             ]
         },
         "name": {
             "description": "The Name of the Worker.",
             "types": [
-                "str",
-                "None"
+                "str"
             ]
         },
         "nsfw": {

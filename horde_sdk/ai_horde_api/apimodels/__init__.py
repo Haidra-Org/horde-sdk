@@ -45,6 +45,7 @@ from horde_sdk.ai_horde_api.apimodels._status import (
     NewsResponse,
 )
 from horde_sdk.ai_horde_api.apimodels._users import (
+    ActiveGenerations,
     ContributionsDetails,
     ListUsersDetailsRequest,
     ListUsersDetailsResponse,
@@ -181,6 +182,7 @@ __all__ = [
     "AIHordeGetTermsRequest",
     "DocumentFormat",
     "HordeDocument",
+    "ActiveGenerations",
     "ContributionsDetails",
     "FindUserRequest",
     "KudosTransferRequest",
