@@ -1,9 +1,14 @@
 import asyncio
 import base64
+import functools
+import io
 import os
 import pathlib
 import sys
+from collections.abc import Callable
+from uuid import UUID
 
+import PIL.Image
 import pytest
 from loguru import logger
 
@@ -12,7 +17,14 @@ os.environ["TESTS_ONGOING"] = "1"
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest, ImageGenerationInputPayload
+from horde_sdk.ai_horde_api.apimodels import (
+    ImageGenerateAsyncRequest,
+    ImageGenerateJobPopPayload,
+    ImageGenerateJobPopResponse,
+    ImageGenerateJobPopSkippedStatus,
+    ImageGenerationInputPayload,
+)
+from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.generic_api.consts import ANON_API_KEY
 
 
@@ -70,6 +82,45 @@ def simple_image_gen_n_requests(ai_horde_api_key: str) -> ImageGenerateAsyncRequ
     )
 
 
+_id_counter = 0
+
+
+def _single_id() -> GenerationID:
+    """Return a new UUID for each call."""
+    global _id_counter
+    _id_counter += 1
+
+    num_to_use = _id_counter
+    # copy the last 8 bits to fill the rest of the UUID
+    for i in range(8):
+        num_to_use |= num_to_use << (8 * i)
+
+    # mask to 128 bits (16 bytes, the size of a UUID)
+    num_to_use &= (1 << 128) - 1
+    return GenerationID(root=UUID(int=num_to_use))
+
+
+@pytest.fixture(scope="function")
+def single_id() -> GenerationID:
+    return _single_id()
+
+
+@pytest.fixture(scope="function")
+def id_factory() -> Callable[[], GenerationID]:
+    return _single_id
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_response(
+    single_id: UUID,
+) -> ImageGenerateJobPopResponse:
+    return ImageGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ImageGenerateJobPopPayload(),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+
 def pytest_collection_modifyitems(items):  # type: ignore # noqa
     """Modifies test items to ensure test modules run in a given order."""
     MODULES_TO_RUN_FIRST = [
@@ -101,8 +152,10 @@ def pytest_collection_modifyitems(items):  # type: ignore # noqa
     items[:] = sorted_items
 
 
+@functools.cache
 def _get_testing_image(filename: str) -> bytes:
     """Returns a test image."""
+
     image_bytes = None
 
     # Get the directory of this file
@@ -117,18 +170,30 @@ def _get_testing_image(filename: str) -> bytes:
     return image_bytes
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
+def default_testing_image_bytes() -> bytes:
+    """Returns a test image."""
+    return _get_testing_image("haidra.png")
+
+
+@pytest.fixture(scope="function")
+def default_testing_image_PIL() -> PIL.Image.Image:
+    """Returns a test image."""
+    return PIL.Image.open(io.BytesIO(_get_testing_image("haidra.png")))
+
+
+@pytest.fixture(scope="function")
 def default_testing_image_base64() -> str:
     """Returns a base64 encoded test image."""
     return base64.b64encode(_get_testing_image("haidra.png")).decode("utf-8")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def img2img_testing_image_base64() -> str:
     """Returns a base64 encoded test image."""
     return base64.b64encode(_get_testing_image("sketch-mountains-input.jpg")).decode("utf-8")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def woman_headshot_testing_image_base64() -> str:
     return base64.b64encode(_get_testing_image("woman_headshot_bokeh.png")).decode("utf-8")
