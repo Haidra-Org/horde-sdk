@@ -12,10 +12,21 @@ from horde_sdk.ai_horde_api.apimodels import (
 )
 
 
-def all_workers(api_key: str, simple_client: AIHordeAPISimpleClient, filename: str) -> None:
+def all_workers(
+    api_key: str,
+    simple_client: AIHordeAPISimpleClient,
+    filename: str,
+    *,
+    worker_name: str | None = None,
+) -> None:
     all_workers_response: AllWorkersDetailsResponse
 
-    all_workers_response = simple_client.workers_all_details()
+    all_workers_response = simple_client.workers_all_details(worker_name=worker_name)
+
+    if worker_name is None:
+        logger.info("Getting details for all workers.")
+    else:
+        logger.info(f"Getting details for worker with name: {worker_name}")
 
     if all_workers_response is None:
         raise ValueError("No workers returned in the response.")
@@ -101,6 +112,13 @@ if __name__ == "__main__":
         help="The worker ID to get details for.",
     )
 
+    group.add_argument(
+        "--worker_name",
+        "-n",
+        type=str,
+        help="The worker name to get details for.",
+    )
+
     group2 = parser.add_mutually_exclusive_group()
     group2.add_argument(
         "--maintenance-mode-on",
@@ -123,7 +141,14 @@ if __name__ == "__main__":
 
     simple_client = AIHordeAPISimpleClient()
 
-    if args.all:
+    if args.worker_name:
+        all_workers(
+            api_key=args.apikey,
+            simple_client=simple_client,
+            filename=args.filename,
+            worker_name=args.worker_name,
+        )
+    elif args.all:
         all_workers(
             api_key=args.apikey,
             simple_client=simple_client,
