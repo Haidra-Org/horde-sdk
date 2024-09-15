@@ -955,6 +955,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
 
     def workers_all_details(
         self,
+        worker_name: str | None = None,
     ) -> AllWorkersDetailsResponse:
         """Get all the details for all workers.
 
@@ -962,7 +963,10 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             WorkersAllDetailsResponse: The response from the API.
         """
         with AIHordeAPIClientSession() as horde_session:
-            response = horde_session.submit_request(AllWorkersDetailsRequest(), AllWorkersDetailsResponse)
+            response = horde_session.submit_request(
+                AllWorkersDetailsRequest(name=worker_name),
+                AllWorkersDetailsResponse,
+            )
 
             if isinstance(response, RequestErrorResponse):
                 raise AIHordeRequestError(response)
@@ -1643,6 +1647,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
 
     async def workers_all_details(
         self,
+        worker_name: str | None = None,
     ) -> AllWorkersDetailsResponse:
         """Get all the details for all workers.
 
@@ -1651,7 +1656,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         """
         if self._horde_client_session is not None:
             response = await self._horde_client_session.submit_request(
-                AllWorkersDetailsRequest(),
+                AllWorkersDetailsRequest(name=worker_name),
                 AllWorkersDetailsResponse,
             )
         else:
