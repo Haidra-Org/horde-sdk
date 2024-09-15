@@ -978,18 +978,20 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
     def worker_details(
         self,
         worker_id: WorkerID | str,
+        is_name: bool | None = None,
     ) -> SingleWorkerDetailsResponse:
         """Get the details for a worker.
 
         Args:
-            worker_id (WorkerID): The ID of the worker to get the details for.
+            worker_id (WorkerID or Worker name): The ID of the worker to get the details for.
+            is_name (bool): if the worker_id argument is the worker name, this needs to be set to true.
 
         Returns:
             SingleWorkerDetailsResponse: The response from the API.
         """
         with AIHordeAPIClientSession() as horde_session:
             response = horde_session.submit_request(
-                SingleWorkerDetailsRequest(worker_id=worker_id),
+                SingleWorkerDetailsRequest(worker_id=worker_id, is_name=is_name),
                 SingleWorkerDetailsResponse,
             )
 

@@ -3,7 +3,7 @@ from collections.abc import Iterator
 from pydantic import AliasChoices, Field, RootModel
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, WorkerRequestMixin
+from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, WorkerGetRequestMixin, WorkerRequestMixin
 from horde_sdk.ai_horde_api.consts import WORKER_TYPE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import TeamID, WorkerID
@@ -239,7 +239,12 @@ class SingleWorkerDetailsResponse(HordeResponse, WorkerDetailItem):
         return "WorkerDetails"
 
 
-class SingleWorkerDetailsRequest(BaseAIHordeRequest, WorkerRequestMixin, APIKeyAllowedInRequestMixin):
+class SingleWorkerDetailsRequest(
+    BaseAIHordeRequest,
+    WorkerRequestMixin,
+    WorkerGetRequestMixin,
+    APIKeyAllowedInRequestMixin,
+):
     """Returns information on a single worker.
 
     If a moderator API key is specified, additional information is returned.
