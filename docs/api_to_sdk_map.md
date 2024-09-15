@@ -38,6 +38,7 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/users/{user_id} | PUT | [ModifyUserRequest][horde_sdk.ai_horde_api.apimodels._users.ModifyUserRequest] |
 | /v2/users/{user_id} | GET | [SingleUserDetailsRequest][horde_sdk.ai_horde_api.apimodels._users.SingleUserDetailsRequest] |
 | /v2/workers | GET | [AllWorkersDetailsRequest][horde_sdk.ai_horde_api.apimodels.workers._workers.AllWorkersDetailsRequest] |
+| /v2/workers/name/{worker_name} | GET | [SingleWorkerNameDetailsRequest][horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerNameDetailsRequest] |
 | /v2/workers/{worker_id} | DELETE | [DeleteWorkerRequest][horde_sdk.ai_horde_api.apimodels.workers._workers.DeleteWorkerRequest] |
 | /v2/workers/{worker_id} | PUT | [ModifyWorkerRequest][horde_sdk.ai_horde_api.apimodels.workers._workers.ModifyWorkerRequest] |
 | /v2/workers/{worker_id} | GET | [SingleWorkerDetailsRequest][horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsRequest] |
@@ -78,4 +79,5 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/users | 200 | [ListUsersDetailsResponse][horde_sdk.ai_horde_api.apimodels._users.ListUsersDetailsResponse] |
 | /v2/users/{user_id} | 200 | [UserDetailsResponse][horde_sdk.ai_horde_api.apimodels._users.UserDetailsResponse] |
 | /v2/workers | 200 | [AllWorkersDetailsResponse][horde_sdk.ai_horde_api.apimodels.workers._workers.AllWorkersDetailsResponse] |
+| /v2/workers/name/{worker_name} | 200 | [SingleWorkerDetailsResponse][horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsResponse] |
 | /v2/workers/{worker_id} | 200 | [SingleWorkerDetailsResponse][horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsResponse] |

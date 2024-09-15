@@ -18,6 +18,8 @@ class AIHordePathData(GenericPathFields):
     """The UUID of a team."""
     worker_id = auto()
     """The UUID of a worker."""
+    worker_name = auto()
+    """The name of a worker."""
     sharedkey_id = auto()
     """The UUID representing a shared key."""
     model_name = auto()

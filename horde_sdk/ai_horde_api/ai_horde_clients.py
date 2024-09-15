@@ -50,6 +50,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     ResponseGenerationProgressCombinedMixin,
     SingleWorkerDetailsRequest,
     SingleWorkerDetailsResponse,
+    SingleWorkerNameDetailsRequest,
     TextGenerateAsyncDryRunResponse,
     TextGenerateAsyncRequest,
     TextGenerateStatusResponse,
@@ -990,6 +991,31 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         with AIHordeAPIClientSession() as horde_session:
             response = horde_session.submit_request(
                 SingleWorkerDetailsRequest(worker_id=worker_id),
+                SingleWorkerDetailsResponse,
+            )
+
+            if isinstance(response, RequestErrorResponse):
+                raise AIHordeRequestError(response)
+
+            return response
+
+        raise RuntimeError("Something went wrong with the request")
+
+    def worker_details_by_name(
+        self,
+        worker_name: str,
+    ) -> SingleWorkerDetailsResponse:
+        """Get the details for a worker by worker name.
+
+        Args:
+            worker_name (str): The ID of the worker to get the details for.
+
+        Returns:
+            SingleWorkerDetailsResponse: The response from the API.
+        """
+        with AIHordeAPIClientSession() as horde_session:
+            response = horde_session.submit_request(
+                SingleWorkerNameDetailsRequest(worker_name=worker_name),
                 SingleWorkerDetailsResponse,
             )
 
