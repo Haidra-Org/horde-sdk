@@ -189,10 +189,15 @@ class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]
 
 
 class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
-    """Returns information on all works. If a moderator API key is specified, it will return additional information."""
+    """Returns information on all workers.
+
+    If a moderator API key is specified, it will return additional information.
+    """
 
     type_: WORKER_TYPE = Field(WORKER_TYPE.all, alias="type")
     """Filter workers by type. Default is 'all' which returns all workers."""
+    name: str | None = Field(None)
+    """Returns a worker matching the exact name provided. Case insensitive."""
 
     @override
     @classmethod
@@ -217,7 +222,7 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     @override
     @classmethod
     def get_query_fields(cls) -> list[str]:
-        return ["type_"]
+        return ["type_", "name"]
 
     @classmethod
     def is_api_key_required(cls) -> bool:
