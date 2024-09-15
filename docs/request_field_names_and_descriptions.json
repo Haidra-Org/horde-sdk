@@ -271,6 +271,13 @@
             "types": [
                 "horde_sdk.ai_horde_api.consts.WORKER_TYPE"
             ]
+        },
+        "name": {
+            "description": "Returns a worker matching the exact name provided. Case insensitive.",
+            "types": [
+                "str",
+                "None"
+            ]
         }
     },
     "DeleteImageGenerateRequest": {
@@ -1186,6 +1193,33 @@
             "types": [
                 "str",
                 "horde_sdk.ai_horde_api.fields.WorkerID"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "SingleWorkerNameDetailsRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "worker_name": {
+            "description": "The name of the worker in question for this request.",
+            "types": [
+                "str"
             ]
         },
         "accept": {

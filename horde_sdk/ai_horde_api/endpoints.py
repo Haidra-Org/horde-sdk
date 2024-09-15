@@ -83,6 +83,7 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
 
     v2_workers_all = "/v2/workers"
     v2_workers_single = "/v2/workers/{worker_id}"
+    v2_workers_single_name = "/v2/workers/name/{worker_name}"
 
     v2_filters = "/v2/filters"
     v2_filters_regex = "/v2/filters/regex"

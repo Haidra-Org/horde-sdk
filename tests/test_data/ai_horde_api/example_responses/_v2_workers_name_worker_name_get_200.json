@@ -1,0 +1,48 @@
+{
+    "type": "image",
+    "name": "",
+    "id": "",
+    "online": false,
+    "requests_fulfilled": 0,
+    "kudos_rewards": 0.0,
+    "kudos_details": {
+        "generated": 0.0,
+        "uptime": 0
+    },
+    "performance": "",
+    "threads": 0,
+    "uptime": 0,
+    "maintenance_mode": false,
+    "paused": false,
+    "info": "https://dbzer0.com",
+    "nsfw": false,
+    "owner": "username#1",
+    "ipaddr": "username#1",
+    "trusted": false,
+    "flagged": false,
+    "suspicious": 0,
+    "uncompleted_jobs": 0,
+    "models": [
+        ""
+    ],
+    "forms": [
+        ""
+    ],
+    "team": {
+        "name": "",
+        "id": ""
+    },
+    "contact": "email@example.com",
+    "bridge_agent": "AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen",
+    "max_pixels": 262144,
+    "megapixelsteps_generated": 0.0,
+    "img2img": false,
+    "painting": false,
+    "post-processing": false,
+    "lora": false,
+    "controlnet": false,
+    "sdxl_controlnet": false,
+    "max_length": 80,
+    "max_context_length": 80,
+    "tokens_generated": 0.0
+}

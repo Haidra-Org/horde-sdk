@@ -83,6 +83,9 @@
     "/v2/status/news": {
         "GET": "horde_sdk.ai_horde_api.apimodels._status.NewsRequest"
     },
+    "/v2/workers/name/{worker_name}": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerNameDetailsRequest"
+    },
     "/v2/generate/text/async": {
         "POST": "horde_sdk.ai_horde_api.apimodels.generate.text._async.TextGenerateAsyncRequest"
     },
