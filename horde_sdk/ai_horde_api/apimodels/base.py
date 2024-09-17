@@ -85,6 +85,13 @@ class WorkerRequestMixin(HordeAPIDataObject):
     """The UUID of the worker in question for this request."""
 
 
+class WorkerRequestNameMixin(HordeAPIDataObject):
+    """Mix-in class for data relating to worker requests."""
+
+    worker_name: str
+    """The name of the worker in question for this request."""
+
+
 class LorasPayloadEntry(HordeAPIDataObject):
     """Represents a single lora parameter.
 

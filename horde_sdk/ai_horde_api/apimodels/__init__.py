@@ -100,6 +100,7 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     SingleWarningEntry,
     TIPayloadEntry,
     WorkerRequestMixin,
+    WorkerRequestNameMixin,
 )
 from horde_sdk.ai_horde_api.apimodels.generate._async import (
     ImageGenerateAsyncDryRunResponse,
@@ -160,6 +161,7 @@ from horde_sdk.ai_horde_api.apimodels.workers._workers import (
     ModifyWorkerResponse,
     SingleWorkerDetailsRequest,
     SingleWorkerDetailsResponse,
+    SingleWorkerNameDetailsRequest,
     TeamDetailsLite,
     WorkerDetailItem,
     WorkerKudosDetails,
@@ -258,6 +260,7 @@ __all__ = [
     "SingleWarningEntry",
     "TIPayloadEntry",
     "WorkerRequestMixin",
+    "WorkerRequestNameMixin",
     "ImageGenerateAsyncDryRunResponse",
     "ImageGenerateAsyncRequest",
     "ImageGenerateAsyncResponse",
@@ -298,6 +301,7 @@ __all__ = [
     "DeleteWorkerResponse",
     "ModifyWorkerResponse",
     "ModifyWorkerRequest",
+    "SingleWorkerNameDetailsRequest",
     "SingleWorkerDetailsRequest",
     "SingleWorkerDetailsResponse",
     "TeamDetailsLite",

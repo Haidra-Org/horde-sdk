@@ -78,6 +78,9 @@
     "/v2/status/news": {
         "200": "horde_sdk.ai_horde_api.apimodels._status.NewsResponse"
     },
+    "/v2/workers/name/{worker_name}": {
+        "200": "horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsResponse"
+    },
     "/v2/generate/text/async": {
         "200": "horde_sdk.ai_horde_api.apimodels.generate.text._async.TextGenerateAsyncDryRunResponse",
         "202": "horde_sdk.ai_horde_api.apimodels.generate.text._async.TextGenerateAsyncResponse"
