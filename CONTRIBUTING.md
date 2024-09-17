@@ -28,10 +28,15 @@
 
 ## When the API adds an endpoint or changes a model
 With the top level directory (the one that contains `pyproject.toml`) as your working directory:
-```python
+```bash
 python horde_sdk/scripts/write_all_payload_examples_for_tests.py
 python horde_sdk/scripts/write_all_response_examples_for_tests.py
+python docs/build_docs.py
 ```
-This will update the data found in `tests/test_data/` from the default horde URL, or if any of the override environment variables are set, from there.
+This will update the data found in `tests/test_data/` from the default horde URL, or if any of the override environment variables are set, from there. 
+
+Running `build_docs.py` will update any automatically generated mkdocs documentation stubs or resources (such as the API Model <-> SDK Model map).
 
 Be sure to run the test suite (without any `*_api_calls.py` tests) after.
+
+
