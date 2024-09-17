@@ -21,7 +21,7 @@ def all_workers(
 ) -> None:
     all_workers_response: AllWorkersDetailsResponse
 
-    all_workers_response = simple_client.workers_all_details(worker_name=worker_name)
+    all_workers_response = simple_client.workers_all_details(worker_name=worker_name, api_key=api_key)
 
     if worker_name is None:
         logger.info("Getting details for all workers.")
@@ -33,23 +33,49 @@ def all_workers(
 
     logger.info(f"Number of workers: {len(all_workers_response)}")
 
-    with open(filename, "w") as f:
+    with open(filename, "w", encoding="utf-8") as f:
         f.write(all_workers_response.model_dump_json(indent=4))
 
     logger.info(f"Workers written to {filename}")
 
 
-def single_worker(api_key: str, simple_client: AIHordeAPISimpleClient, worker_id: str, filename: str) -> None:
+def single_worker(
+    api_key: str,
+    simple_client: AIHordeAPISimpleClient,
+    worker_id: str,
+    filename: str,
+) -> None:
     single_worker_response: SingleWorkerDetailsResponse
 
-    single_worker_response = simple_client.worker_details(worker_id=worker_id)
+    single_worker_response = simple_client.worker_details(worker_id=worker_id, api_key=api_key)
 
     if single_worker_response is None:
         raise ValueError("No worker returned in the response.")
 
     logger.info(f"Worker: {single_worker_response}")
 
-    with open(filename, "w") as f:
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(f"{single_worker_response}\n")
+
+    logger.info(f"Worker details written to {filename}")
+
+
+def single_worker_name(
+    api_key: str,
+    simple_client: AIHordeAPISimpleClient,
+    worker_name: str,
+    filename: str,
+) -> None:
+    single_worker_response: SingleWorkerDetailsResponse
+
+    single_worker_response = simple_client.worker_details_by_name(worker_name=worker_name, api_key=api_key)
+
+    if single_worker_response is None:
+        raise ValueError("No worker returned in the response.")
+
+    logger.info(f"Worker: {single_worker_response}")
+
+    with open(filename, "w", encoding="utf-8") as f:
         f.write(f"{single_worker_response}\n")
 
     logger.info(f"Worker details written to {filename}")
@@ -96,8 +122,16 @@ if __name__ == "__main__":
         help="The filename to write the workers to.",
     )
 
+    parser.add_argument(
+        "--worker_name",
+        "-n",
+        type=str,
+        help="The worker name to get details for.",
+        default=None,
+    )
+
     # Either all or worker_id must be specified.
-    group = parser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group()
 
     group.add_argument(
         "--all",
@@ -110,13 +144,6 @@ if __name__ == "__main__":
         "-w",
         type=str,
         help="The worker ID to get details for.",
-    )
-
-    group.add_argument(
-        "--worker_name",
-        "-n",
-        type=str,
-        help="The worker name to get details for.",
     )
 
     group2 = parser.add_mutually_exclusive_group()
@@ -141,14 +168,7 @@ if __name__ == "__main__":
 
     simple_client = AIHordeAPISimpleClient()
 
-    if args.worker_name:
-        all_workers(
-            api_key=args.apikey,
-            simple_client=simple_client,
-            filename=args.filename,
-            worker_name=args.worker_name,
-        )
-    elif args.all:
+    if args.all:
         all_workers(
             api_key=args.apikey,
             simple_client=simple_client,
@@ -176,3 +196,10 @@ if __name__ == "__main__":
                 worker_id=args.worker_id,
                 filename=args.filename,
             )
+    elif args.worker_name:
+        single_worker_name(
+            api_key=args.apikey,
+            simple_client=simple_client,
+            filename=args.filename,
+            worker_name=args.worker_name,
+        )

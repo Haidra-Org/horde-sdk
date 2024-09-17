@@ -957,15 +957,21 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
     def workers_all_details(
         self,
         worker_name: str | None = None,
+        *,
+        api_key: str | None = None,
     ) -> AllWorkersDetailsResponse:
         """Get all the details for all workers.
+
+        Args:
+            worker_name (str, optional): The name of the worker to get the details for.
+            api_key (str, optional): The API key to use for the request.
 
         Returns:
             WorkersAllDetailsResponse: The response from the API.
         """
         with AIHordeAPIClientSession() as horde_session:
             response = horde_session.submit_request(
-                AllWorkersDetailsRequest(name=worker_name),
+                AllWorkersDetailsRequest(name=worker_name, apikey=api_key),
                 AllWorkersDetailsResponse,
             )
 
@@ -979,18 +985,21 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
     def worker_details(
         self,
         worker_id: WorkerID | str,
+        *,
+        api_key: str | None = None,
     ) -> SingleWorkerDetailsResponse:
         """Get the details for a worker.
 
         Args:
             worker_id (WorkerID): The ID of the worker to get the details for.
+            api_key (str, optional): The API key to use for the request.
 
         Returns:
             SingleWorkerDetailsResponse: The response from the API.
         """
         with AIHordeAPIClientSession() as horde_session:
             response = horde_session.submit_request(
-                SingleWorkerDetailsRequest(worker_id=worker_id),
+                SingleWorkerDetailsRequest(worker_id=worker_id, apikey=api_key),
                 SingleWorkerDetailsResponse,
             )
 
@@ -1004,18 +1013,21 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
     def worker_details_by_name(
         self,
         worker_name: str,
+        *,
+        api_key: str | None = None,
     ) -> SingleWorkerDetailsResponse:
         """Get the details for a worker by worker name.
 
         Args:
             worker_name (str): The ID of the worker to get the details for.
+            api_key (str, optional): The API key to use for the request.
 
         Returns:
             SingleWorkerDetailsResponse: The response from the API.
         """
         with AIHordeAPIClientSession() as horde_session:
             response = horde_session.submit_request(
-                SingleWorkerNameDetailsRequest(worker_name=worker_name),
+                SingleWorkerNameDetailsRequest(worker_name=worker_name, apikey=api_key),
                 SingleWorkerDetailsResponse,
             )
 
@@ -1055,17 +1067,23 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
     def worker_delete(
         self,
         worker_id: WorkerID | str,
+        *,
+        api_key: str | None = None,
     ) -> DeleteWorkerResponse:
         """Delete a worker.
 
         Args:
             worker_id (WorkerID): The ID of the worker to delete.
+            api_key (str, optional): The API key to use for the request.
 
         Returns:
             DeleteWorkerResponse: The response from the API.
         """
         with AIHordeAPIClientSession() as horde_session:
-            response = horde_session.submit_request(DeleteWorkerRequest(worker_id=worker_id), DeleteWorkerResponse)
+            response = horde_session.submit_request(
+                DeleteWorkerRequest(worker_id=worker_id, apikey=api_key),
+                DeleteWorkerResponse,
+            )
 
             if isinstance(response, RequestErrorResponse):
                 raise AIHordeRequestError(response)
@@ -1674,6 +1692,8 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
     async def workers_all_details(
         self,
         worker_name: str | None = None,
+        *,
+        api_key: str | None = None,
     ) -> AllWorkersDetailsResponse:
         """Get all the details for all workers.
 
@@ -1682,7 +1702,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         """
         if self._horde_client_session is not None:
             response = await self._horde_client_session.submit_request(
-                AllWorkersDetailsRequest(name=worker_name),
+                AllWorkersDetailsRequest(name=worker_name, apikey=api_key),
                 AllWorkersDetailsResponse,
             )
         else:
@@ -1696,18 +1716,21 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
     async def worker_details(
         self,
         worker_id: WorkerID | str,
+        *,
+        api_key: str | None = None,
     ) -> SingleWorkerDetailsResponse:
         """Get the details for a worker.
 
         Args:
             worker_id (WorkerID): The ID of the worker to get the details for.
+            api_key (str, optional): The API key to use for the request.
 
         Returns:
             SingleWorkerDetailsResponse: The response from the API.
         """
         if self._horde_client_session is not None:
             response = await self._horde_client_session.submit_request(
-                SingleWorkerDetailsRequest(worker_id=worker_id),
+                SingleWorkerDetailsRequest(worker_id=worker_id, apikey=api_key),
                 SingleWorkerDetailsResponse,
             )
         else:
@@ -1747,18 +1770,21 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
     async def worker_delete(
         self,
         worker_id: WorkerID | str,
+        *,
+        api_key: str | None = None,
     ) -> DeleteWorkerResponse:
         """Delete a worker.
 
         Args:
             worker_id (WorkerID): The ID of the worker to delete.
+            api_key (str, optional): The API key to use for the request.
 
         Returns:
             DeleteWorkerResponse: The response from the API.
         """
         if self._horde_client_session is not None:
             response = await self._horde_client_session.submit_request(
-                DeleteWorkerRequest(worker_id=worker_id),
+                DeleteWorkerRequest(worker_id=worker_id, apikey=api_key),
                 DeleteWorkerResponse,
             )
         else:
