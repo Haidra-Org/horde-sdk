@@ -422,5 +422,14 @@ class GenMetadataEntry(HordeAPIObjectBaseModel):
 class MessageSpecifiesSharedKeyMixin(HordeAPIData):
     """Mix-in class to describe an endpoint for which you can specify a shared key."""
 
-    sharedkey_id: SharedKeyID
+    sharedkey_id: SharedKeyID = Field(alias="id")
     """The shared key ID to use for this request."""
+
+    @field_validator("sharedkey_id", mode="before")
+    def validate_sharedkey_id(cls, v: str | SharedKeyID) -> SharedKeyID | str:
+        """Ensure that the shared key ID is not empty."""
+        if isinstance(v, str) and v == "":
+            logger.warning("Shared key ID is empty")
+            return SharedKeyID(root=uuid.uuid4())
+
+        return v

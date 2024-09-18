@@ -210,7 +210,7 @@ class SharedKeyCreateRequest(
     @override
     @classmethod
     def get_http_method(cls) -> HTTPMethod:
-        return HTTPMethod.POST
+        return HTTPMethod.PUT
 
     @override
     @classmethod

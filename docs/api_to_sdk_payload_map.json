@@ -83,6 +83,14 @@
     "/v2/status/news": {
         "GET": "horde_sdk.ai_horde_api.apimodels._status.NewsRequest"
     },
+    "/v2/sharedkeys": {
+        "PUT": "horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyCreateRequest"
+    },
+    "/v2/sharedkeys/{sharedkey_id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyDeleteRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyDetailsRequest",
+        "PATCH": "horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyModifyRequest"
+    },
     "/v2/workers/name/{worker_name}": {
         "GET": "horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerNameDetailsRequest"
     },
