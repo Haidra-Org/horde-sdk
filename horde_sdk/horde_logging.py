@@ -15,28 +15,29 @@ def set_logger_verbosity(count: int) -> None:
     global verbosity
     # The count comes reversed. So count = 0 means minimum verbosity
     # While count 5 means maximum verbosity
-    # So the more count we have, the lowe we drop the versbosity maximum
-    verbosity = 20 - (count * 10)
+    verbosity = 50 - (count * 10)
 
 
 def is_stdout_log(record: dict[str, Any]) -> bool:
     """Filter for stdout logs levels."""
-    return not record["level"].no < verbosity
+    global verbosity
+    return bool(record["level"].no <= verbosity)
 
 
 def is_msg_log(record: dict[str, Any]) -> bool:
     """Filter for stdout logs levels."""
-    return not record["level"].no < verbosity
+    global verbosity
+    return bool(record["level"].no <= verbosity)
 
 
 def is_stderr_log(record: dict[str, Any]) -> bool:
     """Filter for stderr logs levels."""
-    return not record["level"].name not in error_levels
+    return record["level"].name in error_levels
 
 
 def is_trace_log(record: dict[str, Any]) -> bool:
     """Filter for trace logs levels."""
-    return not record["level"].name not in error_levels
+    return record["level"].name in error_levels
 
 
 handler_config = [
