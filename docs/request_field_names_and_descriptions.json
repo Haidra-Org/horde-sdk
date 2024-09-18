@@ -125,7 +125,7 @@
         "id_": {
             "description": "The UUID for this job. Use this to post the results in the future.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         },
         "accept": {
@@ -152,7 +152,7 @@
         "id_": {
             "description": "The UUID for this job. Use this to post the results in the future.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         },
         "accept": {
@@ -230,7 +230,7 @@
         "id_": {
             "description": "The UUID for this job. Use this to post the results in the future.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         },
         "accept": {
@@ -284,7 +284,7 @@
         "id_": {
             "description": "The UUID for this job. Use this to post the results in the future.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         },
         "accept": {
@@ -304,7 +304,7 @@
         "id_": {
             "description": "The UUID for this job. Use this to post the results in the future.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         },
         "accept": {
@@ -581,7 +581,7 @@
         "id_": {
             "description": "The UUID for this job. Use this to post the results in the future.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         },
         "accept": {
@@ -749,7 +749,7 @@
         "id_": {
             "description": "The UUID for this job. Use this to post the results in the future.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         },
         "accept": {
@@ -776,7 +776,7 @@
         "id_": {
             "description": "The UUID for this job. Use this to post the results in the future.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         },
         "accept": {
@@ -1160,6 +1160,173 @@
             ]
         }
     },
+    "SharedKeyCreateRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "kudos": {
+            "description": "The Kudos limit assigned to this key.",
+            "types": [
+                "int"
+            ]
+        },
+        "expiry": {
+            "description": "The date at which this API key will expire.",
+            "types": [
+                "str"
+            ]
+        },
+        "name": {
+            "description": "The Shared Key Name.",
+            "types": [
+                "str"
+            ]
+        },
+        "max_image_pixels": {
+            "description": "The maximum amount of image pixels this key can generate per job. -1 means unlimited.",
+            "types": [
+                "int"
+            ]
+        },
+        "max_image_steps": {
+            "description": "The maximum amount of image steps this key can use per job. -1 means unlimited.",
+            "types": [
+                "int"
+            ]
+        },
+        "max_text_tokens": {
+            "description": "The maximum amount of text tokens this key can generate per job. -1 means unlimited.",
+            "types": [
+                "int"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "SharedKeyDeleteRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "sharedkey_id": {
+            "description": "The shared key ID to use for this request.",
+            "types": [
+                "horde_sdk.ai_horde_api.fields.SharedKeyID"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "SharedKeyDetailsRequest": {
+        "sharedkey_id": {
+            "description": "The shared key ID to use for this request.",
+            "types": [
+                "horde_sdk.ai_horde_api.fields.SharedKeyID"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "SharedKeyModifyRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "sharedkey_id": {
+            "description": "The shared key ID to use for this request.",
+            "types": [
+                "horde_sdk.ai_horde_api.fields.SharedKeyID"
+            ]
+        },
+        "kudos": {
+            "description": "The Kudos limit assigned to this key.",
+            "types": [
+                "int"
+            ]
+        },
+        "expiry": {
+            "description": "The date at which this API key will expire.",
+            "types": [
+                "str"
+            ]
+        },
+        "name": {
+            "description": "The Shared Key Name.",
+            "types": [
+                "str"
+            ]
+        },
+        "max_image_pixels": {
+            "description": "The maximum amount of image pixels this key can generate per job. -1 means unlimited.",
+            "types": [
+                "int"
+            ]
+        },
+        "max_image_steps": {
+            "description": "The maximum amount of image steps this key can use per job. -1 means unlimited.",
+            "types": [
+                "int"
+            ]
+        },
+        "max_text_tokens": {
+            "description": "The maximum amount of text tokens this key can generate per job. -1 means unlimited.",
+            "types": [
+                "int"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
     "SingleUserDetailsRequest": {
         "user_id": {
             "description": "The user's ID, as a `str`, but only containing numeric values.",
@@ -1452,7 +1619,7 @@
         "id_": {
             "description": "The UUID for this job. Use this to post the results in the future.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         },
         "accept": {
@@ -1479,7 +1646,7 @@
         "id_": {
             "description": "The UUID for this job. Use this to post the results in the future.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         },
         "accept": {
