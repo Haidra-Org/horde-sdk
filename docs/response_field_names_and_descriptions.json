@@ -39,7 +39,7 @@
         "id_": {
             "description": "The UUID for this job.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         }
     },
@@ -580,7 +580,7 @@
         "id_": {
             "description": "The UUID for this job.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         },
         "kudos": {
@@ -670,14 +670,14 @@
         "id_": {
             "description": "(Obsolete) The UUID for this image generation.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID",
+                "horde_sdk.ai_horde_api.fields.GenerationID",
                 "None"
             ]
         },
         "ids": {
             "description": "A list of UUIDs for image generation.",
             "types": [
-                "list[horde_sdk.ai_horde_api.fields.JobID]"
+                "list[horde_sdk.ai_horde_api.fields.GenerationID]"
             ]
         },
         "payload": {
@@ -1004,6 +1004,70 @@
             ]
         }
     },
+    "SharedKeyDetailsResponse": {
+        "kudos": {
+            "description": "The Kudos limit assigned to this key.",
+            "types": [
+                "int"
+            ]
+        },
+        "expiry": {
+            "description": "The date at which this API key will expire.",
+            "types": [
+                "str"
+            ]
+        },
+        "name": {
+            "description": "The Shared Key Name.",
+            "types": [
+                "str"
+            ]
+        },
+        "max_image_pixels": {
+            "description": "The maximum amount of image pixels this key can generate per job. -1 means unlimited.",
+            "types": [
+                "int"
+            ]
+        },
+        "max_image_steps": {
+            "description": "The maximum amount of image steps this key can use per job. -1 means unlimited.",
+            "types": [
+                "int"
+            ]
+        },
+        "max_text_tokens": {
+            "description": "The maximum amount of text tokens this key can generate per job. -1 means unlimited.",
+            "types": [
+                "int"
+            ]
+        },
+        "sharedkey_id": {
+            "description": "The shared key ID to use for this request.",
+            "types": [
+                "horde_sdk.ai_horde_api.fields.SharedKeyID"
+            ]
+        },
+        "username": {
+            "description": "The owning user's unique Username. It is a combination of their chosen alias plus their ID.",
+            "types": [
+                "str"
+            ]
+        },
+        "utilized": {
+            "description": "How much kudos has been utilized via this shared key until now.",
+            "types": [
+                "int"
+            ]
+        }
+    },
+    "SharedKeyDeleteResponse": {
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        }
+    },
     "SingleWorkerDetailsResponse": {
         "type_": {
             "description": "The type of worker.",
@@ -1258,7 +1322,7 @@
         "id_": {
             "description": "The UUID for this job.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID"
+                "horde_sdk.ai_horde_api.fields.GenerationID"
             ]
         },
         "kudos": {
@@ -1293,14 +1357,14 @@
         "id_": {
             "description": "The UUID for this text generation.",
             "types": [
-                "horde_sdk.ai_horde_api.fields.JobID",
+                "horde_sdk.ai_horde_api.fields.GenerationID",
                 "None"
             ]
         },
         "ids": {
             "description": "The UUIDs for this text generations.",
             "types": [
-                "list[horde_sdk.ai_horde_api.fields.JobID]"
+                "list[horde_sdk.ai_horde_api.fields.GenerationID]"
             ]
         },
         "skipped": {
