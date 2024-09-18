@@ -78,6 +78,12 @@
     "/v2/status/news": {
         "200": "horde_sdk.ai_horde_api.apimodels._status.NewsResponse"
     },
+    "/v2/sharedkeys": {
+        "200": "horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyDetailsResponse"
+    },
+    "/v2/sharedkeys/{sharedkey_id}": {
+        "200": "horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyDetailsResponse"
+    },
     "/v2/workers/name/{worker_name}": {
         "200": "horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsResponse"
     },
