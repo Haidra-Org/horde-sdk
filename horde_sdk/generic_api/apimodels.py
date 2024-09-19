@@ -5,12 +5,13 @@ from __future__ import annotations
 import abc
 import base64
 import os
+import time
 import uuid
 from typing import Any, TypeVar
 
 import aiohttp
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, Field, RootModel, field_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, RootModel, field_validator
 from typing_extensions import override
 
 from horde_sdk import _default_sslcontext
@@ -128,6 +129,13 @@ class HordeAPIMessage(HordeAPIObject):
 
 class HordeResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
+
+    _time_constructed: float = PrivateAttr(default=lambda: time.time())
+
+    @property
+    def time_constructed(self) -> float:
+        """The time the model was constructed (in epoch time)."""
+        return self._time_constructed
 
 
 T = TypeVar("T")
@@ -531,7 +539,7 @@ class APIKeyAllowedInRequestMixin(HordeAPIObjectBaseModel):
         return v
 
 
-class MessageSpecifiesUserIDMixin(HordeAPIDataObject):
+class MessageSpecifiesUserIDMixin(HordeAPIData):
     """Mix-in class to describe an endpoint for which you can specify a user."""
 
     user_id: str
