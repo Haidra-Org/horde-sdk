@@ -97,7 +97,7 @@ class ImageStatsModelsRequest(BaseAIHordeRequest):
     )
 
     model_state: MODEL_STATE = Field(
-        MODEL_STATE.all,
+        default=MODEL_STATE.all,
     )
     """The state of the models to get stats for. Known models are models that are known to the system."""
 
@@ -124,11 +124,11 @@ class ImageStatsModelsRequest(BaseAIHordeRequest):
 
 class SinglePeriodImgStat(HordeAPIDataObject):
     images: int | None = Field(
-        None,
+        default=None,
     )
     """The amount of images generated during this period."""
     ps: int | None = Field(
-        None,
+        default=None,
     )
     """The amount of pixelsteps generated during this period."""
 
@@ -255,11 +255,11 @@ class TextStatsModelsRequest(BaseAIHordeRequest):
 
 class SinglePeriodTxtStat(HordeAPIDataObject):
     requests: int | None = Field(
-        None,
+        default=None,
     )
     """The number of requests made during this period."""
     tokens: int | None = Field(
-        None,
+        default=None,
     )
     """The number of tokens generated during this period."""
 

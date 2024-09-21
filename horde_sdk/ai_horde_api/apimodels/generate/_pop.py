@@ -34,29 +34,29 @@ from horde_sdk.generic_api.apimodels import (
 
 
 class NoValidRequestFound(HordeAPIObject):
-    blacklist: int | None = Field(None, ge=0)
+    blacklist: int | None = Field(default=None, ge=0)
     """How many waiting requests were skipped because they demanded a generation with a word that this worker does
     not accept."""
-    bridge_version: int | None = Field(None, examples=[0], ge=0)
+    bridge_version: int | None = Field(default=None, examples=[0], ge=0)
     """How many waiting requests were skipped because they require a higher version of the bridge than this worker
     is running (upgrade if you see this in your skipped list)."""
-    kudos: int | None = Field(None)
+    kudos: int | None = Field(default=None)
     """How many waiting requests were skipped because the user didn't have enough kudos when this worker requires"""
-    models: int | None = Field(None, examples=[0], ge=0)
+    models: int | None = Field(default=None, examples=[0], ge=0)
     """How many waiting requests were skipped because they demanded a different model than what this worker
     provides."""
-    nsfw: int | None = Field(None, ge=0)
+    nsfw: int | None = Field(default=None, ge=0)
     """How many waiting requests were skipped because they demanded a nsfw generation which this worker does not
     provide."""
     performance: int | None = Field(
-        None,
+        default=None,
         ge=0,
     )
     """How many waiting requests were skipped because they demanded a higher performance than this worker provides."""
-    untrusted: int | None = Field(None, ge=0)
+    untrusted: int | None = Field(default=None, ge=0)
     """How many waiting requests were skipped because they demanded a trusted worker which this worker is not."""
     worker_id: int | None = Field(
-        None,
+        default=None,
         ge=0,
     )
     """How many waiting requests were skipped because they demanded a specific worker."""
@@ -205,7 +205,7 @@ class ImageGenerateJobPopResponse(
     v2 API Model: `GenerationPayloadStable`
     """
 
-    id_: JobID | None = Field(None, alias="id")
+    id_: JobID | None = Field(default=None, alias="id")
     """(Obsolete) The UUID for this image generation."""
     ids: list[JobID]
     """A list of UUIDs for image generation."""
@@ -432,13 +432,13 @@ class PopInput(HordeAPIObject):
     name: str
     """The Name of the Worker."""
     nsfw: bool | None = Field(
-        False,
+        default=False,
     )
     """Whether this worker can generate NSFW requests or not."""
     priority_usernames: list[str] | None = None
     """The usernames that should be prioritized by this worker."""
     require_upfront_kudos: bool | None = Field(
-        False,
+        default=False,
         description=(
             "If True, this worker will only pick up requests where the owner has the required kudos to consume already"
             " available."
@@ -450,7 +450,7 @@ class PopInput(HordeAPIObject):
     """If True, this worker will only pick up requests where the owner has the required kudos to consume already
     available."""
     threads: int | None = Field(
-        1,
+        default=1,
         description=(
             "How many threads this worker is running. This is used to accurately the current power available in the"
             " horde."

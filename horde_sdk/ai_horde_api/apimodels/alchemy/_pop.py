@@ -70,11 +70,11 @@ class AlchemyPopFormPayload(HordeAPIObject, JobRequestMixin):
     payload: AlchemyFormPayloadStable | None = None
     """The setting for this interrogation form."""
     r2_upload: str | None = Field(
-        None,
+        default=None,
     )
     """The URL in which the post-processed image can be uploaded."""
     source_image: str | None = Field(
-        None,
+        default=None,
     )
     """The URL From which the source image can be downloaded."""
 
@@ -88,7 +88,7 @@ class NoValidAlchemyFound(HordeAPIObject):
         return "NoValidInterrogationsFoundStable"
 
     bridge_version: int | None = Field(
-        None,
+        default=None,
         description=(
             "How many waiting requests were skipped because they require a higher version of the bridge than this"
             " worker is running (upgrade if you see this in your skipped list)."
@@ -99,7 +99,7 @@ class NoValidAlchemyFound(HordeAPIObject):
     """How many waiting requests were skipped because they require a higher version of the bridge than this worker is
     running (upgrade if you see this in your skipped list)."""
     untrusted: int | None = Field(
-        None,
+        default=None,
         description=(
             "How many waiting requests were skipped because they demanded a trusted worker which this worker is not."
         ),
@@ -107,7 +107,7 @@ class NoValidAlchemyFound(HordeAPIObject):
     )
     """How many waiting requests were skipped because they demanded a trusted worker which this worker is not."""
     worker_id: int | None = Field(
-        None,
+        default=None,
         ge=0,
     )
     """How many waiting requests were skipped because they demanded a specific worker."""
