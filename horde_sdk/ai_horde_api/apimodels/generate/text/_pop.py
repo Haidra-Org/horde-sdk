@@ -27,13 +27,13 @@ class ModelPayloadKobold(ModelPayloadRootKobold):
 
 
 class NoValidRequestFoundKobold(NoValidRequestFound):
-    max_context_length: int | None = Field(None)
+    max_context_length: int | None = Field(default=None)
     """How many waiting requests were skipped because they demanded a higher max_context_length than what this
     worker provides."""
-    max_length: int | None = Field(None)
+    max_length: int | None = Field(default=None)
     """How many waiting requests were skipped because they demanded a higher max_length than what this
     worker provides."""
-    matching_softprompt: int | None = Field(None)
+    matching_softprompt: int | None = Field(default=None)
     """How many waiting requests were skipped because they demanded an available soft-prompt which this worker does not
     have."""
 
@@ -50,15 +50,15 @@ class TextGenerateJobPopResponse(
 ):
     payload: ModelPayloadKobold
     """The settings for this text generation."""
-    id_: JobID | None = Field(None, alias="id")
+    id_: JobID | None = Field(default=None, alias="id")
     """The UUID for this text generation."""
     ids: list[JobID]
     """The UUIDs for this text generations."""
     skipped: NoValidRequestFoundKobold = Field(NoValidRequestFoundKobold())
     """The skipped requests that were not valid for this worker."""
-    softprompt: str | None = Field(None)
+    softprompt: str | None = Field(default=None)
     """The soft prompt requested for this generation."""
-    model: str | None = Field(None)
+    model: str | None = Field(default=None)
     """The model requested for this generation."""
 
     @field_validator("id_", mode="before")
@@ -138,7 +138,7 @@ class _PopInputKobold(PopInput):
     """The maximum amount of tokens this worker can generate."""
     max_context_length: int = Field(2048)
     """The max amount of context to submit to this AI for sampling."""
-    softprompts: list[str] | None = Field(None)
+    softprompts: list[str] | None = Field(default=None)
     """The available softprompt files on this worker for the currently running model."""
 
 

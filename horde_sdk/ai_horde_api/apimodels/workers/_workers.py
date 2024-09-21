@@ -19,7 +19,7 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 class TeamDetailsLite(HordeAPIObject):
     name: str | None = None
     """The Name given to this team."""
-    id_: str | TeamID | None = Field(None, alias="id")
+    id_: str | TeamID | None = Field(default=None, alias="id")
     """The UUID of this team."""
 
     @override
@@ -89,11 +89,11 @@ class WorkerDetailItem(HordeAPIObject):
     """The forms this worker supports."""
     team: TeamDetailsLite | None = None
     """The team this worker belongs to."""
-    contact: str | None = Field(None, min_length=4, max_length=500)
+    contact: str | None = Field(default=None, min_length=4, max_length=500)
     """(Privileged) Contact details for the horde admins to reach the owner of this worker in emergencies."""
     bridge_agent: str = Field(max_length=1000, examples=["AI Horde Worker reGen:4.1.0:"])
     """The bridge agent name, version and website. Example: AI Horde Worker reGen:4.1.0:"""
-    max_pixels: int | None = Field(None, examples=[262144])
+    max_pixels: int | None = Field(default=None, examples=[262144])
     """The maximum pixels in resolution this worker can generate. Example: 262144"""
     megapixelsteps_generated: int | None = None
     """How many megapixelsteps this worker has generated until now."""
@@ -102,18 +102,18 @@ class WorkerDetailItem(HordeAPIObject):
     painting: bool | None = None
     """If True, this worker supports and allows inpainting requests."""
     post_processing: bool | None = Field(
-        None,
+        default=None,
         validation_alias=AliasChoices("post_processing", "post-processing"),
         serialization_alias="post-processing",
     )
     """If True, this worker supports and allows post-processing requests."""
     lora: bool | None = None
     """If True, this worker supports and allows lora requests."""
-    max_length: int | None = Field(None, examples=[80])
+    max_length: int | None = Field(default=None, examples=[80])
     """The maximum tokens this worker can generate."""
-    max_context_length: int | None = Field(None, examples=[80])
+    max_context_length: int | None = Field(default=None, examples=[80])
     """The maximum tokens this worker can read."""
-    tokens_generated: int | None = Field(None, examples=[0])
+    tokens_generated: int | None = Field(default=None, examples=[0])
     """How many tokens this worker has generated until now. """
 
     @override
@@ -196,7 +196,7 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 
     type_: WORKER_TYPE = Field(WORKER_TYPE.all, alias="type")
     """Filter workers by type. Default is 'all' which returns all workers."""
-    name: str | None = Field(None)
+    name: str | None = Field(default=None)
     """Returns a worker matching the exact name provided. Case insensitive."""
 
     @override
@@ -304,16 +304,16 @@ class SingleWorkerDetailsRequest(BaseAIHordeRequest, WorkerRequestMixin, APIKeyA
 
 
 class ModifyWorkerResponse(HordeResponse):
-    info: str | None = Field(None)
+    info: str | None = Field(default=None)
     """The new state of the 'info' var for this worker."""
-    maintenance: bool | None = Field(None)
+    maintenance: bool | None = Field(default=None)
     """The new state of the 'maintenance' var for this worker. When True, this worker will not pick up any new
     requests."""
-    name: str | None = Field(None)
+    name: str | None = Field(default=None)
     """The new name for this this worker. No profanity allowed!"""
-    paused: bool | None = Field(None)
+    paused: bool | None = Field(default=None)
     """The new state of the 'paused' var for this worker. When True, this worker will not be given any new requests."""
-    team: str | None = Field(None, examples=["Direct Action"])
+    team: str | None = Field(default=None, examples=["Direct Action"])
     """The new team of this worker."""
 
     @override
@@ -327,18 +327,18 @@ class ModifyWorkerRequest(
     APIKeyAllowedInRequestMixin,
     WorkerRequestMixin,
 ):
-    info: str | None = Field(None, max_length=1000)
+    info: str | None = Field(default=None, max_length=1000)
     """You can optionally provide a server note which will be seen in the server details. No profanity allowed!"""
-    maintenance: bool | None = Field(None)
+    maintenance: bool | None = Field(default=None)
     """Set to true to put this worker into maintenance."""
-    maintenance_msg: str | None = Field(None)
+    maintenance_msg: str | None = Field(default=None)
     """If maintenance is True, you can optionally provide a message to be used instead of the default maintenance
     message, so that the owner is informed."""
-    name: str | None = Field(None, max_length=100, min_length=5)
+    name: str | None = Field(default=None, max_length=100, min_length=5)
     """When this is set, it will change the worker's name. No profanity allowed!"""
-    paused: bool | None = Field(None)
+    paused: bool | None = Field(default=None)
     """(Mods only) Set to true to pause this worker."""
-    team: str | None = Field(None, examples=["0bed257b-e57c-4327-ac64-40cdfb1ac5e6"], max_length=36)
+    team: str | None = Field(default=None, examples=["0bed257b-e57c-4327-ac64-40cdfb1ac5e6"], max_length=36)
     """The team towards which this worker contributes kudos.  It an empty string ('') is passed, it will leave the"""
 
     @override

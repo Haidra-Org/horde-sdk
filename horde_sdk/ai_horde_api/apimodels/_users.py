@@ -335,21 +335,21 @@ class SingleUserDetailsRequest(BaseAIHordeRequest, RequestSpecifiesUserIDMixin):
 
 class _ModifyUserBase(HordeAPIDataObject):
     admin_comment: str | None = Field(
-        None,
+        default=None,
         max_length=500,
         min_length=5,
     )
     """Add further information about this user for the other admins."""
 
     concurrency: int | None = Field(
-        None,
+        default=None,
         ge=0,
         le=500,
     )
     """The amount of concurrent request this user can have."""
 
     contact: str | None = Field(
-        None,
+        default=None,
         examples=["email@example.com"],
         max_length=500,
         min_length=5,
@@ -358,94 +358,94 @@ class _ModifyUserBase(HordeAPIDataObject):
     moderators."""
 
     customizer: bool | None = Field(
-        None,
+        default=None,
     )
     """When set to true, the user will be able to serve custom Stable Diffusion models which do not exist in the
     Official AI Horde Model Reference."""
 
     education: bool | None = Field(
-        None,
+        default=None,
     )
     """When set to true, the user is considered an education account and some options become more restrictive."""
 
     filtered: bool | None = Field(
-        None,
+        default=None,
     )
     """When set to true, the replacement filter will always be applied against this user"""
 
     flagged: bool | None = Field(
-        None,
+        default=None,
     )
     """When set to true, the user cannot transfer kudos and all their workers are put into permanent maintenance."""
 
     moderator: bool | None = Field(
-        None,
+        default=None,
     )
     """Set to true to make this user a horde moderator."""
 
     monthly_kudos: int | None = Field(
-        None,
+        default=None,
     )
     """When specified, will start assigning the user monthly kudos, starting now!"""
 
     public_workers: bool | None = Field(
-        None,
+        default=None,
     )
     """Set to true to make this user display their worker IDs."""
 
     service: bool | None = Field(
-        None,
+        default=None,
     )
     """When set to true, the user is considered a service account proxying the requests for other users."""
 
     special: bool | None = Field(
-        None,
+        default=None,
     )
     """When set to true, The user can send special payloads."""
 
     trusted: bool | None = Field(
-        None,
+        default=None,
     )
     """When set to true,the user and their servers will not be affected by suspicion."""
 
     usage_multiplier: float | None = Field(
-        None,
+        default=None,
         ge=0.1,
         le=10.0,
     )
     """The amount by which to multiply the users kudos consumption."""
 
     username: str | None = Field(
-        None,
+        default=None,
         max_length=100,
         min_length=3,
     )
     """When specified, will change the username. No profanity allowed!"""
 
     vpn: bool | None = Field(
-        None,
+        default=None,
     )
     """When set to true, the user will be able to onboard workers behind a VPN. This should be used as a temporary
     solution until the user is trusted."""
 
     worker_invited: int | None = Field(
-        None,
+        default=None,
     )
     """Set to the amount of workers this user is allowed to join to the horde when in worker invite-only mode."""
 
 
 class ModifyUser(_ModifyUserBase):
-    kudos: float | None = Field(None)
+    kudos: float | None = Field(default=None)
     """The amount of kudos to modify (can be negative)."""
 
-    reset_suspicion: bool | None = Field(None)
+    reset_suspicion: bool | None = Field(default=None)
     """Set the user's suspicion back to 0."""
 
 
 class ModifyUserReply(_ModifyUserBase):
-    new_kudos: float | None = Field(None)
+    new_kudos: float | None = Field(default=None)
     """The new amount of kudos this user has."""
-    new_suspicion: int | None = Field(None)
+    new_suspicion: int | None = Field(default=None)
     """The new amount of suspicion this user has."""
 
 

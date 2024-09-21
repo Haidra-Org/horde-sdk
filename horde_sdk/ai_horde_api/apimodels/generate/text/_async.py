@@ -32,7 +32,7 @@ class TextGenerateAsyncResponse(
     ContainsMessageResponseMixin,
 ):
     kudos: float | None = Field(
-        None,
+        default=None,
     )
     """The expected kudos consumption for this request."""
     warnings: list[SingleWarningEntry] | None = None
@@ -89,7 +89,7 @@ class ModelPayloadRootKobold(HordeAPIDataObject):
     dynatemp_range: float | None = Field(0, ge=0.0, le=5.0)
     """Dynamic temperature range value."""
     frmtadsnsp: bool | None = Field(
-        None,
+        default=None,
         description=(
             "Input formatting option. When enabled, adds a leading space to your input if there is no trailing"
             " whitespace at the end of the previous action."
@@ -101,7 +101,7 @@ class ModelPayloadRootKobold(HordeAPIDataObject):
     """Input formatting option. When enabled, adds a leading space to your input if there is no trailing whitespace at
     the end of the previous action."""
     frmtrmblln: bool | None = Field(
-        None,
+        default=None,
         description=(
             "Output formatting option. When enabled, replaces all occurrences of two or more consecutive newlines in"
             " the output with one newline."
@@ -113,14 +113,14 @@ class ModelPayloadRootKobold(HordeAPIDataObject):
     """Output formatting option. When enabled, replaces all occurrences of two or more consecutive newlines in the
     output with one newline."""
     frmtrmspch: bool | None = Field(
-        None,
+        default=None,
         examples=[
             False,
         ],
     )
     """Output formatting option. When enabled, removes #/@%}{+=~|\\^<> from the output."""
     frmttriminc: bool | None = Field(
-        None,
+        default=None,
         description=(
             "Output formatting option. When enabled, removes some characters from the end of the output such that the"
             " output doesn't end in the middle of a sentence. If the output is less than one sentence long, does"
@@ -133,7 +133,7 @@ class ModelPayloadRootKobold(HordeAPIDataObject):
     """Output formatting option. When enabled, removes some characters from the end of the output such that the output
     doesn't end in the middle of a sentence. If the output is less than one sentence long, does nothing."""
     max_context_length: int | None = Field(
-        1024,
+        default=1024,
         ge=80,
         le=32000,
     )
@@ -142,18 +142,18 @@ class ModelPayloadRootKobold(HordeAPIDataObject):
     """Number of tokens to generate."""
     min_p: float | None = Field(0, ge=0.0, le=1.0)
     """Min-p sampling value."""
-    n: int | None = Field(None, examples=[1], ge=1, le=20)
+    n: int | None = Field(default=None, examples=[1], ge=1, le=20)
     """The number of generations to produce."""
-    rep_pen: float | None = Field(None, ge=1.0, le=3.0)
+    rep_pen: float | None = Field(default=None, ge=1.0, le=3.0)
     """Base repetition penalty value."""
-    rep_pen_range: int | None = Field(None, ge=0, le=4096)
+    rep_pen_range: int | None = Field(default=None, ge=0, le=4096)
     """Repetition penalty range."""
-    rep_pen_slope: float | None = Field(None, ge=0.0, le=10.0)
+    rep_pen_slope: float | None = Field(default=None, ge=0.0, le=10.0)
     """Repetition penalty slope."""
     sampler_order: list[int] | None = None
     """The sampler order to use for the generation."""
     singleline: bool | None = Field(
-        None,
+        default=None,
         description=(
             "Output formatting option. When enabled, removes everything after the first line of the output, including"
             " the newline."
@@ -168,17 +168,17 @@ class ModelPayloadRootKobold(HordeAPIDataObject):
     """Quadratic sampling value."""
     stop_sequence: list[str] | None = None
     """The stop sequences to use for the generation."""
-    temperature: float | None = Field(None, ge=0.0, le=5.0)
+    temperature: float | None = Field(default=None, ge=0.0, le=5.0)
     """Temperature value."""
-    tfs: float | None = Field(None, ge=0.0, le=1.0)
+    tfs: float | None = Field(default=None, ge=0.0, le=1.0)
     """Tail free sampling value."""
-    top_a: float | None = Field(None, ge=0.0, le=1.0)
+    top_a: float | None = Field(default=None, ge=0.0, le=1.0)
     """Top-a sampling value."""
-    top_k: int | None = Field(None, ge=0, le=100)
+    top_k: int | None = Field(default=None, ge=0, le=100)
     """Top-k sampling value."""
-    top_p: float | None = Field(None, ge=0.001, le=1.0)
+    top_p: float | None = Field(default=None, ge=0.001, le=1.0)
     """Top-p sampling value."""
-    typical: float | None = Field(None, ge=0.0, le=1.0)
+    typical: float | None = Field(default=None, ge=0.0, le=1.0)
     """Typical sampling value."""
     use_default_badwordsids: bool | None = None
     """When True, uses the default KoboldAI bad word IDs."""
@@ -224,15 +224,15 @@ class TextGenerateAsyncRequest(
     Feature is restricted to Trusted users and Patreons."""
     extra_source_images: list[ExtraSourceImageEntry] | None = None
     """Any extra source images that should be used for this request; e.g., for multi-modal models."""
-    proxied_account: str | None = Field(None)
+    proxied_account: str | None = Field(default=None)
     """If using a service account as a proxy, provide this value to identify the actual account from which this
     request is coming from."""
     softprompt: str | None = Field(
-        None,
+        default=None,
         min_length=1,
     )
     """Specify which softprompt needs to be used to service this request."""
-    webhook: str | None = Field(None)
+    webhook: str | None = Field(default=None)
     """Provide a URL where the AI Horde will send a POST call after each delivered generation.
     The request will include the details of the job as well as the request ID."""
 

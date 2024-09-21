@@ -22,7 +22,7 @@ class SwaggerModelAdditionalProperty(BaseModel):
     # TODO: Is this actually a recursive SwaggerModelDefinitionProperty?
     model_config = {"extra": "forbid"}
 
-    type_: str | None = Field(None, alias="type")
+    type_: str | None = Field(default=None, alias="type")
     description: str | None = None
 
 
@@ -36,14 +36,14 @@ class SwaggerModelProperty(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-    type_: str | None = Field(None, alias="type")
+    type_: str | None = Field(default=None, alias="type")
     description: str | None = None
     title: str | None = None
     default: object | None = None
     example: object | None = None
-    format_: str | None = Field(None, alias="format")
+    format_: str | None = Field(default=None, alias="format")
     enum: list[str] | None = None
-    ref: str | None = Field(None, alias="$ref")
+    ref: str | None = Field(default=None, alias="$ref")
     minimum: float | None = None
     maximum: float | None = None
     minLength: int | None = None
@@ -59,7 +59,7 @@ class SwaggerModelRef(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-    ref: str | None = Field(None, alias="$ref")
+    ref: str | None = Field(default=None, alias="$ref")
 
 
 class SwaggerModelEntry(BaseModel, ABC):
@@ -75,7 +75,7 @@ class SwaggerModelDefinition(SwaggerModelEntry):
 
     model_config: ClassVar[ConfigDict] = {"extra": "forbid"}
 
-    type_: str | None = Field(None, alias="type")
+    type_: str | None = Field(default=None, alias="type")
     properties: dict[str, SwaggerModelProperty] | None = None
     required: list[str] | None = None
 
@@ -179,8 +179,8 @@ class SwaggerEndpointMethodParameterSchemaProperty(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-    type_: str | None = Field(None, alias="type")
-    format_: str | None = Field(None, alias="format")
+    type_: str | None = Field(default=None, alias="type")
+    format_: str | None = Field(default=None, alias="format")
 
 
 class SwaggerEndpointMethodParameterSchema(BaseModel):
@@ -188,7 +188,7 @@ class SwaggerEndpointMethodParameterSchema(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-    type_: str | None = Field(None, alias="type")
+    type_: str | None = Field(default=None, alias="type")
     properties: dict[str, SwaggerEndpointMethodParameterSchemaProperty] | None = None
 
 
@@ -202,12 +202,12 @@ class SwaggerEndpointMethodParameter(BaseModel):
     description: str | None = None
     required: bool | None = None
     schema_: SwaggerEndpointMethodParameterSchema | SwaggerEndpointMethodParameterSchemaRef | None = Field(
-        None,
+        default=None,
         alias="schema",
     )
     default: object | None = None
-    type_: str | None = Field(None, alias="type")
-    format_: str | None = Field(None, alias="format")
+    type_: str | None = Field(default=None, alias="type")
+    format_: str | None = Field(default=None, alias="format")
 
 
 class SwaggerEndpointResponseSchemaItem(BaseModel):
@@ -215,7 +215,7 @@ class SwaggerEndpointResponseSchemaItem(BaseModel):
 
     # model_config = {"extra": "forbid"}
 
-    ref: str | None = Field(None, alias="$ref")
+    ref: str | None = Field(default=None, alias="$ref")
 
 
 class SwaggerEndpointResponseSchema(BaseModel):
@@ -223,8 +223,8 @@ class SwaggerEndpointResponseSchema(BaseModel):
 
     # model_config = {"extra": "forbid"}
 
-    ref: str | None = Field(None, alias="$ref")
-    type_: str | None = Field(None, alias="type")
+    ref: str | None = Field(default=None, alias="$ref")
+    type_: str | None = Field(default=None, alias="type")
     items: SwaggerEndpointResponseSchemaItem | None = None
 
 
@@ -234,7 +234,7 @@ class SwaggerEndpointResponse(BaseModel):
     model_config = {"extra": "forbid"}
 
     description: str
-    schema_: SwaggerEndpointResponseSchema | None = Field(None, alias="schema")
+    schema_: SwaggerEndpointResponseSchema | None = Field(default=None, alias="schema")
 
 
 class SwaggerEndpointMethod(BaseModel):
@@ -244,7 +244,7 @@ class SwaggerEndpointMethod(BaseModel):
 
     summary: str | None = None
     description: str | None = None
-    operation_id: str | None = Field(None, alias="operationId")
+    operation_id: str | None = Field(default=None, alias="operationId")
     parameters: list[SwaggerEndpointMethodParameter] | None = None
     responses: dict[str, SwaggerEndpointResponse] | None = None
     tags: list[str] | None = None
@@ -259,7 +259,7 @@ class SwaggerEndpointParameter(BaseModel):
     in_: str = Field("", alias="in")
     description: str | None = None
     required: bool | None = None
-    type_: str | None = Field(None, alias="type")
+    type_: str | None = Field(default=None, alias="type")
 
 
 class SwaggerEndpoint(BaseModel):
