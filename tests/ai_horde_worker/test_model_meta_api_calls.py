@@ -29,6 +29,16 @@ def test_image_model_load_resolver_all(image_model_load_resolver: ImageModelLoad
 
     assert len(all_model_names) > 0
 
+    import os
+
+    os.environ["AI_HORDE_MODEL_META_LARGE_MODELS"] = "true"
+
+    all_model_names_with_large = image_model_load_resolver.resolve_all_model_names()
+
+    del os.environ["AI_HORDE_MODEL_META_LARGE_MODELS"]
+
+    assert len(all_model_names_with_large) > len(all_model_names)
+
 
 def test_image_model_load_resolver_top_n(
     image_model_load_resolver: ImageModelLoadResolver,
@@ -178,6 +188,19 @@ def test_image_models_unique_results_only(
     all_model_names = image_model_load_resolver.resolve_all_model_names()
 
     assert len(resolved_model_names) >= (len(all_model_names) - 1)  # FIXME: -1 is to account for SDXL beta
+
+    import os
+
+    os.environ["AI_HORDE_MODEL_META_LARGE_MODELS"] = "true"
+
+    resolved_models_names_with_large = image_model_load_resolver.resolve_meta_instructions(
+        ["top 1000", "bottom 1000"],
+        AIHordeAPIManualClient(),
+    )
+
+    del os.environ["AI_HORDE_MODEL_META_LARGE_MODELS"]
+
+    assert len(resolved_models_names_with_large) >= len(resolved_model_names)
 
 
 def test_resolve_all_models_of_baseline(
