@@ -1,6 +1,7 @@
+import os
 import re
 
-from horde_model_reference.meta_consts import MODEL_REFERENCE_CATEGORY
+from horde_model_reference.meta_consts import MODEL_REFERENCE_CATEGORY, STABLE_DIFFUSION_BASELINE_CATEGORY
 from horde_model_reference.model_reference_manager import ModelReferenceManager
 from horde_model_reference.model_reference_records import StableDiffusion_ModelRecord
 from loguru import logger
@@ -128,7 +129,7 @@ class ImageModelLoadResolver:
                 return_list.extend(self.resolve_all_nsfw_model_names())
 
         # If no valid meta instruction were found, return None
-        return set(return_list)
+        return self.remove_large_models(set(return_list))
 
     @staticmethod
     def meta_instruction_regex_match(instruction: str, target_string: str) -> re.Match[str] | None:
@@ -140,8 +141,21 @@ class ImageModelLoadResolver:
 
         Returns:
             A Match object if the target string matches the regex pattern, otherwise None.
+
         """
         return re.match(instruction, target_string, re.IGNORECASE)
+
+    def remove_large_models(self, models: set[str]) -> set[str]:
+        """Remove large models from the input set of models."""
+        AI_HORDE_MODEL_META_LARGE_MODELS = os.getenv("AI_HORDE_MODEL_META_LARGE_MODELS")
+        if not AI_HORDE_MODEL_META_LARGE_MODELS:
+            cascade_models = self.resolve_all_models_of_baseline(STABLE_DIFFUSION_BASELINE_CATEGORY.stable_cascade)
+            flux_models = self.resolve_all_models_of_baseline(STABLE_DIFFUSION_BASELINE_CATEGORY.flux_1)
+
+            logger.debug(f"Removing cascade models: {cascade_models}")
+            logger.debug(f"Removing flux models: {flux_models}")
+            models = models - cascade_models - flux_models
+        return models
 
     def resolve_all_model_names(self) -> set[str]:
         """Get the names of all models defined in the model reference.
@@ -153,11 +167,13 @@ class ImageModelLoadResolver:
 
         sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.stable_diffusion]
 
-        if sd_model_references:
-            return set(sd_model_references.root.keys())
+        all_models = set(sd_model_references.root.keys()) if sd_model_references is not None else set()
 
-        logger.error("No stable diffusion models found in model reference.")
-        return set()
+        all_models = self.remove_large_models(all_models)
+
+        if not all_models:
+            logger.error("No stable diffusion models found in model reference.")
+        return all_models
 
     def _resolve_sfw_nsfw_model_names(self, nsfw: bool) -> set[str]:
         """Get the names of all SFW or NSFW models defined in the model reference.
