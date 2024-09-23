@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import sys
 import time
 from pathlib import Path
 
@@ -118,5 +119,8 @@ if __name__ == "__main__":
         help="The API key to use. Defaults to the anon key.",
     )
     args = parser.parse_args()
+
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     asyncio.run(main(args.apikey))

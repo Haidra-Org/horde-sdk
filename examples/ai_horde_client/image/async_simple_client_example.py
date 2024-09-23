@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import sys
 from pathlib import Path
 
 import aiohttp
@@ -160,6 +161,9 @@ if __name__ == "__main__":
         help="The API key to use. Defaults to the anon key.",
     )
     args = parser.parse_args()
+
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     # Run the example.
     asyncio.run(async_simple_generate_example(args.apikey))

@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import sys
 from pathlib import Path
 
 import aiofiles
@@ -114,5 +115,8 @@ if __name__ == "__main__":
         required=True,
     )
     args = parser.parse_args()
+
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     asyncio.run(main(args.api_key))
