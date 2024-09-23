@@ -51,6 +51,12 @@ def _dev_env_var_warnings() -> None:  # pragma: no cover
         if len(dev_key) != 10 and len(dev_key) != 22:
             raise ValueError("AI_HORDE_DEV_APIKEY must be the anon key or 22 characters long.")
 
+    AI_HORDE_MODEL_META_LARGE_MODELS = os.getenv("AI_HORDE_MODEL_META_LARGE_MODELS")
+    if AI_HORDE_MODEL_META_LARGE_MODELS:
+        logger.debug(
+            f"AI_HORDE_MODEL_META_LARGE_MODELS is {AI_HORDE_MODEL_META_LARGE_MODELS}.",
+        )
+
 
 _dev_env_var_warnings()
 
