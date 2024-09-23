@@ -60,6 +60,7 @@ def _dev_env_var_warnings() -> None:  # pragma: no cover
 
 _dev_env_var_warnings()
 
+
 from horde_sdk.consts import (
     PAYLOAD_HTTP_METHODS,
     HTTPMethod,
