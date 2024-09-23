@@ -1,11 +1,16 @@
+import asyncio
 import base64
 import os
 import pathlib
+import sys
 
 import pytest
 from loguru import logger
 
 os.environ["TESTS_ONGOING"] = "1"
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest, ImageGenerationInputPayload
 from horde_sdk.generic_api.consts import ANON_API_KEY
