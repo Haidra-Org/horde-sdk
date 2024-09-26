@@ -260,6 +260,14 @@ class ImageGenerateJobPopResponse(
         """Whether or not the IDs are present."""
         return self._ids_present
 
+    def _sort_ids(self) -> None:
+        """Sort the IDs in place and sort so r2_uploads is changed so the same index changes occur."""
+        if len(self.ids) > 1:
+            logger.debug("Sorting IDs")
+            self.ids.sort()
+            if self.r2_uploads is not None:
+                self.r2_uploads.sort()
+
     @model_validator(mode="after")
     def validate_ids_present(self) -> ImageGenerateJobPopResponse:
         """Ensure that either id_ or ids is present."""
@@ -273,9 +281,7 @@ class ImageGenerateJobPopResponse(
         if self.id_ is None and len(self.ids) == 0:
             raise ValueError("Neither id_ nor ids were present in the response.")
 
-        if len(self.ids) > 1:
-            logger.debug("Sorting IDs")
-            self.ids.sort()
+        self._sort_ids()
 
         self._ids_present = True
 
