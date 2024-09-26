@@ -460,6 +460,36 @@ def test_ImageGenerateJobPopResponse() -> None:
 
     assert all(post_processor in KNOWN_UPSCALERS for post_processor in test_response.payload.post_processing)
 
+    test_response = ImageGenerateJobPopResponse(
+        ids=[
+            JobID(root=UUID("00000000-0000-0000-0000-000000000001")),
+            JobID(root=UUID("00000000-0000-0000-0000-000000000002")),
+            JobID(root=UUID("00000000-0000-0000-0000-000000000000")),
+        ],
+        payload=ImageGenerateJobPopPayload(
+            prompt="A cat in a hat",
+        ),
+        model="Deliberate",
+        r2_uploads=[
+            "https://abbaabbaabbaabbaabbaabbaabbaabba.r2.cloudflarestorage.com/horde-transient/00000000-0000-0000-0000-000000000001.webp?AWSAccessKeyId=deadbeefdeadbeefdeadbeefdeadbeef&Signature=zxcbvfakesignature%3D&Expires=1727390285",
+            "https://abbaabbaabbaabbaabbaabbaabbaabba.r2.cloudflarestorage.com/horde-transient/00000000-0000-0000-0000-000000000000.webp?AWSAccessKeyId=deadbeefdeadbeefdeadbeefdeadbeef&Signature=345567dfakes2ignature%3D&Expires=1727390285",
+            "https://abbaabbaabbaabbaabbaabbaabbaabba.r2.cloudflarestorage.com/horde-transient/00000000-0000-0000-0000-000000000002.webp?AWSAccessKeyId=deadbeefdeadbeefdeadbeefdeadbeef&Signature=asdfg32fakesignature%3D&Expires=1727390285",
+        ],
+        skipped=ImageGenerateJobPopSkippedStatus(),
+    )
+
+    assert test_response.ids_present
+    assert test_response.ids == [
+        JobID(root=UUID("00000000-0000-0000-0000-000000000000")),
+        JobID(root=UUID("00000000-0000-0000-0000-000000000001")),
+        JobID(root=UUID("00000000-0000-0000-0000-000000000002")),
+    ]
+    assert test_response.r2_uploads == [
+        "https://abbaabbaabbaabbaabbaabbaabbaabba.r2.cloudflarestorage.com/horde-transient/00000000-0000-0000-0000-000000000000.webp?AWSAccessKeyId=deadbeefdeadbeefdeadbeefdeadbeef&Signature=345567dfakes2ignature%3D&Expires=1727390285",
+        "https://abbaabbaabbaabbaabbaabbaabbaabba.r2.cloudflarestorage.com/horde-transient/00000000-0000-0000-0000-000000000001.webp?AWSAccessKeyId=deadbeefdeadbeefdeadbeefdeadbeef&Signature=zxcbvfakesignature%3D&Expires=1727390285",
+        "https://abbaabbaabbaabbaabbaabbaabbaabba.r2.cloudflarestorage.com/horde-transient/00000000-0000-0000-0000-000000000002.webp?AWSAccessKeyId=deadbeefdeadbeefdeadbeefdeadbeef&Signature=asdfg32fakesignature%3D&Expires=1727390285",
+    ]
+
 
 def test_ImageGenerateJobPopResponse_hashability() -> None:
     test_response_ids = ImageGenerateJobPopResponse(
