@@ -462,9 +462,9 @@ def test_ImageGenerateJobPopResponse() -> None:
 
     test_response = ImageGenerateJobPopResponse(
         ids=[
-            JobID(root=UUID("00000000-0000-0000-0000-000000000001")),
-            JobID(root=UUID("00000000-0000-0000-0000-000000000002")),
-            JobID(root=UUID("00000000-0000-0000-0000-000000000000")),
+            GenerationID(root=UUID("00000000-0000-0000-0000-000000000001")),
+            GenerationID(root=UUID("00000000-0000-0000-0000-000000000002")),
+            GenerationID(root=UUID("00000000-0000-0000-0000-000000000000")),
         ],
         payload=ImageGenerateJobPopPayload(
             prompt="A cat in a hat",
@@ -480,9 +480,9 @@ def test_ImageGenerateJobPopResponse() -> None:
 
     assert test_response.ids_present
     assert test_response.ids == [
-        JobID(root=UUID("00000000-0000-0000-0000-000000000000")),
-        JobID(root=UUID("00000000-0000-0000-0000-000000000001")),
-        JobID(root=UUID("00000000-0000-0000-0000-000000000002")),
+        GenerationID(root=UUID("00000000-0000-0000-0000-000000000000")),
+        GenerationID(root=UUID("00000000-0000-0000-0000-000000000001")),
+        GenerationID(root=UUID("00000000-0000-0000-0000-000000000002")),
     ]
     assert test_response.r2_uploads == [
         "https://abbaabbaabbaabbaabbaabbaabbaabba.r2.cloudflarestorage.com/horde-transient/00000000-0000-0000-0000-000000000000.webp?AWSAccessKeyId=deadbeefdeadbeefdeadbeefdeadbeef&Signature=345567dfakes2ignature%3D&Expires=1727390285",
