@@ -295,7 +295,7 @@ class TestAIHordeGenerate:
     ) -> None:
         simple_client = AIHordeAPISimpleClient()
 
-        result, jobid = simple_client.alchemy_request(
+        result, GenerationID = simple_client.alchemy_request(
             alchemy_request=AlchemyAsyncRequest(
                 forms=[
                     AlchemyAsyncRequestFormItem(
@@ -322,7 +322,7 @@ class TestAIHordeGenerate:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
             async def submit_request() -> AlchemyStatusResponse:
-                result, jobid = await simple_client.alchemy_request(
+                result, GenerationID = await simple_client.alchemy_request(
                     alchemy_request=AlchemyAsyncRequest(
                         forms=[
                             AlchemyAsyncRequestFormItem(
@@ -512,7 +512,7 @@ class TestAIHordeGenerate:
                 print(f"Callback: {generation}")
                 assert generation
 
-            result, jobid = await simple_client.alchemy_request(
+            result, GenerationID = await simple_client.alchemy_request(
                 alchemy_request=AlchemyAsyncRequest(
                     forms=[
                         AlchemyAsyncRequestFormItem(
@@ -555,7 +555,7 @@ class TestAIHordeGenerate:
                 pass
 
             with pytest.raises(ValueError, match="Callback"):
-                result, jobid = await simple_client.alchemy_request(
+                result, GenerationID = await simple_client.alchemy_request(
                     alchemy_request=AlchemyAsyncRequest(
                         forms=[
                             AlchemyAsyncRequestFormItem(

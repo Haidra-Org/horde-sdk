@@ -39,7 +39,7 @@ class ImageGeneration(Generation):
     """
 
     id_: GenerationID = Field(alias="id")
-    """The UUID of this generation. Is always returned as a `JobID`, but can initialized from a `str`."""
+    """The UUID of this generation. Is always returned as a `GenerationID`, but can initialized from a `str`."""
     # todo: remove `str`?
     img: str
     """The generated image as a Base64-encoded .webp file."""

@@ -12,7 +12,7 @@ from horde_sdk.ai_horde_api.apimodels.generate._pop import ExtraSourceImageMixin
 from horde_sdk.ai_horde_api.apimodels.generate.text._async import ModelPayloadRootKobold
 from horde_sdk.ai_horde_api.apimodels.generate.text._status import DeleteTextGenerateRequest, TextGenerateStatusRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
-from horde_sdk.ai_horde_api.fields import JobID
+from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
@@ -50,9 +50,9 @@ class TextGenerateJobPopResponse(
 ):
     payload: ModelPayloadKobold
     """The settings for this text generation."""
-    id_: JobID | None = Field(default=None, alias="id")
+    id_: GenerationID | None = Field(default=None, alias="id")
     """The UUID for this text generation."""
-    ids: list[JobID]
+    ids: list[GenerationID]
     """The UUIDs for this text generations."""
     skipped: NoValidRequestFoundKobold = Field(NoValidRequestFoundKobold())
     """The skipped requests that were not valid for this worker."""
@@ -64,10 +64,10 @@ class TextGenerateJobPopResponse(
     """The amount of seconds before this job is considered stale and aborted."""
 
     @field_validator("id_", mode="before")
-    def validate_id(cls, v: str | JobID) -> JobID | str:
+    def validate_id(cls, v: str | GenerationID) -> GenerationID | str:
         if isinstance(v, str) and v == "":
             logger.warning("Job ID is empty")
-            return JobID(root=uuid.uuid4())
+            return GenerationID(root=uuid.uuid4())
 
         return v
 

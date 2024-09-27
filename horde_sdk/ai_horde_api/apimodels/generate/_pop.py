@@ -22,7 +22,7 @@ from horde_sdk.ai_horde_api.consts import (
     KNOWN_UPSCALERS,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
-from horde_sdk.ai_horde_api.fields import JobID
+from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
@@ -209,9 +209,9 @@ class ImageGenerateJobPopResponse(
     v2 API Model: `GenerationPayloadStable`
     """
 
-    id_: JobID | None = Field(default=None, alias="id")
+    id_: GenerationID | None = Field(default=None, alias="id")
     """(Obsolete) The UUID for this image generation."""
-    ids: list[JobID]
+    ids: list[GenerationID]
     """A list of UUIDs for image generation."""
 
     payload: ImageGenerateJobPopPayload
@@ -252,10 +252,10 @@ class ImageGenerateJobPopResponse(
         return v
 
     @field_validator("id_", mode="before")
-    def validate_id(cls, v: str | JobID) -> JobID | str:
+    def validate_id(cls, v: str | GenerationID) -> GenerationID | str:
         if isinstance(v, str) and v == "":
             logger.warning("Job ID is empty")
-            return JobID(root=uuid.uuid4())
+            return GenerationID(root=uuid.uuid4())
 
         return v
 
