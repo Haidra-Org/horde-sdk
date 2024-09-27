@@ -25,6 +25,10 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/interrogate/status/{id} | GET | [AlchemyStatusRequest][horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyStatusRequest] |
 | /v2/interrogate/submit | POST | [AlchemyJobSubmitRequest][horde_sdk.ai_horde_api.apimodels.alchemy._submit.AlchemyJobSubmitRequest] |
 | /v2/kudos/transfer | POST | [KudosTransferRequest][horde_sdk.ai_horde_api.apimodels._kudos.KudosTransferRequest] |
+| /v2/sharedkeys | PUT | [SharedKeyCreateRequest][horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyCreateRequest] |
+| /v2/sharedkeys/{sharedkey_id} | DELETE | [SharedKeyDeleteRequest][horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyDeleteRequest] |
+| /v2/sharedkeys/{sharedkey_id} | GET | [SharedKeyDetailsRequest][horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyDetailsRequest] |
+| /v2/sharedkeys/{sharedkey_id} | PATCH | [SharedKeyModifyRequest][horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyModifyRequest] |
 | /v2/stats/img/models | GET | [ImageStatsModelsRequest][horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsRequest] |
 | /v2/stats/img/totals | GET | [ImageStatsModelsTotalRequest][horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsTotalRequest] |
 | /v2/stats/text/models | GET | [TextStatsModelsRequest][horde_sdk.ai_horde_api.apimodels._stats.TextStatsModelsRequest] |
@@ -67,6 +71,8 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/interrogate/status/{id} | 200 | [AlchemyStatusResponse][horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyStatusResponse] |
 | /v2/interrogate/submit | 200 | [AlchemyJobSubmitResponse][horde_sdk.ai_horde_api.apimodels.alchemy._submit.AlchemyJobSubmitResponse] |
 | /v2/kudos/transfer | 200 | [KudosTransferResponse][horde_sdk.ai_horde_api.apimodels._kudos.KudosTransferResponse] |
+| /v2/sharedkeys | 200 | [SharedKeyDetailsResponse][horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyDetailsResponse] |
+| /v2/sharedkeys/{sharedkey_id} | 200 | [SharedKeyDetailsResponse][horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyDetailsResponse] |
 | /v2/stats/img/models | 200 | [ImageStatsModelsResponse][horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsResponse] |
 | /v2/stats/img/totals | 200 | [ImageStatsModelsTotalResponse][horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsTotalResponse] |
 | /v2/stats/text/models | 200 | [TextStatsModelResponse][horde_sdk.ai_horde_api.apimodels._stats.TextStatsModelResponse] |
