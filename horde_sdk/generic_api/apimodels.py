@@ -121,7 +121,7 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
         """Return the information required from this response to submit a follow up request.
 
         Note that this dict uses the alias field names (as seen on the API), not the python field names.
-        JobIDs will be returned as `{"id": "00000000-0000-0000-0000-000000000000"}` instead of
+        GenerationIDs will be returned as `{"id": "00000000-0000-0000-0000-000000000000"}` instead of
         `{"id_": "00000000-0000-0000-0000-000000000000"}`.
 
         Returns:

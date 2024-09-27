@@ -229,7 +229,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient, BaseAIHordeClient):
         Not to be confused with `get_generate_status` which returns the images too.
 
         Args:
-            gen_id (JobID | str): The ID of the request to check.
+            gen_id (GenerationID | str): The ID of the request to check.
 
         Returns:
             ImageGenerateCheckResponse: The response from the API.
@@ -253,10 +253,10 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient, BaseAIHordeClient):
         Use `get_generate_check` instead to check the status of a pending image request.
 
         Args:
-            gen_id (JobID): The ID of the request to check.
+            gen_id (GenerationID): The ID of the request to check.
 
         Returns:
-            tuple[ImageGenerateStatusResponse, JobID]: The final status response and the corresponding job ID.
+            tuple[ImageGenerateStatusResponse, GenerationID]: The final status response and the corresponding job ID.
         """
         api_request = ImageGenerateStatusRequest(id=gen_id)
 
@@ -274,7 +274,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient, BaseAIHordeClient):
         """Delete a pending image request from the AI-Horde API.
 
         Args:
-            gen_id (JobID): The ID of the request to delete.
+            gen_id (GenerationID): The ID of the request to delete.
 
         Returns:
             ImageGenerateStatusResponse: The response from the API.
@@ -315,7 +315,7 @@ class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeC
         Not to be confused with `get_generate_status` which returns the images too.
 
         Args:
-            gen_id (JobID | str): The ID of the request to check.
+            gen_id (GenerationID | str): The ID of the request to check.
 
         Returns:
             ImageGenerateCheckResponse: The response from the API.
@@ -339,7 +339,7 @@ class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeC
         Use `get_generate_check` instead to check the status of a pending image request.
 
         Args:
-            gen_id (JobID): The ID of the request to check.
+            gen_id (GenerationID): The ID of the request to check.
 
         Returns:
             ImageGenerateStatusResponse: The response from the API.
@@ -360,7 +360,7 @@ class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeC
         """Asynchronously delete a pending image request from the AI-Horde API.
 
         Args:
-            gen_id (JobID | str): The ID of the request to delete.
+            gen_id (GenerationID | str): The ID of the request to delete.
 
         Returns:
             ImageGenerateStatusResponse: The response from the API.
@@ -647,7 +647,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                 The type of response expected by the callback.
 
         Returns:
-            tuple[HordeResponse, JobID]: The final response and the corresponding job ID.
+            tuple[HordeResponse, GenerationID]: The final response and the corresponding job ID.
         """
         if check_callback is not None and len(inspect.getfullargspec(check_callback).args) == 0:
             raise ValueError("Callback must take at least one argument")
@@ -789,7 +789,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
 
         n = image_gen_request.params.n if image_gen_request.params and image_gen_request.params.n else 1
         logger.log(PROGRESS_LOGGER_LABEL, f"Requesting {n} images.")
-        final_response, JobID = self._do_request_with_check(
+        final_response, GenerationID = self._do_request_with_check(
             image_gen_request,
             number_of_responses=n,
             timeout=timeout,
@@ -804,7 +804,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         if not isinstance(final_response, ImageGenerateStatusResponse):  # pragma: no cover
             raise RuntimeError("Response was not an ImageGenerateStatusResponse")
 
-        return (final_response, JobID)
+        return (final_response, GenerationID)
 
     def image_generate_request_dry_run(
         self,
@@ -1361,7 +1361,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
                 The type of response expected by the callback.
 
         Returns:
-            tuple[HordeResponse, JobID]: The final response and the corresponding job ID.
+            tuple[HordeResponse, GenerationID]: The final response and the corresponding job ID.
 
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
@@ -1500,7 +1500,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
 
 
         Returns:
-            tuple[ImageGenerateStatusResponse, JobID]: The final status response and the corresponding job ID.
+            tuple[ImageGenerateStatusResponse, GenerationID]: The final status response and the corresponding job ID.
 
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
@@ -1582,7 +1582,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
                 response.
 
         Returns:
-            tuple[ImageGenerateStatusResponse, JobID]: The final status response and the corresponding job ID.
+            tuple[ImageGenerateStatusResponse, GenerationID]: The final status response and the corresponding job ID.
 
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
@@ -1631,7 +1631,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             delay (float, optional): The number of seconds to wait before checking the status. Defaults to 0.0.
 
         Returns:
-            tuple[TextGenerateStatusResponse, JobID]: The final status response and the corresponding job ID.
+            tuple[TextGenerateStatusResponse, GenerationID]: The final status response and the corresponding job ID.
 
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
