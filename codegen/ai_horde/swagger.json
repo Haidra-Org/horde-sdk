@@ -4214,7 +4214,8 @@
               "source_image",
               "source_mask",
               "extra_source_images",
-              "batch_index"
+              "batch_index",
+              "information"
             ]
           },
           "value": {

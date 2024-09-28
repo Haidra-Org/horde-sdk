@@ -251,6 +251,8 @@ class METADATA_TYPE(StrEnum):
     """Extra source images for the request."""
     batch_index = auto()
     """The index of the batch in a batch request."""
+    information = auto()
+    """Extra information about the image."""
 
 
 class METADATA_VALUE(StrEnum):
