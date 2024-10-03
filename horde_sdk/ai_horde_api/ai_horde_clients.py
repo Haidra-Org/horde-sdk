@@ -11,6 +11,7 @@ import urllib.parse
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Coroutine
 from typing import cast
+from ssl import SSLContext
 
 import aiohttp
 import PIL.Image
@@ -78,6 +79,7 @@ from horde_sdk.generic_api.generic_clients import (
     GenericAsyncHordeAPISession,
     GenericHordeAPIManualClient,
     GenericHordeAPISession,
+    _default_sslcontext,
 )
 
 
@@ -291,12 +293,18 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient, BaseAIHordeClient):
 class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeClient):
     """An asyncio based API client specifically configured for the AI-Horde API."""
 
-    def __init__(self, aiohttp_session: aiohttp.ClientSession) -> None:
+    def __init__(
+        self,
+        aiohttp_session: aiohttp.ClientSession,
+        *,
+        ssl_context: SSLContext = _default_sslcontext,
+    ) -> None:
         """Create a new instance of the RatingsAPIClient."""
         super().__init__(
             aiohttp_session=aiohttp_session,
             path_fields=AIHordePathData,
             query_fields=AIHordeQueryData,
+            ssl_context=ssl_context,
         )
 
     async def get_generate_check(
@@ -395,12 +403,14 @@ class AIHordeAPIAsyncClientSession(GenericAsyncHordeAPISession):
     def __init__(
         self,
         aiohttp_session: aiohttp.ClientSession,
+        ssl_context: SSLContext = _default_sslcontext,
     ) -> None:
         """Create a new instance of the RatingsAPIClient."""
         super().__init__(
             aiohttp_session=aiohttp_session,
             path_fields=AIHordePathData,
             query_fields=AIHordeQueryData,
+            ssl_context=ssl_context,
         )
 
 
