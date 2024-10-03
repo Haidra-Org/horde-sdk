@@ -4,6 +4,7 @@ pydantic==2.9.2
 requests
 StrEnum
 loguru
+certifi
 aiohttp
 aiofiles
 aiodns
