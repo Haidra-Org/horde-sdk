@@ -10,8 +10,8 @@ import time
 import urllib.parse
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Coroutine
-from typing import cast
 from ssl import SSLContext
+from typing import cast
 
 import aiohttp
 import PIL.Image
