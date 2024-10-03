@@ -105,6 +105,8 @@ class BaseHordeAPIClient(ABC):
                 Defaults to GenericQueryFields.
             accept_types (type[GenericAcceptTypes], optional): Pass this to define the API's accept types.
                 Defaults to GenericAcceptTypes.
+            ssl_context (SSLContext, optional): The SSL context to use for aiohttp requests.
+                Defaults to using `certifi`.
             kwargs: Any additional keyword arguments are ignored.
 
         Raises:
