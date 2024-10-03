@@ -409,6 +409,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
         path_fields: type[GenericPathFields] = GenericPathFields,
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
+        ssl_context: SSLContext = _default_sslcontext,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
         super().__init__(
@@ -673,6 +674,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
         path_fields: type[GenericPathFields] = GenericPathFields,
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
+        ssl_context: SSLContext = _default_sslcontext,
     ) -> None:
         super().__init__(
             aiohttp_session=aiohttp_session,
@@ -680,6 +682,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
             path_fields=path_fields,
             query_fields=query_fields,
             accept_types=accept_types,
+            ssl_context=ssl_context,
         )
         self._pending_follow_ups = []
         self._awaiting_requests = []
