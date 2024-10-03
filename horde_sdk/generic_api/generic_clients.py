@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import os
+import ssl
 from abc import ABC
+from ssl import SSLContext
 from typing import Any, TypeVar
 
 import aiohttp
+import certifi
 import requests
 from loguru import logger
 from pydantic import BaseModel, ValidationError
@@ -31,6 +34,9 @@ from horde_sdk.generic_api.metadata import (
     GenericPathFields,
     GenericQueryFields,
 )
+
+_default_sslcontext = ssl.create_default_context(cafile=certifi.where())
+"""The default SSL context to use for aiohttp requests."""
 
 
 class ParsedRawRequest(BaseModel):
@@ -59,6 +65,7 @@ class BaseHordeAPIClient(ABC):
 
     # region Private Fields
     _aiohttp_session: aiohttp.ClientSession
+    _ssl_context: SSLContext
 
     _apikey: str | None
 
@@ -82,6 +89,7 @@ class BaseHordeAPIClient(ABC):
         path_fields: type[GenericPathFields] = GenericPathFields,
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
+        ssl_context: SSLContext = _default_sslcontext,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """Initialize a new `GenericHordeAPIClient` instance.
@@ -103,6 +111,11 @@ class BaseHordeAPIClient(ABC):
             TypeError: If any of the passed types are not subclasses of their respective `Generic*` class.
         """
         self._apikey = apikey
+
+        if not isinstance(ssl_context, SSLContext):
+            raise TypeError("`ssl_context` must be of type `SSLContext`!")
+
+        self._ssl_context = ssl_context
 
         if not self._apikey:
             self._apikey = ANON_API_KEY
@@ -445,6 +458,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
                 params=parsed_request.request_queries,
                 json=parsed_request.request_body,
                 allow_redirects=True,
+                ssl=self._ssl_context,
             ) as response,
         ):
             raw_response_json = await response.json()
