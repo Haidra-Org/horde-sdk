@@ -8,7 +8,7 @@ import aiofiles
 import aiohttp
 from loguru import logger
 
-from horde_sdk import ANON_API_KEY
+from horde_sdk import ANON_API_KEY, _default_sslcontext
 from horde_sdk.ai_horde_api import AIHordeAPIAsyncManualClient
 from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest, ImageGenerateStatusRequest
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
@@ -90,7 +90,7 @@ async def main(apikey: str = ANON_API_KEY) -> None:
 
             image_bytes = None
             # image_gen.img is a url, download it using aiohttp.
-            async with aiohttp.ClientSession() as session, session.get(image_gen.img) as resp:
+            async with aiohttp.ClientSession() as session, session.get(image_gen.img, ssl=_default_sslcontext) as resp:
                 image_bytes = await resp.read()
 
             if image_bytes is None:

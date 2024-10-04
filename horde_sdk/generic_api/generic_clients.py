@@ -4,19 +4,18 @@ from __future__ import annotations
 
 import asyncio
 import os
-import ssl
 from abc import ABC
 from ssl import SSLContext
 from typing import Any, TypeVar
 
 import aiohttp
-import certifi
 import requests
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 from strenum import StrEnum
 from typing_extensions import override
 
+from horde_sdk import _default_sslcontext
 from horde_sdk.ai_horde_api.exceptions import AIHordePayloadValidationError
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
@@ -35,7 +34,6 @@ from horde_sdk.generic_api.metadata import (
     GenericQueryFields,
 )
 
-_default_sslcontext = ssl.create_default_context(cafile=certifi.where())
 """The default SSL context to use for aiohttp requests."""
 
 
