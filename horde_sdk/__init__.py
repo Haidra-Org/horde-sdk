@@ -2,6 +2,8 @@
 
 # isort: off
 # We import dotenv first so that we can use it to load environment variables before importing anything else.
+import ssl
+import certifi
 import dotenv
 
 # If the current working directory contains a `.env` file, import the environment variables from it.
@@ -59,7 +61,7 @@ def _dev_env_var_warnings() -> None:  # pragma: no cover
 
 
 _dev_env_var_warnings()
-
+_default_sslcontext = ssl.create_default_context(cafile=certifi.where())
 
 from horde_sdk.consts import (
     PAYLOAD_HTTP_METHODS,
@@ -109,4 +111,5 @@ __all__ = [
     "PROGRESS_LOGGER_LABEL",
     "COMPLETE_LOGGER_LABEL",
     "HordeException",
+    "_default_sslcontext",
 ]

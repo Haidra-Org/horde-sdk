@@ -13,6 +13,7 @@ from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing_extensions import override
 
+from horde_sdk import _default_sslcontext
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
@@ -256,7 +257,7 @@ class ResponseRequiringDownloadMixin(HordeAPIDataObject):
 
     async def download_file_as_base64(self, client_session: aiohttp.ClientSession, url: str) -> str:
         """Download a file and return the value as a base64 string."""
-        async with client_session.get(url) as response:
+        async with client_session.get(url, ssl=_default_sslcontext) as response:
             response.raise_for_status()
             return base64.b64encode(await response.read()).decode("utf-8")
 
@@ -273,7 +274,7 @@ class ResponseRequiringDownloadMixin(HordeAPIDataObject):
             url (str): The URL to download the file from.
             field_name (str): The name of the field to save the file to.
         """
-        async with client_session.get(url) as response:
+        async with client_session.get(url, ssl=_default_sslcontext) as response:
             response.raise_for_status()
             setattr(self, field_name, base64.b64encode(await response.read()).decode("utf-8"))
 
