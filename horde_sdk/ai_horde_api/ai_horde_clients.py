@@ -18,7 +18,7 @@ import PIL.Image
 import requests
 from loguru import logger
 
-from horde_sdk import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL
+from horde_sdk import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL, _default_sslcontext
 from horde_sdk.ai_horde_api.apimodels import (
     AIHordeHeartbeatRequest,
     AIHordeHeartbeatResponse,
@@ -79,7 +79,6 @@ from horde_sdk.generic_api.generic_clients import (
     GenericAsyncHordeAPISession,
     GenericHordeAPIManualClient,
     GenericHordeAPISession,
-    _default_sslcontext,
 )
 
 
@@ -1290,7 +1289,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
 
         image_bytes: bytes | None = None
         if urllib.parse.urlparse(generation.img).scheme in ["http", "https"]:
-            async with self._aiohttp_session.get(generation.img) as response:
+            async with self._aiohttp_session.get(generation.img, ssl=_default_sslcontext) as response:
                 if response.status != 200:  # pragma: no cover
                     logger.error(f"Error downloading image: {response.status}")
                     response.raise_for_status()
@@ -1326,7 +1325,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         if self._aiohttp_session is None:
             raise RuntimeError("No aiohttp session provided but an async request was made.")
 
-        async with self._aiohttp_session.get(url) as response:
+        async with self._aiohttp_session.get(url, ssl=_default_sslcontext) as response:
             if response.status != 200:  # pragma: no cover
                 logger.error(f"Error downloading image: {response.status}")
                 response.raise_for_status()
