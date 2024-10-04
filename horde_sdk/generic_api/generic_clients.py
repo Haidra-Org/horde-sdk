@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import asyncio
 import os
-import ssl
 from abc import ABC
 from ssl import SSLContext
 from typing import Any, TypeVar
 
 import aiohttp
-import certifi
 import requests
 from loguru import logger
 from pydantic import BaseModel, ValidationError
