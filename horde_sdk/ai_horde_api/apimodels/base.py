@@ -199,7 +199,9 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
     """
 
     model_config = (
-        ConfigDict(frozen=True) if not os.getenv("TESTS_ONGOING") else ConfigDict(frozen=True, extra="forbid")
+        ConfigDict(frozen=True, extra="allow")
+        if not os.getenv("TESTS_ONGOING")
+        else ConfigDict(frozen=True, extra="forbid")
     )
 
     sampler_name: KNOWN_SAMPLERS | str = KNOWN_SAMPLERS.k_lms
