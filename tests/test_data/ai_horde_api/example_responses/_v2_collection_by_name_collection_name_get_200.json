@@ -1,0 +1,13 @@
+{
+    "id": "",
+    "name": "a",
+    "type": "image",
+    "info": "a",
+    "public": true,
+    "styles": [
+        {
+            "name": "db0#1::style::my awesome style",
+            "id": "00000000-0000-0000-0000-000000000000"
+        }
+    ]
+}

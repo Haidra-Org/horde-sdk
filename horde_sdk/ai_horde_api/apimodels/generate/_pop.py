@@ -232,6 +232,8 @@ class ImageGenerateJobPopResponse(
     """(Obsolete) The r2 upload link to use to upload this image."""
     r2_uploads: list[str] | None = None
     """The r2 upload links for each this image. Each index matches the ID in self.ids"""
+    ttl: int | None = None
+    """The amount of seconds before this job is considered stale and aborted."""
 
     @field_validator("source_processing")
     def source_processing_must_be_known(cls, v: str | KNOWN_SOURCE_PROCESSING) -> str | KNOWN_SOURCE_PROCESSING:

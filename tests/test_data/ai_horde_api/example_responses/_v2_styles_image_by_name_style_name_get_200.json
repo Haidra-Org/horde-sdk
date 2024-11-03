@@ -1,5 +1,7 @@
 {
-    "prompt": "a",
+    "name": "My Awesome Image Style",
+    "info": "photorealism excellence.",
+    "prompt": "{p}{np}",
     "params": {
         "sampler_name": "k_euler",
         "cfg_scale": 7.5,
@@ -38,49 +40,23 @@
         },
         "workflow": "qr_code",
         "transparent": false,
-        "seed": "The little seed that could",
-        "seed_variation": 1,
-        "control_type": "canny",
-        "image_is_control": false,
-        "return_control_map": false,
-        "extra_texts": [
-            {
-                "text": "a",
-                "reference": "aaa"
-            }
-        ],
-        "steps": 30,
-        "n": 1
+        "steps": 30
     },
+    "public": true,
     "nsfw": false,
-    "trusted_workers": false,
-    "validated_backends": true,
-    "slow_workers": true,
-    "extra_slow_workers": false,
-    "censor_nsfw": false,
-    "workers": [
-        ""
+    "tags": [
+        "photorealistic"
     ],
-    "worker_blacklist": false,
     "models": [
-        ""
+        "stable_diffusion"
     ],
-    "source_image": "",
-    "source_processing": "img2img",
-    "source_mask": "",
-    "extra_source_images": [
+    "id": "00000000-0000-0000-0000-000000000000",
+    "creator": "db0#1",
+    "examples": [
         {
-            "image": "a",
-            "strength": 1.0
+            "url": "https://lemmy.dbzer0.com/pictrs/image/c9915186-ca30-4f5a-873c-a91287fb4419.webp",
+            "primary": false,
+            "id": "00000000-0000-0000-0000-000000000000"
         }
-    ],
-    "r2": true,
-    "shared": false,
-    "replacement_filter": true,
-    "dry_run": false,
-    "proxied_account": "",
-    "disable_batching": false,
-    "allow_downgrade": false,
-    "webhook": "https://haidra.net/00000000-0000-0000-0000-000000000000",
-    "style": "00000000-0000-0000-0000-000000000000"
+    ]
 }

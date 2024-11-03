@@ -444,6 +444,13 @@
                 "int",
                 "None"
             ]
+        },
+        "styles": {
+            "description": "The styles this user has created.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels._styles.ResponseModelStylesUser]",
+                "None"
+            ]
         }
     },
     "HordePerformanceResponse": {
@@ -724,6 +731,13 @@
             "description": "The r2 upload links for each this image. Each index matches the ID in self.ids",
             "types": [
                 "list[str]",
+                "None"
+            ]
+        },
+        "ttl": {
+            "description": "The amount of seconds before this job is considered stale and aborted.",
+            "types": [
+                "int",
                 "None"
             ]
         }
@@ -1306,6 +1320,13 @@
             "description": "The model requested for this generation.",
             "types": [
                 "str",
+                "None"
+            ]
+        },
+        "ttl": {
+            "description": "The amount of seconds before this job is considered stale and aborted.",
+            "types": [
+                "int",
                 "None"
             ]
         }
