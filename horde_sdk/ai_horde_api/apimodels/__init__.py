@@ -44,6 +44,7 @@ from horde_sdk.ai_horde_api.apimodels._status import (
     NewsRequest,
     NewsResponse,
 )
+from horde_sdk.ai_horde_api.apimodels._styles import ResponseModelStylesUser
 from horde_sdk.ai_horde_api.apimodels._users import (
     ActiveGenerations,
     ContributionsDetails,
@@ -210,6 +211,7 @@ __all__ = [
     "Newspiece",
     "NewsRequest",
     "NewsResponse",
+    "ResponseModelStylesUser",
     "ListUsersDetailsRequest",
     "ListUsersDetailsResponse",
     "ModifyUser",

@@ -58,6 +58,7 @@ class HordeAPIDataObject(BaseModel):
         ConfigDict(
             frozen=True,
             use_attribute_docstrings=True,
+            extra="allow",
         )
         if not os.getenv("TESTS_ONGOING")
         else ConfigDict(
@@ -98,7 +99,9 @@ class HordeResponseBaseModel(HordeResponse, BaseModel):
     """Base class for all Horde API response data models (leveraging pydantic)."""
 
     model_config = (
-        ConfigDict(frozen=True) if not os.getenv("TESTS_ONGOING") else ConfigDict(frozen=True, extra="forbid")
+        ConfigDict(frozen=True, extra="allow")
+        if not os.getenv("TESTS_ONGOING")
+        else ConfigDict(frozen=True, extra="forbid")
     )
 
 

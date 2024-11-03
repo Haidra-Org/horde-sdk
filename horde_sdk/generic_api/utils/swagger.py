@@ -449,7 +449,12 @@ class SwaggerDoc(BaseModel):
         # Iterate through each defined response for the HTTP method.
         for http_status_code_str, response_definition in endpoint_method_definition.responses.items():
             # Convert the HTTP status code string to an HTTPStatusCode object.
-            http_status_code_object = HTTPStatusCode(int(http_status_code_str))
+            try:
+                http_status_code_object = HTTPStatusCode(int(http_status_code_str))
+            except ValueError as e:
+                logger.error(f"Failed to convert {http_status_code_str} to an HTTPStatusCode object: {e}")
+                logger.error(f"response_definition: {response_definition}")
+                raise
 
             # Get the response example for this HTTP status code.
             example_response = self.get_response_example(response_definition)

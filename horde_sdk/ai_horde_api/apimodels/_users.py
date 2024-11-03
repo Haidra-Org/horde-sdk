@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import Field, RootModel
 from typing_extensions import override
 
+from horde_sdk.ai_horde_api.apimodels._styles import ResponseModelStylesUser
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import UUID_Identifier
@@ -52,6 +53,9 @@ class UserKudosDetails(HordeAPIDataObject):
     recurring: float | None = Field(0)
     """The amount of Kudos this user has received from recurring rewards."""
 
+    styled: float | None = Field(0)
+    """The amount of Kudos this user has received from styling images."""
+
 
 class MonthlyKudos(HordeAPIDataObject):
     amount: int | None = Field(default=None)
@@ -85,6 +89,7 @@ class UserRecords(HordeAPIDataObject):
     fulfillment: UserAmountRecords | None = None
     request: UserAmountRecords | None = None
     usage: UserThingRecords | None = None
+    style: UserAmountRecords | None = None
 
 
 class UsageDetails(HordeAPIDataObject):
@@ -263,6 +268,9 @@ class UserDetailsResponse(HordeResponseBaseModel):
     )
     """Whether this user has been invited to join a worker to the horde and how many of them.
     When 0, this user cannot add (new) workers to the horde."""
+
+    styles: list[ResponseModelStylesUser] | None = None
+    """The styles this user has created."""
 
 
 @Unhashable

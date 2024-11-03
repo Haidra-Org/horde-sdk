@@ -14,11 +14,19 @@
             "admin": 0,
             "received": 0,
             "recurring": 0,
-            "awarded": 0
+            "awarded": 0,
+            "styled": 0
         },
         "worker_count": 0,
         "worker_ids": [
             "00000000-0000-0000-0000-000000000000"
+        ],
+        "styles": [
+            {
+                "name": "db0#1::style::my awesome style",
+                "id": "00000000-0000-0000-0000-000000000000",
+                "type": "image"
+            }
         ],
         "sharedkey_ids": [
             "00000000-0000-0000-0000-000000000000"
@@ -73,6 +81,11 @@
                 "interrogation": 0
             },
             "request": {
+                "image": 0,
+                "text": 0,
+                "interrogation": 0
+            },
+            "style": {
                 "image": 0,
                 "text": 0,
                 "interrogation": 0

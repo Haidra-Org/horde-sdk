@@ -60,6 +60,8 @@ class TextGenerateJobPopResponse(
     """The soft prompt requested for this generation."""
     model: str | None = Field(default=None)
     """The model requested for this generation."""
+    ttl: int | None = None
+    """The amount of seconds before this job is considered stale and aborted."""
 
     @field_validator("id_", mode="before")
     def validate_id(cls, v: str | JobID) -> JobID | str:

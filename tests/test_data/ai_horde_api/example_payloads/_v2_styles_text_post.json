@@ -1,5 +1,7 @@
 {
-    "prompt": "",
+    "name": "My Awesome Text Style",
+    "info": "Dark, brooding vibes",
+    "prompt": "{p}",
     "params": {
         "frmtadsnsp": false,
         "frmtrmblln": false,
@@ -25,33 +27,14 @@
         "min_p": 0.0,
         "smoothing_factor": 0.0,
         "dynatemp_range": 0.0,
-        "dynatemp_exponent": 1.0,
-        "n": 1,
-        "max_context_length": 1024,
-        "max_length": 80
+        "dynatemp_exponent": 1.0
     },
-    "softprompt": "a",
-    "trusted_workers": false,
-    "validated_backends": true,
-    "slow_workers": true,
-    "workers": [
-        ""
+    "public": true,
+    "nsfw": false,
+    "tags": [
+        "dark"
     ],
-    "worker_blacklist": false,
     "models": [
-        ""
-    ],
-    "dry_run": false,
-    "proxied_account": "",
-    "extra_source_images": [
-        {
-            "image": "a",
-            "strength": 1.0
-        }
-    ],
-    "disable_batching": false,
-    "allow_downgrade": false,
-    "webhook": "",
-    "style": "00000000-0000-0000-0000-000000000000",
-    "extra_slow_workers": false
+        "llama3"
+    ]
 }
