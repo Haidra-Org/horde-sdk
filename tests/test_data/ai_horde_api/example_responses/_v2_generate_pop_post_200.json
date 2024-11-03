@@ -1,13 +1,11 @@
 {
     "payload": {
-        "sampler_name": "k_dpm_adaptive",
+        "sampler_name": "k_euler",
         "cfg_scale": 7.5,
         "denoising_strength": 0.75,
         "hires_fix_denoising_strength": 0.75,
-        "seed": "The little seed that could",
         "height": 512,
         "width": 512,
-        "seed_variation": 1,
         "post_processing": [
             "GFPGAN"
         ],
@@ -15,9 +13,6 @@
         "tiling": false,
         "hires_fix": false,
         "clip_skip": 1,
-        "control_type": "canny",
-        "image_is_control": false,
-        "return_control_map": false,
         "facefixer_strength": 0.75,
         "loras": [
             {
@@ -40,14 +35,19 @@
             "additionalProp2": {},
             "additionalProp3": {}
         },
+        "workflow": "qr_code",
+        "transparent": false,
+        "seed": "The little seed that could",
+        "seed_variation": 1,
+        "control_type": "canny",
+        "image_is_control": false,
+        "return_control_map": false,
         "extra_texts": [
             {
                 "text": "a",
                 "reference": "aaa"
             }
         ],
-        "workflow": "qr_code",
-        "transparent": false,
         "prompt": "",
         "ddim_steps": 30,
         "n_iter": 1,
@@ -57,6 +57,7 @@
     "ids": [
         "00000000-0000-0000-0000-000000000000"
     ],
+    "ttl": 0,
     "skipped": {
         "worker_id": 0.0,
         "performance": 0.0,
