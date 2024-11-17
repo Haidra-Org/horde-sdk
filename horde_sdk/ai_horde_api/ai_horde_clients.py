@@ -1054,7 +1054,6 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         """Update a worker.
 
         Args:
-            worker_id (WorkerID): The ID of the worker to update.
             modify_worker_request (ModifyWorkerRequest): The request to update the worker.
 
         Returns:
@@ -1760,7 +1759,6 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         """Update a worker.
 
         Args:
-            worker_id (WorkerID): The ID of the worker to update.
             modify_worker_request (ModifyWorkerRequest): The request to update the worker.
 
         Returns:
