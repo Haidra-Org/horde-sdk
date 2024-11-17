@@ -2,6 +2,15 @@ site_name: Horde SDK Documentation
 
 plugins:
 - search
+- mermaid2:
+    version: '10.1.0'
+    arguments:
+        theme: 'dark'
+        themeVariables:
+            darkMode: true
+            fontSize: 24
+            primaryColor: '#ff0000'
+
 - awesome-pages
 - autorefs
 - mkdocstrings:
@@ -21,10 +30,18 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      # make exceptions to highlighting of code:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid_custom
 
 theme:
   name: material
+  language: en
+  palette:
+    scheme: slate
 
 extra_css:
   - stylesheets/extra.css
