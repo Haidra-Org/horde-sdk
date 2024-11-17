@@ -1,3 +1,6 @@
+.md-grid {
+    max-width: 73rem;
+}
 .doc-object-name {
     font-weight: bold;
     letter-spacing: 0.0em;
