@@ -3,7 +3,13 @@ nav:
     - getting_started.md
     - faq.md
     - examples.md
-    - api_to_sdk_map.md
+    - AI-Horde:
+        - API Model to SDK Class Map: api_to_sdk_map.md
+        - AI Horde Request/Job Lifecycle: haidra-assets/docs/workers
+        - Worker Loop Diagram: haidra-assets/docs/worker_loop
+        - Kudos Explanation: haidra-assets/docs/kudos
+        - Motivations: haidra-assets/docs/why
+        - Definitions: haidra-assets/docs/definitions
     - horde_sdk
     - GitHub Repo: 'https://github.com/Haidra-Org/horde-sdk'
 
