@@ -32,6 +32,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
             return v
 
         if v == "":  # FIXME? This is a workaround for the swagger doc having `""`
+            logger.trace("Empty UUID string being converted to 0")
             return uuid.UUID(int=0)
 
         try:
