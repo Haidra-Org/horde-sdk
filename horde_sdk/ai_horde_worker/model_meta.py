@@ -30,12 +30,15 @@ class ImageModelLoadResolver:
         self,
         possible_meta_instructions: list[str],
         client: AIHordeAPIManualClient,
+        *,
+        load_large_models: bool = True,
     ) -> set[str]:
         """Return a set of model names based on the given meta instructions.
 
         Args:
             possible_meta_instructions: A list of strings representing meta instructions.
             client: An AIHordeAPIManualClient object to use for making requests.
+            load_large_models: A boolean representing whether to load large models.
 
         Returns:
             A set of strings representing the names of models to load.
@@ -132,8 +135,10 @@ class ImageModelLoadResolver:
             ):
                 return_list.extend(self.resolve_all_nsfw_model_names())
 
-        # If no valid meta instruction were found, return None
-        return self.remove_large_models(set(return_list))
+        if not load_large_models:
+            return self.remove_large_models(set(return_list))
+
+        return set(return_list)
 
     @staticmethod
     def meta_instruction_regex_match(instruction: str, target_string: str) -> re.Match[str] | None:
@@ -149,15 +154,23 @@ class ImageModelLoadResolver:
         """
         return re.match(instruction, target_string, re.IGNORECASE)
 
-    def remove_large_models(self, models: set[str]) -> set[str]:
+    def remove_large_models(
+        self,
+        models: set[str],
+        load_large_models: bool = True,
+    ) -> set[str]:
         """Remove large models from the input set of models."""
         AI_HORDE_MODEL_META_LARGE_MODELS = os.getenv("AI_HORDE_MODEL_META_LARGE_MODELS")
-        if not AI_HORDE_MODEL_META_LARGE_MODELS:
+        if not AI_HORDE_MODEL_META_LARGE_MODELS or not load_large_models:
             cascade_models = self.resolve_all_models_of_baseline(STABLE_DIFFUSION_BASELINE_CATEGORY.stable_cascade)
             flux_models = self.resolve_all_models_of_baseline(STABLE_DIFFUSION_BASELINE_CATEGORY.flux_1)
 
-            logger.debug(f"Removing cascade models: {cascade_models}")
-            logger.debug(f"Removing flux models: {flux_models}")
+            if not AI_HORDE_MODEL_META_LARGE_MODELS:
+                logger.debug(
+                    "Loading of large models is disabled with `AI_HORDE_MODEL_META_LARGE_MODELS`. "
+                    f"Removing {len(cascade_models) + len(flux_models)} models. "
+                    f"({cascade_models}, {flux_models})",
+                )
             models = models - cascade_models - flux_models
         return models
 
