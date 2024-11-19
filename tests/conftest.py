@@ -51,6 +51,7 @@ def check_tests_ongoing_env_var() -> None:
 
 @pytest.fixture(scope="session")
 def ai_horde_api_key() -> str:
+    """Return the key being used for testing against an AI Horde API."""
     dev_key = os.getenv("AI_HORDE_DEV_APIKEY", None)
 
     return dev_key if dev_key is not None else ANON_API_KEY
@@ -58,6 +59,7 @@ def ai_horde_api_key() -> str:
 
 @pytest.fixture(scope="function")
 def simple_image_gen_request(ai_horde_api_key: str) -> ImageGenerateAsyncRequest:
+    """Return a simple `ImageGenerateAsyncRequest` instance with minimal arguments set."""
     return ImageGenerateAsyncRequest(
         apikey=ai_horde_api_key,
         prompt="a cat in a hat",
@@ -71,6 +73,7 @@ def simple_image_gen_request(ai_horde_api_key: str) -> ImageGenerateAsyncRequest
 
 @pytest.fixture(scope="function")
 def simple_image_gen_n_requests(ai_horde_api_key: str) -> ImageGenerateAsyncRequest:
+    """Return a simple `ImageGenerateAsyncRequest` instance with minimal arguments set, but with n==3."""
     return ImageGenerateAsyncRequest(
         apikey=ai_horde_api_key,
         prompt="a cat in a hat",
@@ -102,11 +105,13 @@ def _single_id() -> GenerationID:
 
 @pytest.fixture(scope="function")
 def single_id() -> GenerationID:
+    """Return a new UUID for each call."""
     return _single_id()
 
 
 @pytest.fixture(scope="function")
 def id_factory() -> Callable[[], GenerationID]:
+    """Return a function that generates a new UUID for each call."""
     return _single_id
 
 
@@ -114,6 +119,7 @@ def id_factory() -> Callable[[], GenerationID]:
 def simple_image_gen_response(
     single_id: UUID,
 ) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance with no arguments set and a new ID."""
     return ImageGenerateJobPopResponse(
         ids=[single_id],
         payload=ImageGenerateJobPopPayload(),
