@@ -8,10 +8,13 @@ import horde_sdk
 import horde_sdk.ai_horde_api
 import horde_sdk.ai_horde_api.apimodels
 import horde_sdk.ai_horde_worker
+import horde_sdk.generic_api
+import horde_sdk.generic_api.apimodels
 import horde_sdk.ratings_api
 import horde_sdk.ratings_api.apimodels
 from horde_sdk import HordeAPIObject, HordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH, get_ai_horde_swagger_url
+from horde_sdk.generic_api.apimodels import HordeAPIData
 from horde_sdk.generic_api.utils.swagger import SwaggerParser
 
 
@@ -123,7 +126,7 @@ def all_unaddressed_endpoints_ai_horde() -> set[AI_HORDE_API_ENDPOINT_SUBPATH]:
     known_paths.remove(AI_HORDE_API_ENDPOINT_SUBPATH.swagger)
     unaddressed_paths = set()
 
-    all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
+    all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeRequest)
 
     all_classes_paths = {cls.get_api_endpoint_subpath() for cls in all_classes if issubclass(cls, HordeRequest)}
 
@@ -138,6 +141,7 @@ def all_unaddressed_endpoints_ai_horde() -> set[AI_HORDE_API_ENDPOINT_SUBPATH]:
 def all_models_missing_docstrings() -> set[type]:
     """Return all of the models that do not have docstrings."""
     all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
+    all_classes += find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIData)
 
     missing_docstrings = set()
 
@@ -150,7 +154,10 @@ def all_models_missing_docstrings() -> set[type]:
 
 def all_model_and_fields_missing_docstrings() -> dict[type, set[str]]:
     """Return all of the models' fields that do not have docstrings."""
-    all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
+    all_classes = find_subclasses(horde_sdk.generic_api.apimodels, HordeAPIObject)
+    all_classes += find_subclasses(horde_sdk.generic_api.apimodels, HordeAPIData)
+    all_classes += find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
+    all_classes += find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIData)
 
     missing_docstrings: dict[type, set[str]] = {}
 

@@ -10,10 +10,10 @@ from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import JobID, WorkerID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import HordeAPIObject, HordeResponseBaseModel, ResponseWithProgressMixin
+from horde_sdk.generic_api.apimodels import HordeAPIObjectBaseModel, HordeResponseBaseModel, ResponseWithProgressMixin
 
 
-class Generation(HordeAPIObject):
+class Generation(HordeAPIObjectBaseModel):
     model: str = Field(title="Generation Model")
     """The model which generated this image."""
     state: GENERATION_STATE = Field(

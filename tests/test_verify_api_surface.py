@@ -27,7 +27,7 @@ def test_all_ai_horde_api_data_objects_imported() -> None:
 
     unimported_classes, missing_imports = horde_sdk.meta.any_unimported_classes(
         horde_sdk.ai_horde_api.apimodels,
-        horde_sdk.generic_api.apimodels.HordeAPIDataObject,
+        horde_sdk.generic_api.apimodels.HordeAPIData,
     )
 
     missing_import_names = {cls.__name__ for cls in missing_imports}
@@ -39,7 +39,7 @@ def test_all_ai_horde_api_data_objects_imported() -> None:
     )
 
 
-@pytest.mark.skip(reason="This test is not yet enforced.")
+# @pytest.mark.skip(reason="This test is not yet enforced.")
 @pytest.mark.object_verify
 def test_all_ai_horde_api_models_defined() -> None:
     import horde_sdk.ai_horde_api.apimodels
@@ -83,7 +83,7 @@ def test_all_ai_horde_endpoints_known() -> None:
     )
 
 
-@pytest.mark.skip(reason="This test is not yet enforced.")
+# @pytest.mark.skip(reason="This test is not yet enforced.")
 @pytest.mark.object_verify
 def test_all_ai_horde_endpoints_addressed() -> None:
     from horde_sdk.meta import all_unaddressed_endpoints_ai_horde

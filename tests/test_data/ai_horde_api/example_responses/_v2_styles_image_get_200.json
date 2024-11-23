@@ -52,6 +52,7 @@
             "stable_diffusion"
         ],
         "id": "00000000-0000-0000-0000-000000000000",
+        "use_count": 0,
         "creator": "db0#1",
         "examples": [
             {

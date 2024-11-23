@@ -22,6 +22,8 @@ from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     HordeRequest,
     HordeResponse,
+    HordeResponseBaseModel,
+    HordeResponseRootModel,
     RequestErrorResponse,
     ResponseRequiringFollowUpMixin,
     ResponseWithProgressMixin,
@@ -52,9 +54,13 @@ class ParsedRawRequest(BaseModel):
     """The body to be sent with the request, or `None` if no body should be sent."""
 
 
+# Can be a BaseModel or RootModel
 HordeRequestTypeVar = TypeVar("HordeRequestTypeVar", bound=HordeRequest)
 """TypeVar for the horde request type."""
-HordeResponseTypeVar = TypeVar("HordeResponseTypeVar", bound=HordeResponse)
+HordeResponseTypeVar = TypeVar(
+    "HordeResponseTypeVar",
+    bound=HordeResponseBaseModel | HordeResponseRootModel[Any],
+)
 """TypeVar for the horde response type."""
 
 
@@ -483,7 +489,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
     or anything labeled as `async` on the API.
     """
 
-    _pending_follow_ups: list[tuple[HordeRequest, HordeResponse, list[HordeRequest] | None]]
+    _pending_follow_ups: list[tuple[HordeRequest, HordeResponseBaseModel, list[HordeRequest] | None]]
     """A `list` of 3-tuples containing the request, response, and a clean-up request for any requests which might need
     it."""
 
@@ -596,14 +602,14 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
     def _handle_exit(
         self,
         request_to_follow_up: HordeRequest,  # The request that is ending prematurely.
-        response_to_follow_up: HordeResponse,  # The response to the request that is ending prematurely.
+        response_to_follow_up: HordeResponseBaseModel,  # The response to the request that is ending prematurely.
         cleanup_requests: list[HordeRequest] | None,  # The request to clean up after the premature ending, if any.
     ) -> bool:
         """Send any follow up requests needed to clean up after a request which is ending prematurely.
 
         Args:
             request_to_follow_up (HordeRequest): The request which is ending prematurely.
-            response_to_follow_up (HordeResponse): The response to the request which is ending prematurely.
+            response_to_follow_up (HordeResponseTypeVar): The response to the request which is ending prematurely.
             cleanup_requests (HordeRequest | None): The request to clean up after the premature ending, if any.
 
         Returns:

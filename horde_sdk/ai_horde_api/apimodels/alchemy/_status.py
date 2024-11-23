@@ -8,7 +8,7 @@ from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    HordeAPIDataObject,
+    HordeAPIData,
     HordeResponseBaseModel,
     ResponseWithProgressMixin,
 )
@@ -16,56 +16,73 @@ from horde_sdk.generic_api.apimodels import (
 # FIXME: All vs API models defs? (override get_api_model_name and add to docstrings)
 
 
-class AlchemyUpscaleResult(HordeAPIDataObject):
+class AlchemyUpscaleResult(HordeAPIData):
     """Represents the result of an upscale job."""
 
     upscaler_used: KNOWN_UPSCALERS | str
+    """The upscaler used."""
     url: str
+    """The URL of the upscaled image."""
 
 
-class AlchemyCaptionResult(HordeAPIDataObject):
+class AlchemyCaptionResult(HordeAPIData):
     """Represents the result of a caption job."""
 
     caption: str
+    """The resulting caption of the image."""
 
 
-class AlchemyNSFWResult(HordeAPIDataObject):
+class AlchemyNSFWResult(HordeAPIData):
     """Represents the result of an NSFW evaluation."""
 
     nsfw: bool
+    """Whether the image is likely to be NSFW."""
 
 
-class AlchemyInterrogationResultItem(HordeAPIDataObject):
+class AlchemyInterrogationResultItem(HordeAPIData):
     """Represents an item in the result of an interrogation job."""
 
     text: str
+    """The text of the item."""
     confidence: float
+    """The confidence of the item."""
 
 
-class AlchemyInterrogationDetails(HordeAPIDataObject):
+class AlchemyInterrogationDetails(HordeAPIData):
     """The details of an interrogation job."""
 
     tags: list[AlchemyInterrogationResultItem]
+    """The resulting similar tags of the image."""
     sites: list[AlchemyInterrogationResultItem]
+    """The resulting similar sites of the image."""
     artists: list[AlchemyInterrogationResultItem]
+    """The resulting similar artists of the image."""
     flavors: list[AlchemyInterrogationResultItem]
+    """The resulting similar flavors of the image."""
     mediums: list[AlchemyInterrogationResultItem]
+    """The resulting similar mediums of the image."""
     movements: list[AlchemyInterrogationResultItem]
+    """The resulting similar movements of the image."""
     techniques: list[AlchemyInterrogationResultItem]
+    """The resulting similar techniques of the image."""
 
 
-class AlchemyInterrogationResult(HordeAPIDataObject):
+class AlchemyInterrogationResult(HordeAPIData):
     """Represents the result of an interrogation job. Use the `interrogation` field for the details."""
 
     interrogation: AlchemyInterrogationDetails
+    """The details of the interrogation."""
 
 
-class AlchemyFormStatus(HordeAPIDataObject):
+class AlchemyFormStatus(HordeAPIData):
     """Represents the status of a form in an interrogation job."""
 
     form: KNOWN_ALCHEMY_TYPES | str
+    """The form type."""
     state: GENERATION_STATE
+    """The state of the form."""
     result: AlchemyInterrogationDetails | AlchemyNSFWResult | AlchemyCaptionResult | AlchemyUpscaleResult | None = None
+    """The result of the form."""
 
     @field_validator("form", mode="before")
     def validate_form(cls, v: str | KNOWN_ALCHEMY_TYPES) -> KNOWN_ALCHEMY_TYPES | str:

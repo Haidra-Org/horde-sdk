@@ -20,8 +20,8 @@ from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
     HordeAPIObject,
-    HordeResponse,
     HordeResponseBaseModel,
+    HordeResponseTypes,
     RequestUsesWorkerMixin,
     ResponseRequiringFollowUpMixin,
 )
@@ -194,7 +194,7 @@ class ImageGenerateAsyncRequest(
 
     @override
     @classmethod
-    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponse]]:
+    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponseTypes]]:
         return {
             HTTPStatusCode.OK: ImageGenerateAsyncDryRunResponse,
             HTTPStatusCode.ACCEPTED: cls.get_default_success_response_type(),

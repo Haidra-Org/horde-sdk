@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import Field, RootModel
+from pydantic import Field
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels._styles import ResponseModelStylesUser
@@ -10,27 +10,40 @@ from horde_sdk.ai_horde_api.fields import UUID_Identifier
 from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    HordeAPIDataObject,
-    HordeResponse,
+    HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
+    HordeResponseRootModel,
     RequestSpecifiesUserIDMixin,
 )
 from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
-class ContributionsDetails(HordeAPIDataObject):
-    """How many images and megapixelsteps this user has generated."""
+class ContributionsDetails(HordeAPIObjectBaseModel):
+    """How many images and megapixelsteps this user has generated.
+
+    v2 API Model: ContributionsDetails
+    """
 
     fulfillments: int | None = Field(
         default=None,
     )
+    """How many images this user has generated."""
     megapixelsteps: float | None = Field(
         default=None,
     )
+    """How many megapixelsteps this user has generated."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ContributionsDetails"
 
 
-class UserKudosDetails(HordeAPIDataObject):
-    """The details of the kudos this user has accumulated, used, sent and received."""
+class UserKudosDetails(HordeAPIObjectBaseModel):
+    """The details of the kudos this user has accumulated, used, sent and received.
+
+    v2 API Model: UserKudosDetails
+    """
 
     accumulated: float | None = Field(0)
     """The amount of Kudos accumulated or used for generating images."""
@@ -56,24 +69,54 @@ class UserKudosDetails(HordeAPIDataObject):
     styled: float | None = Field(0)
     """The amount of Kudos this user has received from styling images."""
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "UserKudosDetails"
 
-class MonthlyKudos(HordeAPIDataObject):
+
+class MonthlyKudos(HordeAPIObjectBaseModel):
+    """The details of the monthly kudos this user receives.
+
+    v2 API Model: MonthlyKudos
+    """
+
     amount: int | None = Field(default=None)
     """How much recurring Kudos this user receives monthly."""
 
     last_received: datetime | None = Field(default=None)
     """Last date this user received monthly Kudos."""
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "MonthlyKudos"
 
-class UserThingRecords(HordeAPIDataObject):
+
+class UserThingRecords(HordeAPIObjectBaseModel):
+    """How many images, texts, megapixelsteps and tokens this user has generated or requested.
+
+    v2 API Model: UserThingRecords
+    """
+
     megapixelsteps: float | None = Field(0)
     """How many megapixelsteps this user has generated or requested."""
 
     tokens: int | None = Field(0)
     """How many token this user has generated or requested."""
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "UserThingRecords"
 
-class UserAmountRecords(HordeAPIDataObject):
+
+class UserAmountRecords(HordeAPIObjectBaseModel):
+    """How many images, texts, megapixelsteps and tokens this user has generated or requested.
+
+    v2 API Model: UserAmountRecords
+    """
+
     image: int | None = Field(0)
     """How many images this user has generated or requested."""
 
@@ -83,26 +126,61 @@ class UserAmountRecords(HordeAPIDataObject):
     text: int | None = Field(0)
     """How many texts this user has generated or requested."""
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "UserAmountRecords"
 
-class UserRecords(HordeAPIDataObject):
+
+class UserRecords(HordeAPIObjectBaseModel):
+    """How many images, texts, megapixelsteps, tokens and styles this user has generated, requested or has had used.
+
+    v2 API Model: UserRecords
+    """
+
     contribution: UserThingRecords | None = None
+    """How much this user has contributed."""
     fulfillment: UserAmountRecords | None = None
+    """How much this user has fulfilled."""
     request: UserAmountRecords | None = None
+    """How much this user has requested."""
     usage: UserThingRecords | None = None
+    """How much this user has used."""
     style: UserAmountRecords | None = None
+    """How much this user's styles have been used."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "UserRecords"
 
 
-class UsageDetails(HordeAPIDataObject):
+class UsageDetails(HordeAPIObjectBaseModel):
+    """How many images and megapixelsteps this user has requested.
+
+    v2 API Model: UsageDetails
+    """
+
     megapixelsteps: float | None = Field(default=None)
     """How many megapixelsteps this user has requested."""
 
     requests: int | None = Field(default=None)
     """How many images this user has requested."""
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "UsageDetails"
+
 
 @Unhashable
 @Unequatable
-class ActiveGenerations(HordeAPIDataObject):
+class ActiveGenerations(HordeAPIObjectBaseModel):
+    """A list of generations that are currently active for this user.
+
+    v2 API Model: ActiveGenerations
+    """
+
     """A list of generations that are currently active for this user."""
 
     text: list[UUID_Identifier] | None = None
@@ -114,10 +192,20 @@ class ActiveGenerations(HordeAPIDataObject):
     alchemy: list[UUID_Identifier] | None = None
     """The IDs of the alchemy generations that are currently active for this user."""
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ActiveGenerations"
+
 
 @Unhashable
 @Unequatable
 class UserDetailsResponse(HordeResponseBaseModel):
+    """The details of a user.
+
+    v2 API Model: UserDetails
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -275,7 +363,12 @@ class UserDetailsResponse(HordeResponseBaseModel):
 
 @Unhashable
 @Unequatable
-class ListUsersDetailsResponse(HordeResponse, RootModel[list[UserDetailsResponse]]):
+class ListUsersDetailsResponse(HordeResponseRootModel[list[UserDetailsResponse]]):
+    """The response for a list of user details.
+
+    v2 API Model: _ANONYMOUS_MODEL
+    """
+
     root: list[UserDetailsResponse]
     """The underlying list of user details."""
 
@@ -286,6 +379,8 @@ class ListUsersDetailsResponse(HordeResponse, RootModel[list[UserDetailsResponse
 
 
 class ListUsersDetailsRequest(BaseAIHordeRequest):
+    """Represents a request to list all users."""
+
     page: int
     """The page number to request. There are up to 25 users per page."""
 
@@ -341,7 +436,7 @@ class SingleUserDetailsRequest(BaseAIHordeRequest, RequestSpecifiesUserIDMixin):
         return UserDetailsResponse
 
 
-class _ModifyUserBase(HordeAPIDataObject):
+class _ModifyUserBase(HordeAPIObjectBaseModel):
     admin_comment: str | None = Field(
         default=None,
         max_length=500,
@@ -457,7 +552,7 @@ class ModifyUserReply(_ModifyUserBase):
     """The new amount of suspicion this user has."""
 
 
-class ModifyUserResponse(HordeResponse, ModifyUserReply):
+class ModifyUserResponse(HordeResponseBaseModel, ModifyUserReply):
     @override
     @classmethod
     def get_api_model_name(cls) -> str:
