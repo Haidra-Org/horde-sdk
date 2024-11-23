@@ -233,7 +233,7 @@
         }
     },
     "DeleteWorkerResponse": {
-        "deleted_id_": {
+        "deleted_id": {
             "description": "The ID of the deleted worker.",
             "types": [
                 "str",
@@ -1236,6 +1236,20 @@
             "description": "How many tokens this worker has generated until now. ",
             "types": [
                 "int",
+                "None"
+            ]
+        },
+        "controlnet": {
+            "description": "If True, this worker supports and allows controlnet requests.",
+            "types": [
+                "bool",
+                "None"
+            ]
+        },
+        "sdxl_controlnet": {
+            "description": "If True, this worker supports and allows sdxl controlnet requests.",
+            "types": [
+                "bool",
                 "None"
             ]
         }

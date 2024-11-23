@@ -7,7 +7,7 @@ from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
-    HordeAPIObject,
+    HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
 )
 
@@ -29,7 +29,7 @@ class HordeDocument(HordeResponseBaseModel):
         return "HordeDocument"
 
 
-class AIHordeDocumentRequestMixin(HordeAPIObject):
+class AIHordeDocumentRequestMixin(HordeAPIObjectBaseModel):
     format: DocumentFormat | str = DocumentFormat.html
 
     """The format of the document to return. Default is markdown."""
@@ -108,7 +108,7 @@ class AIHordeGetTermsRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin):
     @override
     @classmethod
     def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
-        return AI_HORDE_API_ENDPOINT_SUBPATH.vs_documents_terms
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_documents_terms
 
     @override
     @classmethod

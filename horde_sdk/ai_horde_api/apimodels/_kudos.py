@@ -3,10 +3,10 @@ from typing_extensions import override
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod
-from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, HordeResponse
+from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, HordeResponseBaseModel
 
 
-class KudosTransferResponse(HordeResponse):
+class KudosTransferResponse(HordeResponseBaseModel):
     transferred: float | None = None
     """The amount of Kudos transferred."""
 

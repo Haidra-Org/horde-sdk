@@ -17,9 +17,9 @@ from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
-    HordeAPIDataObject,
-    HordeResponse,
+    HordeAPIData,
     HordeResponseBaseModel,
+    HordeResponseTypes,
     ResponseRequiringFollowUpMixin,
 )
 
@@ -64,8 +64,9 @@ class AlchemyAsyncResponse(
         return AlchemyDeleteRequest
 
 
-class AlchemyAsyncRequestFormItem(HordeAPIDataObject):
+class AlchemyAsyncRequestFormItem(HordeAPIData):
     name: KNOWN_ALCHEMY_TYPES | str
+    """The name of the form to request."""
 
     @field_validator("name")
     def check_name(cls, v: KNOWN_ALCHEMY_TYPES | str) -> KNOWN_ALCHEMY_TYPES | str:
@@ -131,7 +132,7 @@ class AlchemyAsyncRequest(
 
     @override
     @classmethod
-    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponse]]:
+    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponseTypes]]:
         return {
             HTTPStatusCode.ACCEPTED: cls.get_default_success_response_type(),
         }

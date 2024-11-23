@@ -26,14 +26,14 @@ from horde_sdk.ai_horde_api.fields import JobID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    HordeAPIObject,
+    HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
     ResponseRequiringDownloadMixin,
     ResponseRequiringFollowUpMixin,
 )
 
 
-class NoValidRequestFound(HordeAPIObject):
+class NoValidRequestFound(HordeAPIObjectBaseModel):
     blacklist: int | None = Field(default=None, ge=0)
     """How many waiting requests were skipped because they demanded a generation with a word that this worker does
     not accept."""
@@ -86,6 +86,8 @@ class ImageGenerateJobPopSkippedStatus(NoValidRequestFound):
     """How many waiting requests were skipped because they requested loras."""
     controlnet: int = Field(default=0, ge=0)
     """How many waiting requests were skipped because they requested a controlnet."""
+    step_count: int = Field(default=0, ge=0)
+    """How many waiting requests were skipped because they requested more steps than this worker provides."""
 
     @override
     @classmethod
@@ -95,6 +97,8 @@ class ImageGenerateJobPopSkippedStatus(NoValidRequestFound):
 
 class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
     prompt: str | None = None
+    """The prompt to use for this image generation."""
+
     ddim_steps: int = Field(default=25, ge=1, validation_alias=AliasChoices("steps", "ddim_steps"))
     """The number of image generation steps to perform."""
 
@@ -426,7 +430,7 @@ class ImageGenerateJobPopResponse(
         return hash(0)
 
 
-class PopInput(HordeAPIObject):
+class PopInput(HordeAPIObjectBaseModel):
     amount: int | None = Field(1, ge=1, le=20)
     """The number of jobs to pop at the same time."""
     bridge_agent: str | None = Field(
