@@ -40,17 +40,9 @@ class HordeAPIObject(BaseModel, abc.ABC):
         If none, there is no payload, such as for a GET request.
         """
 
-    model_config = (
-        ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="allow",
-        )
-        if not os.getenv("TESTS_ONGOING")
-        else ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-        )
+    model_config = ConfigDict(
+        frozen=True,
+        use_attribute_docstrings=True,
     )
 
 
