@@ -250,7 +250,7 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
         if self.ignore_failure():
             return []
 
-        if self._cleanup_requests is not None:
+        if hasattr(self, "_cleanup_requests") and self._cleanup_requests is not None:
             return self._cleanup_requests
 
         cleanup_request_type = self.get_follow_up_failure_cleanup_request_type()
