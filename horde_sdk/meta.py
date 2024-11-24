@@ -74,7 +74,35 @@ def any_unimported_classes(module: types.ModuleType, super_type: type) -> tuple[
     return bool(missing_classes), missing_classes
 
 
-def all_undefined_classes(module: types.ModuleType) -> dict[str, str]:
+def all_undefined_classes(module: types.ModuleType) -> list[str]:
+    """Return all of the models defined on the API but not in the SDK."""
+    module_found_classes = find_subclasses(module, HordeAPIObject)
+
+    defined_api_object_names: set[str] = set()
+
+    for class_type in module_found_classes:
+        if not issubclass(class_type, HordeAPIObject):
+            raise TypeError(f"Expected {class_type} to be a HordeAPIObject")
+
+        api_model_name = class_type.get_api_model_name()
+        if api_model_name is not None:
+            defined_api_object_names.add(api_model_name)
+
+    undefined_classes: list[str] = []
+
+    parser = SwaggerParser(swagger_doc_url=get_ai_horde_swagger_url())
+    swagger_doc = parser.get_swagger_doc()
+
+    all_api_objects = set(swagger_doc.definitions.keys())
+    missing_object_names = all_api_objects - defined_api_object_names
+
+    for object_name in missing_object_names:
+        undefined_classes.append(object_name)
+
+    return undefined_classes
+
+
+def all_undefined_classes_for_endpoints(module: types.ModuleType) -> dict[str, str]:
     """Return all of the models defined on the API but not in the SDK."""
     module_found_classes = find_subclasses(module, HordeAPIObject)
 
@@ -132,7 +160,6 @@ def all_unaddressed_endpoints_ai_horde() -> set[AI_HORDE_API_ENDPOINT_SUBPATH]:
 
     for path in known_paths:
         if path not in all_classes_paths:
-            print(f"Unaddressed path: {path}")
             unaddressed_paths.add(path)
 
     return unaddressed_paths
