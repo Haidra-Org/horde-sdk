@@ -227,11 +227,11 @@ class SingleWarningEntry(HordeAPIObjectBaseModel):
         return "RequestSingleWarning"
 
 
-class ImageGenerateParamMixin(HordeAPIData):
+class ImageGenerateParamMixin(HordeAPIObjectBaseModel):
     """Mix-in class of some of the data included in a request to the `/v2/generate/async` endpoint.
 
     Also is the corresponding information returned on a job pop to the `/v2/generate/pop` endpoint.
-    v2 API Model: `ModelPayloadStable`
+    v2 API Model: `ModelPayloadRootStable`
     """
 
     model_config = (
@@ -360,6 +360,11 @@ class ImageGenerateParamMixin(HordeAPIData):
             logger.warning(f"Unknown control type {v}. Is your SDK out of date or did the API change?")
 
         return v
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ModelPayloadRootStable"
 
 
 class JobSubmitResponse(HordeResponseBaseModel):
