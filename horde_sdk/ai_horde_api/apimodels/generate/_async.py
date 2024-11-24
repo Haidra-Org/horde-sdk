@@ -98,7 +98,7 @@ class ImageGenerateAsyncDryRunResponse(HordeResponseBaseModel):
         return _ANONYMOUS_MODEL
 
 
-class ImageGenerationInputPayload(HordeAPIObject, ImageGenerateParamMixin):
+class ImageGenerationInputPayload(ImageGenerateParamMixin):
     """Represents the 'params' field in the `/v2/generate/async` endpoint.
 
     v2 API Model: `ModelGenerationInputStable`
