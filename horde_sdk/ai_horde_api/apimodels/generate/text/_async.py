@@ -16,9 +16,9 @@ from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
-    HordeAPIDataObject,
-    HordeResponse,
+    HordeAPIData,
     HordeResponseBaseModel,
+    HordeResponseTypes,
     RequestUsesWorkerMixin,
     ResponseRequiringFollowUpMixin,
 )
@@ -83,7 +83,7 @@ class TextGenerateAsyncResponse(
 
 
 @Unhashable
-class ModelPayloadRootKobold(HordeAPIDataObject):
+class ModelPayloadRootKobold(HordeAPIData):
     dynatemp_exponent: float | None = Field(1, ge=0.0, le=5.0)
     """Dynamic temperature exponent value."""
     dynatemp_range: float | None = Field(0, ge=0.0, le=5.0)
@@ -258,7 +258,7 @@ class TextGenerateAsyncRequest(
 
     @override
     @classmethod
-    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponse]]:
+    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponseTypes]]:
         return {
             HTTPStatusCode.OK: TextGenerateAsyncDryRunResponse,
             HTTPStatusCode.ACCEPTED: cls.get_default_success_response_type(),

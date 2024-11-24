@@ -26,7 +26,12 @@ from horde_sdk.ai_horde_api.consts import (
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.fields import JobID, WorkerID
-from horde_sdk.generic_api.apimodels import HordeAPIDataObject, HordeRequest, HordeResponseBaseModel
+from horde_sdk.generic_api.apimodels import (
+    HordeAPIData,
+    HordeAPIObjectBaseModel,
+    HordeRequest,
+    HordeResponseBaseModel,
+)
 
 
 class BaseAIHordeRequest(HordeRequest):
@@ -38,7 +43,7 @@ class BaseAIHordeRequest(HordeRequest):
         return AI_HORDE_BASE_URL
 
 
-class JobRequestMixin(HordeAPIDataObject):
+class JobRequestMixin(HordeAPIData):
     """Mix-in class for data relating to any generation jobs."""
 
     id_: JobID = Field(alias="id")
@@ -62,7 +67,7 @@ class JobRequestMixin(HordeAPIDataObject):
         return hash(JobRequestMixin.__name__) + hash(self.id_)
 
 
-class JobResponseMixin(HordeAPIDataObject):
+class JobResponseMixin(HordeAPIData):
     """Mix-in class for data relating to any generation jobs."""
 
     id_: JobID = Field(alias="id")
@@ -78,21 +83,21 @@ class JobResponseMixin(HordeAPIDataObject):
         return v
 
 
-class WorkerRequestMixin(HordeAPIDataObject):
+class WorkerRequestMixin(HordeAPIData):
     """Mix-in class for data relating to worker requests."""
 
     worker_id: str | WorkerID
     """The UUID of the worker in question for this request."""
 
 
-class WorkerRequestNameMixin(HordeAPIDataObject):
+class WorkerRequestNameMixin(HordeAPIData):
     """Mix-in class for data relating to worker requests."""
 
     worker_name: str
     """The name of the worker in question for this request."""
 
 
-class LorasPayloadEntry(HordeAPIDataObject):
+class LorasPayloadEntry(HordeAPIObjectBaseModel):
     """Represents a single lora parameter.
 
     v2 API Model: `ModelPayloadLorasStable`
@@ -109,13 +114,24 @@ class LorasPayloadEntry(HordeAPIDataObject):
     is_version: bool = Field(default=False)
     """If true, will treat the lora name as a version ID."""
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ModelPayloadLorasStable"
 
-class TIPayloadEntry(HordeAPIDataObject):
-    """Represents a single textual inversion (embedding) parameter."""
+
+class TIPayloadEntry(HordeAPIObjectBaseModel):
+    """Represents a single textual inversion (embedding) parameter.
+
+    v2 API Model: `ModelPayloadTextualInversionsStable`
+    """
 
     name: str = Field(min_length=1, max_length=255)
+    """The name or ID of the textual inversion model to use."""
     inject_ti: str | None = None
+    """Whether to automatically insert the TI into the prompt or negprompt."""
     strength: float = Field(default=1, ge=-5, le=5)
+    """The strength to apply the textual inversion model."""
 
     @field_validator("inject_ti")
     def validate_inject_ti(cls, v: str | None) -> str | None:
@@ -141,8 +157,13 @@ class TIPayloadEntry(HordeAPIDataObject):
             logger.debug("strength is only valid when inject_ti is set")
         return self
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ModelPayloadTextualInversionsStable"
 
-class ExtraSourceImageEntry(HordeAPIDataObject):
+
+class ExtraSourceImageEntry(HordeAPIObjectBaseModel):
     """Represents a single extra source image.
 
     v2 API Model: `ExtraSourceImage`
@@ -156,8 +177,13 @@ class ExtraSourceImageEntry(HordeAPIDataObject):
     strength: float = Field(default=1, ge=-5, le=5)
     """The strength to apply to this image on various operations."""
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ExtraSourceImage"
 
-class ExtraTextEntry(HordeAPIDataObject):
+
+class ExtraTextEntry(HordeAPIObjectBaseModel):
     """Represents a single extra text.
 
     v2 API Model: `ExtraText`
@@ -168,8 +194,13 @@ class ExtraTextEntry(HordeAPIDataObject):
     reference: str = Field(min_length=3)
     """Reference pointing to how this text is to be used."""
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ExtraText"
 
-class SingleWarningEntry(HordeAPIDataObject):
+
+class SingleWarningEntry(HordeAPIObjectBaseModel):
     """Represents a single warning.
 
     v2 API Model: `RequestSingleWarning`
@@ -190,12 +221,17 @@ class SingleWarningEntry(HordeAPIDataObject):
 
         return v
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "RequestSingleWarning"
 
-class ImageGenerateParamMixin(HordeAPIDataObject):
+
+class ImageGenerateParamMixin(HordeAPIObjectBaseModel):
     """Mix-in class of some of the data included in a request to the `/v2/generate/async` endpoint.
 
     Also is the corresponding information returned on a job pop to the `/v2/generate/pop` endpoint.
-    v2 API Model: `ModelPayloadStable`
+    v2 API Model: `ModelPayloadRootStable`
     """
 
     model_config = (
@@ -325,6 +361,11 @@ class ImageGenerateParamMixin(HordeAPIDataObject):
 
         return v
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ModelPayloadRootStable"
+
 
 class JobSubmitResponse(HordeResponseBaseModel):
     """The response to a job submission request, indicating the number of kudos gained.
@@ -341,7 +382,7 @@ class JobSubmitResponse(HordeResponseBaseModel):
         return "GenerationSubmitted"
 
 
-class GenMetadataEntry(HordeAPIDataObject):
+class GenMetadataEntry(HordeAPIObjectBaseModel):
     """Represents a single generation metadata entry.
 
     v2 API Model: `GenerationMetadataStable`
@@ -371,3 +412,8 @@ class GenMetadataEntry(HordeAPIDataObject):
         if isinstance(v, str) and v not in METADATA_VALUE.__members__:
             logger.warning(f"Unknown metadata value {v}. Is your SDK out of date or did the API change?")
         return v
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "GenerationMetadataStable"

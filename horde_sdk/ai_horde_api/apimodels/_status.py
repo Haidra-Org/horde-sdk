@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from pydantic import ConfigDict, Field, RootModel
+from pydantic import ConfigDict, Field
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
@@ -9,9 +9,9 @@ from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     ContainsMessageResponseMixin,
-    HordeAPIObject,
-    HordeResponse,
+    HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
+    HordeResponseRootModel,
 )
 from horde_sdk.generic_api.decoration import Unhashable
 
@@ -148,7 +148,7 @@ class HordePerformanceRequest(BaseAIHordeRequest):
         return HordePerformanceResponse
 
 
-class Newspiece(HordeAPIObject):
+class Newspiece(HordeAPIObjectBaseModel):
     date_published: str | None = Field(
         default=None,
     )
@@ -159,6 +159,18 @@ class Newspiece(HordeAPIObject):
         default=None,
     )
     """The actual piece of news."""
+    tags: list[str] | None = Field(
+        default=None,
+    )
+    """The tags associated with this newspiece."""
+    title: str | None = Field(
+        default=None,
+    )
+    """The title of this newspiece."""
+    more_info_urls: list[str] | None = Field(
+        default=None,
+    )
+    """The URLs for more information about this newspiece."""
 
     @override
     @classmethod
@@ -167,7 +179,7 @@ class Newspiece(HordeAPIObject):
 
 
 @Unhashable
-class NewsResponse(HordeResponse, RootModel[list[Newspiece]]):
+class NewsResponse(HordeResponseRootModel[list[Newspiece]]):
     root: list[Newspiece]
     """The underlying list of newspieces."""
 
@@ -210,7 +222,7 @@ class NewsRequest(BaseAIHordeRequest):
         return NewsResponse
 
 
-class ActiveModelLite(HordeAPIObject):
+class ActiveModelLite(HordeAPIObjectBaseModel):
     count: int | None = Field(
         default=None,
     )
@@ -256,7 +268,7 @@ class ActiveModel(ActiveModelLite):
 
 
 @Unhashable
-class HordeStatusModelsAllResponse(HordeResponse, RootModel[list[ActiveModel]]):
+class HordeStatusModelsAllResponse(HordeResponseRootModel[list[ActiveModel]]):
     root: list[ActiveModel]
     """The underlying list of models."""
 
@@ -325,7 +337,7 @@ class HordeStatusModelsAllRequest(BaseAIHordeRequest):
 
 
 @Unhashable
-class HordeStatusModelsSingleResponse(HordeResponse, RootModel[list[ActiveModel]]):
+class HordeStatusModelsSingleResponse(HordeResponseRootModel[list[ActiveModel]]):
     # This is a list because of an oversight in the structure of the API response. # FIXME
 
     root: list[ActiveModel]
@@ -377,7 +389,7 @@ class HordeStatusModelsSingleRequest(BaseAIHordeRequest):
         return HordeStatusModelsSingleResponse
 
 
-class HordeModes(HordeAPIObject):
+class HordeModes(HordeAPIObjectBaseModel):
     maintenance_mode: bool = Field(
         default=False,
     )

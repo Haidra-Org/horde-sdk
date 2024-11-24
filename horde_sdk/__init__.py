@@ -76,7 +76,7 @@ from horde_sdk.exceptions import HordeException
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
-    HordeAPIDataObject,
+    HordeAPIData,
     HordeAPIMessage,
     HordeAPIObject,
     HordeRequest,
@@ -99,7 +99,7 @@ __all__ = [
     "APIKeyAllowedInRequestMixin",
     "HordeRequest",
     "ContainsMessageResponseMixin",
-    "HordeAPIDataObject",
+    "HordeAPIData",
     "HordeAPIMessage",
     "HordeAPIObject",
     "RequestErrorResponse",

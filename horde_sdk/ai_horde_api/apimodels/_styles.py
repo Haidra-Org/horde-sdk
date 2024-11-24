@@ -3,7 +3,7 @@ from enum import auto
 from pydantic import Field
 from strenum import StrEnum
 
-from horde_sdk.generic_api.apimodels import HordeAPIDataObject
+from horde_sdk.generic_api.apimodels import HordeAPIData
 
 
 class StyleType(StrEnum):
@@ -13,7 +13,10 @@ class StyleType(StrEnum):
     text = auto()
 
 
-class ResponseModelStylesUser(HordeAPIDataObject):
+class ResponseModelStylesUser(HordeAPIData):
     name: str
+    """The name of the style."""
     id_: str = Field(alias="id")
+    """The ID of the style."""
     type_: StyleType = Field(alias="type")
+    """The type of the style."""

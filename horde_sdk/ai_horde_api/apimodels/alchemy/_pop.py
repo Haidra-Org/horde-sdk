@@ -14,14 +14,14 @@ from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    HordeAPIObject,
+    HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
     ResponseRequiringFollowUpMixin,
 )
 
 
 # FIXME
-class AlchemyFormPayloadStable(HordeAPIObject):
+class AlchemyFormPayloadStable(HordeAPIObjectBaseModel):
     """Currently unsupported.
 
     v2 API Model: `ModelInterrogationFormPayloadStable`
@@ -46,7 +46,7 @@ class AlchemyFormPayloadStable(HordeAPIObject):
     """Currently unsupported."""
 
 
-class AlchemyPopFormPayload(HordeAPIObject, JobRequestMixin):
+class AlchemyPopFormPayload(HordeAPIObjectBaseModel, JobRequestMixin):
     """v2 API Model: `InterrogationPopFormPayload`."""
 
     @override
@@ -79,7 +79,7 @@ class AlchemyPopFormPayload(HordeAPIObject, JobRequestMixin):
     """The URL From which the source image can be downloaded."""
 
 
-class NoValidAlchemyFound(HordeAPIObject):
+class NoValidAlchemyFound(HordeAPIObjectBaseModel):
     """v2 API Model: `NoValidInterrogationsFoundStable`."""
 
     @override
@@ -111,6 +111,19 @@ class NoValidAlchemyFound(HordeAPIObject):
         ge=0,
     )
     """How many waiting requests were skipped because they demanded a specific worker."""
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, NoValidAlchemyFound):
+            return False
+
+        return (
+            self.bridge_version == other.bridge_version
+            and self.untrusted == other.untrusted
+            and self.worker_id == other.worker_id
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.bridge_version, self.untrusted, self.worker_id))
 
 
 class AlchemyPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin):

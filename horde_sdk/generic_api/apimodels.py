@@ -6,11 +6,11 @@ import abc
 import base64
 import os
 import uuid
-from typing import Any
+from typing import Any, TypeVar
 
 import aiohttp
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, RootModel, field_validator
 from typing_extensions import override
 
 from horde_sdk import _default_sslcontext
@@ -29,8 +29,17 @@ except ImportError:
     )
 
 
-class HordeAPIObject(BaseModel, abc.ABC):
-    """Base class for all Horde API data models, requests, or responses."""
+class HordeAPIObject(abc.ABC):
+    """Base class for all Horde API data models, requests, or responses.
+
+    This is an abstract class that you probably shouldn't inherit from directly. Instead, inherit from one of the
+    subclasses defined in this module.
+
+    Requests generally would inherit from `HordeRequest`, responses from `HordeResponse`, and data models from
+    `HordeAPIObjectBaseModel` (if it appears on the API as a published model) or `HordeAPIDataObject` (if it is a
+    data object that is not specifically defined by the API docs, such as an intermediate class or an anonymous model).
+
+    """
 
     @classmethod
     @abc.abstractmethod
@@ -40,13 +49,57 @@ class HordeAPIObject(BaseModel, abc.ABC):
         If none, there is no payload, such as for a GET request.
         """
 
-    model_config = ConfigDict(
-        frozen=True,
-        use_attribute_docstrings=True,
+    @classmethod
+    def get_sensitive_fields(cls) -> set[str]:
+        """Return a set of fields which should be redacted from logs."""
+        return {"apikey"}
+
+    def get_extra_fields_to_exclude_from_log(self) -> set[str]:
+        """Return an additional set of fields to exclude from the log_safe_model_dump method."""
+        return set()
+
+    def log_safe_model_dump(self, extra_exclude: set[str] | None = None) -> dict[Any, Any]:
+        """Return a dict of the model's fields, with any sensitive fields redacted."""
+        if extra_exclude is None:
+            extra_exclude = set()
+
+        if hasattr(self, "model_dump"):
+            return self.model_dump(  # type: ignore
+                exclude=self.get_sensitive_fields() | self.get_extra_fields_to_exclude_from_log() | extra_exclude,
+            )
+
+        logger.warning("Model does not have a model_dump method. Using python native class compatible method.")
+        logger.debug(
+            "Generally this should not be relied upon. If you're seeing this and you're a developer for the SDK, "
+            "consider using pydantic models instead.",
+        )
+        # Its not a pydantic model, use python native class compatible method
+        return {
+            key: getattr(self, key)
+            for key in self.__dict__
+            if key not in self.get_sensitive_fields() | self.get_extra_fields_to_exclude_from_log() | extra_exclude
+        }
+
+
+class HordeAPIObjectBaseModel(HordeAPIObject, BaseModel):
+    """Base class for all Horde API data models (leveraging pydantic)."""
+
+    model_config = (
+        ConfigDict(
+            frozen=True,
+            use_attribute_docstrings=True,
+            extra="allow",
+        )
+        if not os.getenv("TESTS_ONGOING")
+        else ConfigDict(
+            frozen=True,
+            use_attribute_docstrings=True,
+            extra="forbid",
+        )
     )
 
 
-class HordeAPIDataObject(BaseModel):
+class HordeAPIData(BaseModel):
     """Base class for all Horde API data models which appear as objects within other data models.
 
     These are objects which are not specifically defined by the API docs, but (logically or otherwise) are
@@ -72,37 +125,61 @@ class HordeAPIDataObject(BaseModel):
 class HordeAPIMessage(HordeAPIObject):
     """Represents any request or response from any Horde API."""
 
-    @classmethod
-    def get_sensitive_fields(cls) -> set[str]:
-        """Return a set of fields which should be redacted from logs."""
-        return {"apikey"}
-
-    def get_extra_fields_to_exclude_from_log(self) -> set[str]:
-        """Return an additional set of fields to exclude from the log_safe_model_dump method."""
-        return set()
-
-    def log_safe_model_dump(self, extra_exclude: set[str] | None = None) -> dict[Any, Any]:
-        """Return a dict of the model's fields, with any sensitive fields redacted."""
-        if extra_exclude is None:
-            extra_exclude = set()
-
-        return self.model_dump(
-            exclude=self.get_sensitive_fields() | self.get_extra_fields_to_exclude_from_log() | extra_exclude,
-        )
-
 
 class HordeResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
+
+
+T = TypeVar("T")
+
+
+class HordeResponseRootModel(RootModel[T], HordeResponse):
+    """Base class for all Horde API response data models which model another data type (leveraging pydantic).
+
+    A typical example for using this class would be responses which *are* a list of another data type.
+    Define subclasses of this class with the type of the data model as the type argument.
+
+    For example:
+    ```python
+    class MyDataModel(HordeResponseRootModel[MyData]):
+        pass
+    ```
+
+    """
+
+    model_config = (
+        ConfigDict(
+            frozen=True,
+            use_attribute_docstrings=True,
+        )
+        if not os.getenv("TESTS_ONGOING")
+        else ConfigDict(
+            frozen=True,
+            use_attribute_docstrings=True,
+        )
+    )
 
 
 class HordeResponseBaseModel(HordeResponse, BaseModel):
     """Base class for all Horde API response data models (leveraging pydantic)."""
 
     model_config = (
-        ConfigDict(frozen=True, extra="allow")
+        ConfigDict(
+            frozen=True,
+            use_attribute_docstrings=True,
+            extra="allow",
+        )
         if not os.getenv("TESTS_ONGOING")
-        else ConfigDict(frozen=True, extra="forbid")
+        else ConfigDict(
+            frozen=True,
+            use_attribute_docstrings=True,
+            extra="forbid",
+        )
     )
+
+
+HordeResponseTypes = HordeResponseRootModel[Any] | HordeResponseBaseModel
+"""A type hint for any type of the valid horde response models."""
 
 
 class ResponseRequiringFollowUpMixin(abc.ABC):
@@ -157,8 +234,6 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
         Defaults to `None`, meaning no cleanup request is needed.
         """
 
-    _cleanup_requests: list[HordeRequest] | None = None
-
     def get_follow_up_failure_cleanup_params(self) -> dict[str, object]:
         """Return any extra information required from this response to clean up after a failed follow up request.
 
@@ -167,6 +242,8 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
         This is used for context management.
         """
         return {}
+
+    _cleanup_requests: list[HordeRequest] | None
 
     def get_follow_up_failure_cleanup_request(self) -> list[HordeRequest]:
         """Return the request for this response to clean up after a failed follow up request."""
@@ -222,7 +299,7 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
         return all_match
 
 
-class ResponseWithProgressMixin(HordeAPIDataObject):
+class ResponseWithProgressMixin(HordeAPIData):
     """Represents any response from any Horde API which contains progress information."""
 
     @abc.abstractmethod
@@ -255,7 +332,7 @@ class ResponseWithProgressMixin(HordeAPIDataObject):
         """Return the request type for this response to finalize the job on success, or `None` if not needed."""
 
 
-class ResponseRequiringDownloadMixin(HordeAPIDataObject):
+class ResponseRequiringDownloadMixin(HordeAPIData):
     """Represents any response which may require downloading additional data."""
 
     async def download_file_as_base64(self, client_session: aiohttp.ClientSession, url: str) -> str:
@@ -290,7 +367,7 @@ class ResponseRequiringDownloadMixin(HordeAPIDataObject):
         """Download any additional data required for this response."""
 
 
-class ContainsMessageResponseMixin(HordeAPIDataObject):
+class ContainsMessageResponseMixin(HordeAPIData):
     """Represents any response from any Horde API which contains a message."""
 
     message: str = ""
@@ -307,6 +384,7 @@ class RequestErrorResponse(HordeResponseBaseModel, ContainsMessageResponseMixin)
     """This is a catch all for any additional data that may be returned by the API relevant to the error."""
 
     rc: str = "RC_MISSING"
+    """The return code from the API which maps to a reason for the error."""
 
     @override
     @classmethod
@@ -317,7 +395,19 @@ class RequestErrorResponse(HordeResponseBaseModel, ContainsMessageResponseMixin)
 class HordeRequest(HordeAPIMessage, BaseModel):
     """Represents any request to any Horde API."""
 
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = (
+        ConfigDict(
+            frozen=True,
+            use_attribute_docstrings=True,
+            extra="allow",
+        )
+        if not os.getenv("TESTS_ONGOING")
+        else ConfigDict(
+            frozen=True,
+            use_attribute_docstrings=True,
+            extra="forbid",
+        )
+    )
 
     @classmethod
     @abc.abstractmethod
@@ -352,11 +442,13 @@ class HordeRequest(HordeAPIMessage, BaseModel):
 
     @classmethod
     @abc.abstractmethod
-    def get_default_success_response_type(cls) -> type[HordeResponse]:
+    def get_default_success_response_type(cls) -> type[HordeResponseTypes]:
         """Return the `type` of the response expected in the ordinary case of success."""
 
     @classmethod
-    def get_success_status_response_pairs(cls) -> dict[HTTPStatusCode, type[HordeResponse]]:
+    def get_success_status_response_pairs(
+        cls,
+    ) -> dict[HTTPStatusCode, type[HordeResponseTypes]]:
         """Return a dict of HTTP status codes and the expected `HordeResponse`.
 
         Defaults to `{HTTPStatusCode.OK: cls.get_expected_response_type()}`, but may be overridden to support other
@@ -409,7 +501,7 @@ class HordeRequest(HordeAPIMessage, BaseModel):
         return {"apikey"}
 
 
-class APIKeyAllowedInRequestMixin(HordeAPIDataObject):
+class APIKeyAllowedInRequestMixin(HordeAPIObjectBaseModel):
     """Mix-in class to describe an endpoint which may require authentication."""
 
     apikey: str | None = None
@@ -439,7 +531,7 @@ class APIKeyAllowedInRequestMixin(HordeAPIDataObject):
         return v
 
 
-class RequestSpecifiesUserIDMixin(HordeAPIDataObject):
+class RequestSpecifiesUserIDMixin(HordeAPIData):
     """Mix-in class to describe an endpoint for which you can specify a user."""
 
     user_id: str
@@ -456,7 +548,7 @@ class RequestSpecifiesUserIDMixin(HordeAPIDataObject):
         return value
 
 
-class RequestUsesWorkerMixin(HordeAPIDataObject):
+class RequestUsesWorkerMixin(HordeAPIData):
     """Mix-in class to describe an endpoint for which you can specify workers."""
 
     trusted_workers: bool = False
@@ -483,6 +575,7 @@ __all__ = [
     "HordeRequest",
     "HordeResponse",
     "HordeResponseBaseModel",
+    "HordeResponseRootModel",
     "ContainsMessageResponseMixin",
     "HordeAPIObject",
     "HordeAPIMessage",

@@ -95,7 +95,19 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
 
     v2_documents_privacy = "/v2/documents/privacy"
     v2_documents_sponsors = "/v2/documents/sponsors"
-    vs_documents_terms = "/v2/documents/terms"
+    v2_documents_terms = "/v2/documents/terms"
+
+    v2_styles_image_by_name = "/v2/styles/image_by_name/{style_name}"
+    v2_styles_image_by_id = "/v2/styles/image/{style_id}"
+    v2_collections_by_name = "/v2/collection_by_name/{collection_name}"
+    v2_styles_image_example_by_id = "/v2/styles/image/{style_id}/example"
+    v2_styles_text_by_id = "/v2/styles/text/{style_id}"
+    v2_styles_image = "/v2/styles/image"
+    v2_collections_by_id = "/v2/collections/{collection_id}"
+    v2_styles_image_example_by_id_example = "/v2/styles/image/{style_id}/example/{example_id}"
+    v2_styles_text = "/v2/styles/text"
+    v2_styles_text_by_name = "/v2/styles/text_by_name/{style_name}"
+    v2_collections = "/v2/collections"
 
 
 def get_ai_horde_swagger_url() -> str:
@@ -104,3 +116,25 @@ def get_ai_horde_swagger_url() -> str:
         base_url=AI_HORDE_BASE_URL,
         path=AI_HORDE_API_ENDPOINT_SUBPATH.swagger,
     )
+
+
+def get_admin_only_endpoints() -> set[str]:
+    """Return all of the endpoints that are admin-only."""
+    return {
+        AI_HORDE_API_ENDPOINT_SUBPATH.v2_status_modes,
+        AI_HORDE_API_ENDPOINT_SUBPATH.v2_filters,
+        AI_HORDE_API_ENDPOINT_SUBPATH.v2_filters_regex,
+        AI_HORDE_API_ENDPOINT_SUBPATH.v2_filters_regex_single,
+        AI_HORDE_API_ENDPOINT_SUBPATH.v2_operations_block_worker_ipaddr_single,
+        AI_HORDE_API_ENDPOINT_SUBPATH.v2_operations_ipaddr,
+        AI_HORDE_API_ENDPOINT_SUBPATH.v2_operations_ipaddr_single,
+        AI_HORDE_API_ENDPOINT_SUBPATH.v2_kudos_award,
+    }
+
+
+def get_deprecated_endpoints() -> set[str]:
+    """Return all of the endpoints that are deprecated."""
+    return {
+        AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_pop_multi,
+        AI_HORDE_API_ENDPOINT_SUBPATH.v2_generate_rate_id,
+    }

@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from pydantic import AliasChoices, Field, RootModel
+from pydantic import AliasChoices, Field
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, WorkerRequestMixin, WorkerRequestNameMixin
@@ -10,13 +10,14 @@ from horde_sdk.ai_horde_api.fields import TeamID, WorkerID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    HordeAPIObject,
-    HordeResponse,
+    HordeAPIObjectBaseModel,
+    HordeResponseBaseModel,
+    HordeResponseRootModel,
 )
 from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
-class TeamDetailsLite(HordeAPIObject):
+class TeamDetailsLite(HordeAPIObjectBaseModel):
     name: str | None = None
     """The Name given to this team."""
     id_: str | TeamID | None = Field(default=None, alias="id")
@@ -28,7 +29,7 @@ class TeamDetailsLite(HordeAPIObject):
         return "TeamDetailsLite"
 
 
-class WorkerKudosDetails(HordeAPIObject):
+class WorkerKudosDetails(HordeAPIObjectBaseModel):
     generated: float | None = None
     """How much Kudos this worker has received for generating images."""
     uptime: int | None = None
@@ -41,7 +42,7 @@ class WorkerKudosDetails(HordeAPIObject):
 
 
 @Unhashable
-class WorkerDetailItem(HordeAPIObject):
+class WorkerDetailItem(HordeAPIObjectBaseModel):
     type_: WORKER_TYPE = Field(alias="type")
     """The type of worker."""
     name: str
@@ -115,6 +116,10 @@ class WorkerDetailItem(HordeAPIObject):
     """The maximum tokens this worker can read."""
     tokens_generated: int | None = Field(default=None, examples=[0])
     """How many tokens this worker has generated until now. """
+    controlnet: bool | None = Field(default=None, examples=[False])
+    """If True, this worker supports and allows controlnet requests."""
+    sdxl_controlnet: bool | None = Field(default=None, examples=[False])
+    """If True, this worker supports and allows sdxl controlnet requests."""
 
     @override
     @classmethod
@@ -164,7 +169,7 @@ class WorkerDetailItem(HordeAPIObject):
 
 @Unhashable
 @Unequatable
-class AllWorkersDetailsResponse(HordeResponse, RootModel[list[WorkerDetailItem]]):
+class AllWorkersDetailsResponse(HordeResponseRootModel[list[WorkerDetailItem]]):
     # @tazlin: The typing of __iter__ in BaseModel seems to assume that RootModel wouldn't also be a parent class.
     # without a `type: ignore``, mypy feels that this is a bad override. This is probably a sub-optimal solution
     # on my part with me hoping to come up with a more elegant path in the future.
@@ -232,7 +237,7 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 
 @Unhashable
 @Unequatable
-class SingleWorkerDetailsResponse(HordeResponse, WorkerDetailItem):
+class SingleWorkerDetailsResponse(HordeResponseBaseModel, WorkerDetailItem):
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -303,7 +308,7 @@ class SingleWorkerDetailsRequest(BaseAIHordeRequest, WorkerRequestMixin, APIKeyA
         return False
 
 
-class ModifyWorkerResponse(HordeResponse):
+class ModifyWorkerResponse(HordeResponseBaseModel):
     info: str | None = Field(default=None)
     """The new state of the 'info' var for this worker."""
     maintenance: bool | None = Field(default=None)
@@ -362,8 +367,8 @@ class ModifyWorkerRequest(
         return ModifyWorkerResponse
 
 
-class DeleteWorkerResponse(HordeResponse):
-    deleted_id_: str | None = None
+class DeleteWorkerResponse(HordeResponseBaseModel):
+    deleted_id: str | None = None
     """The ID of the deleted worker."""
     deleted_name: str | None = None
     """The Name of the deleted worker."""

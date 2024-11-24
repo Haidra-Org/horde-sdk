@@ -9,7 +9,7 @@ from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.consts import MODEL_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generic_api.apimodels import HordeAPIDataObject, HordeResponseBaseModel
+from horde_sdk.generic_api.apimodels import HordeAPIObjectBaseModel, HordeResponseBaseModel
 from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
@@ -122,7 +122,12 @@ class ImageStatsModelsRequest(BaseAIHordeRequest):
         return ImageStatsModelsResponse
 
 
-class SinglePeriodImgStat(HordeAPIDataObject):
+class SinglePeriodImgStat(HordeAPIObjectBaseModel):
+    """Represents the stats for a single period of image generation.
+
+    v2 API Model: `SinglePeriodImgStat`
+    """
+
     images: int | None = Field(
         default=None,
     )
@@ -139,6 +144,11 @@ class SinglePeriodImgStat(HordeAPIDataObject):
             return None
 
         return self.ps // 1_000_000
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "SinglePeriodImgStat"
 
 
 class ImageStatsModelsTotalResponse(HordeResponseBaseModel):
@@ -253,7 +263,12 @@ class TextStatsModelsRequest(BaseAIHordeRequest):
         return TextStatsModelResponse
 
 
-class SinglePeriodTxtStat(HordeAPIDataObject):
+class SinglePeriodTxtStat(HordeAPIObjectBaseModel):
+    """Represents the stats for a single period.
+
+    v2 API Model: `SinglePeriodTxtStat`
+    """
+
     requests: int | None = Field(
         default=None,
     )
@@ -262,6 +277,11 @@ class SinglePeriodTxtStat(HordeAPIDataObject):
         default=None,
     )
     """The number of tokens generated during this period."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "SinglePeriodTxtStat"
 
 
 @Unhashable
