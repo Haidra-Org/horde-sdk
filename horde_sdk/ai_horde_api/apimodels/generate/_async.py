@@ -19,7 +19,6 @@ from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
-    HordeAPIObject,
     HordeResponseBaseModel,
     HordeResponseTypes,
     RequestUsesWorkerMixin,
