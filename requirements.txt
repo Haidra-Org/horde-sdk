@@ -1,6 +1,6 @@
 horde_model_reference>=0.9.0
 
-pydantic==2.9.2
+pydantic==2.10.1
 requests
 StrEnum
 loguru
