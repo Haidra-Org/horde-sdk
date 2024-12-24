@@ -61,7 +61,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     TextStatsModelsTotalResponse,
 )
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
-from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE, PROGRESS_STATE
+from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE, MODEL_STATE, PROGRESS_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.exceptions import AIHordeImageValidationError, AIHordeRequestError
 from horde_sdk.ai_horde_api.fields import JobID, WorkerID
@@ -1121,14 +1121,20 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
 
     def image_stats_models(
         self,
+        model_state: str | MODEL_STATE = MODEL_STATE.known,
     ) -> ImageStatsModelsResponse:
         """Get the stats for images by model.
 
         Returns:
             ImageStatsModelsResponse: The response from the API.
         """
+        model_state = MODEL_STATE(model_state)
+
         with AIHordeAPIClientSession() as horde_session:
-            response = horde_session.submit_request(ImageStatsModelsRequest(), ImageStatsModelsResponse)
+            response = horde_session.submit_request(
+                ImageStatsModelsRequest(model_state=model_state),
+                ImageStatsModelsResponse,
+            )
 
             if isinstance(response, RequestErrorResponse):
                 raise AIHordeRequestError(response)
@@ -1827,15 +1833,18 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
 
     async def image_stats_models(
         self,
+        model_state: str | MODEL_STATE = MODEL_STATE.known,
     ) -> ImageStatsModelsResponse:
         """Get the stats for images by model.
 
         Returns:
             ImageStatsModelsResponse: The response from the API.
         """
+        model_state = MODEL_STATE(model_state)
+
         if self._horde_client_session is not None:
             response = await self._horde_client_session.submit_request(
-                ImageStatsModelsRequest(),
+                ImageStatsModelsRequest(model_state=model_state),
                 ImageStatsModelsResponse,
             )
         else:
