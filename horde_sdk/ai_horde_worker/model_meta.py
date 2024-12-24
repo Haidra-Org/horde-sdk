@@ -7,6 +7,7 @@ from horde_model_reference.model_reference_records import StableDiffusion_ModelR
 from loguru import logger
 
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient
+from horde_sdk.ai_horde_api.consts import MODEL_STATE
 from horde_sdk.ai_horde_api.apimodels import ImageStatsModelsRequest, ImageStatsModelsResponse, StatsModelsTimeframe
 from horde_sdk.ai_horde_worker.bridge_data import MetaInstruction
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
@@ -40,7 +41,10 @@ class ImageModelLoadResolver:
             A set of strings representing the names of models to load.
         """
         # Get model stats from the API
-        stats_response = client.submit_request(ImageStatsModelsRequest(), ImageStatsModelsResponse)
+        stats_response = client.submit_request(
+            ImageStatsModelsRequest(model_state=MODEL_STATE.known),
+            ImageStatsModelsResponse,
+        )
         if isinstance(stats_response, RequestErrorResponse):
             raise Exception(f"Error getting stats for models: {stats_response.message}")
 
