@@ -90,4 +90,4 @@ if HORDE_SDK_LOG_VERBOSITY is not None:
 set_logger_handlers = os.getenv("HORDE_SDK_SET_DEFAULT_LOG_HANDLERS")
 
 if set_logger_handlers:
-    logger.configure(handlers=handler_config)
+    logger.configure(handlers=handler_config)  # type: ignore
