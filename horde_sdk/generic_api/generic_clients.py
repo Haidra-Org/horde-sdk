@@ -496,6 +496,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
     def __init__(
         self,
         *,
+        apikey: str | None = None,
         header_fields: type[GenericHeaderFields] = GenericHeaderFields,
         path_fields: type[GenericPathFields] = GenericPathFields,
         query_fields: type[GenericQueryFields] = GenericQueryFields,
@@ -503,6 +504,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
     ) -> None:
         """Initialize a new `GenericHordeAPISession` instance."""
         super().__init__(
+            apikey=apikey,
             header_fields=header_fields,
             path_fields=path_fields,
             query_fields=query_fields,
@@ -674,6 +676,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
         self,
         aiohttp_session: aiohttp.ClientSession,
         *,
+        apikey: str | None = None,
         header_fields: type[GenericHeaderFields] = GenericHeaderFields,
         path_fields: type[GenericPathFields] = GenericPathFields,
         query_fields: type[GenericQueryFields] = GenericQueryFields,
@@ -681,6 +684,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
         ssl_context: SSLContext = _default_sslcontext,
     ) -> None:
         super().__init__(
+            apikey=apikey,
             aiohttp_session=aiohttp_session,
             header_fields=header_fields,
             path_fields=path_fields,

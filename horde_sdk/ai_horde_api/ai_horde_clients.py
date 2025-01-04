@@ -403,10 +403,12 @@ class AIHordeAPIAsyncClientSession(GenericAsyncHordeAPISession):
         self,
         aiohttp_session: aiohttp.ClientSession,
         ssl_context: SSLContext = _default_sslcontext,
+        apikey: str | None = None,
     ) -> None:
         """Create a new instance of the RatingsAPIClient."""
         super().__init__(
             aiohttp_session=aiohttp_session,
+            apikey=apikey,
             path_fields=AIHordePathData,
             query_fields=AIHordeQueryData,
             ssl_context=ssl_context,
@@ -1250,6 +1252,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         self,
         aiohttp_session: aiohttp.ClientSession | None = None,
         horde_client_session: AIHordeAPIAsyncClientSession | None = None,
+        apikey: str | None = None,
     ) -> None:
         """Create a new instance of the AIHordeAPISimpleClient."""
         super().__init__()
@@ -1267,7 +1270,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         if aiohttp_session is not None and horde_client_session is None:
             logger.info("Creating a new AIHordeAPIAsyncClientSession with the provided aiohttp session.")
             self._aiohttp_session = aiohttp_session
-            self._horde_client_session = AIHordeAPIAsyncClientSession(aiohttp_session)
+            self._horde_client_session = AIHordeAPIAsyncClientSession(aiohttp_session, apikey=apikey)
         elif horde_client_session is not None:
             self._horde_client_session = horde_client_session
             self._aiohttp_session = horde_client_session._aiohttp_session
