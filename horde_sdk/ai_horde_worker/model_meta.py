@@ -57,7 +57,7 @@ class ImageModelLoadResolver:
         for possible_instruction in possible_meta_instructions:
             # If the instruction is to load all models, return all model names
             if ImageModelLoadResolver.meta_instruction_regex_match(MetaInstruction.ALL_REGEX, possible_instruction):
-                return self.resolve_all_model_names()
+                return self.remove_large_models(set(self.resolve_all_model_names()))
 
             # If the instruction is to load the top N models, add the top N model names
             top_n_matches = ImageModelLoadResolver.meta_instruction_regex_match(
@@ -161,8 +161,15 @@ class ImageModelLoadResolver:
             models = models - cascade_models - flux_models
         return models
 
-    def resolve_all_model_names(self) -> set[str]:
+    def resolve_all_model_names(
+        self,
+        ignore_large_models_env_var: bool = True,
+    ) -> set[str]:
         """Get the names of all models defined in the model reference.
+
+        Args:
+            ignore_large_models_env_var (bool): A boolean representing whether to ignore the environment variable for
+                large models, effectively returning all models regardless of `AI_HORDE_MODEL_META_LARGE_MODELS`.
 
         Returns:
             A set of strings representing the names of all models.
@@ -173,7 +180,8 @@ class ImageModelLoadResolver:
 
         all_models = set(sd_model_references.root.keys()) if sd_model_references is not None else set()
 
-        all_models = self.remove_large_models(all_models)
+        if not ignore_large_models_env_var:
+            all_models = self.remove_large_models(all_models)
 
         if not all_models:
             logger.error("No stable diffusion models found in model reference.")

@@ -31,13 +31,33 @@ def test_image_model_load_resolver_all(image_model_load_resolver: ImageModelLoad
 
     import os
 
-    os.environ["AI_HORDE_MODEL_META_LARGE_MODELS"] = "true"
-
-    all_model_names_with_large = image_model_load_resolver.resolve_all_model_names()
+    os.environ["AI_HORDE_MODEL_META_LARGE_MODELS"] = "1"
+    all_model_names_with_large = image_model_load_resolver.resolve_all_model_names(ignore_large_models_env_var=False)
 
     del os.environ["AI_HORDE_MODEL_META_LARGE_MODELS"]
 
-    assert len(all_model_names_with_large) > len(all_model_names)
+    assert len(all_model_names_with_large) == len(all_model_names)
+
+
+def test_image_model_load_resolver_all_without_large(image_model_load_resolver: ImageModelLoadResolver) -> None:
+    import os
+
+    all_model_names = image_model_load_resolver.resolve_all_model_names()
+
+    assert len(all_model_names) > 0
+
+    stored_value = os.environ.get("AI_HORDE_MODEL_META_LARGE_MODELS")
+
+    if "AI_HORDE_MODEL_META_LARGE_MODELS" in os.environ:
+        del os.environ["AI_HORDE_MODEL_META_LARGE_MODELS"]
+
+    all_model_names_without_large = image_model_load_resolver.resolve_all_model_names(
+        ignore_large_models_env_var=False
+    )
+
+    if stored_value is not None:
+        os.environ["AI_HORDE_MODEL_META_LARGE_MODELS"] = stored_value
+    assert len(all_model_names) > len(all_model_names_without_large)
 
 
 def test_image_model_load_resolver_top_n(
