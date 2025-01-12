@@ -52,7 +52,7 @@ def test_image_model_load_resolver_all_without_large(image_model_load_resolver: 
         del os.environ["AI_HORDE_MODEL_META_LARGE_MODELS"]
 
     all_model_names_without_large = image_model_load_resolver.resolve_all_model_names(
-        ignore_large_models_env_var=False
+        ignore_large_models_env_var=False,
     )
 
     if stored_value is not None:
