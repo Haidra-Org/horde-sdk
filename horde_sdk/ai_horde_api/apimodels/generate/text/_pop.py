@@ -84,10 +84,6 @@ class TextGenerateJobPopResponse(
         if self.id_ is None and len(self.ids) == 0:
             raise ValueError("Neither id_ nor ids were present in the response.")
 
-        if len(self.ids) > 1:
-            logger.debug("Sorting IDs")
-            self.ids.sort()
-
         return self
 
     @override
