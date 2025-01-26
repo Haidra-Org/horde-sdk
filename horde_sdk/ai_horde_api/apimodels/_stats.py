@@ -92,12 +92,9 @@ class ImageStatsModelsResponse(HordeResponseBaseModel):
 class ImageStatsModelsRequest(BaseAIHordeRequest):
     """Represents the data needed to make a request to the `/v2/stats/img/models` endpoint."""
 
-    model_config = ConfigDict(
-        protected_namespaces=(),  # Allows the "model_" prefix on attrs
-    )
-
-    model_state: MODEL_STATE = Field(
+    api_model_state: MODEL_STATE = Field(
         default=MODEL_STATE.all,
+        alias="model_state",
     )
     """The state of the models to get stats for. Known models are models that are known to the system."""
 
