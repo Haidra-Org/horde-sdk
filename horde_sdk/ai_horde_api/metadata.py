@@ -31,5 +31,5 @@ class AIHordePathData(GenericPathFields):
 class AIHordeQueryData(GenericQueryFields):
     """AI Horde specific query data. See parent class for more information."""
 
-    model_state = auto()
+    api_model_state = "model_state"
     """The level of official support by the API."""
