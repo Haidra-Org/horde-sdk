@@ -155,3 +155,5 @@ tests/testing_result_images/*
 workers.txt
 
 ai_horde_codegen.py
+
+.codiumai.toml
