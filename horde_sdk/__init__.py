@@ -2,9 +2,13 @@
 
 # isort: off
 # We import dotenv first so that we can use it to load environment variables before importing anything else.
+import asyncio
 import ssl
 import certifi
 import dotenv
+import sys
+
+import aiohttp.client_exceptions
 
 # If the current working directory contains a `.env` file, import the environment variables from it.
 # This is useful for development.
@@ -63,6 +67,11 @@ def _dev_env_var_warnings() -> None:  # pragma: no cover
 _dev_env_var_warnings()
 _default_sslcontext = ssl.create_default_context(cafile=certifi.where())
 
+_async_client_exceptions: tuple[type[Exception], ...] = (TimeoutError, aiohttp.client_exceptions.ClientError, OSError)
+
+if sys.version_info[:2] == (3, 10):
+    _async_client_exceptions = (asyncio.exceptions.TimeoutError, aiohttp.client_exceptions.ClientError, OSError)
+
 from horde_sdk.consts import (
     PAYLOAD_HTTP_METHODS,
     HTTPMethod,
@@ -112,4 +121,5 @@ __all__ = [
     "COMPLETE_LOGGER_LABEL",
     "HordeException",
     "_default_sslcontext",
+    "_async_client_exceptions",
 ]
