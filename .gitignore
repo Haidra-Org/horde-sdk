@@ -157,3 +157,5 @@ workers.txt
 ai_horde_codegen.py
 
 .codiumai.toml
+
+.venv-*
