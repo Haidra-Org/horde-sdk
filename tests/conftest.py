@@ -124,6 +124,23 @@ def simple_image_gen_response(
         ids=[single_id],
         payload=ImageGenerateJobPopPayload(),
         skipped=ImageGenerateJobPopSkippedStatus(),
+        model="Deliberate",
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_response_n_requests(
+    id_factory: Callable[[], GenerationID],
+) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance with no arguments set and a new ID."""
+    ids = [id_factory() for _ in range(3)]
+    return ImageGenerateJobPopResponse(
+        ids=ids,
+        payload=ImageGenerateJobPopPayload(),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+        model="Deliberate",
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{id_}" for id_ in ids],
     )
 
 
