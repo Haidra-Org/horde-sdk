@@ -67,7 +67,7 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/generate/text/status/{id} | 200 | [TextGenerateStatusResponse][horde_sdk.ai_horde_api.apimodels.generate.text._status.TextGenerateStatusResponse] |
 | /v2/generate/text/submit | 200 | [JobSubmitResponse][horde_sdk.ai_horde_api.apimodels.base.JobSubmitResponse] |
 | /v2/interrogate/async | 202 | [AlchemyAsyncResponse][horde_sdk.ai_horde_api.apimodels.alchemy._async.AlchemyAsyncResponse] |
-| /v2/interrogate/pop | 200 | [AlchemyPopResponse][horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyPopResponse] |
+| /v2/interrogate/pop | 200 | [AlchemyJobPopResponse][horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyJobPopResponse] |
 | /v2/interrogate/status/{id} | 200 | [AlchemyStatusResponse][horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyStatusResponse] |
 | /v2/interrogate/submit | 200 | [AlchemyJobSubmitResponse][horde_sdk.ai_horde_api.apimodels.alchemy._submit.AlchemyJobSubmitResponse] |
 | /v2/kudos/transfer | 200 | [KudosTransferResponse][horde_sdk.ai_horde_api.apimodels._kudos.KudosTransferResponse] |
