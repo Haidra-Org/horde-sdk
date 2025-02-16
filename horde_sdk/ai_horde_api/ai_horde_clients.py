@@ -583,7 +583,8 @@ class BaseAIHordeSimpleClient(ABC):
         # If we've timed out, stop waiting, log a warning, and break out of the loop
         if timeout and timeout > 0 and time.time() - start_time > timeout:
             logger.warning(
-                f"Timeout reached, cancelling generations still outstanding: {gen_id}: {check_response}:",
+                f"Timeout reached, cancelling generations still outstanding: {gen_id}: "
+                f"{check_response.log_safe_model_dump()}:",
             )
             return PROGRESS_STATE.timed_out
 
