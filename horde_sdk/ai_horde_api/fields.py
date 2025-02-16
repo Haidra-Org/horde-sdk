@@ -50,7 +50,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
 
     @override
     def __eq__(self, other: Any) -> bool:
-        if (
+        if other is None or (
             not (isinstance(self.__class__, uuid.UUID) or isinstance(other, uuid.UUID))
             and self.__class__ != other.__class__
         ):
