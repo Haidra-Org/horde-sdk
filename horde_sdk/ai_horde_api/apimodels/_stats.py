@@ -1,7 +1,7 @@
 from enum import auto
 
 from loguru import logger
-from pydantic import ConfigDict, Field, field_validator
+from pydantic import Field, field_validator
 from strenum import StrEnum
 from typing_extensions import override
 
