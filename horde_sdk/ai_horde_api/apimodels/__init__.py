@@ -82,7 +82,7 @@ from horde_sdk.ai_horde_api.apimodels.alchemy._pop import (
     AlchemyFormPayloadStable,
     AlchemyPopFormPayload,
     AlchemyPopRequest,
-    AlchemyPopResponse,
+    AlchemyJobPopResponse,
     NoValidAlchemyFound,
 )
 from horde_sdk.ai_horde_api.apimodels.alchemy._status import (
@@ -255,7 +255,7 @@ __all__ = [
     "AlchemyFormPayloadStable",
     "AlchemyPopFormPayload",
     "AlchemyPopRequest",
-    "AlchemyPopResponse",
+    "AlchemyJobPopResponse",
     "NoValidAlchemyFound",
     "AlchemyCaptionResult",
     "AlchemyDeleteRequest",

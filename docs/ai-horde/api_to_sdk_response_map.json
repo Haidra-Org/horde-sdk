@@ -21,7 +21,7 @@
         "200": "horde_sdk.ai_horde_api.apimodels.alchemy._submit.AlchemyJobSubmitResponse"
     },
     "/v2/interrogate/pop": {
-        "200": "horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyPopResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyJobPopResponse"
     },
     "/v2/workers": {
         "200": "horde_sdk.ai_horde_api.apimodels.workers._workers.AllWorkersDetailsResponse"

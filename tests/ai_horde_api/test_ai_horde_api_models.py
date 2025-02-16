@@ -12,7 +12,7 @@ import pytest
 from horde_sdk.ai_horde_api.apimodels import (
     KNOWN_ALCHEMY_TYPES,
     AlchemyPopFormPayload,
-    AlchemyPopResponse,
+    AlchemyJobPopResponse,
     ImageGenerateAsyncResponse,
 )
 from horde_sdk.ai_horde_api.apimodels._find_user import (
@@ -689,8 +689,8 @@ async def test_ImageGenerateJobPop_download_addtl_data() -> None:
     assert downloaded_extra_source_images[1].strength == 2.0
 
 
-def test_AlchemyPopResponse() -> None:
-    test_alchemy_pop_response = AlchemyPopResponse(
+def test_AlchemyJobPopResponse() -> None:
+    test_alchemy_pop_response = AlchemyJobPopResponse(
         forms=[
             AlchemyPopFormPayload(
                 id=GenerationID(root=UUID("00000000-0000-0000-0000-000000000000")),
@@ -711,7 +711,7 @@ def test_AlchemyPopResponse() -> None:
 
     assert test_alchemy_pop_response in container
 
-    test_alchemy_pop_response_multiple_forms = AlchemyPopResponse(
+    test_alchemy_pop_response_multiple_forms = AlchemyJobPopResponse(
         forms=[
             AlchemyPopFormPayload(
                 id=GenerationID(root=UUID("00000000-0000-0000-0000-000000000010")),
@@ -728,7 +728,7 @@ def test_AlchemyPopResponse() -> None:
         ],
     )
 
-    test_alchemy_pop_response_multiple_forms_copy = AlchemyPopResponse(
+    test_alchemy_pop_response_multiple_forms_copy = AlchemyJobPopResponse(
         forms=[
             AlchemyPopFormPayload(
                 id=GenerationID(root=UUID("00000000-0000-0000-0000-000000000020")),

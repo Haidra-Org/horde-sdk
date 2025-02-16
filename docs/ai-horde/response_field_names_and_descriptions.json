@@ -65,7 +65,7 @@
             ]
         }
     },
-    "AlchemyPopResponse": {
+    "AlchemyJobPopResponse": {
         "forms": {
             "description": "The forms that to be generated",
             "types": [

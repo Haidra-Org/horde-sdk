@@ -126,7 +126,7 @@ class NoValidAlchemyFound(HordeAPIObjectBaseModel):
         return hash((self.bridge_version, self.untrusted, self.worker_id))
 
 
-class AlchemyPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin):
+class AlchemyJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin):
     """v2 API Model: `InterrogationPopPayload`."""
 
     # and not actually specifying a schema
@@ -168,7 +168,7 @@ class AlchemyPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin)
         return all_ids
 
     @model_validator(mode="after")
-    def coerce_list_order(self) -> AlchemyPopResponse:
+    def coerce_list_order(self) -> AlchemyJobPopResponse:
         if self.forms is not None:
             logger.debug("Sorting forms by id")
             self.forms.sort(key=lambda form: form.id_)
@@ -182,7 +182,7 @@ class AlchemyPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin)
         return [AlchemyJobSubmitRequest]
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, AlchemyPopResponse):
+        if not isinstance(other, AlchemyJobPopResponse):
             return False
 
         forms_match = True
@@ -233,5 +233,5 @@ class AlchemyPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[AlchemyPopResponse]:
-        return AlchemyPopResponse
+    def get_default_success_response_type(cls) -> type[AlchemyJobPopResponse]:
+        return AlchemyJobPopResponse
