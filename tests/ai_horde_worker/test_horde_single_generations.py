@@ -8,6 +8,10 @@ import pytest
 from loguru import logger
 from PIL import Image
 
+from horde_sdk.ai_horde_api.apimodels import AlchemyPopFormPayload
+from horde_sdk.ai_horde_api.apimodels.alchemy._pop import AlchemyJobPopResponse
+from horde_sdk.ai_horde_api.apimodels.generate._pop import ImageGenerateJobPopResponse
+from horde_sdk.ai_horde_api.apimodels.generate.text._pop import TextGenerateJobPopResponse
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.ai_horde_worker.consts import GENERATION_PROGRESS
 from horde_sdk.ai_horde_worker.generations import (
@@ -30,9 +34,11 @@ class GenerationPermutation:
     def __init__(
         self,
         *,
+        include_generation: bool,
         include_safety_check: bool,
         include_preloading: bool,
         include_post_processing: bool,
+        underlying_payload: ImageGenerateJobPopResponse | TextGenerateJobPopResponse | AlchemyPopFormPayload,
     ) -> None:
         """Initialize the permutation.
 
@@ -42,111 +48,83 @@ class GenerationPermutation:
             include_post_processing (bool): Whether to include post-processing in the generation process.
 
         """
-
+        self.include_generation = include_generation
         self.include_safety_check = include_safety_check
         self.include_preloading = include_preloading
         self.include_post_processing = include_post_processing
+        self.underlying_payload = underlying_payload
 
 
-@pytest.fixture(scope="session")
-def image_permutations() -> list[GenerationPermutation]:
-    """Return the supported configurations for a `ImageSingleGeneration` object."""
-    return [
-        GenerationPermutation(
-            include_safety_check=True,
-            include_preloading=True,
-            include_post_processing=True,
-        ),
-        GenerationPermutation(
-            include_safety_check=True,
-            include_preloading=True,
-            include_post_processing=False,
-        ),
-        GenerationPermutation(
-            include_safety_check=True,
-            include_preloading=False,
-            include_post_processing=True,
-        ),
-    ]
+def create_permutations(
+    payload: ImageGenerateJobPopResponse | TextGenerateJobPopResponse | AlchemyPopFormPayload,
+    required_safety_check: bool = False,
+    required_preloading: bool = False,
+    required_post_processing: bool = False,
+    required_generation: bool = False,
+) -> list[GenerationPermutation]:
+    permutations = []
+    for include_safety_check in [True] if required_safety_check else [False, True]:
+        for include_preloading in [True] if required_preloading else [False, True]:
+            for include_post_processing in [True] if required_post_processing else [False, True]:
+                for include_generation in [True] if required_generation else [False, True]:
+                    permutations.append(
+                        GenerationPermutation(
+                            include_generation=include_generation,
+                            include_safety_check=include_safety_check,
+                            include_preloading=include_preloading,
+                            include_post_processing=include_post_processing,
+                            underlying_payload=payload,
+                        ),
+                    )
+    return permutations
 
 
-@pytest.fixture(scope="session")
-def alchemy_permutations() -> list[GenerationPermutation]:
-    """Return the supported configurations for a `AlchemySingleGeneration` object."""
-    return [
-        GenerationPermutation(
-            include_safety_check=False,
-            include_preloading=True,
-            include_post_processing=True,
-        ),
-        GenerationPermutation(
-            include_safety_check=False,
-            include_preloading=True,
-            include_post_processing=False,
-        ),
-        GenerationPermutation(
-            include_safety_check=False,
-            include_preloading=False,
-            include_post_processing=True,
-        ),
-        GenerationPermutation(
-            include_safety_check=True,
-            include_preloading=True,
-            include_post_processing=True,
-        ),
-        GenerationPermutation(
-            include_safety_check=True,
-            include_preloading=False,
-            include_post_processing=True,
-        ),
-    ]
-
-
-@pytest.fixture(scope="session")
-def text_permutations() -> list[GenerationPermutation]:
+@pytest.fixture(scope="function")
+def text_permutations(
+    simple_text_gen_job_pop_response: TextGenerateJobPopResponse,
+) -> list[GenerationPermutation]:
     """Return the supported configurations for a `TextSingleGeneration` object."""
-    return [
-        GenerationPermutation(
-            include_safety_check=False,
-            include_preloading=True,
-            include_post_processing=False,
-        ),
-        GenerationPermutation(
-            include_safety_check=False,
-            include_preloading=False,
-            include_post_processing=False,
-        ),
-        GenerationPermutation(
-            include_safety_check=True,
-            include_preloading=True,
-            include_post_processing=False,
-        ),
-        GenerationPermutation(
-            include_safety_check=True,
-            include_preloading=False,
-            include_post_processing=False,
-        ),
-        GenerationPermutation(
-            include_safety_check=False,
-            include_preloading=True,
-            include_post_processing=True,
-        ),
-        GenerationPermutation(
-            include_safety_check=False,
-            include_preloading=False,
-            include_post_processing=True,
-        ),
-        GenerationPermutation(
-            include_safety_check=True,
-            include_preloading=True,
-            include_post_processing=True,
-        ),
-        GenerationPermutation(
-            include_safety_check=True,
-            include_preloading=False,
-            include_post_processing=True,
-        ),
-    ]
+    return create_permutations(
+        simple_text_gen_job_pop_response,
+        required_generation=True,
+    )
+
+
+@pytest.fixture(scope="function")
+def image_permutations(
+    simple_image_gen_job_pop_response: ImageGenerateJobPopResponse,
+    simple_image_gen_job_pop_response_post_processing: ImageGenerateJobPopResponse,
+) -> list[GenerationPermutation]:
+    """Return the supported configurations for a `ImageSingleGeneration` object."""
+    return create_permutations(
+        simple_image_gen_job_pop_response,
+        required_generation=True,
+        required_safety_check=True,
+    ) + create_permutations(
+        simple_image_gen_job_pop_response_post_processing,
+        required_generation=True,
+        required_safety_check=True,
+    )
+
+
+@pytest.fixture(scope="function")
+def alchemy_permutations(
+    simple_alchemy_gen_job_pop_response: AlchemyJobPopResponse,
+    simple_alchemy_gen_job_pop_nsfw_check: AlchemyJobPopResponse,
+) -> list[GenerationPermutation]:
+    """Return the supported configurations for a `AlchemySingleGeneration` object."""
+
+    assert simple_alchemy_gen_job_pop_response.forms is not None
+    assert len(simple_alchemy_gen_job_pop_response.forms) == 1
+
+    form = simple_alchemy_gen_job_pop_response.forms[0]
+
+    assert simple_alchemy_gen_job_pop_nsfw_check.forms is not None
+    assert len(simple_alchemy_gen_job_pop_nsfw_check.forms) == 1
+
+    form_nsfw = simple_alchemy_gen_job_pop_nsfw_check.forms[0]
+
+    return create_permutations(form) + create_permutations(form_nsfw)
 
 
 class TestHordeSingleGeneration:
@@ -157,6 +135,45 @@ class TestHordeSingleGeneration:
     @pytest.fixture(autouse=True)
     def setup(self, default_testing_image_base64: str) -> None:
         self._shared_image = Image.open(BytesIO(base64.b64decode(default_testing_image_base64)))
+
+    @pytest.fixture(scope="function")
+    def id_and_image_generation(
+        self,
+        single_id: GenerationID,
+        simple_image_gen_job_pop_response: ImageGenerateJobPopResponse,
+    ) -> tuple[GenerationID, ImageSingleGeneration]:
+        generation = ImageSingleGeneration(
+            generation_id=single_id,
+            api_response=simple_image_gen_job_pop_response,
+        )
+        return single_id, generation
+
+    @pytest.fixture(scope="function")
+    def id_and_text_generation(
+        self,
+        single_id: GenerationID,
+        simple_text_gen_job_pop_response: TextGenerateJobPopResponse,
+    ) -> tuple[GenerationID, TextSingleGeneration]:
+        generation = TextSingleGeneration(
+            generation_id=single_id,
+            api_response=simple_text_gen_job_pop_response,
+        )
+        return single_id, generation
+
+    @pytest.fixture(scope="function")
+    def id_and_alchemy_generation(
+        self,
+        single_id: GenerationID,
+        simple_alchemy_gen_job_pop_response: AlchemyJobPopResponse,
+    ) -> tuple[GenerationID, AlchemySingleGeneration]:
+        assert simple_alchemy_gen_job_pop_response.forms is not None
+        assert len(simple_alchemy_gen_job_pop_response.forms) == 1
+
+        generation = AlchemySingleGeneration(
+            generation_id=single_id,
+            form=simple_alchemy_gen_job_pop_response.forms[0],
+        )
+        return single_id, generation
 
     def test_none_generation_init(
         self,
@@ -191,68 +208,62 @@ class TestHordeSingleGeneration:
 
     def test_alchemy_single_generation_init(
         self,
-        single_id: GenerationID,
+        id_and_alchemy_generation: tuple[GenerationID, AlchemySingleGeneration],
     ) -> None:
         """Test that an `AlchemySingleGeneration` object can be initialized correctly."""
 
         from horde_sdk.ai_horde_worker.consts import default_alchemy_generate_progress_transitions
 
-        generation = AlchemySingleGeneration(
-            generation_id=single_id,
-        )
+        generation_id, generation = id_and_alchemy_generation
 
         TestHordeSingleGeneration.shared_check_generation_init(
             generation=generation,
-            generation_id=single_id,
+            generation_id=generation_id,
         )
 
         assert generation._generate_progress_transitions == default_alchemy_generate_progress_transitions
 
     def test_image_single_generation_init(
         self,
-        single_id: GenerationID,
+        id_and_image_generation: tuple[GenerationID, ImageSingleGeneration],
     ) -> None:
         """Test that an `ImageSingleGeneration` object can be initialized correctly."""
 
         from horde_sdk.ai_horde_worker.consts import default_image_generate_progress_transitions
 
-        generation = ImageSingleGeneration(
-            generation_id=single_id,
-        )
+        generation_id, generation = id_and_image_generation
 
         TestHordeSingleGeneration.shared_check_generation_init(
             generation=generation,
-            generation_id=single_id,
+            generation_id=generation_id,
         )
 
         assert generation._generate_progress_transitions == default_image_generate_progress_transitions
 
     def test_text_single_generation_init(
         self,
-        single_id: GenerationID,
+        id_and_text_generation: tuple[GenerationID, TextSingleGeneration],
     ) -> None:
         """Test that a `TextSingleGeneration` object can be initialized correctly."""
 
         from horde_sdk.ai_horde_worker.consts import default_text_generate_progress_transitions
 
-        generation = TextSingleGeneration(
-            generation_id=single_id,
-        )
+        generation_id, generation = id_and_text_generation
 
         TestHordeSingleGeneration.shared_check_generation_init(
             generation=generation,
-            generation_id=single_id,
+            generation_id=generation_id,
         )
 
         assert generation._generate_progress_transitions == default_text_generate_progress_transitions
 
     def test_invalid_step_raises_error(
         self,
-        single_id: GenerationID,
+        id_and_image_generation: tuple[GenerationID, ImageSingleGeneration],
     ) -> None:
         """Test that an exception is raised when an invalid step is passed to the generation."""
 
-        generation = ImageSingleGeneration(generation_id=single_id)
+        _, generation = id_and_image_generation
 
         assert generation.get_generation_progress() == GENERATION_PROGRESS.NOT_STARTED
 
@@ -270,7 +281,7 @@ class TestHordeSingleGeneration:
 
     def test_wrong_order_of_steps(
         self,
-        single_id: GenerationID,
+        id_and_image_generation: tuple[GenerationID, ImageSingleGeneration],
     ) -> None:
         """Test that an exception is raised when the generation steps are called in the wrong order.
 
@@ -280,7 +291,7 @@ class TestHordeSingleGeneration:
             This is a safety check to prevent infinite loops or bad implementations.
         """
 
-        generation = ImageSingleGeneration(generation_id=single_id)
+        _, generation = id_and_image_generation
 
         def assert_raises_value_error(func: Callable[..., Any], match: str) -> None:
             with pytest.raises(ValueError, match=match):
@@ -335,14 +346,20 @@ class TestHordeSingleGeneration:
             f"Invalid transition from {GENERATION_PROGRESS.GENERATING} to {GENERATION_PROGRESS.PRELOADING_COMPLETE}",
         )
 
-    def test_set_safety_check_result_without_generation_result(self, single_id: GenerationID) -> None:
+    def test_set_safety_check_result_without_generation_result(
+        self,
+        id_and_image_generation: tuple[GenerationID, ImageSingleGeneration],
+    ) -> None:
         """Test that an exception is raised when setting a safety check result without setting a generation result."""
-        generation = ImageSingleGeneration(generation_id=single_id)
+        _, generation = id_and_image_generation
 
         with pytest.raises(ValueError, match="Generation result must be set before setting safety check result"):
             generation._set_safety_check_result(is_nsfw=True, is_csam=False)
 
-    def test_reference_run_generation_process_image(self) -> None:
+    def test_reference_run_generation_process_image(
+        self,
+        simple_image_gen_job_pop_response: ImageGenerateJobPopResponse,
+    ) -> None:
         """Run a reference generation process from start to finish, without testing-specific magic or helpers.
 
         The purpose of this test is to have a the bare-minimum usage of the `HordeSingleGeneration` class to ensure
@@ -352,7 +369,10 @@ class TestHordeSingleGeneration:
         from horde_sdk.ai_horde_worker.generations import ImageSingleGeneration
 
         dummy_id = GenerationID(UUID("00000000-0000-0000-0000-000000000000"))
-        generation = ImageSingleGeneration(generation_id=dummy_id, requires_post_processing=False)
+        generation = ImageSingleGeneration(
+            generation_id=dummy_id,
+            api_response=simple_image_gen_job_pop_response,
+        )
         assert generation.get_generation_progress() == GENERATION_PROGRESS.NOT_STARTED
 
         generation.on_preloading()
@@ -383,7 +403,10 @@ class TestHordeSingleGeneration:
         generation.on_submit_complete()
         assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMIT_COMPLETE
 
-    def test_reference_run_generation_process_text(self) -> None:
+    def test_reference_run_generation_process_text(
+        self,
+        simple_text_gen_job_pop_response: TextGenerateJobPopResponse,
+    ) -> None:
         """Run a reference generation process from start to finish, without testing-specific magic or helpers.
 
         The purpose of this test is to have a the bare-minimum usage of the `HordeSingleGeneration` class to ensure
@@ -393,7 +416,10 @@ class TestHordeSingleGeneration:
         from horde_sdk.ai_horde_worker.generations import TextSingleGeneration
 
         dummy_id = GenerationID(UUID("00000000-0000-0000-0000-000000000000"))
-        generation = TextSingleGeneration(generation_id=dummy_id)
+        generation = TextSingleGeneration(
+            generation_id=dummy_id,
+            api_response=simple_text_gen_job_pop_response,
+        )
         assert generation.get_generation_progress() == GENERATION_PROGRESS.NOT_STARTED
 
         generation.on_preloading()
@@ -415,17 +441,19 @@ class TestHordeSingleGeneration:
         generation.on_submit_complete()
         assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMIT_COMPLETE
 
-    def test_reference_run_generation_process_alchemy(self) -> None:
+    def test_reference_run_generation_process_alchemy(
+        self,
+        id_and_alchemy_generation: tuple[GenerationID, AlchemySingleGeneration],
+    ) -> None:
         """Run a reference generation process from start to finish, without testing-specific magic or helpers.
 
         The purpose of this test is to have a the bare-minimum usage of the `HordeSingleGeneration` class to ensure
         that the most straight forward use-case works as expected and isn't lost in the complexity of the test suite.
         """
         from horde_sdk.ai_horde_worker.consts import GENERATION_PROGRESS
-        from horde_sdk.ai_horde_worker.generations import AlchemySingleGeneration
 
-        dummy_id = GenerationID(UUID("00000000-0000-0000-0000-000000000000"))
-        generation = AlchemySingleGeneration(generation_id=dummy_id)
+        _, generation = id_and_alchemy_generation
+
         assert generation.get_generation_progress() == GENERATION_PROGRESS.NOT_STARTED
 
         generation.on_preloading()
@@ -449,9 +477,10 @@ class TestHordeSingleGeneration:
         generation.on_submit_complete()
         assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMIT_COMPLETE
 
+    @staticmethod
     def run_generation_process(
-        self,
         generation: HordeSingleGeneration[Any],
+        result: Image.Image | str,
         include_preloading: bool,
         include_generation: bool,
         include_post_processing: bool,
@@ -485,16 +514,16 @@ class TestHordeSingleGeneration:
                 generation.on_generation_work_complete()
             else:
                 generation.on_generation_work_complete()
-                generation.set_work_result(self._shared_image)
+                generation.set_work_result(result)
 
         if include_post_processing:
             generation.on_post_processing()
             assert generation.get_generation_progress() == GENERATION_PROGRESS.POST_PROCESSING
 
             generation.on_post_processing_complete()
-            generation.set_work_result(self._shared_image)
+            generation.set_work_result(result)
 
-        assert generation.generation_result == self._shared_image
+        assert generation.generation_result == result
 
         if include_safety_check:
             assert generation.get_generation_progress() == GENERATION_PROGRESS.PENDING_SAFETY_CHECK
@@ -516,63 +545,80 @@ class TestHordeSingleGeneration:
     def test_happy_path_image_start_to_finish(
         self,
         single_id: GenerationID,
+        simple_image_gen_job_pop_response: ImageGenerateJobPopResponse,
+        simple_image_gen_job_pop_response_post_processing: ImageGenerateJobPopResponse,
     ) -> None:
         """Test the happy path for average `ImageSingleGeneration` from start to finish."""
 
-        generation = ImageSingleGeneration(generation_id=single_id, requires_post_processing=True)
-
-        self.process_generation(
-            generation,
-            include_preloading=True,
-            include_safety_check=True,
-            include_generation=True,
-            include_post_processing=True,
+        generation_no_post_processing = ImageSingleGeneration(
+            generation_id=single_id,
+            api_response=simple_image_gen_job_pop_response,
         )
-
-        generation_no_post_processing = ImageSingleGeneration(generation_id=single_id, requires_post_processing=False)
         self.process_generation(
             generation_no_post_processing,
             include_preloading=True,
             include_safety_check=True,
             include_generation=True,
             include_post_processing=False,
+        )
+
+        generation_with_post_processing = ImageSingleGeneration(
+            generation_id=single_id,
+            api_response=simple_image_gen_job_pop_response_post_processing,
+        )
+        self.process_generation(
+            generation_with_post_processing,
+            include_preloading=True,
+            include_safety_check=True,
+            include_generation=True,
+            include_post_processing=True,
         )
 
     def test_happy_path_image_no_preloading(
         self,
         single_id: GenerationID,
+        simple_image_gen_job_pop_response: ImageGenerateJobPopResponse,
+        simple_image_gen_job_pop_response_post_processing: ImageGenerateJobPopResponse,
     ) -> None:
         """Test the happy path for average `ImageSingleGeneration` from start to finish without preloading."""
 
-        generation = ImageSingleGeneration(generation_id=single_id, requires_post_processing=True)
-
-        self.run_generation_process(
-            generation,
-            include_preloading=False,
-            include_safety_check=True,
-            include_generation=True,
-            include_post_processing=True,
+        generation_no_post_processing = ImageSingleGeneration(
+            generation_id=single_id,
+            api_response=simple_image_gen_job_pop_response,
         )
-
-        generation_no_post_processing = ImageSingleGeneration(generation_id=single_id, requires_post_processing=False)
         self.run_generation_process(
             generation_no_post_processing,
+            result=self._shared_image,
             include_preloading=False,
             include_safety_check=True,
             include_generation=True,
             include_post_processing=False,
         )
 
+        generation_with_post_processing = ImageSingleGeneration(
+            generation_id=single_id,
+            api_response=simple_image_gen_job_pop_response_post_processing,
+        )
+        self.run_generation_process(
+            generation_with_post_processing,
+            result=self._shared_image,
+            include_preloading=False,
+            include_safety_check=True,
+            include_generation=True,
+            include_post_processing=True,
+        )
+
     def test_happy_path_alchemy_start_to_finish(
         self,
-        single_id: GenerationID,
+        id_and_alchemy_generation: tuple[GenerationID, AlchemySingleGeneration],
     ) -> None:
         """Test the happy path for average `AlchemySingleGeneration` from start to finish."""
 
-        generation = AlchemySingleGeneration(generation_id=single_id)
+        _, generation = id_and_alchemy_generation
 
         self.run_generation_process(
             generation,
+            result=self._shared_image,
             include_preloading=True,
             include_safety_check=False,
             include_generation=False,
@@ -581,14 +627,15 @@ class TestHordeSingleGeneration:
 
     def test_happy_path_alchemy_no_preloading(
         self,
-        single_id: GenerationID,
+        id_and_alchemy_generation: tuple[GenerationID, AlchemySingleGeneration],
     ) -> None:
         """Test the happy path for average `AlchemySingleGeneration` from start to finish without preloading."""
 
-        generation = AlchemySingleGeneration(generation_id=single_id, requires_post_processing=True)
+        _, generation = id_and_alchemy_generation
 
         self.run_generation_process(
             generation,
+            result=self._shared_image,
             include_preloading=False,
             include_safety_check=False,
             include_generation=False,
@@ -597,14 +644,15 @@ class TestHordeSingleGeneration:
 
     def test_happy_path_text_start_to_finish(
         self,
-        single_id: GenerationID,
+        id_and_text_generation: tuple[GenerationID, TextSingleGeneration],
     ) -> None:
         """Test the happy path for average `TextSingleGeneration` from start to finish."""
 
-        generation = TextSingleGeneration(generation_id=single_id)
+        _, generation = id_and_text_generation
 
         self.run_generation_process(
             generation,
+            result=self._shared_image,
             include_preloading=True,
             include_safety_check=False,
             include_generation=True,
@@ -613,14 +661,15 @@ class TestHordeSingleGeneration:
 
     def test_happy_path_text_no_preloading(
         self,
-        single_id: GenerationID,
+        id_and_text_generation: tuple[GenerationID, TextSingleGeneration],
     ) -> None:
         """Test the happy path for average `TextSingleGeneration` from start to finish without preloading."""
 
-        generation = TextSingleGeneration(generation_id=single_id)
+        _, generation = id_and_text_generation
 
         self.run_generation_process(
             generation,
+            result=self._shared_image,
             include_preloading=False,
             include_safety_check=False,
             include_generation=True,
@@ -660,6 +709,25 @@ class TestHordeSingleGeneration:
         incremented.
 
         """
+        if not generation.does_class_require_generation() and not include_generation and not include_post_processing:
+            logger.trace(
+                f"Skipping generation for {generation.__class__.__name__} as it does not require generation "
+                "and generation and post-processing are not included",
+            )
+            return
+
+        if generation.does_class_require_generation() and not include_generation:
+            logger.trace(
+                f"Skipping generation for {generation.__class__.__name__} as it requires generation and "
+                "generation is not included",
+            )
+            return
+
+        if include_post_processing and not generation.requires_post_processing:
+            logger.trace(
+                f"Skipping post-processing for {generation.__class__.__name__} as it does not require post-processing",
+            )
+            return
 
         error_flags = {
             "preloading": error_on_preloading and include_preloading,
@@ -668,13 +736,6 @@ class TestHordeSingleGeneration:
             "safety_check": error_on_safety_check and include_safety_check,
             "submit": error_on_submit,
         }
-
-        if not generation.does_class_requires_generation() and not include_generation and not include_post_processing:
-            logger.trace(
-                f"Skipping generation for {generation.__class__.__name__} as it does not require generation "
-                "and generation and post-processing are not included",
-            )
-            return
 
         target_errors_count = sum(error_flags.values())
         errors_count = 0
@@ -882,13 +943,15 @@ class TestHordeSingleGeneration:
 
     def run_generation_test_permutations(
         self,
-        generation_class: type[HordeSingleGeneration[Any]],
-        generation_id: GenerationID | Callable[[], GenerationID],
+        generation_class: type[ImageSingleGeneration | TextSingleGeneration | AlchemySingleGeneration],
+        generation_id_factory: Callable[[], GenerationID],
         permutations: list[GenerationPermutation],
-        process_function: Callable[..., None],
         include_generation: bool,
-        requires_generation: bool | None = None,
-        **kwargs: Any,  # noqa
+        error_on_preloading: bool,
+        error_on_generation: bool,
+        error_on_post_processing: bool,
+        error_on_safety_check: bool,
+        error_on_submit: bool,
     ) -> None:
         """Run permutations of generation configurations.
 
@@ -906,88 +969,102 @@ class TestHordeSingleGeneration:
 
         """
         for permutation in permutations:
-            from horde_sdk.ai_horde_worker.consts import base_generate_progress_transitions
-
-            transition_override: Mapping[GENERATION_PROGRESS, Iterable[GENERATION_PROGRESS]] = (
-                generation_class.default_generate_progress_transitions()
-            )
-            if permutation.include_safety_check:
-                transition_override = base_generate_progress_transitions
-                logger.trace(f"Using safety check transitions for {generation_class.__name__}")
-            else:
-                logger.trace(
-                    f"Using default transitions for {generation_class.__name__} as defined by the class"
-                    "function `default_generate_progress_transitions(...)`",
-                )
-
-            if requires_generation and not generation_class.does_class_requires_generation():
-                generation = generation_class(
-                    generation_id=generation_id() if callable(generation_id) else generation_id,
-                    requires_post_processing=permutation.include_post_processing,
-                    requires_generation=requires_generation,
-                    generate_progress_transitions=transition_override,
+            generation: HordeSingleGeneration[Any] | None = None
+            if generation_class == ImageSingleGeneration:
+                assert isinstance(permutation.underlying_payload, ImageGenerateJobPopResponse)
+                generation = ImageSingleGeneration(
+                    generation_id=generation_id_factory(),
+                    api_response=permutation.underlying_payload,
                     extra_logging=False,
                 )
-            else:
-                generation = generation_class(
-                    generation_id=generation_id() if callable(generation_id) else generation_id,
+                permutation.include_post_processing = generation.requires_post_processing
+            elif generation_class == AlchemySingleGeneration:
+                assert isinstance(permutation.underlying_payload, AlchemyPopFormPayload)
+                generation = AlchemySingleGeneration(
+                    generation_id=generation_id_factory(),
+                    form=permutation.underlying_payload,
+                    requires_generation=permutation.include_post_processing,
                     requires_post_processing=permutation.include_post_processing,
-                    generate_progress_transitions=transition_override,
+                    requires_safety_check=permutation.include_safety_check,
+                    extra_logging=False,
+                )
+            elif generation_class == TextSingleGeneration:
+                assert isinstance(permutation.underlying_payload, TextGenerateJobPopResponse)
+                generation = TextSingleGeneration(
+                    generation_id=generation_id_factory(),
+                    api_response=permutation.underlying_payload,
+                    requires_post_processing=permutation.include_post_processing,
+                    requires_safety_check=permutation.include_safety_check,
                     extra_logging=False,
                 )
 
-            if generation_class.does_class_requires_generation():
-                logger.trace(
-                    f"Overriding requires_generation to {requires_generation} for {generation_class.__name__}",
-                )
-                include_generation = True
+            assert generation is not None
 
-            process_function(
-                self,
+            if permutation.include_post_processing and not generation.requires_post_processing:
+                logger.trace(
+                    f"Skipping post-processing for {generation_class.__name__} as it is not required",
+                )
+
+            self.process_generation(
                 generation,
                 include_generation=include_generation,
                 include_safety_check=permutation.include_safety_check,
                 include_preloading=permutation.include_preloading,
                 include_post_processing=permutation.include_post_processing,
-                **kwargs,
+                error_on_preloading=error_on_preloading,
+                error_on_generation=error_on_generation,
+                error_on_post_processing=error_on_post_processing,
+                error_on_safety_check=error_on_safety_check,
+                error_on_submit=error_on_submit,
             )
 
     @pytest.mark.parametrize(
-        "generation_class,process_function,include_generation,requires_generation",
+        "generation_class,include_generation",
         [
-            (ImageSingleGeneration, process_generation, True, True),
-            (ImageSingleGeneration, process_generation, True, False),
-            (ImageSingleGeneration, process_generation, False, True),
-            (ImageSingleGeneration, process_generation, False, False),
-            (AlchemySingleGeneration, process_generation, True, True),
-            (AlchemySingleGeneration, process_generation, True, False),
-            (AlchemySingleGeneration, process_generation, False, True),
-            (AlchemySingleGeneration, process_generation, False, False),
-            (TextSingleGeneration, process_generation, True, True),
-            (TextSingleGeneration, process_generation, True, False),
-            (TextSingleGeneration, process_generation, False, True),
-            (TextSingleGeneration, process_generation, False, False),
+            (ImageSingleGeneration, True),
+            (AlchemySingleGeneration, True),
+            (AlchemySingleGeneration, False),
+            (TextSingleGeneration, True),
+            (TextSingleGeneration, False),
         ],
     )
     def test_error_handling(
         self,
-        generation_class: type[HordeSingleGeneration[Any]],
-        process_function: Callable[..., None],
+        generation_class: type[ImageSingleGeneration | TextSingleGeneration | AlchemySingleGeneration],
         include_generation: bool,
-        requires_generation: bool,
         id_factory: Callable[[], GenerationID],
         image_permutations: list[GenerationPermutation],
         alchemy_permutations: list[GenerationPermutation],
         text_permutations: list[GenerationPermutation],
     ) -> None:
         """Test error handling for all permutations of generation configurations."""
+
+        from collections import namedtuple
+
+        ErrorPermutation = namedtuple(
+            "ErrorPermutation",
+            [
+                "error_on_preloading",
+                "error_on_generation",
+                "error_on_post_processing",
+                "error_on_safety_check",
+                "error_on_submit",
+            ],
+        )
+
         error_permutations = [
-            (a, b, c, d, e)
-            for a in [True, False]
-            for b in [True, False]
-            for c in [True, False]
-            for d in [True, False]
-            for e in [True, False]
+            ErrorPermutation(
+                error_on_preloading,
+                error_on_generation,
+                error_on_post_processing,
+                error_on_safety_check,
+                error_on_submit,
+            )
+            for error_on_preloading in [True, False]
+            for error_on_generation in [True, False]
+            for error_on_post_processing in [True, False]
+            for error_on_safety_check in [True, False]
+            for error_on_submit in [True, False]
         ]
 
         permutations_map = {
@@ -1000,26 +1077,22 @@ class TestHordeSingleGeneration:
             permutations = permutations_map.get(generation_class)
             if permutations is None:
                 raise ValueError(f"Permutations not found for {generation_class.__name__}")
-
             try:
                 self.run_generation_test_permutations(
                     generation_class,
                     id_factory,
                     permutations,
-                    process_function,
                     include_generation=include_generation,
-                    requires_generation=requires_generation,
-                    error_on_preloading=error_permutation[0],
-                    error_on_generation=error_permutation[1],
-                    error_on_post_processing=error_permutation[2],
-                    error_on_safety_check=error_permutation[3],
-                    error_on_submit=error_permutation[4],
+                    error_on_preloading=error_permutation.error_on_preloading,
+                    error_on_generation=error_permutation.error_on_generation,
+                    error_on_post_processing=error_permutation.error_on_post_processing,
+                    error_on_safety_check=error_permutation.error_on_safety_check,
+                    error_on_submit=error_permutation.error_on_submit,
                 )
             except Exception as e:
                 logger.exception(f"Error running permutations for {generation_class.__name__}")
                 logger.exception(f"Error permutation: {error_permutation}")
                 logger.exception(f"Generation permutations: {permutations}")
                 logger.exception(f"included generation: {include_generation}")
-                logger.exception(f"requires generation: {requires_generation}")
 
                 raise e

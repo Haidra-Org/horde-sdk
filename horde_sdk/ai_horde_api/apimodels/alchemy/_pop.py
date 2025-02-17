@@ -11,6 +11,7 @@ from horde_sdk.ai_horde_api.apimodels.base import (
 )
 from horde_sdk.ai_horde_api.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
+from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
@@ -193,6 +194,18 @@ class AlchemyJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMix
             return hash(self.skipped)
 
         return hash((tuple([form.id_ for form in self.forms]), self.skipped))
+
+    @property
+    def ids(self) -> list[GenerationID]:
+        """Return a list of all the ids in the response."""
+        if self.forms is None:
+            return []
+        return [form.id_ for form in self.forms]
+
+    @property
+    def ids_present(self) -> bool:
+        """Return whether the response has any ids."""
+        return bool(self.ids)
 
 
 class AlchemyPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import time
-from abc import ABC
+from abc import ABC, abstractmethod
 from collections.abc import Iterable, Mapping
-from typing import Any, Generic, TypeVar
+from io import BytesIO
+from typing import Any, Callable, Generic, TypeVar
 
 from loguru import logger
 
@@ -39,25 +40,38 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
         return base_generate_progress_transitions
 
     @classmethod
-    def does_class_requires_generation(cls) -> bool:
+    def does_class_require_generation(cls) -> bool:
         """Whether or not the generation steps are mandatory for this generation class."""
         return True
 
+    @classmethod
+    def does_class_require_safety_check(cls) -> bool:
+        """Whether or not the generation requires a safety check."""
+        return True
+
     _extra_logging: bool = True
+
+    _result_type: type
+
+    @property
+    def result_type(self) -> type:
+        """The type of the result of the generation."""
+        return self._result_type
 
     def __init__(
         self,
         *,
         generation_id: GenerationID,
+        result_type: type,
         requires_generation: bool = True,
         requires_post_processing: bool = False,
+        requires_safety_check: bool = True,
         state_error_limits: Mapping[GENERATION_PROGRESS, int] | None = None,
         generate_progress_transitions: Mapping[
             GENERATION_PROGRESS,
             Iterable[GENERATION_PROGRESS],
         ] = base_generate_progress_transitions,
         extra_logging: bool = True,
-        **kwargs: dict[Any, Any],
     ) -> None:
         """Initialize the generation.
 
@@ -89,17 +103,19 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
                 f"Generation ID {generation_id} is not a GenerationID. This is likely to cause issues.",
             )
 
-        if len(kwargs) > 0:
-            logger.warning(f"Unused kwargs: {kwargs}")
-
         self._generation_id = generation_id
         self._extra_logging = extra_logging
 
-        if self.does_class_requires_generation() and not requires_generation:
+        if self.does_class_require_generation() and not requires_generation:
             raise ValueError("Generation class requires generation but requires_generation is False")
 
         self._requires_generation = requires_generation
         self._requires_post_processing = requires_post_processing
+
+        if self.does_class_require_safety_check() and not requires_safety_check:
+            raise ValueError("Generation class requires safety check but requires_safety_check is False")
+
+        self._requires_safety_check = requires_safety_check
 
         self._generation_metadata = []
 
@@ -188,12 +204,24 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
         """Whether or not the generation requires generation."""
         return self._requires_generation
 
-    def _extra_log(self, message: str) -> None:
+    _requires_safety_check: bool = False
+
+    @property
+    def requires_safety_check(self) -> bool:
+        """Whether or not the generation requires a safety check."""
+        return self._requires_safety_check
+
+    @staticmethod
+    @abstractmethod
+    def result_to_bytesio(result: GenerationResultType, buffer: BytesIO) -> None:
+        """Write the result to a BytesIO buffer."""
+
+    def _extra_log(self) -> Callable[[str], None]:
         """Log a message at debug level if extra logging is enabled or trace level if it is not."""
         if self._extra_logging:
-            logger.debug(message)
-        else:
-            logger.trace(message)
+            return logger.debug
+
+        return logger.trace
 
     def _add_failure_message(self, message: str, exception: Exception | None = None) -> None:
         """Add a message to the list of reasons the generation failed."""
@@ -251,7 +279,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
         if failure_exception is not None:
             transition_log_string += f"Exception: {failure_exception}. "
 
-        self._extra_log(transition_log_string)
+        self._extra_log()(transition_log_string)
 
         if current_state == GENERATION_PROGRESS.ERROR and len(self._progress_history) < 2:
             raise RuntimeError("Cannot transition from error state without a history!")
@@ -261,19 +289,19 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
         )
 
         if current_state == GENERATION_PROGRESS.ERROR:
-            self._extra_log(f"Generation {self.generation_id} last non-error state was {last_non_error_state}")
+            self._extra_log()(f"Generation {self.generation_id} last non-error state was {last_non_error_state}")
             self._errored_states.append((last_non_error_state, last_non_error_state_time))
 
         if next_state == last_non_error_state:
-            self._extra_log(f"Retrying state {next_state} after error")
+            self._extra_log()(f"Retrying state {next_state} after error")
         elif next_state not in self._generate_progress_transitions[last_non_error_state]:
-            self._extra_log(
+            self._extra_log()(
                 f"{self._progress_history=}, {self._generation_progress=}, {next_state=}, "
                 f"{self._generate_progress_transitions=}",
             )
             raise ValueError(f"Invalid transition from {current_state} to {next_state}")
 
-        self._extra_log(f"Generation {self.generation_id} progress history: {self._progress_history}")
+        self._extra_log()(f"Generation {self.generation_id} progress history: {self._progress_history}")
         self._generation_progress = next_state
         self._progress_history.append((next_state, time.monotonic()))
 
@@ -414,6 +442,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
         Args:
             result (Any): The result of the generation work.
         """
+
         self._generation_result = result
 
     _is_nsfw: bool | None = None

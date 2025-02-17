@@ -1,5 +1,7 @@
 """All requests, responses and API models defined for the AI Horde API."""
 
+from typing import TypeVar
+
 from horde_sdk.ai_horde_api.apimodels._documents import (
     AIHordeDocumentRequestMixin,
     AIHordeGetPrivacyPolicyRequest,
@@ -80,9 +82,9 @@ from horde_sdk.ai_horde_api.apimodels.alchemy._async import (
 )
 from horde_sdk.ai_horde_api.apimodels.alchemy._pop import (
     AlchemyFormPayloadStable,
+    AlchemyJobPopResponse,
     AlchemyPopFormPayload,
     AlchemyPopRequest,
-    AlchemyJobPopResponse,
     NoValidAlchemyFound,
 )
 from horde_sdk.ai_horde_api.apimodels.alchemy._status import (
@@ -186,6 +188,11 @@ from horde_sdk.generic_api.apimodels import (
     ResponseRequiringDownloadMixin,
     ResponseRequiringFollowUpMixin,
     ResponseWithProgressMixin,
+)
+
+JobPopResponseTypeVar = TypeVar(
+    "JobPopResponseTypeVar",
+    bound=ImageGenerateJobPopResponse | TextGenerateJobPopResponse | AlchemyJobPopResponse,
 )
 
 __all__ = [
@@ -334,4 +341,5 @@ __all__ = [
     "ResponseRequiringDownloadMixin",
     "ResponseRequiringFollowUpMixin",
     "ResponseWithProgressMixin",
+    "JobPopResponseTypeVar",
 ]

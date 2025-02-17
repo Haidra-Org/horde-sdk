@@ -18,12 +18,20 @@ if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from horde_sdk.ai_horde_api.apimodels import (
+    KNOWN_ALCHEMY_TYPES,
+    AlchemyJobPopResponse,
+    AlchemyPopFormPayload,
     ImageGenerateAsyncRequest,
     ImageGenerateJobPopPayload,
     ImageGenerateJobPopResponse,
     ImageGenerateJobPopSkippedStatus,
     ImageGenerationInputPayload,
+    ModelPayloadKobold,
+    NoValidAlchemyFound,
+    NoValidRequestFoundKobold,
+    TextGenerateJobPopResponse,
 )
+from horde_sdk.ai_horde_api.consts import KNOWN_UPSCALERS
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.generic_api.consts import ANON_API_KEY
 
@@ -116,10 +124,10 @@ def id_factory() -> Callable[[], GenerationID]:
 
 
 @pytest.fixture(scope="function")
-def simple_image_gen_response(
+def simple_image_gen_job_pop_response(
     single_id: UUID,
 ) -> ImageGenerateJobPopResponse:
-    """Return a `ImageGenerateJobPopResponse` instance with no arguments set and a new ID."""
+    """Return a `ImageGenerateJobPopResponse` instance with a typical model and no arguments set."""
     return ImageGenerateJobPopResponse(
         ids=[single_id],
         payload=ImageGenerateJobPopPayload(),
@@ -130,10 +138,10 @@ def simple_image_gen_response(
 
 
 @pytest.fixture(scope="function")
-def simple_image_gen_response_n_requests(
+def simple_image_gen_job_pop_response_n_requests(
     id_factory: Callable[[], GenerationID],
 ) -> ImageGenerateJobPopResponse:
-    """Return a `ImageGenerateJobPopResponse` instance with no arguments set and a new ID."""
+    """Return a `ImageGenerateJobPopResponse` instance with no arguments set."""
     ids = [id_factory() for _ in range(3)]
     return ImageGenerateJobPopResponse(
         ids=ids,
@@ -141,6 +149,69 @@ def simple_image_gen_response_n_requests(
         skipped=ImageGenerateJobPopSkippedStatus(),
         model="Deliberate",
         r2_uploads=[f"https://not.a.real.url.internal/upload/{id_}" for id_ in ids],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_job_pop_response_post_processing(
+    single_id: UUID,
+) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance with a upscaling post-processing argument set."""
+    return ImageGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ImageGenerateJobPopPayload(
+            post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+        model="Deliberate",
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_text_gen_job_pop_response(
+    single_id: UUID,
+) -> TextGenerateJobPopResponse:
+    """Return a `TextGenerateJobPopResponse` instance with a dummy model no other arguments set."""
+    return TextGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ModelPayloadKobold(),
+        skipped=NoValidRequestFoundKobold(),
+        model="oFakeModel",
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_gen_job_pop_response(
+    single_id: UUID,
+) -> AlchemyJobPopResponse:
+    """Return a `AlchemyJobPopResponse` instance for `interrogation` and no other arguments set"""
+    return AlchemyJobPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=single_id,
+                form=KNOWN_ALCHEMY_TYPES.interrogation,
+                r2_upload=f"https://not.a.real.url.internal/upload/{single_id}",
+            ),
+        ],
+        skipped=NoValidAlchemyFound(),
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_gen_job_pop_nsfw_check(
+    single_id: UUID,
+) -> AlchemyJobPopResponse:
+    """Return a `AlchemyJobPopResponse` instance for `nsfw` check and no other arguments set"""
+    return AlchemyJobPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=single_id,
+                form=KNOWN_ALCHEMY_TYPES.nsfw,
+                r2_upload=f"https://not.a.real.url.internal/upload/{single_id}",
+            ),
+        ],
+        skipped=NoValidAlchemyFound(),
     )
 
 
