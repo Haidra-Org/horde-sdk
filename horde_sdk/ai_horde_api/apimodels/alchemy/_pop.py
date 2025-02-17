@@ -167,14 +167,6 @@ class AlchemyJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMix
 
         return all_ids
 
-    @model_validator(mode="after")
-    def coerce_list_order(self) -> AlchemyJobPopResponse:
-        if self.forms is not None:
-            logger.debug("Sorting forms by id")
-            self.forms.sort(key=lambda form: form.id_)
-
-        return self
-
     @override
     @classmethod
     def get_follow_up_request_types(cls) -> list[type[AlchemyJobSubmitRequest]]:  # type: ignore[override]
