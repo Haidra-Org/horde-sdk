@@ -1,13 +1,20 @@
 from collections.abc import Iterable, Mapping
+from io import BytesIO
 from typing import Any
 
 import PIL.Image
 from typing_extensions import override
 
+from horde_sdk.ai_horde_api.apimodels import (
+    AlchemyPopFormPayload,
+    ImageGenerateJobPopResponse,
+    TextGenerateJobPopResponse,
+)
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.ai_horde_worker.consts import (
     GENERATION_PROGRESS,
     HordeWorkerConfigDefaults,
+    base_generate_progress_transitions,
     default_alchemy_generate_progress_transitions,
     default_image_generate_progress_transitions,
     default_text_generate_progress_transitions,
@@ -23,35 +30,36 @@ class ImageSingleGeneration(HordeSingleGeneration[PIL.Image.Image]):
 
     @override
     @classmethod
-    def default_generate_progress_transitions(cls) -> Mapping[GENERATION_PROGRESS, Iterable[GENERATION_PROGRESS]]:
+    def default_generate_progress_transitions(cls) -> dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]]:
         return default_image_generate_progress_transitions
 
     @override
     @classmethod
-    def does_class_requires_generation(cls) -> bool:
+    def does_class_require_generation(cls) -> bool:
         return True
+
+    @override
+    @classmethod
+    def does_class_require_safety_check(cls) -> bool:
+        return True
+
+    api_response: ImageGenerateJobPopResponse
 
     def __init__(
         self,
         *,
         generation_id: GenerationID,
-        requires_post_processing: bool = False,
+        api_response: ImageGenerateJobPopResponse,
         state_error_limits: (
             Mapping[GENERATION_PROGRESS, int] | None
         ) = HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS,
-        generate_progress_transitions: Mapping[
-            GENERATION_PROGRESS,
-            list[GENERATION_PROGRESS],
-        ] = default_image_generate_progress_transitions,
         extra_logging: bool = False,
-        **kwargs: dict[Any, Any],
     ) -> None:
         """Initialize the generation.
 
         Args:
             generation_id (GenerationID): The unique identifier for the generation.
-            requires_post_processing (bool, optional): Whether the generation requires post-processing. \
-                Defaults to False.
+            api_response (ImageGenerateJobPopResponse): The API response for the generation.
             state_error_limits (Mapping[GENERATION_PROGRESS, int], optional): The maximum number of times a \
                 generation can be in an error state before it is considered failed. \
                 Defaults to HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS.
@@ -61,17 +69,28 @@ class ImageSingleGeneration(HordeSingleGeneration[PIL.Image.Image]):
             extra_logging (bool, optional): Whether or not to enable extra debug-level logging, \
                 especially for state transitions. \
                 Defaults to True.
-            **kwargs (dict[Any, Any]): Additional keyword arguments to pass to the superclass.
         """
+        self.api_response = api_response
+
+        requires_post_processing = bool(api_response.payload.post_processing)
+
+        generate_progress_transitions = default_image_generate_progress_transitions
+
         super().__init__(
             generation_id=generation_id,
-            requires_generation=ImageSingleGeneration.does_class_requires_generation(),
+            result_type=PIL.Image.Image,
+            requires_generation=ImageSingleGeneration.does_class_require_generation(),
             requires_post_processing=requires_post_processing,
+            requires_safety_check=True,
             state_error_limits=state_error_limits,
             generate_progress_transitions=generate_progress_transitions,
             extra_logging=extra_logging,
-            **kwargs,
         )
+
+    @override
+    @staticmethod
+    def result_to_bytesio(result: PIL.Image.Image, buffer: BytesIO) -> None:
+        result.save(buffer, format="PNG")
 
 
 class AlchemySingleGeneration(HordeSingleGeneration[PIL.Image.Image]):
@@ -87,29 +106,33 @@ class AlchemySingleGeneration(HordeSingleGeneration[PIL.Image.Image]):
 
     @override
     @classmethod
-    def default_generate_progress_transitions(cls) -> Mapping[GENERATION_PROGRESS, Iterable[GENERATION_PROGRESS]]:
+    def default_generate_progress_transitions(cls) -> dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]]:
         return default_alchemy_generate_progress_transitions
 
     @override
     @classmethod
-    def does_class_requires_generation(cls) -> bool:
+    def does_class_require_generation(cls) -> bool:
         return False
+
+    @override
+    @classmethod
+    def does_class_require_safety_check(cls) -> bool:
+        return False
+
+    form_payload: AlchemyPopFormPayload
 
     def __init__(
         self,
         *,
         generation_id: GenerationID,
+        form: AlchemyPopFormPayload,
         requires_generation: bool = False,
         requires_post_processing: bool = True,
+        requires_safety_check: bool = False,
         state_error_limits: (
             Mapping[GENERATION_PROGRESS, int] | None
         ) = HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS,
-        generate_progress_transitions: Mapping[
-            GENERATION_PROGRESS,
-            list[GENERATION_PROGRESS],
-        ] = default_alchemy_generate_progress_transitions,
         extra_logging: bool = False,
-        **kwargs: dict[Any, Any],
     ) -> None:
         """Initialize the generation.
 
@@ -119,6 +142,8 @@ class AlchemySingleGeneration(HordeSingleGeneration[PIL.Image.Image]):
                 Defaults to False.
             requires_post_processing (bool, optional): Whether the generation requires post-processing. \
                 Defaults to True.
+            requires_safety_check (bool, optional): Whether the generation requires a safety check. \
+                Defaults to False.
             state_error_limits (Mapping[GENERATION_PROGRESS, int], optional): The maximum number of times a \
                 generation can be in an error state before it is considered failed. \
                 Defaults to HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS.
@@ -128,17 +153,29 @@ class AlchemySingleGeneration(HordeSingleGeneration[PIL.Image.Image]):
             extra_logging (bool, optional): Whether or not to enable extra debug-level logging, \
                 especially for state transitions. \
                 Defaults to True.
-            **kwargs (dict[Any, Any]): Additional keyword arguments to pass to the superclass.
         """
+        self.form_payload = form
+
+        generate_progress_transitions = default_alchemy_generate_progress_transitions
+
+        if requires_safety_check:
+            generate_progress_transitions = base_generate_progress_transitions
+
         super().__init__(
             generation_id=generation_id,
+            result_type=PIL.Image.Image,
             requires_generation=requires_generation,
             requires_post_processing=requires_post_processing,
+            requires_safety_check=requires_safety_check,
             state_error_limits=state_error_limits,
             generate_progress_transitions=generate_progress_transitions,
             extra_logging=extra_logging,
-            **kwargs,
         )
+
+    @override
+    @staticmethod
+    def result_to_bytesio(result: PIL.Image.Image, buffer: BytesIO) -> None:
+        result.save(buffer, format="PNG")
 
 
 class TextSingleGeneration(HordeSingleGeneration[str]):
@@ -149,34 +186,39 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
 
     @override
     @classmethod
-    def default_generate_progress_transitions(cls) -> Mapping[GENERATION_PROGRESS, Iterable[GENERATION_PROGRESS]]:
+    def default_generate_progress_transitions(cls) -> dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]]:
         return default_text_generate_progress_transitions
 
     @override
     @classmethod
-    def does_class_requires_generation(cls) -> bool:
+    def does_class_require_generation(cls) -> bool:
         return True
+
+    @override
+    @classmethod
+    def does_class_require_safety_check(cls) -> bool:
+        return False
 
     def __init__(
         self,
         *,
         generation_id: GenerationID,
+        api_response: TextGenerateJobPopResponse,
         requires_post_processing: bool = False,
+        requires_safety_check: bool = False,
         state_error_limits: (
             Mapping[GENERATION_PROGRESS, int] | None
         ) = HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS,
-        generate_progress_transitions: Mapping[
-            GENERATION_PROGRESS,
-            list[GENERATION_PROGRESS],
-        ] = default_text_generate_progress_transitions,
         extra_logging: bool = False,
-        **kwargs: dict[Any, Any],
     ) -> None:
         """Initialize the generation.
 
         Args:
             generation_id (GenerationID): The unique identifier for the generation.
+            api_response (TextGenerateJobPopResponse): The API response for the generation.
             requires_post_processing (bool, optional): Whether the generation requires post-processing. \
+                Defaults to False.
+            requires_safety_check (bool, optional): Whether the generation requires a safety check. \
                 Defaults to False.
             state_error_limits (Mapping[GENERATION_PROGRESS, int], optional): The maximum number of times a \
                 generation can be in an error state before it is considered failed. \
@@ -187,14 +229,27 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
             extra_logging (bool, optional): Whether or not to enable extra debug-level logging, \
                 especially for state transitions. \
                 Defaults to True.
-            **kwargs (dict[Any, Any]): Additional keyword arguments to pass to the superclass.
         """
+        self.api_response = api_response
+
+        generate_progress_transitions = default_text_generate_progress_transitions
+
+        if requires_safety_check:
+            generate_progress_transitions = base_generate_progress_transitions
+
         super().__init__(
             generation_id=generation_id,
+            result_type=str,
             requires_generation=True,
             requires_post_processing=requires_post_processing,
+            requires_safety_check=requires_safety_check,
             state_error_limits=state_error_limits,
             generate_progress_transitions=generate_progress_transitions,
             extra_logging=extra_logging,
-            **kwargs,
         )
+
+    @override
+    @staticmethod
+    def result_to_bytesio(result: str, buffer: BytesIO) -> None:
+        """Convert the result to a BytesIO object, encoding the result as UTF-8."""
+        buffer.write(result.encode())
