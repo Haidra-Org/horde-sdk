@@ -65,6 +65,89 @@ def ai_horde_api_key() -> str:
     return dev_key if dev_key is not None else ANON_API_KEY
 
 
+@functools.cache
+def _get_testing_image(filename: str) -> bytes:
+    """Returns a test image."""
+
+    image_bytes = None
+
+    # Get the directory of this file
+    dir_path = pathlib.Path(__file__).parent.absolute()
+    test_image_path = dir_path / "test_data" / "images" / filename
+
+    with open(test_image_path, "rb") as f:
+        image_bytes = f.read()
+
+    assert image_bytes is not None
+
+    return image_bytes
+
+
+@functools.cache
+def _get_testing_image_base64(filename: str) -> str:
+    """Returns a base64 encoded test image."""
+    return base64.b64encode(_get_testing_image(filename)).decode("utf-8")
+
+
+@pytest.fixture(scope="function")
+def default_testing_image_bytes() -> bytes:
+    """Returns a test image."""
+    return _get_testing_image("haidra.png")
+
+
+@pytest.fixture(scope="function")
+def default_testing_image_PIL() -> PIL.Image.Image:
+    """Returns a test image."""
+    return PIL.Image.open(io.BytesIO(_get_testing_image("haidra.png")))
+
+
+@pytest.fixture(scope="function")
+def default_testing_image_base64() -> str:
+    """Returns a base64 encoded test image."""
+    return _get_testing_image_base64("haidra.png")
+
+
+@pytest.fixture(scope="function")
+def img2img_testing_image_base64() -> str:
+    """Returns a base64 encoded test image."""
+    return base64.b64encode(_get_testing_image("sketch-mountains-input.jpg")).decode("utf-8")
+
+
+@pytest.fixture(scope="function")
+def inpaint_source_image_and_mask_PIL() -> tuple[PIL.Image.Image, PIL.Image.Image]:
+    """Returns a test image and mask suitable for inpainting."""
+    image = PIL.Image.open(io.BytesIO(_get_testing_image("test_inpaint_original.png")))
+    mask = PIL.Image.open(io.BytesIO(_get_testing_image("test_inpaint_mask.png")))
+
+    return image, mask
+
+
+@pytest.fixture(scope="function")
+def inpainting_source_image_and_mask_base64() -> tuple[str, str]:
+    """Returns a base64 encoded test image and mask suitable for inpainting."""
+    image = _get_testing_image_base64("test_inpaint_original.png")
+    mask = _get_testing_image_base64("test_inpaint_mask.png")
+
+    return image, mask
+
+
+@pytest.fixture(scope="function")
+def outpaint_alpha_source_image_base64() -> str:
+    """Returns a base64 encoded test image suitable for outpainting."""
+    return _get_testing_image_base64("test_outpaint.png")
+
+
+@pytest.fixture(scope="function")
+def openpose_control_map_base64() -> str:
+    """Returns a base64 encoded test image of a pre-processed control image."""
+    return _get_testing_image_base64("test_openpose_control_map.png")
+
+
+@pytest.fixture(scope="function")
+def woman_headshot_testing_image_base64() -> str:
+    return base64.b64encode(_get_testing_image("woman_headshot_bokeh.png")).decode("utf-8")
+
+
 @pytest.fixture(scope="function")
 def simple_image_gen_request(ai_horde_api_key: str) -> ImageGenerateAsyncRequest:
     """Return a simple `ImageGenerateAsyncRequest` instance with minimal arguments set."""
@@ -130,7 +213,7 @@ def simple_image_gen_job_pop_response(
     """Return a `ImageGenerateJobPopResponse` instance with a typical model and no arguments set."""
     return ImageGenerateJobPopResponse(
         ids=[single_id],
-        payload=ImageGenerateJobPopPayload(),
+        payload=ImageGenerateJobPopPayload(prompt="a cat in a hat", seed="42"),
         skipped=ImageGenerateJobPopSkippedStatus(),
         model="Deliberate",
         r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
@@ -145,7 +228,7 @@ def simple_image_gen_job_pop_response_n_requests(
     ids = [id_factory() for _ in range(3)]
     return ImageGenerateJobPopResponse(
         ids=ids,
-        payload=ImageGenerateJobPopPayload(),
+        payload=ImageGenerateJobPopPayload(prompt="a cat in a hat", seed="42"),
         skipped=ImageGenerateJobPopSkippedStatus(),
         model="Deliberate",
         r2_uploads=[f"https://not.a.real.url.internal/upload/{id_}" for id_ in ids],
@@ -160,10 +243,129 @@ def simple_image_gen_job_pop_response_post_processing(
     return ImageGenerateJobPopResponse(
         ids=[single_id],
         payload=ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
             post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
         ),
         skipped=ImageGenerateJobPopSkippedStatus(),
         model="Deliberate",
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_job_pop_response_img2img(
+    single_id: UUID,
+    img2img_testing_image_base64: str,
+) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance for `img2img` and no other arguments set"""
+    from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
+
+    return ImageGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+        model="Deliberate",
+        source_image=img2img_testing_image_base64,
+        source_processing=KNOWN_SOURCE_PROCESSING.img2img,
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_job_pop_response_img2img_masked(
+    single_id: UUID,
+    inpainting_source_image_and_mask_base64: tuple[str, str],
+) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance for `img2img` and no other arguments set"""
+    from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
+
+    source_image, source_mask = inpainting_source_image_and_mask_base64
+
+    return ImageGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+        model="Deliberate",
+        source_image=source_image,
+        source_mask=source_mask,
+        source_processing=KNOWN_SOURCE_PROCESSING.img2img,
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_job_pop_response_inpainting(
+    single_id: UUID,
+    inpainting_source_image_and_mask_base64: tuple[str, str],
+) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance for `img2img` and no other arguments set"""
+    from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
+
+    source_image, source_mask = inpainting_source_image_and_mask_base64
+
+    return ImageGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+        model="Deliberate",
+        source_image=source_image,
+        source_mask=source_mask,
+        source_processing=KNOWN_SOURCE_PROCESSING.inpainting,
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_job_pop_response_outpainting_alpha(
+    single_id: UUID,
+    outpaint_alpha_source_image_base64: str,
+) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance for `img2img` and no other arguments set"""
+    from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
+
+    return ImageGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+        model="Deliberate",
+        source_image=outpaint_alpha_source_image_base64,
+        source_processing=KNOWN_SOURCE_PROCESSING.inpainting,
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_job_pop_response_controlnet_openpose(
+    single_id: UUID,
+    openpose_control_map_base64: str,
+) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance for `controlnet` and no other arguments set"""
+    from horde_sdk.ai_horde_api.consts import KNOWN_CONTROLNETS
+
+    return ImageGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            image_is_control=True,
+            control_type=KNOWN_CONTROLNETS.openpose,
+            seed="42",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+        model="Deliberate",
+        source_image=openpose_control_map_base64,
         r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
     )
 
@@ -175,7 +377,7 @@ def simple_text_gen_job_pop_response(
     """Return a `TextGenerateJobPopResponse` instance with a dummy model no other arguments set."""
     return TextGenerateJobPopResponse(
         ids=[single_id],
-        payload=ModelPayloadKobold(),
+        payload=ModelPayloadKobold(prompt="Tell me about a cat in a hat."),
         skipped=NoValidRequestFoundKobold(),
         model="oFakeModel",
     )
@@ -244,50 +446,3 @@ def pytest_collection_modifyitems(items):  # type: ignore # noqa
         sorted_items.extend([item for item in items if module_mapping[item] == module])
 
     items[:] = sorted_items
-
-
-@functools.cache
-def _get_testing_image(filename: str) -> bytes:
-    """Returns a test image."""
-
-    image_bytes = None
-
-    # Get the directory of this file
-    dir_path = pathlib.Path(__file__).parent.absolute()
-    test_image_path = dir_path / "test_data" / "images" / filename
-
-    with open(test_image_path, "rb") as f:
-        image_bytes = f.read()
-
-    assert image_bytes is not None
-
-    return image_bytes
-
-
-@pytest.fixture(scope="function")
-def default_testing_image_bytes() -> bytes:
-    """Returns a test image."""
-    return _get_testing_image("haidra.png")
-
-
-@pytest.fixture(scope="function")
-def default_testing_image_PIL() -> PIL.Image.Image:
-    """Returns a test image."""
-    return PIL.Image.open(io.BytesIO(_get_testing_image("haidra.png")))
-
-
-@pytest.fixture(scope="function")
-def default_testing_image_base64() -> str:
-    """Returns a base64 encoded test image."""
-    return base64.b64encode(_get_testing_image("haidra.png")).decode("utf-8")
-
-
-@pytest.fixture(scope="function")
-def img2img_testing_image_base64() -> str:
-    """Returns a base64 encoded test image."""
-    return base64.b64encode(_get_testing_image("sketch-mountains-input.jpg")).decode("utf-8")
-
-
-@pytest.fixture(scope="function")
-def woman_headshot_testing_image_base64() -> str:
-    return base64.b64encode(_get_testing_image("woman_headshot_bokeh.png")).decode("utf-8")
