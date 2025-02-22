@@ -128,6 +128,7 @@ from horde_sdk.ai_horde_api.apimodels.generate._pop import (
     ImageGenerateJobPopResponse,
     ImageGenerateJobPopSkippedStatus,
     PopInput,
+    NoValidRequestFound,
 )
 from horde_sdk.ai_horde_api.apimodels.generate._progress import (
     ResponseGenerationProgressCombinedMixin,
@@ -299,6 +300,7 @@ __all__ = [
     "ImageGenerateJobPopResponse",
     "ImageGenerateJobPopSkippedStatus",
     "PopInput",
+    "NoValidRequestFound",
     "ResponseGenerationProgressCombinedMixin",
     "ResponseGenerationProgressInfoMixin",
     "DeleteImageGenerateRequest",
