@@ -1,5 +1,3 @@
-import pytest
-
 from horde_sdk.utils import seed_to_int
 
 
