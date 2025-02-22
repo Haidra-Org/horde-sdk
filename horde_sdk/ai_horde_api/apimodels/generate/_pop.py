@@ -137,8 +137,16 @@ class ExtraSourceImageMixin(ResponseRequiringDownloadMixin):
             return self._downloaded_extra_source_images
 
         self._downloaded_extra_source_images = []
+
+        download_tasks = []
         for extra_source_image in self.extra_source_images:
-            await self._download_image_if_needed(client_session, extra_source_image, max_retries)
+            download_tasks.append(
+                asyncio.create_task(
+                    self._download_image_if_needed(client_session, extra_source_image, max_retries),
+                ),
+            )
+
+        await asyncio.gather(*download_tasks)
 
         self._sort_downloaded_images()
         return self._downloaded_extra_source_images.copy()
