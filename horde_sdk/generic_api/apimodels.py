@@ -130,7 +130,7 @@ class HordeAPIMessage(HordeAPIObject):
 class HordeResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
 
-    _time_constructed: float = PrivateAttr(default=lambda: time.time())
+    _time_constructed: float = PrivateAttr(default_factory=lambda: time.time())
 
     @property
     def time_constructed(self) -> float:
