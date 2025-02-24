@@ -17,13 +17,12 @@ from horde_sdk.ai_horde_api.apimodels.base import (
 from horde_sdk.ai_horde_api.apimodels.generate._submit import ImageGenerationJobSubmitRequest
 from horde_sdk.ai_horde_api.consts import (
     GENERATION_STATE,
-    KNOWN_FACEFIXERS,
-    KNOWN_SOURCE_PROCESSING,
-    KNOWN_UPSCALERS,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_FACEFIXERS, KNOWN_UPSCALERS
+from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     HordeAPIObjectBaseModel,

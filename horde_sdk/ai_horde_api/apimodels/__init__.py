@@ -180,7 +180,7 @@ from horde_sdk.ai_horde_api.apimodels.workers._workers import (
     WorkerDetailItem,
     WorkerKudosDetails,
 )
-from horde_sdk.ai_horde_api.consts import KNOWN_ALCHEMY_TYPES
+from horde_sdk.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,

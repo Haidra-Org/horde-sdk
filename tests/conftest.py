@@ -12,6 +12,7 @@ import PIL.Image
 import pytest
 from loguru import logger
 
+from horde_sdk.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.worker.model_meta import ImageModelLoadResolver
 
 os.environ["TESTS_ONGOING"] = "1"
@@ -23,7 +24,6 @@ if sys.platform == "win32":
 from horde_model_reference.model_reference_manager import ModelReferenceManager
 
 from horde_sdk.ai_horde_api.apimodels import (
-    KNOWN_ALCHEMY_TYPES,
     AlchemyJobPopResponse,
     AlchemyPopFormPayload,
     ImageGenerateAsyncRequest,
@@ -36,7 +36,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     NoValidRequestFoundKobold,
     TextGenerateJobPopResponse,
 )
-from horde_sdk.ai_horde_api.consts import KNOWN_UPSCALERS
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_UPSCALERS
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.generic_api.consts import ANON_API_KEY
 
@@ -274,7 +274,7 @@ def simple_image_gen_job_pop_response_img2img(
     img2img_testing_image_base64: str,
 ) -> ImageGenerateJobPopResponse:
     """Return a `ImageGenerateJobPopResponse` instance for `img2img` and no other arguments set"""
-    from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
+    from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 
     return ImageGenerateJobPopResponse(
         ids=[single_id],
@@ -296,7 +296,7 @@ def simple_image_gen_job_pop_response_img2img_masked(
     inpainting_source_image_and_mask_base64: tuple[str, str],
 ) -> ImageGenerateJobPopResponse:
     """Return a `ImageGenerateJobPopResponse` instance for `img2img` and no other arguments set"""
-    from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
+    from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 
     source_image, source_mask = inpainting_source_image_and_mask_base64
 
@@ -321,7 +321,7 @@ def simple_image_gen_job_pop_response_inpainting(
     inpainting_source_image_and_mask_base64: tuple[str, str],
 ) -> ImageGenerateJobPopResponse:
     """Return a `ImageGenerateJobPopResponse` instance for `img2img` and no other arguments set"""
-    from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
+    from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 
     source_image, source_mask = inpainting_source_image_and_mask_base64
 
@@ -346,7 +346,7 @@ def simple_image_gen_job_pop_response_outpainting_alpha(
     outpaint_alpha_source_image_base64: str,
 ) -> ImageGenerateJobPopResponse:
     """Return a `ImageGenerateJobPopResponse` instance for `img2img` and no other arguments set"""
-    from horde_sdk.ai_horde_api.consts import KNOWN_SOURCE_PROCESSING
+    from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 
     return ImageGenerateJobPopResponse(
         ids=[single_id],
@@ -368,7 +368,7 @@ def simple_image_gen_job_pop_response_controlnet_openpose(
     openpose_control_map_base64: str,
 ) -> ImageGenerateJobPopResponse:
     """Return a `ImageGenerateJobPopResponse` instance for `controlnet` and no other arguments set"""
-    from horde_sdk.ai_horde_api.consts import KNOWN_CONTROLNETS
+    from horde_sdk.generation_parameters.image.consts import KNOWN_CONTROLNETS
 
     return ImageGenerateJobPopResponse(
         ids=[single_id],

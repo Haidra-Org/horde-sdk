@@ -5,7 +5,7 @@ from loguru import logger
 from PIL.Image import Image
 
 from horde_sdk import ANON_API_KEY
-from horde_sdk.ai_horde_api import KNOWN_SAMPLERS
+from horde_sdk.generation_parameters.image.consts import KNOWN_SAMPLERS
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPISimpleClient
 
 # isort: off

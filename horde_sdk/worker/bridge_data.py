@@ -10,7 +10,7 @@ from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from strenum import StrEnum
 
-from horde_sdk.ai_horde_api.consts import ALCHEMY_FORMS
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_FORMS
 from horde_sdk.worker.locale_info.bridge_data_fields import BRIDGE_DATA_FIELD_DESCRIPTIONS
 from horde_sdk.generic_api.consts import ANON_API_KEY
 
@@ -390,7 +390,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
         return v
 
     @field_validator("forms")
-    def validate_alchemy_forms(cls, v: list[str]) -> list[str | ALCHEMY_FORMS]:
+    def validate_alchemy_forms(cls, v: list[str]) -> list[str | KNOWN_ALCHEMY_FORMS]:
         """Validate the alchemy forms (services offered)."""
         if not isinstance(v, list):
             raise ValueError("forms must be a list")
@@ -398,7 +398,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
         for form in v:
             form = str(form).lower()
             form = form.replace("-", "_")
-            if form not in ALCHEMY_FORMS.__members__:
+            if form not in KNOWN_ALCHEMY_FORMS.__members__:
                 raise ValueError(f"Invalid form: {form}")
             validated_forms.append(form)
         return validated_forms

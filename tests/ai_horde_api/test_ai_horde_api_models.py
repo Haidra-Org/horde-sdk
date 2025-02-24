@@ -10,7 +10,6 @@ import PIL.Image
 import pytest
 
 from horde_sdk.ai_horde_api.apimodels import (
-    KNOWN_ALCHEMY_TYPES,
     AlchemyJobPopResponse,
     AlchemyPopFormPayload,
     ImageGenerateAsyncResponse,
@@ -36,16 +35,14 @@ from horde_sdk.ai_horde_api.apimodels.workers._workers import (
     WorkerKudosDetails,
 )
 from horde_sdk.ai_horde_api.consts import (
-    KNOWN_CONTROLNETS,
-    KNOWN_FACEFIXERS,
-    KNOWN_SAMPLERS,
-    KNOWN_SOURCE_PROCESSING,
-    KNOWN_UPSCALERS,
     METADATA_TYPE,
     METADATA_VALUE,
     WORKER_TYPE,
 )
 from horde_sdk.ai_horde_api.fields import GenerationID
+from horde_sdk.consts import KNOWN_ALCHEMY_TYPES
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_FACEFIXERS, KNOWN_UPSCALERS
+from horde_sdk.generation_parameters.image.consts import KNOWN_CONTROLNETS, KNOWN_SAMPLERS, KNOWN_SOURCE_PROCESSING
 
 
 def test_api_endpoint() -> None:
