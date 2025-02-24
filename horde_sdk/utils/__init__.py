@@ -1,5 +1,3 @@
-"""AI-Horde specific utility functions."""
-
 import random
 
 
