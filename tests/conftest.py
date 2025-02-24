@@ -12,10 +12,15 @@ import PIL.Image
 import pytest
 from loguru import logger
 
+from horde_sdk.ai_horde_worker.model_meta import ImageModelLoadResolver
+
 os.environ["TESTS_ONGOING"] = "1"
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
+from horde_model_reference.model_reference_manager import ModelReferenceManager
 
 from horde_sdk.ai_horde_api.apimodels import (
     KNOWN_ALCHEMY_TYPES,
@@ -63,6 +68,16 @@ def ai_horde_api_key() -> str:
     dev_key = os.getenv("AI_HORDE_DEV_APIKEY", None)
 
     return dev_key if dev_key is not None else ANON_API_KEY
+
+
+@pytest.fixture(scope="session")
+def model_reference_manager() -> ModelReferenceManager:
+    return ModelReferenceManager()
+
+
+@pytest.fixture(scope="session")
+def image_model_load_resolver(model_reference_manager: ModelReferenceManager) -> ImageModelLoadResolver:
+    return ImageModelLoadResolver(model_reference_manager)
 
 
 @functools.cache
