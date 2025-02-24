@@ -34,11 +34,6 @@ def stats_response_known_models() -> ImageStatsModelsResponse:
     return stats_response
 
 
-@pytest.fixture(scope="session")
-def image_model_load_resolver() -> ImageModelLoadResolver:
-    return ImageModelLoadResolver(ModelReferenceManager())
-
-
 def test_image_model_load_resolver_all(image_model_load_resolver: ImageModelLoadResolver) -> None:
     all_model_names = image_model_load_resolver.resolve_all_model_names()
 
