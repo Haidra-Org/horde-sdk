@@ -6,7 +6,7 @@ from horde_sdk.ai_horde_api.apimodels.alchemy._async import (
     AlchemyAsyncRequestFormItem,
     AlchemyAsyncResponse,
 )
-from horde_sdk.ai_horde_api.consts import KNOWN_ALCHEMY_TYPES
+from horde_sdk.consts import KNOWN_ALCHEMY_TYPES
 
 
 class HordeTestException(Exception):

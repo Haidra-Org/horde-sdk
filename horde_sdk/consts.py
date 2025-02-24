@@ -4,6 +4,13 @@ from enum import IntEnum
 
 from strenum import StrEnum
 
+from horde_sdk.generation_parameters.alchemy.consts import (
+    KNOWN_CLIP_BLIP_TYPES,
+    KNOWN_FACEFIXERS,
+    KNOWN_MISC_POST_PROCESSORS,
+    KNOWN_UPSCALERS,
+)
+
 _ANONYMOUS_MODEL = "_ANONYMOUS_MODEL"
 """This model is on the API but does not have a name."""
 
@@ -73,3 +80,27 @@ def is_error_status_code(status_code: HTTPStatusCode | int) -> bool:
     if isinstance(status_code, HTTPStatusCode):
         status_code = status_code.value
     return 400 <= status_code < 600
+
+
+class KNOWN_ALCHEMY_TYPES(StrEnum):
+    """The alchemy processes (types) that are known to the API.
+
+    (caption, GFPGAN, strip_background, etc)
+    """
+
+    _NONE = ""  # FIXME
+
+    caption = KNOWN_CLIP_BLIP_TYPES.caption
+    interrogation = KNOWN_CLIP_BLIP_TYPES.interrogation
+    nsfw = KNOWN_CLIP_BLIP_TYPES.nsfw
+
+    RealESRGAN_x4plus = KNOWN_UPSCALERS.RealESRGAN_x4plus
+    RealESRGAN_x2plus = KNOWN_UPSCALERS.RealESRGAN_x2plus
+    RealESRGAN_x4plus_anime_6B = KNOWN_UPSCALERS.RealESRGAN_x4plus_anime_6B
+    NMKD_Siax = KNOWN_UPSCALERS.NMKD_Siax
+    fourx_AnimeSharp = KNOWN_UPSCALERS.four_4x_AnimeSharp
+
+    GFPGAN = KNOWN_FACEFIXERS.GFPGAN
+    CodeFormers = KNOWN_FACEFIXERS.GFPGAN
+
+    strip_background = KNOWN_MISC_POST_PROCESSORS.strip_background

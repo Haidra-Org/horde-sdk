@@ -11,7 +11,6 @@ from horde_sdk.ai_horde_api.ai_horde_clients import (
     AIHordeAPISimpleClient,
 )
 from horde_sdk.ai_horde_api.apimodels import (
-    KNOWN_ALCHEMY_TYPES,
     AlchemyAsyncRequest,
     AlchemyAsyncRequestFormItem,
     AlchemyStatusResponse,
@@ -24,13 +23,16 @@ from horde_sdk.ai_horde_api.apimodels import (
 )
 from horde_sdk.ai_horde_api.apimodels.base import ExtraSourceImageEntry
 from horde_sdk.ai_horde_api.consts import (
-    KNOWN_FACEFIXERS,
-    KNOWN_MISC_POST_PROCESSORS,
-    KNOWN_SOURCE_PROCESSING,
-    KNOWN_UPSCALERS,
     POST_PROCESSOR_ORDER_TYPE,
 )
 from horde_sdk.ai_horde_api.fields import GenerationID
+from horde_sdk.consts import KNOWN_ALCHEMY_TYPES
+from horde_sdk.generation_parameters.alchemy.consts import (
+    KNOWN_FACEFIXERS,
+    KNOWN_MISC_POST_PROCESSORS,
+    KNOWN_UPSCALERS,
+)
+from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 

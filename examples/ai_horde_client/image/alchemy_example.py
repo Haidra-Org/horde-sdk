@@ -10,11 +10,11 @@ from PIL.Image import Image
 from horde_sdk import ANON_API_KEY, RequestErrorResponse
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIAsyncClientSession, AIHordeAPIAsyncSimpleClient
 from horde_sdk.ai_horde_api.apimodels import (
-    KNOWN_ALCHEMY_TYPES,
     AlchemyAsyncRequest,
     AlchemyAsyncRequestFormItem,
     AlchemyStatusResponse,
 )
+from horde_sdk.consts import KNOWN_ALCHEMY_TYPES
 
 
 async def async_alchemy_example(

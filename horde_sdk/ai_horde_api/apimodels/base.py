@@ -12,20 +12,21 @@ from pydantic import ConfigDict, Field, field_validator, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.consts import (
-    KNOWN_CONTROLNETS,
-    KNOWN_FACEFIXERS,
-    KNOWN_MISC_POST_PROCESSORS,
-    KNOWN_SAMPLERS,
-    KNOWN_UPSCALERS,
     KNOWN_WORKFLOWS,
     METADATA_TYPE,
     METADATA_VALUE,
     POST_PROCESSOR_ORDER_TYPE,
     WarningCode,
-    _all_valid_post_processors_names_and_values,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.fields import GenerationID, SharedKeyID, WorkerID
+from horde_sdk.generation_parameters.alchemy.consts import (
+    KNOWN_FACEFIXERS,
+    KNOWN_MISC_POST_PROCESSORS,
+    KNOWN_UPSCALERS,
+    _all_valid_post_processors_names_and_values,
+)
+from horde_sdk.generation_parameters.image.consts import KNOWN_CONTROLNETS, KNOWN_SAMPLERS
 from horde_sdk.generic_api.apimodels import (
     HordeAPIData,
     HordeAPIObjectBaseModel,
