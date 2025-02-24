@@ -12,7 +12,7 @@ import PIL.Image
 import pytest
 from loguru import logger
 
-from horde_sdk.ai_horde_worker.model_meta import ImageModelLoadResolver
+from horde_sdk.worker.model_meta import ImageModelLoadResolver
 
 os.environ["TESTS_ONGOING"] = "1"
 

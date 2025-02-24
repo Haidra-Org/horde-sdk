@@ -1,4 +1,4 @@
-from horde_sdk.ai_horde_worker.consts import (
+from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
     default_image_generate_progress_transitions,
     initial_generation_state,

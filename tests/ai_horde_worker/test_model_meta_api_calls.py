@@ -3,7 +3,7 @@ from horde_model_reference.model_reference_manager import ModelReferenceManager
 
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient
 from horde_sdk.ai_horde_api.apimodels import ImageStatsModelsRequest, ImageStatsModelsResponse, StatsModelsTimeframe
-from horde_sdk.ai_horde_worker.model_meta import ImageModelLoadResolver
+from horde_sdk.worker.model_meta import ImageModelLoadResolver
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 

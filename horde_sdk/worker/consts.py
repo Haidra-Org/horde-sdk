@@ -1,4 +1,3 @@
-from collections.abc import Mapping
 from copy import deepcopy
 from enum import auto
 from typing import ClassVar
@@ -233,3 +232,112 @@ class HordeWorkerConfigDefaults:
         GENERATION_PROGRESS.SUBMITTING: 10,
         GENERATION_PROGRESS.USER_REQUESTED_ABORT: 10,
     }
+
+    DEFAULT_R2_UPLOAD_TIMEOUT: float = 10.0
+    DEFAULT_R2_MAX_RETRIES: int = 10
+    DEFAULT_R2_RETRY_DELAY: float = 1.0
+
+    DEFAULT_RESULT_IMAGE_FORMAT: str = "WebP"
+    DEFAULT_RESULT_IMAGE_QUALITY: int = 95
+    DEFAULT_RESULT_IMAGE_PIL_METHOD: int = 6
+
+
+class KNOWN_DISPATCH_SOURCE(StrEnum):
+    """The known sources of a dispatch."""
+
+    UNKNOWN = auto()
+    """The source of the dispatch is unknown."""
+
+    LOCAL_CUSTOM_3RD_PARTY = auto()
+    """The source of the dispatch is a local custom 3rd party API."""
+
+    AI_HORDE_API_OFFICIAL = auto()
+    """The source of the dispatch is the official AI Horde API."""
+
+
+class KNOWN_INFERENCE_BACKEND(StrEnum):
+    """The known generative inference backends."""
+
+    UNKNOWN = auto()
+    """The inference backend is unknown."""
+
+    CUSTOM_UNPUBLISHED = auto()
+    """The inference backend is a custom, unpublished backend."""
+
+    COMFYUI = auto()
+    """The inference backend is ComfyUI."""
+
+    A1111 = auto()
+    """The inference backend is A1111."""
+
+    HORDE_ALCHEMIST = auto()
+    """The inference backend is the Horde Alchemist."""
+
+    KOBOLD_CPP = auto()
+    """The inference backend is Kobold CPP."""
+
+    APHRODITE = auto()
+    """The inference backend is Aphrodite."""
+
+
+class REQUESTED_BACKEND_CONSTRAINTS(StrEnum):
+    """What constraints on backends to use were requested by the user/server."""
+
+    ANY = auto()
+    """Any backend is acceptable."""
+
+    SPECIFIED = auto()
+    """Only the specified backend is acceptable."""
+
+    DEFAULT_IMAGE = auto()
+    """Only the default image backend is acceptable."""
+
+    DEFAULT_TEXT = auto()
+    """Only the default text backend is acceptable."""
+
+    DEFAULT_AUDIO = auto()
+    """Only the default audio backend is acceptable."""
+
+    DEFAULT_VIDEO = auto()
+    """Only the default video backend is acceptable."""
+
+    DEFAULT_ALCHEMY = auto()
+    """Only the default alchemy backend is acceptable."""
+
+    NO_CUSTOM = auto()
+    """Only official backends are acceptable."""
+
+    ONLY_CUSTOM = auto()
+    """Only custom backends are acceptable."""
+
+
+class REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE(StrEnum):
+    """The choice for what to do when a requested source image couldn't be parsed or is otherwise unusable."""
+
+    TXT2IMG_FALLBACK = auto()
+    """Use txt2img instead if the source image is unusable."""
+
+    ABANDON = auto()
+    """Abandon the generation if the source image is unusable."""
+
+    USE_WHITE_IMAGE = auto()
+    """Use a white image if the source image is unusable."""
+
+    USE_BLACK_IMAGE = auto()
+    """Use a black image if the source image is unusable."""
+
+    USE_NOISE_IMAGE = auto()
+    """Use a noise image if the source image is unusable."""
+
+
+class KNOWN_AUX_MODEL_SOURCE(StrEnum):
+    """The known sources of an auxiliary model (aux models are LoRas, TIs, etc)."""
+
+    LOCAL = auto()
+    """The aux model is worker-provided on their local machine."""
+
+    CIVITAI = auto()
+    """The aux model is provided by CivitAI."""
+
+    HORDELING = auto()
+    """The aux model is provided by the AI-Horde hordeling service."""

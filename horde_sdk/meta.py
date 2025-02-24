@@ -7,7 +7,7 @@ from functools import cache
 import horde_sdk
 import horde_sdk.ai_horde_api
 import horde_sdk.ai_horde_api.apimodels
-import horde_sdk.ai_horde_worker
+import horde_sdk.worker
 import horde_sdk.generic_api
 import horde_sdk.generic_api.apimodels
 import horde_sdk.ratings_api

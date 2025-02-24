@@ -11,7 +11,7 @@ from loguru import logger
 from horde_sdk.ai_horde_api.apimodels.base import GenMetadataEntry
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.fields import GenerationID
-from horde_sdk.ai_horde_worker.consts import (
+from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
     base_generate_progress_transitions,
 )

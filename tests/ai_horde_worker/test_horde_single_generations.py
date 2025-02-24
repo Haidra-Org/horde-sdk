@@ -13,13 +13,13 @@ from horde_sdk.ai_horde_api.apimodels.alchemy._pop import AlchemyJobPopResponse
 from horde_sdk.ai_horde_api.apimodels.generate._pop import ImageGenerateJobPopResponse
 from horde_sdk.ai_horde_api.apimodels.generate.text._pop import TextGenerateJobPopResponse
 from horde_sdk.ai_horde_api.fields import GenerationID
-from horde_sdk.ai_horde_worker.consts import GENERATION_PROGRESS
-from horde_sdk.ai_horde_worker.generations import (
+from horde_sdk.worker.consts import GENERATION_PROGRESS
+from horde_sdk.worker.generations import (
     AlchemySingleGeneration,
     ImageSingleGeneration,
     TextSingleGeneration,
 )
-from horde_sdk.ai_horde_worker.generations_base import HordeSingleGeneration
+from horde_sdk.worker.generations_base import HordeSingleGeneration
 
 
 class GenerationPermutation:
@@ -212,7 +212,7 @@ class TestHordeSingleGeneration:
     ) -> None:
         """Test that an `AlchemySingleGeneration` object can be initialized correctly."""
 
-        from horde_sdk.ai_horde_worker.consts import default_alchemy_generate_progress_transitions
+        from horde_sdk.worker.consts import default_alchemy_generate_progress_transitions
 
         generation_id, generation = id_and_alchemy_generation
 
@@ -229,7 +229,7 @@ class TestHordeSingleGeneration:
     ) -> None:
         """Test that an `ImageSingleGeneration` object can be initialized correctly."""
 
-        from horde_sdk.ai_horde_worker.consts import default_image_generate_progress_transitions
+        from horde_sdk.worker.consts import default_image_generate_progress_transitions
 
         generation_id, generation = id_and_image_generation
 
@@ -246,7 +246,7 @@ class TestHordeSingleGeneration:
     ) -> None:
         """Test that a `TextSingleGeneration` object can be initialized correctly."""
 
-        from horde_sdk.ai_horde_worker.consts import default_text_generate_progress_transitions
+        from horde_sdk.worker.consts import default_text_generate_progress_transitions
 
         generation_id, generation = id_and_text_generation
 
@@ -365,8 +365,8 @@ class TestHordeSingleGeneration:
         The purpose of this test is to have a the bare-minimum usage of the `HordeSingleGeneration` class to ensure
         that the most straight forward use-case works as expected and isn't lost in the complexity of the test suite.
         """
-        from horde_sdk.ai_horde_worker.consts import GENERATION_PROGRESS
-        from horde_sdk.ai_horde_worker.generations import ImageSingleGeneration
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
+        from horde_sdk.worker.generations import ImageSingleGeneration
 
         dummy_id = GenerationID(UUID("00000000-0000-0000-0000-000000000000"))
         generation = ImageSingleGeneration(
@@ -412,8 +412,8 @@ class TestHordeSingleGeneration:
         The purpose of this test is to have a the bare-minimum usage of the `HordeSingleGeneration` class to ensure
         that the most straight forward use-case works as expected and isn't lost in the complexity of the test suite.
         """
-        from horde_sdk.ai_horde_worker.consts import GENERATION_PROGRESS
-        from horde_sdk.ai_horde_worker.generations import TextSingleGeneration
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
+        from horde_sdk.worker.generations import TextSingleGeneration
 
         dummy_id = GenerationID(UUID("00000000-0000-0000-0000-000000000000"))
         generation = TextSingleGeneration(
@@ -450,7 +450,7 @@ class TestHordeSingleGeneration:
         The purpose of this test is to have a the bare-minimum usage of the `HordeSingleGeneration` class to ensure
         that the most straight forward use-case works as expected and isn't lost in the complexity of the test suite.
         """
-        from horde_sdk.ai_horde_worker.consts import GENERATION_PROGRESS
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
 
         _, generation = id_and_alchemy_generation
 
@@ -495,7 +495,7 @@ class TestHordeSingleGeneration:
         If a step is not requested, it will be skipped.
         """
 
-        from horde_sdk.ai_horde_worker.consts import GENERATION_PROGRESS
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
 
         if include_preloading:
             assert generation.get_generation_progress() == GENERATION_PROGRESS.NOT_STARTED
@@ -781,7 +781,7 @@ class TestHordeSingleGeneration:
     ) -> int:
         """Simulate expected actions for the preloading step for a `HordeSingleGeneration`."""
 
-        from horde_sdk.ai_horde_worker.consts import GENERATION_PROGRESS
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
 
         assert generation.get_generation_progress() == GENERATION_PROGRESS.NOT_STARTED
 
@@ -819,7 +819,7 @@ class TestHordeSingleGeneration:
     ) -> int:
         """Simulate expected actions for the generation step for a `HordeSingleGeneration`."""
 
-        from horde_sdk.ai_horde_worker.consts import GENERATION_PROGRESS
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
 
         generation.step(GENERATION_PROGRESS.GENERATING)
         assert generation.get_generation_progress() == GENERATION_PROGRESS.GENERATING
@@ -857,7 +857,7 @@ class TestHordeSingleGeneration:
     ) -> int:
         """Simulate expected actions for the post-processing step for a `HordeSingleGeneration`."""
 
-        from horde_sdk.ai_horde_worker.consts import GENERATION_PROGRESS
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
 
         generation.step(GENERATION_PROGRESS.POST_PROCESSING)
         assert generation.get_generation_progress() == GENERATION_PROGRESS.POST_PROCESSING
@@ -887,7 +887,7 @@ class TestHordeSingleGeneration:
         errors_count: int,
     ) -> int:
         """Simulate expected actions for the safety check step for a `HordeSingleGeneration`."""
-        from horde_sdk.ai_horde_worker.consts import GENERATION_PROGRESS
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
 
         assert generation.get_generation_progress() == GENERATION_PROGRESS.PENDING_SAFETY_CHECK
 
@@ -918,7 +918,7 @@ class TestHordeSingleGeneration:
         errors_count: int,
     ) -> int:
         """Simulate expected actions for the submission step for a `HordeSingleGeneration`."""
-        from horde_sdk.ai_horde_worker.consts import GENERATION_PROGRESS
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
 
         assert generation.get_generation_progress() == GENERATION_PROGRESS.PENDING_SUBMIT
 
