@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from strenum import StrEnum
 
 from horde_sdk.ai_horde_api.consts import ALCHEMY_FORMS
-from horde_sdk.ai_horde_worker.locale_info.bridge_data_fields import BRIDGE_DATA_FIELD_DESCRIPTIONS
+from horde_sdk.worker.locale_info.bridge_data_fields import BRIDGE_DATA_FIELD_DESCRIPTIONS
 from horde_sdk.generic_api.consts import ANON_API_KEY
 
 _UNREASONABLE_NUMBER_OF_MODELS = 1000

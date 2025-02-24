@@ -11,7 +11,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     TextGenerateJobPopResponse,
 )
 from horde_sdk.ai_horde_api.fields import GenerationID
-from horde_sdk.ai_horde_worker.consts import (
+from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
     HordeWorkerConfigDefaults,
     base_generate_progress_transitions,
@@ -19,7 +19,7 @@ from horde_sdk.ai_horde_worker.consts import (
     default_image_generate_progress_transitions,
     default_text_generate_progress_transitions,
 )
-from horde_sdk.ai_horde_worker.generations_base import HordeSingleGeneration
+from horde_sdk.worker.generations_base import HordeSingleGeneration
 
 
 class ImageSingleGeneration(HordeSingleGeneration[PIL.Image.Image]):

@@ -9,7 +9,7 @@ from loguru import logger
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient
 from horde_sdk.ai_horde_api.apimodels import ImageStatsModelsRequest, ImageStatsModelsResponse, StatsModelsTimeframe
 from horde_sdk.ai_horde_api.consts import MODEL_STATE
-from horde_sdk.ai_horde_worker.bridge_data import MetaInstruction
+from horde_sdk.worker.bridge_data import MetaInstruction
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 
