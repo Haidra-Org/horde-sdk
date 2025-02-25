@@ -280,6 +280,19 @@ class KNOWN_INFERENCE_BACKEND(StrEnum):
     """The inference backend is Aphrodite."""
 
 
+class KNOWN_ALCHEMY_BACKEND(StrEnum):
+    """The known alchemy backends."""
+
+    UNKNOWN = auto()
+    """The alchemy backend is unknown."""
+
+    CUSTOM_UNPUBLISHED = auto()
+    """The alchemy backend is a custom, unpublished backend."""
+
+    HORDE_ALCHEMIST = auto()
+    """The alchemy backend is the Horde Alchemist."""
+
+
 class REQUESTED_BACKEND_CONSTRAINTS(StrEnum):
     """What constraints on backends to use were requested by the user/server."""
 

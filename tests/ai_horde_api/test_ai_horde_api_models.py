@@ -40,7 +40,7 @@ from horde_sdk.ai_horde_api.consts import (
     WORKER_TYPE,
 )
 from horde_sdk.ai_horde_api.fields import GenerationID
-from horde_sdk.consts import KNOWN_ALCHEMY_TYPES
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_FACEFIXERS, KNOWN_UPSCALERS
 from horde_sdk.generation_parameters.image.consts import KNOWN_CONTROLNETS, KNOWN_SAMPLERS, KNOWN_SOURCE_PROCESSING
 

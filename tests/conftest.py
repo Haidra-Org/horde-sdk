@@ -12,7 +12,7 @@ import PIL.Image
 import pytest
 from loguru import logger
 
-from horde_sdk.consts import KNOWN_ALCHEMY_TYPES
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.worker.model_meta import ImageModelLoadResolver
 
 os.environ["TESTS_ONGOING"] = "1"

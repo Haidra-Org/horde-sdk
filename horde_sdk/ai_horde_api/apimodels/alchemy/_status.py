@@ -5,8 +5,8 @@ from typing_extensions import override
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
-from horde_sdk.consts import KNOWN_ALCHEMY_TYPES, HTTPMethod
-from horde_sdk.generation_parameters.alchemy.consts import KNOWN_UPSCALERS
+from horde_sdk.consts import HTTPMethod
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES, KNOWN_UPSCALERS
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     HordeAPIData,
