@@ -14,7 +14,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     AlchemyAsyncRequestFormItem,
     AlchemyStatusResponse,
 )
-from horde_sdk.consts import KNOWN_ALCHEMY_TYPES
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
 
 
 async def async_alchemy_example(
