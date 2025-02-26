@@ -18,7 +18,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerateAsyncResponse,
     ImageGenerateStatusResponse,
 )
-from horde_sdk.ai_horde_api.consts import WORKER_TYPE
+from horde_sdk.worker.consts import WORKER_TYPE
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 from horde_sdk.generic_api.utils.swagger import SwaggerDoc
 

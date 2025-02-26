@@ -12,10 +12,8 @@ from pydantic import ConfigDict, Field, field_validator, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.consts import (
-    KNOWN_WORKFLOWS,
     METADATA_TYPE,
     METADATA_VALUE,
-    POST_PROCESSOR_ORDER_TYPE,
     WarningCode,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
@@ -26,13 +24,14 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_UPSCALERS,
     _all_valid_post_processors_names_and_values,
 )
-from horde_sdk.generation_parameters.image.consts import KNOWN_CONTROLNETS, KNOWN_SAMPLERS
+from horde_sdk.generation_parameters.image.consts import KNOWN_CONTROLNETS, KNOWN_SAMPLERS, KNOWN_WORKFLOWS
 from horde_sdk.generic_api.apimodels import (
     HordeAPIData,
     HordeAPIObjectBaseModel,
     HordeRequest,
     HordeResponseBaseModel,
 )
+from horde_sdk.worker.consts import POST_PROCESSOR_ORDER_TYPE
 
 
 class BaseAIHordeRequest(HordeRequest):
@@ -431,6 +430,5 @@ class MessageSpecifiesSharedKeyMixin(HordeAPIData):
         """Ensure that the shared key ID is not empty."""
         if isinstance(v, str) and v == "":
             logger.warning("Shared key ID is empty")
-            return SharedKeyID(root=uuid.uuid4())
 
         return v
