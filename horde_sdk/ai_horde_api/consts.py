@@ -4,12 +4,13 @@ from enum import auto
 
 from strenum import StrEnum
 
-
 GENERATION_MAX_LIFE = (60 * 20) - 30
 """The maximum time for the life of a generation request in seconds, minus 30 seconds to account for network latency.
 
 This is the amount of time that passes before the server will delete the request.
 """
+
+DEFAULT_HIRES_DENOISE_STRENGTH = 0.65
 
 
 class GENERATION_STATE(StrEnum):
@@ -37,48 +38,6 @@ class GENERATION_STATE(StrEnum):
     cancelled = auto()
     """The generation was cancelled by the user."""
     done = auto()
-
-
-class WORKER_TYPE(StrEnum):
-    """The worker types that are known to the API.
-
-    (alchemy, image, text, etc...)
-    """
-
-    all = ""
-    """All worker types."""
-    image = auto()
-    """Image generation worker."""
-    text = auto()
-    """Text generation worker."""
-    interrogation = auto()
-    """Alchemy/Interrogation worker."""
-    alchemist = "interrogation"
-    """Alchemy/Interrogation worker."""
-
-
-class KNOWN_WORKFLOWS(StrEnum):
-    """The controlnets that are known to the API."""
-
-    qr_code = auto()
-
-
-class POST_PROCESSOR_ORDER_TYPE(StrEnum):
-    """The post processor order types that are known to the API.
-
-    (facefixers_first, upscalers_first, custom, etc)
-    """
-
-    facefixers_first = auto()
-    """The facefixers are processed first."""
-    upscalers_first = auto()
-    """The upscalers are processed first."""
-    custom = auto()
-    """User specified post processor order."""
-
-
-DEFAULT_POST_PROCESSOR_ORDER = POST_PROCESSOR_ORDER_TYPE.facefixers_first
-"""The default post processor order."""
 
 
 class METADATA_TYPE(StrEnum):
@@ -134,15 +93,6 @@ class MODEL_STATE(StrEnum):
     """Known models that appear in the model reference"""
     custom = auto()
     """Custom models."""
-
-
-class MODEL_TYPE(StrEnum):
-    """The model types that are known to the API."""
-
-    text = auto()
-    """Text generation models."""
-    image = auto()
-    """Image generation models."""
 
 
 class WarningCode(StrEnum):

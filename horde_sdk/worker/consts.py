@@ -233,9 +233,9 @@ class HordeWorkerConfigDefaults:
         GENERATION_PROGRESS.USER_REQUESTED_ABORT: 10,
     }
 
-    DEFAULT_R2_UPLOAD_TIMEOUT: float = 10.0
-    DEFAULT_R2_MAX_RETRIES: int = 10
-    DEFAULT_R2_RETRY_DELAY: float = 1.0
+    DEFAULT_UPLOAD_TIMEOUT: float = 10.0
+    DEFAULT_MAX_RETRIES: int = 10
+    DEFAULT_RETRY_DELAY: float = 1.0
 
     DEFAULT_RESULT_IMAGE_FORMAT: str = "WebP"
     DEFAULT_RESULT_IMAGE_QUALITY: int = 95
@@ -343,14 +343,46 @@ class REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE(StrEnum):
     """Use a noise image if the source image is unusable."""
 
 
-class KNOWN_AUX_MODEL_SOURCE(StrEnum):
-    """The known sources of an auxiliary model (aux models are LoRas, TIs, etc)."""
+class WORKER_TYPE(StrEnum):
+    """The worker types that are known to the API.
 
-    LOCAL = auto()
-    """The aux model is worker-provided on their local machine."""
+    (alchemy, image, text, etc...)
+    """
 
-    CIVITAI = auto()
-    """The aux model is provided by CivitAI."""
+    all = ""
+    """All worker types."""
+    image = auto()
+    """Image generation worker."""
+    text = auto()
+    """Text generation worker."""
+    interrogation = auto()
+    """Alchemy/Interrogation worker."""
+    alchemist = "interrogation"
+    """Alchemy/Interrogation worker."""
 
-    HORDELING = auto()
-    """The aux model is provided by the AI-Horde hordeling service."""
+
+class POST_PROCESSOR_ORDER_TYPE(StrEnum):
+    """The post processor order types that are known to the API.
+
+    (facefixers_first, upscalers_first, custom, etc)
+    """
+
+    facefixers_first = auto()
+    """The facefixers are processed first."""
+    upscalers_first = auto()
+    """The upscalers are processed first."""
+    custom = auto()
+    """User specified post processor order."""
+
+
+DEFAULT_POST_PROCESSOR_ORDER = POST_PROCESSOR_ORDER_TYPE.facefixers_first
+"""The default post processor order."""
+
+
+class MODEL_TYPE(StrEnum):
+    """The model types that are known to the API."""
+
+    text = auto()
+    """Text generation models."""
+    image = auto()
+    """Image generation models."""

@@ -12,8 +12,7 @@ import PIL.Image
 import pytest
 from loguru import logger
 
-from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
-from horde_sdk.worker.model_meta import ImageModelLoadResolver
+from horde_sdk.consts import GENERATION_ID_TYPES
 
 os.environ["TESTS_ONGOING"] = "1"
 
@@ -36,9 +35,8 @@ from horde_sdk.ai_horde_api.apimodels import (
     NoValidRequestFoundKobold,
     TextGenerateJobPopResponse,
 )
-from horde_sdk.generation_parameters.alchemy.consts import KNOWN_UPSCALERS
 from horde_sdk.ai_horde_api.fields import GenerationID
-from horde_sdk.generic_api.consts import ANON_API_KEY
+from horde_sdk.worker.model_meta import ImageModelLoadResolver
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -66,6 +64,8 @@ def check_tests_ongoing_env_var() -> None:
 def ai_horde_api_key() -> str:
     """Return the key being used for testing against an AI Horde API."""
     dev_key = os.getenv("AI_HORDE_DEV_APIKEY", None)
+
+    from horde_sdk.generic_api.consts import ANON_API_KEY
 
     return dev_key if dev_key is not None else ANON_API_KEY
 
