@@ -22,12 +22,12 @@ from horde_sdk.ai_horde_api.apimodels import (
     LorasPayloadEntry,
 )
 from horde_sdk.ai_horde_api.apimodels.base import ExtraSourceImageEntry
-from horde_sdk.worker.consts import (
+from horde_sdk.ai_horde_api.consts import (
     POST_PROCESSOR_ORDER_TYPE,
 )
 from horde_sdk.ai_horde_api.fields import GenerationID
-from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.generation_parameters.alchemy.consts import (
+    KNOWN_ALCHEMY_TYPES,
     KNOWN_FACEFIXERS,
     KNOWN_MISC_POST_PROCESSORS,
     KNOWN_UPSCALERS,

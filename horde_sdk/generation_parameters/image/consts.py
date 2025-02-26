@@ -1,7 +1,6 @@
-from strenum import StrEnum
-
-
 from enum import auto
+
+from strenum import StrEnum
 
 
 class KNOWN_SAMPLERS(StrEnum):
@@ -70,3 +69,41 @@ class KNOWN_SOURCE_PROCESSING(StrEnum):
     """Outpainting is just"""
     remix = auto()
     """Stable Cascade Remix"""
+
+
+class TI_TRIGGER_INJECT_CHOICE(StrEnum):
+    """The TI trigger inject choices that are known to the API."""
+
+    NO_INJECT = auto()
+    """No injection - the model either does not require it or the user will add the trigger manually."""
+
+    POSITIVE_PROMPT = auto()
+    """Injects into the 'positive' prompt."""
+
+    NEGATIVE_PROMPT = auto()
+    """Injects into the 'negative' prompt."""
+
+
+class LORA_TRIGGER_INJECT_CHOICE(StrEnum):
+    """The LoRa trigger inject choices that are known to the API."""
+
+    NO_INJECT = auto()
+    """No injection - the model either does not require it or the user will add the trigger manually."""
+
+    EXACT_POSITIVE = auto()
+    """Injects the exact specified trigger term into the 'positive' prompt."""
+
+    EXACT_NEGATIVE = auto()
+    """Injects the exact specified trigger term into the 'negative' prompt."""
+
+    FUZZY_POSITIVE = auto()
+    """Attempt to match the specified trigger term to a published trigger term into the 'positive' prompt."""
+
+    FUZZY_NEGATIVE = auto()
+    """Attempt to match the specified trigger term to a published trigger term into the 'negative' prompt."""
+
+
+class KNOWN_WORKFLOWS(StrEnum):
+    """The controlnets that are known to the API."""
+
+    qr_code = auto()

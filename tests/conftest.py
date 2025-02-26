@@ -25,6 +25,7 @@ from horde_model_reference.model_reference_manager import ModelReferenceManager
 from horde_sdk.ai_horde_api.apimodels import (
     AlchemyJobPopResponse,
     AlchemyPopFormPayload,
+    ExtraSourceImageEntry,
     ImageGenerateAsyncRequest,
     ImageGenerateJobPopPayload,
     ImageGenerateJobPopResponse,
@@ -36,6 +37,18 @@ from horde_sdk.ai_horde_api.apimodels import (
     TextGenerateJobPopResponse,
 )
 from horde_sdk.ai_horde_api.fields import GenerationID
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_FORMS, KNOWN_NSFW_DETECTOR, KNOWN_UPSCALERS
+from horde_sdk.generation_parameters.alchemy.object_models import (
+    AlchemyParameters,
+    NSFWAlchemyParameters,
+    UpscaleAlchemyParameters,
+)
+from horde_sdk.generation_parameters.image.consts import KNOWN_SAMPLERS, KNOWN_SCHEDULERS, KNOWN_SOURCE_PROCESSING
+from horde_sdk.generation_parameters.image.object_models import (
+    BasicImageGenerationParameters,
+    ImageGenerationParameters,
+)
+from horde_sdk.generation_parameters.text.object_models import BasicTextGenerationParameters, TextGenerationParameters
 from horde_sdk.worker.model_meta import ImageModelLoadResolver
 
 
@@ -216,9 +229,268 @@ def single_id() -> GenerationID:
 
 
 @pytest.fixture(scope="function")
+def single_id_str(single_id: GenerationID) -> str:
+    """Return a new UUID for each call as a plain string."""
+    return str(single_id)
+
+
+@pytest.fixture(scope="function")
 def id_factory() -> Callable[[], GenerationID]:
     """Return a function that generates a new UUID for each call."""
     return _single_id
+
+
+@pytest.fixture(scope="function")
+def id_factory_str() -> Callable[[], str]:
+    """Return a function that generates a new UUID for each call as a plain string."""
+    return lambda: str(_single_id())
+
+
+@pytest.fixture(scope="function")
+def simple_text_generation_parameters(
+    single_id_str: str,
+) -> TextGenerationParameters:
+    """Return a simple `TextGenerationParameters` object."""
+    return TextGenerationParameters(
+        generation_ids=[single_id_str],
+        base_params=BasicTextGenerationParameters(
+            prompt="Tell me about a cat in a hat.",
+            model="oFakeModel",
+        ),
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_generation_parameters(
+    single_id_str: str,
+) -> ImageGenerationParameters:
+    """Return a simple `ImageGenerationParameters` object."""
+    return ImageGenerationParameters(
+        generation_ids=[single_id_str],
+        source_processing=KNOWN_SOURCE_PROCESSING.txt2img,
+        base_params=BasicImageGenerationParameters(
+            model="Deliberate",
+            prompt="a cat in a hat",
+            seed="42",
+            width=512,
+            height=512,
+            steps=10,
+            cfg_scale=5,
+            sampler_name=KNOWN_SAMPLERS.k_euler_a,
+            scheduler=KNOWN_SCHEDULERS.normal,
+            clip_skip=1,
+            denoising_strength=1.0,
+        ),
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_generation_parameters_and_upload_map(
+    simple_image_generation_parameters: ImageGenerationParameters,
+) -> tuple[ImageGenerationParameters, dict[GENERATION_ID_TYPES, str | None]]:
+    """Return a simple `ImageGenerationParameters` object and an upload map."""
+    return simple_image_generation_parameters, {
+        simple_image_generation_parameters.generation_ids[
+            0
+        ]: f"https://not.a.real.url.internal/upload/{simple_image_generation_parameters.generation_ids[0]}",
+    }
+
+
+@pytest.fixture(scope="function")
+def simple_image_generation_parameters_n_iter(
+    id_factory_str: Callable[[], str],
+) -> ImageGenerationParameters:
+    """Return a simple `ImageGenerationParameters` object."""
+    batch_size = 3
+    return ImageGenerationParameters(
+        generation_ids=[id_factory_str() for _ in range(batch_size)],
+        batch_size=batch_size,
+        source_processing=KNOWN_SOURCE_PROCESSING.txt2img,
+        base_params=BasicImageGenerationParameters(
+            model="Deliberate",
+            prompt="a cat in a hat",
+            seed="42",
+            width=512,
+            height=512,
+            steps=10,
+            cfg_scale=5,
+            sampler_name=KNOWN_SAMPLERS.k_euler_a,
+            scheduler=KNOWN_SCHEDULERS.normal,
+            clip_skip=1,
+            denoising_strength=1.0,
+        ),
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_generation_parameters_n_iter_and_upload_map(
+    simple_image_generation_parameters_n_iter: ImageGenerationParameters,
+) -> tuple[ImageGenerationParameters, dict[GENERATION_ID_TYPES, str | None]]:
+    """Return a simple `ImageGenerationParameters` object and an upload map."""
+    return simple_image_generation_parameters_n_iter, {
+        gen_id: f"https://not.a.real.url.internal/upload/{gen_id}"
+        for gen_id in simple_image_generation_parameters_n_iter.generation_ids
+    }
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_generation_parameters(
+    single_id_str: str,
+    default_testing_image_PIL: PIL.Image.Image,
+) -> AlchemyParameters:
+    """Return a simple `AlchemyParameters` object."""
+    return AlchemyParameters(
+        upscalers=[
+            UpscaleAlchemyParameters(
+                generation_id=single_id_str,
+                form=KNOWN_ALCHEMY_FORMS.post_process,
+                source_image=default_testing_image_PIL,
+                upscaler=KNOWN_UPSCALERS.RealESRGAN_x2plus,
+            ),
+        ],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_generation_parameters_and_upload_map(
+    simple_alchemy_generation_parameters: AlchemyParameters,
+) -> tuple[AlchemyParameters, dict[GENERATION_ID_TYPES, str | None]]:
+    """Return a simple `AlchemyParameters` object and an upload map."""
+    upload_map: dict[GENERATION_ID_TYPES, str | None] = {}
+
+    for alchemy_operation in simple_alchemy_generation_parameters.all_alchemy_operations:
+        upload_map[alchemy_operation.generation_id] = (
+            f"https://not.a.real.url.internal/upload/{alchemy_operation.generation_id}"
+        )
+
+    return simple_alchemy_generation_parameters, upload_map
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_generation_parameters_nsfw_detect(
+    single_id_str: str,
+    default_testing_image_PIL: PIL.Image.Image,
+) -> AlchemyParameters:
+    """Return a simple `AlchemyParameters` object."""
+    return AlchemyParameters(
+        nsfw_detectors=[
+            NSFWAlchemyParameters(
+                generation_id=single_id_str,
+                form=KNOWN_ALCHEMY_FORMS.post_process,
+                source_image=default_testing_image_PIL,
+                nsfw_detector=KNOWN_NSFW_DETECTOR.BACKEND_DEFAULT,
+            ),
+        ],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_generation_parameters_nsfw_detect_and_upload_map(
+    simple_alchemy_generation_parameters_nsfw_detect: AlchemyParameters,
+) -> tuple[AlchemyParameters, dict[GENERATION_ID_TYPES, str | None]]:
+    """Return a simple `AlchemyParameters` object and an upload map."""
+    upload_map: dict[GENERATION_ID_TYPES, str | None] = {}
+
+    for alchemy_operation in simple_alchemy_generation_parameters_nsfw_detect.all_alchemy_operations:
+        upload_map[alchemy_operation.generation_id] = (
+            f"https://not.a.real.url.internal/upload/{alchemy_operation.generation_id}"
+        )
+
+    return simple_alchemy_generation_parameters_nsfw_detect, upload_map
+
+
+@pytest.fixture(scope="function")
+def simple_image_generation_parameters_post_processing(
+    single_id_str: str,
+    simple_alchemy_generation_parameters: AlchemyParameters,
+) -> ImageGenerationParameters:
+    """Return a simple `ImageGenerationParameters` object."""
+    return ImageGenerationParameters(
+        generation_ids=[single_id_str],
+        source_processing=KNOWN_SOURCE_PROCESSING.txt2img,
+        base_params=BasicImageGenerationParameters(
+            model="Deliberate",
+            prompt="a cat in a hat",
+            seed="42",
+            width=512,
+            height=512,
+            steps=10,
+            cfg_scale=5,
+            sampler_name=KNOWN_SAMPLERS.k_euler_a,
+            scheduler=KNOWN_SCHEDULERS.normal,
+            clip_skip=1,
+            denoising_strength=1.0,
+        ),
+        alchemy_params=simple_alchemy_generation_parameters,
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_generation_parameters_post_processing_and_upload_map(
+    simple_image_generation_parameters_post_processing: ImageGenerationParameters,
+) -> tuple[ImageGenerationParameters, dict[GENERATION_ID_TYPES, str | None]]:
+    """Return a simple `ImageGenerationParameters` object and an upload map."""
+    upload_map: dict[GENERATION_ID_TYPES, str | None] = {}
+
+    for gen_id in simple_image_generation_parameters_post_processing.generation_ids:
+        upload_map[gen_id] = f"https://not.a.real.url.internal/upload/{gen_id}"
+        assert simple_image_generation_parameters_post_processing.alchemy_params is not None
+        for (
+            alchemy_operation
+        ) in simple_image_generation_parameters_post_processing.alchemy_params.all_alchemy_operations:
+            upload_map[alchemy_operation.generation_id] = (
+                f"https://not.a.real.url.internal/upload/{alchemy_operation.generation_id}"
+            )
+
+    return simple_image_generation_parameters_post_processing, upload_map
+
+
+@pytest.fixture(scope="function")
+def simple_image_generation_parameters_n_iter_post_processing(
+    id_factory_str: Callable[[], str],
+    simple_alchemy_generation_parameters: AlchemyParameters,
+) -> ImageGenerationParameters:
+    """Return a simple `ImageGenerationParameters` object."""
+    batch_size = 3
+    return ImageGenerationParameters(
+        generation_ids=[id_factory_str() for _ in range(batch_size)],
+        batch_size=batch_size,
+        source_processing=KNOWN_SOURCE_PROCESSING.txt2img,
+        base_params=BasicImageGenerationParameters(
+            model="Deliberate",
+            prompt="a cat in a hat",
+            seed="42",
+            width=512,
+            height=512,
+            steps=10,
+            cfg_scale=5,
+            sampler_name=KNOWN_SAMPLERS.k_euler_a,
+            scheduler=KNOWN_SCHEDULERS.normal,
+            clip_skip=1,
+            denoising_strength=1.0,
+        ),
+        alchemy_params=simple_alchemy_generation_parameters,
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_generation_parameters_n_iter_post_processing_and_upload_map(
+    simple_image_generation_parameters_n_iter_post_processing: ImageGenerationParameters,
+) -> tuple[ImageGenerationParameters, dict[GENERATION_ID_TYPES, str | None]]:
+    """Return a simple `ImageGenerationParameters` object and an upload map."""
+    upload_map: dict[GENERATION_ID_TYPES, str | None] = {}
+
+    for gen_id in simple_image_generation_parameters_n_iter_post_processing.generation_ids:
+        upload_map[gen_id] = f"https://not.a.real.url.internal/upload/{gen_id}"
+        assert simple_image_generation_parameters_n_iter_post_processing.alchemy_params is not None
+        for (
+            alchemy_operation
+        ) in simple_image_generation_parameters_n_iter_post_processing.alchemy_params.all_alchemy_operations:
+            upload_map[alchemy_operation.generation_id] = (
+                f"https://not.a.real.url.internal/upload/{alchemy_operation.generation_id}"
+            )
+
+    return simple_image_generation_parameters_n_iter_post_processing, upload_map
 
 
 @pytest.fixture(scope="function")
@@ -254,7 +526,9 @@ def simple_image_gen_job_pop_response_n_requests(
 def simple_image_gen_job_pop_response_post_processing(
     single_id: UUID,
 ) -> ImageGenerateJobPopResponse:
-    """Return a `ImageGenerateJobPopResponse` instance with a upscaling post-processing argument set."""
+    """Return a `ImageGenerateJobPopResponse` instance with an upscaling post-processing argument set."""
+    from horde_sdk.generation_parameters.alchemy.consts import KNOWN_UPSCALERS
+
     return ImageGenerateJobPopResponse(
         ids=[single_id],
         payload=ImageGenerateJobPopPayload(
@@ -273,7 +547,7 @@ def simple_image_gen_job_pop_response_img2img(
     single_id: UUID,
     img2img_testing_image_base64: str,
 ) -> ImageGenerateJobPopResponse:
-    """Return a `ImageGenerateJobPopResponse` instance for `img2img` and no other arguments set"""
+    """Return a `ImageGenerateJobPopResponse` instance for `img2img`"""
     from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 
     return ImageGenerateJobPopResponse(
@@ -295,7 +569,7 @@ def simple_image_gen_job_pop_response_img2img_masked(
     single_id: UUID,
     inpainting_source_image_and_mask_base64: tuple[str, str],
 ) -> ImageGenerateJobPopResponse:
-    """Return a `ImageGenerateJobPopResponse` instance for `img2img` and no other arguments set"""
+    """Return a `ImageGenerateJobPopResponse` instance for `img2img`"""
     from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 
     source_image, source_mask = inpainting_source_image_and_mask_base64
@@ -320,7 +594,7 @@ def simple_image_gen_job_pop_response_inpainting(
     single_id: UUID,
     inpainting_source_image_and_mask_base64: tuple[str, str],
 ) -> ImageGenerateJobPopResponse:
-    """Return a `ImageGenerateJobPopResponse` instance for `img2img` and no other arguments set"""
+    """Return a `ImageGenerateJobPopResponse` instance for `img2img`"""
     from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 
     source_image, source_mask = inpainting_source_image_and_mask_base64
@@ -345,7 +619,7 @@ def simple_image_gen_job_pop_response_outpainting_alpha(
     single_id: UUID,
     outpaint_alpha_source_image_base64: str,
 ) -> ImageGenerateJobPopResponse:
-    """Return a `ImageGenerateJobPopResponse` instance for `img2img` and no other arguments set"""
+    """Return a `ImageGenerateJobPopResponse` instance for `img2img`"""
     from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 
     return ImageGenerateJobPopResponse(
@@ -367,7 +641,7 @@ def simple_image_gen_job_pop_response_controlnet_openpose(
     single_id: UUID,
     openpose_control_map_base64: str,
 ) -> ImageGenerateJobPopResponse:
-    """Return a `ImageGenerateJobPopResponse` instance for `controlnet` and no other arguments set"""
+    """Return a `ImageGenerateJobPopResponse` instance with `controlnet` set"""
     from horde_sdk.generation_parameters.image.consts import KNOWN_CONTROLNETS
 
     return ImageGenerateJobPopResponse(
@@ -386,6 +660,115 @@ def simple_image_gen_job_pop_response_controlnet_openpose(
 
 
 @pytest.fixture(scope="function")
+def simple_image_gen_job_pop_response_hires_fix(
+    single_id: UUID,
+) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance for `hires_fix`"""
+    return ImageGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+            hires_fix=True,
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+        model="Deliberate",
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_job_pop_response_hires_fix_denoise(
+    single_id: UUID,
+) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance for `hires_fix`"""
+    return ImageGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+            hires_fix=True,
+            hires_fix_denoising_strength=0.8,
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+        model="Deliberate",
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_job_pop_response_loras(
+    single_id: UUID,
+) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance with `loras`"""
+    from horde_sdk.ai_horde_api.apimodels import LorasPayloadEntry
+
+    return ImageGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+            loras=[LorasPayloadEntry(name="76693", model=1, clip=1)],
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+        model="Deliberate",
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_job_pop_response_tis(
+    single_id: UUID,
+) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance with `tis`"""
+    from horde_sdk.ai_horde_api.apimodels import TIPayloadEntry
+
+    return ImageGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+            tis=[
+                TIPayloadEntry(
+                    name="72437",
+                    inject_ti="negprompt",
+                    strength=1,
+                ),
+            ],
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+        model="Deliberate",
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_gen_job_pop_response_remix(
+    single_id: UUID,
+    default_testing_image_base64: str,
+    woman_headshot_testing_image_base64: str,
+) -> ImageGenerateJobPopResponse:
+    """Return a `ImageGenerateJobPopResponse` instance with `remix`"""
+    from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
+
+    return ImageGenerateJobPopResponse(
+        ids=[single_id],
+        payload=ImageGenerateJobPopPayload(
+            prompt="a headshot of a woman with a stylized logo on her face",
+            width=1024,
+            height=1024,
+            seed="42",
+        ),
+        skipped=ImageGenerateJobPopSkippedStatus(),
+        source_processing=KNOWN_SOURCE_PROCESSING.remix,
+        model="Stable Cascade 1.0",
+        r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
+        source_image=woman_headshot_testing_image_base64,
+        extra_source_images=[ExtraSourceImageEntry(image=default_testing_image_base64, strength=0.75)],
+    )
+
+
+@pytest.fixture(scope="function")
 def simple_text_gen_job_pop_response(
     single_id: UUID,
 ) -> TextGenerateJobPopResponse:
@@ -399,16 +782,20 @@ def simple_text_gen_job_pop_response(
 
 
 @pytest.fixture(scope="function")
-def simple_alchemy_gen_job_pop_response(
+def simple_alchemy_gen_job_pop_response_interrogate(
     single_id: UUID,
+    default_testing_image_base64: str,
 ) -> AlchemyJobPopResponse:
     """Return a `AlchemyJobPopResponse` instance for `interrogation` and no other arguments set"""
+    from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
+
     return AlchemyJobPopResponse(
         forms=[
             AlchemyPopFormPayload(
                 id=single_id,
                 form=KNOWN_ALCHEMY_TYPES.interrogation,
                 r2_upload=f"https://not.a.real.url.internal/upload/{single_id}",
+                source_image=default_testing_image_base64,
             ),
         ],
         skipped=NoValidAlchemyFound(),
@@ -416,16 +803,219 @@ def simple_alchemy_gen_job_pop_response(
 
 
 @pytest.fixture(scope="function")
-def simple_alchemy_gen_job_pop_nsfw_check(
+def simple_alchemy_gen_job_pop_response_nsfw_detect(
     single_id: UUID,
+    default_testing_image_base64: str,
 ) -> AlchemyJobPopResponse:
-    """Return a `AlchemyJobPopResponse` instance for `nsfw` check and no other arguments set"""
+    """Return a `AlchemyJobPopResponse` instance for `nsfw` detect and no other arguments set"""
+    from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
+
     return AlchemyJobPopResponse(
         forms=[
             AlchemyPopFormPayload(
                 id=single_id,
                 form=KNOWN_ALCHEMY_TYPES.nsfw,
                 r2_upload=f"https://not.a.real.url.internal/upload/{single_id}",
+                source_image=default_testing_image_base64,
+            ),
+        ],
+        skipped=NoValidAlchemyFound(),
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_gen_job_pop_response_all_feature_extractions(
+    id_factory_str: Callable[[], str],
+    default_testing_image_base64: str,
+) -> AlchemyJobPopResponse:
+    """Return a `AlchemyJobPopResponse` instance for all feature extractions and no other arguments set"""
+    from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
+
+    ids = [id_factory_str() for _ in range(3)]
+    return AlchemyJobPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=ids[0],
+                form=KNOWN_ALCHEMY_TYPES.interrogation,
+                r2_upload=f"https://not.a.real.url.internal/upload/{ids[0]}",
+                source_image=default_testing_image_base64,
+            ),
+            AlchemyPopFormPayload(
+                id=ids[1],
+                form=KNOWN_ALCHEMY_TYPES.nsfw,
+                r2_upload=f"https://not.a.real.url.internal/upload/{ids[1]}",
+                source_image=default_testing_image_base64,
+            ),
+            AlchemyPopFormPayload(
+                id=ids[2],
+                form=KNOWN_ALCHEMY_TYPES.caption,
+                r2_upload=f"https://not.a.real.url.internal/upload/{ids[2]}",
+                source_image=default_testing_image_base64,
+            ),
+        ],
+        skipped=NoValidAlchemyFound(),
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_gen_job_pop_response_upscale(
+    single_id: UUID,
+    default_testing_image_base64: str,
+) -> AlchemyJobPopResponse:
+    """Return a `AlchemyJobPopResponse` instance for `upscaling` and no other arguments set"""
+    from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
+
+    return AlchemyJobPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=single_id,
+                form=KNOWN_ALCHEMY_TYPES.RealESRGAN_x2plus,
+                r2_upload=f"https://not.a.real.url.internal/upload/{single_id}",
+                source_image=default_testing_image_base64,
+            ),
+        ],
+        skipped=NoValidAlchemyFound(),
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_gen_job_pop_response_upscale_multiple(
+    id_factory_str: Callable[[], str],
+    default_testing_image_base64: str,
+) -> AlchemyJobPopResponse:
+    """Return a `AlchemyJobPopResponse` instance for multiple `upscaling` operations and no other arguments set"""
+    from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
+
+    ids = [id_factory_str() for _ in range(2)]
+    return AlchemyJobPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=ids[0],
+                form=KNOWN_ALCHEMY_TYPES.RealESRGAN_x2plus,
+                r2_upload=f"https://not.a.real.url.internal/upload/{ids[0]}",
+                source_image=default_testing_image_base64,
+            ),
+            AlchemyPopFormPayload(
+                id=ids[1],
+                form=KNOWN_ALCHEMY_TYPES.RealESRGAN_x4plus,
+                r2_upload=f"https://not.a.real.url.internal/upload/{ids[1]}",
+                source_image=default_testing_image_base64,
+            ),
+        ],
+        skipped=NoValidAlchemyFound(),
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_gen_job_pop_response_facefix(
+    single_id: UUID,
+    default_testing_image_base64: str,
+) -> AlchemyJobPopResponse:
+    """Return a `AlchemyJobPopResponse` instance for `facefix` and no other arguments set"""
+    from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
+
+    return AlchemyJobPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=single_id,
+                form=KNOWN_ALCHEMY_TYPES.CodeFormers,
+                r2_upload=f"https://not.a.real.url.internal/upload/{single_id}",
+                source_image=default_testing_image_base64,
+            ),
+        ],
+        skipped=NoValidAlchemyFound(),
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_gen_job_pop_response_facefix_multiple(
+    id_factory_str: Callable[[], str],
+    default_testing_image_base64: str,
+) -> AlchemyJobPopResponse:
+    """Return a `AlchemyJobPopResponse` instance for multiple `facefix` operations and no other arguments set"""
+    from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
+
+    ids = [id_factory_str() for _ in range(2)]
+    return AlchemyJobPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=ids[0],
+                form=KNOWN_ALCHEMY_TYPES.CodeFormers,
+                r2_upload=f"https://not.a.real.url.internal/upload/{ids[0]}",
+                source_image=default_testing_image_base64,
+            ),
+            AlchemyPopFormPayload(
+                id=ids[1],
+                form=KNOWN_ALCHEMY_TYPES.GFPGAN,
+                r2_upload=f"https://not.a.real.url.internal/upload/{ids[1]}",
+                source_image=default_testing_image_base64,
+            ),
+        ],
+        skipped=NoValidAlchemyFound(),
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_gen_job_pop_response_strip_background(
+    single_id: UUID,
+    default_testing_image_base64: str,
+) -> AlchemyJobPopResponse:
+    """Return a `AlchemyJobPopResponse` instance for `strip_background` and no other arguments set"""
+    from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
+
+    return AlchemyJobPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=single_id,
+                form=KNOWN_ALCHEMY_TYPES.strip_background,
+                r2_upload=f"https://not.a.real.url.internal/upload/{single_id}",
+                source_image=default_testing_image_base64,
+            ),
+        ],
+        skipped=NoValidAlchemyFound(),
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_gen_job_pop_response_all(
+    id_factory_str: Callable[[], str],
+    default_testing_image_base64: str,
+) -> AlchemyJobPopResponse:
+    """Return a `AlchemyJobPopResponse` instance for all operations and no other arguments set"""
+    from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
+
+    ids = [id_factory_str() for _ in range(5)]
+    return AlchemyJobPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=ids[0],
+                form=KNOWN_ALCHEMY_TYPES.interrogation,
+                r2_upload=f"https://not.a.real.url.internal/upload/{ids[0]}",
+                source_image=default_testing_image_base64,
+            ),
+            AlchemyPopFormPayload(
+                id=ids[1],
+                form=KNOWN_ALCHEMY_TYPES.nsfw,
+                r2_upload=f"https://not.a.real.url.internal/upload/{ids[1]}",
+                source_image=default_testing_image_base64,
+            ),
+            AlchemyPopFormPayload(
+                id=ids[2],
+                form=KNOWN_ALCHEMY_TYPES.strip_background,
+                r2_upload=f"https://not.a.real.url.internal/upload/{ids[2]}",
+                source_image=default_testing_image_base64,
+            ),
+            AlchemyPopFormPayload(
+                id=ids[3],
+                form=KNOWN_ALCHEMY_TYPES.RealESRGAN_x2plus,
+                r2_upload=f"https://not.a.real.url.internal/upload/{ids[3]}",
+                source_image=default_testing_image_base64,
+            ),
+            AlchemyPopFormPayload(
+                id=ids[4],
+                form=KNOWN_ALCHEMY_TYPES.CodeFormers,
+                r2_upload=f"https://not.a.real.url.internal/upload/{ids[4]}",
+                source_image=default_testing_image_base64,
             ),
         ],
         skipped=NoValidAlchemyFound(),

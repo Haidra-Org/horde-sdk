@@ -1,16 +1,22 @@
+"""Contains the Alchemy parameters models and related classes.
+
+See :class:`horde_sdk.generation_parameters.alchemy.object_models.AlchemyParameters` for the main
+Alchemy parameters model.
+"""
+
 from horde_sdk.generation_parameters.alchemy.object_models import (
     AlchemyParameters,
-    BasicAlchemyParameters,
     CaptionAlchemyParameters,
     FacefixAlchemyParameters,
     InterrogateAlchemyParameters,
     NSFWAlchemyParameters,
+    SingleAlchemyParameters,
     UpscaleAlchemyParameters,
 )
 
 __all__ = [
     "AlchemyParameters",
-    "BasicAlchemyParameters",
+    "SingleAlchemyParameters",
     "CaptionAlchemyParameters",
     "FacefixAlchemyParameters",
     "InterrogateAlchemyParameters",

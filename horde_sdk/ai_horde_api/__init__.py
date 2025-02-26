@@ -20,14 +20,13 @@ from horde_sdk.ai_horde_api.endpoints import (
 from horde_sdk.ai_horde_api.exceptions import (
     AIHordeGenerationTimedOutError,
     AIHordeImageValidationError,
-    AIHordePayloadValidationError,
     AIHordeRequestError,
     AIHordeServerException,
 )
 from horde_sdk.ai_horde_api.fields import GenerationID, ImageID, TeamID, WorkerID
+from horde_sdk.exceptions import PayloadValidationError
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_FORMS
 from horde_sdk.generation_parameters.image.consts import KNOWN_SAMPLERS, KNOWN_SOURCE_PROCESSING
-from horde_sdk.worker.consts import WORKER_TYPE
 
 __all__ = [
     "AIHordeAPIManualClient",
@@ -44,12 +43,11 @@ __all__ = [
     "GENERATION_STATE",
     "KNOWN_SAMPLERS",
     "KNOWN_SOURCE_PROCESSING",
-    "WORKER_TYPE",
     "AIHordeRequestError",
     "AIHordeImageValidationError",
     "AIHordeGenerationTimedOutError",
     "AIHordeServerException",
-    "AIHordePayloadValidationError",
+    "PayloadValidationError",
     "ImageID",
     "GenerationID",
     "TeamID",

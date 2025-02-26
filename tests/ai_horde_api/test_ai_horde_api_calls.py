@@ -18,9 +18,10 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerateAsyncResponse,
     ImageGenerateStatusResponse,
 )
-from horde_sdk.worker.consts import WORKER_TYPE
+from horde_sdk.ai_horde_api.consts import AI_HORDE_WORKER_TYPES
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 from horde_sdk.generic_api.utils.swagger import SwaggerDoc
+from horde_sdk.worker.consts import WORKER_TYPE
 
 _PRODUCTION_RESPONSES_FOLDER = Path(__file__).parent.parent / "test_data" / "ai_horde_api" / "production_responses"
 
@@ -111,7 +112,7 @@ class TestAIHordeAPIClients:
             pytest.fail(f"API Response was an error: {api_response_image.message}")
 
         assert isinstance(api_response_image, AllWorkersDetailsResponse)
-        assert all(worker.type_ == WORKER_TYPE.image for worker in api_response_image.root)
+        assert all(worker.type_ == AI_HORDE_WORKER_TYPES.image for worker in api_response_image.root)
 
         api_request_text = AllWorkersDetailsRequest(type=WORKER_TYPE.text)
         api_response_text = client.submit_request(
@@ -123,7 +124,7 @@ class TestAIHordeAPIClients:
             pytest.fail(f"API Response was an error: {api_response_text.message}")
 
         assert isinstance(api_response_text, AllWorkersDetailsResponse)
-        assert all(worker.type_ == WORKER_TYPE.text for worker in api_response_text.root)
+        assert all(worker.type_ == AI_HORDE_WORKER_TYPES.text for worker in api_response_text.root)
 
         api_request_interrogation = AllWorkersDetailsRequest(type=WORKER_TYPE.interrogation)
         api_response_interrogation = client.submit_request(

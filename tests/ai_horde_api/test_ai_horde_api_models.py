@@ -35,14 +35,13 @@ from horde_sdk.ai_horde_api.apimodels.workers._workers import (
     WorkerKudosDetails,
 )
 from horde_sdk.ai_horde_api.consts import (
+    AI_HORDE_WORKER_TYPES,
     METADATA_TYPE,
     METADATA_VALUE,
 )
 from horde_sdk.ai_horde_api.fields import GenerationID
-from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
-from horde_sdk.generation_parameters.alchemy.consts import KNOWN_FACEFIXERS, KNOWN_UPSCALERS
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES, KNOWN_FACEFIXERS, KNOWN_UPSCALERS
 from horde_sdk.generation_parameters.image.consts import KNOWN_CONTROLNETS, KNOWN_SAMPLERS, KNOWN_SOURCE_PROCESSING
-from horde_sdk.worker.consts import WORKER_TYPE
 
 
 def test_api_endpoint() -> None:
@@ -203,7 +202,7 @@ def test_AllWorkersDetailsResponse() -> None:
     test_all_workers_details_response = AllWorkersDetailsResponse(
         root=[
             WorkerDetailItem(
-                type=WORKER_TYPE.image,
+                type=AI_HORDE_WORKER_TYPES.image,
                 name="test worker name",
                 id="test worker id",
                 online=True,
@@ -241,7 +240,7 @@ def test_AllWorkersDetailsResponse() -> None:
             ),
         ],
     )
-    assert test_all_workers_details_response[0].type_ == WORKER_TYPE.image
+    assert test_all_workers_details_response[0].type_ == AI_HORDE_WORKER_TYPES.image
     assert test_all_workers_details_response[0].name == "test worker name"
     assert test_all_workers_details_response[0].id_ == "test worker id"
     assert test_all_workers_details_response[0].online is True

@@ -710,7 +710,7 @@
             "description": "If source_image is provided, specifies how to process it.",
             "types": [
                 "str",
-                "horde_sdk.ai_horde_api.consts.KNOWN_SOURCE_PROCESSING"
+                "horde_sdk.generation_parameters.image.consts.KNOWN_SOURCE_PROCESSING"
             ]
         },
         "source_mask": {
@@ -1072,7 +1072,7 @@
         "type_": {
             "description": "The type of worker.",
             "types": [
-                "horde_sdk.ai_horde_api.consts.WORKER_TYPE"
+                "horde_sdk.ai_horde_api.consts.AI_HORDE_WORKER_TYPES"
             ]
         },
         "name": {

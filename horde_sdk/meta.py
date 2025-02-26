@@ -7,11 +7,11 @@ from functools import cache
 import horde_sdk
 import horde_sdk.ai_horde_api
 import horde_sdk.ai_horde_api.apimodels
-import horde_sdk.worker
 import horde_sdk.generic_api
 import horde_sdk.generic_api.apimodels
 import horde_sdk.ratings_api
 import horde_sdk.ratings_api.apimodels
+import horde_sdk.worker
 from horde_sdk import HordeAPIObject, HordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH, get_ai_horde_swagger_url
 from horde_sdk.generic_api.apimodels import HordeAPIData

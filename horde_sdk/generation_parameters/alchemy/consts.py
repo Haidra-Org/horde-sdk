@@ -140,24 +140,37 @@ class KNOWN_ALCHEMY_TYPES(StrEnum):
 
 def is_upscaler_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
     """Check if the form is an upscaler form."""
-    return form in KNOWN_UPSCALERS or form in KNOWN_UPSCALERS.__members__.values()
+    value = form
+    if isinstance(form, KNOWN_ALCHEMY_TYPES):
+        value = form.value
+
+    return value in KNOWN_UPSCALERS or value in KNOWN_UPSCALERS.__members__.values()
 
 
 def is_facefixer_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
     """Check if the form is a facefixer form."""
-    return form in KNOWN_FACEFIXERS or form in KNOWN_FACEFIXERS.__members__.values()
+    value = form
+    if isinstance(form, KNOWN_ALCHEMY_TYPES):
+        value = form.value
+
+    return value in KNOWN_FACEFIXERS or value in KNOWN_FACEFIXERS.__members__.values()
 
 
 def is_interrogator_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
     """Check if the form is an interrogator form."""
-    return form in KNOWN_INTERROGATORS or form in KNOWN_INTERROGATORS.__members__.values()
+    return form == KNOWN_CLIP_BLIP_TYPES.interrogation
 
 
 def is_caption_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
     """Check if the form is a caption form."""
-    return form in KNOWN_CAPTION_MODELS or form in KNOWN_CAPTION_MODELS.__members__.values()
+    return form == KNOWN_CLIP_BLIP_TYPES.caption
 
 
 def is_nsfw_detector_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
     """Check if the form is an NSFW form."""
-    return form in KNOWN_NSFW_DETECTOR or form in KNOWN_NSFW_DETECTOR.__members__.values()
+    return form == KNOWN_CLIP_BLIP_TYPES.nsfw
+
+
+def is_strip_background_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
+    """Check if the form is a strip background form."""
+    return form == KNOWN_MISC_POST_PROCESSORS.strip_background

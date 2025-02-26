@@ -14,6 +14,7 @@ from typing_extensions import override
 from horde_sdk.ai_horde_api.consts import (
     METADATA_TYPE,
     METADATA_VALUE,
+    POST_PROCESSOR_ORDER_TYPE,
     WarningCode,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
@@ -31,7 +32,6 @@ from horde_sdk.generic_api.apimodels import (
     HordeRequest,
     HordeResponseBaseModel,
 )
-from horde_sdk.worker.consts import POST_PROCESSOR_ORDER_TYPE
 
 
 class BaseAIHordeRequest(HordeRequest):

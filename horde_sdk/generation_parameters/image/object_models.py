@@ -3,19 +3,21 @@ from __future__ import annotations
 from pathlib import Path
 
 import PIL.Image
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from horde_sdk.ai_horde_api.consts import (
-    KNOWN_WORKFLOWS,
-)
-from horde_sdk.generation_parameters.generic import BasicGenerationParameters
+from horde_sdk.consts import GENERATION_ID_TYPES
+from horde_sdk.generation_parameters.alchemy import AlchemyParameters
+from horde_sdk.generation_parameters.generic import BasicModelGenerationParameters, ComposedParameterSetBase
+from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.image.consts import (
     KNOWN_CONTROLNETS,
     KNOWN_SAMPLERS,
     KNOWN_SCHEDULERS,
     KNOWN_SOURCE_PROCESSING,
+    KNOWN_WORKFLOWS,
+    LORA_TRIGGER_INJECT_CHOICE,
+    TI_TRIGGER_INJECT_CHOICE,
 )
-from horde_sdk.worker.consts import KNOWN_AUX_MODEL_SOURCE
 
 DEFAULT_BASELINE_RESOLUTION: int = 512
 """The default assumed (single side) trained resolution for image generation models if unspecified."""
@@ -23,7 +25,7 @@ HIRES_FIX_DENOISE_STRENGTH_DEFAULT: float = 0.65
 """The default second-pass denoise strength for hires-fix generations."""
 
 
-class BasicImageGenerationParameters(BasicGenerationParameters):
+class BasicImageGenerationParameters(BasicModelGenerationParameters):
     """Represents the common bare minimum parameters for an image generation."""
 
     prompt: str
@@ -45,7 +47,7 @@ class BasicImageGenerationParameters(BasicGenerationParameters):
     scheduler: KNOWN_SCHEDULERS | str
     """The scheduler to use for the generation."""
     clip_skip: int
-    """The offset of layer numbers to stop at. -1 means all layers."""
+    """The offset of layer numbers to skip. 1 means no layers are skipped."""
 
     denoising_strength: float
     """The denoising strength to use for the generation."""
@@ -152,14 +154,17 @@ class LoRaEntry(AuxModelEntry):
     clip_strength: float = 1
     """The strength of the LoRa on the clip model. 1 is the default strength."""
 
-    inject_trigger: bool = False
+    lora_triggers: list[str] | None = None
+    """The triggers to use for the LoRa. Specify the behavior with `lora_inject_trigger_choice`."""
+
+    lora_inject_trigger_choice: LORA_TRIGGER_INJECT_CHOICE = LORA_TRIGGER_INJECT_CHOICE.NO_INJECT
     """If true and if supported by the backend, inject a trigger term into the prompt."""
 
 
 class TIEntry(AuxModelEntry):
     """Represents a single entry of a Textual Inversion."""
 
-    inject_trigger: bool = False
+    ti_inject_trigger_choice: TI_TRIGGER_INJECT_CHOICE = TI_TRIGGER_INJECT_CHOICE.NO_INJECT
     """If true and if supported by the backend, inject a trigger term into the prompt."""
 
 
@@ -172,14 +177,16 @@ class CustomWorkflowGenerationParameters(BaseModel):
     """The version of the custom workflow to use for the generation. \
         If None, the latest version will be used. Defaults to None."""
 
-    custom_parameters: dict[str, str] | None = None
+    custom_parameters: dict[GENERATION_ID_TYPES, str] | None = None
     """The custom parameters to use for the generation. Defaults to None."""
 
 
-class ImageGenerationParameters(BaseModel):
+class ImageGenerationParameters(ComposedParameterSetBase):
     """Represents the parameters for an image generation."""
 
-    batch_size: int = 1
+    generation_ids: list[GENERATION_ID_TYPES]
+
+    batch_size: int = Field(default=1, ge=1)
     """The number of images to generated batched (simultaneously). This is the `n_iter` parameter in ComfyUI"""
 
     tiling: bool = False
@@ -202,6 +209,9 @@ class ImageGenerationParameters(BaseModel):
     custom_workflow_params: CustomWorkflowGenerationParameters | None = None
     """If this is a custom workflow generation, the parameters specific to custom workflow."""
 
+    alchemy_params: AlchemyParameters | None = None
+    """If alchemy is also requested, the parameters specific to those operations."""
+
     loras: list[LoRaEntry] | None = None
     """The LoRas to use for the generation."""
     tis: list[TIEntry] | None = None
@@ -219,5 +229,16 @@ class ImageGenerationParameters(BaseModel):
                 raise ValueError("img2img_params must be provided for img2img source processing.")
         elif self.source_processing == KNOWN_SOURCE_PROCESSING.remix and self.remix_params is None:
             raise ValueError("remix_params must be provided for remix source processing.")
+
+        return self
+
+    @model_validator(mode="after")
+    def verify_id_count(self: ImageGenerationParameters) -> ImageGenerationParameters:
+        """Ensure that at least one generation ID is provided."""
+        if not self.generation_ids:
+            raise ValueError("At least one generation ID must be provided.")
+
+        if len(self.generation_ids) != self.batch_size:
+            raise ValueError("The number of generation IDs must match the batch size.")
 
         return self
