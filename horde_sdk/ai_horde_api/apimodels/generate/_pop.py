@@ -223,7 +223,7 @@ class ImageGenerateJobPopResponse(
 
     payload: ImageGenerateJobPopPayload
     """The parameters used to generate this image."""
-    skipped: ImageGenerateJobPopSkippedStatus
+    skipped: ImageGenerateJobPopSkippedStatus = Field(default_factory=ImageGenerateJobPopSkippedStatus)
     """The reasons this worker was not issued certain jobs, and the number of jobs for each reason."""
     model: str | None = None
     """Which of the available models to use for this request."""
