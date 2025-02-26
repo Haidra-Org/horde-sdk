@@ -1,7 +1,7 @@
 {
     "type": "image",
     "name": "",
-    "id": "",
+    "id": "82b67cb6-f78e-402a-b42e-d1f564f13cd9",
     "online": false,
     "requests_fulfilled": 0,
     "kudos_rewards": 0.0,
@@ -30,7 +30,7 @@
     ],
     "team": {
         "name": "",
-        "id": ""
+        "id": "eff71d8e-e655-4b4e-8b40-abede3437e0f"
     },
     "contact": "email@example.com",
     "bridge_agent": "AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen",
@@ -44,5 +44,13 @@
     "sdxl_controlnet": false,
     "max_length": 80,
     "max_context_length": 80,
-    "tokens_generated": 0.0
+    "tokens_generated": 0.0,
+    "messages": [
+        {
+            "worker_id": "00000000-0000-0000-0000-000000000000",
+            "message": "Hello Worker!",
+            "origin": "AI Horde Moderators",
+            "expiry": 12
+        }
+    ]
 }

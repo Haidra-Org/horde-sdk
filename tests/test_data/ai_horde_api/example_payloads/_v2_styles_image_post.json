@@ -4,11 +4,11 @@
     "prompt": "{p}{np}",
     "params": {
         "sampler_name": "k_euler",
-        "cfg_scale": 7.5,
+        "cfg_scale": 0.0,
         "denoising_strength": 0.75,
         "hires_fix_denoising_strength": 0.75,
-        "height": 512,
-        "width": 512,
+        "height": 64.0,
+        "width": 64.0,
         "post_processing": [
             "GFPGAN"
         ],
@@ -40,7 +40,7 @@
         },
         "workflow": "qr_code",
         "transparent": false,
-        "steps": 30
+        "steps": 1.0
     },
     "public": true,
     "nsfw": false,
@@ -49,5 +49,6 @@
     ],
     "models": [
         "stable_diffusion"
-    ]
+    ],
+    "sharedkey": "00000000-0000-0000-0000-000000000000"
 }

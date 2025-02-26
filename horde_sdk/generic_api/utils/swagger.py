@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import uuid
 from abc import ABC
 from pathlib import Path
 from typing import Any, ClassVar
@@ -107,13 +108,13 @@ class SwaggerModelDefinitionSchemaValidation(SwaggerModelEntry):
     anyOf: list[SwaggerModelDefinition | SwaggerModelRef] | None = None
     """The model must match at least one of the schemas in this list."""
 
-    @model_validator(mode="before")
-    def one_method_specified(cls, v: dict[Any, Any]) -> dict[Any, Any]:
-        """Ensure at least one of the validation methods is specified."""
-        if not any([v.get("allOf"), v.get("oneOf"), v.get("anyOf")]):
-            raise ValueError("At least one of allOf, oneOf, or anyOf must be specified.")
+    @model_validator(mode="after")
+    def validate_schema_validation_methods(self) -> SwaggerModelDefinitionSchemaValidation:
+        """Ensure that only one of the validation methods is specified."""
+        if sum([bool(self.allOf), bool(self.oneOf), bool(self.anyOf)]) > 1:
+            raise ValueError("Only one of allOf, oneOf, or anyOf can be specified.")
 
-        return v
+        return self
 
     def get_validation_method(self) -> SwaggerSchemaValidationMethod | None:
         """Get the schema validation method used for this model."""
@@ -827,15 +828,25 @@ class SwaggerDoc(BaseModel):
                     continue
 
                 # Otherwise, get the default value for the property and add it to the return dictionary
-                return_dict[prop_name] = self.get_default_with_constraint(prop)
+                return_dict[prop_name] = self.get_default_with_constraint(prop, prop_name)
 
         return return_dict if return_dict else return_list
 
-    def get_default_with_constraint(self, model_property: SwaggerModelProperty) -> object:
+    def get_default_with_constraint(
+        self,
+        model_property: SwaggerModelProperty,
+        prop_name: str | None = None,
+    ) -> object:
         """Get the example value, defaulting to a a value appropriate to the type with any constraints applied."""
         # If the model property has a description that includes the word "optionally", do nothing
         if model_property.description and "optionally" in model_property.description:
             pass
+
+        if prop_name == "id" and (
+            (model_property.description)
+            and ("uuid" in model_property.description.lower() or "sharedkey id" in model_property.description.lower())
+        ):  # FIXME
+            return str(uuid.uuid4())
 
         # If the model property has an example value, return it
         if model_property.example is not None:
