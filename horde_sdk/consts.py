@@ -1,12 +1,15 @@
 """Constants used by the SDK."""
 
 from enum import IntEnum
+from uuid import UUID
 
 from strenum import StrEnum
 
-
 _ANONYMOUS_MODEL = "_ANONYMOUS_MODEL"
 """This model is on the API but does not have a name."""
+
+GENERATION_ID_TYPES = str | UUID
+"""The types that can be used as generation IDs."""
 
 
 class HTTPMethod(StrEnum):

@@ -215,7 +215,7 @@
         "forms": {
             "description": "The types of alchemy that should be generated.",
             "types": [
-                "list[horde_sdk.ai_horde_api.consts.KNOWN_ALCHEMY_TYPES]"
+                "list[horde_sdk.generation_parameters.alchemy.consts.KNOWN_ALCHEMY_TYPES]"
             ]
         }
     },
@@ -269,7 +269,7 @@
         "type_": {
             "description": "Filter workers by type. Default is 'all' which returns all workers.",
             "types": [
-                "horde_sdk.ai_horde_api.consts.WORKER_TYPE"
+                "horde_sdk.ai_horde_api.consts.AI_HORDE_WORKER_TYPES"
             ]
         },
         "name": {
@@ -559,7 +559,7 @@
         "source_processing": {
             "description": "If source_image is provided, specifies how to process it.",
             "types": [
-                "horde_sdk.ai_horde_api.consts.KNOWN_SOURCE_PROCESSING"
+                "horde_sdk.generation_parameters.image.consts.KNOWN_SOURCE_PROCESSING"
             ]
         },
         "source_mask": {
@@ -836,7 +836,7 @@
                 "str"
             ]
         },
-        "model_state": {
+        "api_model_state": {
             "description": "The state of the models to get stats for. Known models are models that are known to the system.",
             "types": [
                 "horde_sdk.ai_horde_api.consts.MODEL_STATE"

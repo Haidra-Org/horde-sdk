@@ -13,6 +13,21 @@ This is the amount of time that passes before the server will delete the request
 DEFAULT_HIRES_DENOISE_STRENGTH = 0.65
 
 
+class AI_HORDE_WORKER_TYPES(StrEnum):
+    """The worker types that are known to the API."""
+
+    all = ""
+    """All worker types."""
+    image = auto()
+    """Image generation worker."""
+    text = auto()
+    """Text generation worker."""
+    interrogation = auto()
+    """Alchemy/Interrogation worker."""
+    alchemist = "interrogation"
+    """Alchemy/Interrogation worker."""
+
+
 class GENERATION_STATE(StrEnum):
     """The generation states that are known to the API.
 
@@ -320,3 +335,30 @@ class PROGRESS_STATE(StrEnum):
     waiting = auto()
     finished = auto()
     timed_out = auto()
+
+
+class MODEL_TYPE(StrEnum):
+    """The model types that are known to the API."""
+
+    text = auto()
+    """Text generation models."""
+    image = auto()
+    """Image generation models."""
+
+
+class POST_PROCESSOR_ORDER_TYPE(StrEnum):
+    """The post processor order types that are known to the API.
+
+    (facefixers_first, upscalers_first, custom, etc)
+    """
+
+    facefixers_first = auto()
+    """The facefixers are processed first."""
+    upscalers_first = auto()
+    """The upscalers are processed first."""
+    custom = auto()
+    """User specified post processor order."""
+
+
+DEFAULT_POST_PROCESSOR_ORDER = POST_PROCESSOR_ORDER_TYPE.facefixers_first
+"""The default post processor order."""

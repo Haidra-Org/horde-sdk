@@ -9,12 +9,16 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_NSFW_DETECTOR,
     KNOWN_UPSCALERS,
 )
+from horde_sdk.generation_parameters.generic import ComposedParameterSetBase
 
 
-class BasicAlchemyParameters(BaseModel):
+class SingleAlchemyParameters(BaseModel):
     """Represents the common bare minimum parameters for any alchemy generation."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    generation_id: str
+    """The generation ID to use for the generation."""
 
     form: KNOWN_ALCHEMY_FORMS | str
     """The form to use for the generation."""
@@ -23,37 +27,37 @@ class BasicAlchemyParameters(BaseModel):
     """The source image to u`se for the generation."""
 
 
-class UpscaleAlchemyParameters(BasicAlchemyParameters):
+class UpscaleAlchemyParameters(SingleAlchemyParameters):
     """Represents the parameters for an upscale alchemy generation."""
 
     upscaler: KNOWN_UPSCALERS | str
 
 
-class FacefixAlchemyParameters(BasicAlchemyParameters):
+class FacefixAlchemyParameters(SingleAlchemyParameters):
     """Represents the parameters for a facefix alchemy generation."""
 
     facefixer: KNOWN_FACEFIXERS | str
 
 
-class InterrogateAlchemyParameters(BasicAlchemyParameters):
+class InterrogateAlchemyParameters(SingleAlchemyParameters):
     """Represents the parameters for an interrogation alchemy generation."""
 
     interrogator: KNOWN_INTERROGATORS | str
 
 
-class CaptionAlchemyParameters(BasicAlchemyParameters):
+class CaptionAlchemyParameters(SingleAlchemyParameters):
     """Represents the parameters for a caption alchemy generation."""
 
     caption_model: KNOWN_CAPTION_MODELS | str
 
 
-class NSFWAlchemyParameters(BasicAlchemyParameters):
+class NSFWAlchemyParameters(SingleAlchemyParameters):
     """Represents the parameters for a NSFW alchemy generation."""
 
     nsfw_detector: KNOWN_NSFW_DETECTOR | str
 
 
-class AlchemyParameters(BaseModel):
+class AlchemyParameters(ComposedParameterSetBase):
     """Represents the parameters for an alchemy generation."""
 
     upscalers: list[UpscaleAlchemyParameters] | None = None
@@ -66,3 +70,33 @@ class AlchemyParameters(BaseModel):
     """The caption operations requested."""
     nsfw_detectors: list[NSFWAlchemyParameters] | None = None
     """The NSFW detection operations requested."""
+
+    misc_post_processors: list[SingleAlchemyParameters] | None = None
+    """Any other post-processing operations requested."""
+
+    _all_alchemy_operations: list[SingleAlchemyParameters] | None = None
+    """The list of all alchemy operations requested."""
+
+    @property
+    def all_alchemy_operations(self) -> list[SingleAlchemyParameters]:
+        """Get all operations."""
+        if self._all_alchemy_operations is not None:
+            return self._all_alchemy_operations
+
+        all_operations: list[SingleAlchemyParameters] = []
+        if self.upscalers:
+            all_operations.extend(self.upscalers)
+        if self.facefixers:
+            all_operations.extend(self.facefixers)
+        if self.interrogators:
+            all_operations.extend(self.interrogators)
+        if self.captions:
+            all_operations.extend(self.captions)
+        if self.nsfw_detectors:
+            all_operations.extend(self.nsfw_detectors)
+        if self.misc_post_processors:
+            all_operations.extend(self.misc_post_processors)
+
+        self._all_alchemy_operations = all_operations
+
+        return all_operations

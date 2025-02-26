@@ -54,7 +54,7 @@ class UUID_Identifier(RootModel[uuid.UUID]):
             not (isinstance(self.__class__, uuid.UUID) or isinstance(other, uuid.UUID))
             and self.__class__ != other.__class__
         ):
-            logger.warning(f"Comparing {self.root.__class__} with {other.__class__}")
+            logger.debug(f"Comparing {self.root.__class__} with {other.__class__}")
 
         if isinstance(other, UUID_Identifier):
             return self.root == other.root

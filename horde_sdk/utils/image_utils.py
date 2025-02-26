@@ -1,13 +1,11 @@
-from loguru import logger
 import base64
 import io
+
 import PIL.Image
-
-
 from horde_model_reference.meta_consts import (
     STABLE_DIFFUSION_BASELINE_CATEGORY,
-    get_baseline_native_resolution,
 )
+from loguru import logger
 
 IMAGE_CHUNK_SIZE = 64
 """The chunk size used for image processing. Images must be divisible by this value.

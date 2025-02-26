@@ -1,16 +1,13 @@
-from collections.abc import Iterable, Mapping
+from collections.abc import Mapping
 from io import BytesIO
-from typing import Any
 
 import PIL.Image
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels import (
-    AlchemyPopFormPayload,
-    ImageGenerateJobPopResponse,
-    TextGenerateJobPopResponse,
-)
-from horde_sdk.ai_horde_api.fields import GenerationID
+from horde_sdk.consts import GENERATION_ID_TYPES
+from horde_sdk.generation_parameters.alchemy import SingleAlchemyParameters
+from horde_sdk.generation_parameters.image import ImageGenerationParameters
+from horde_sdk.generation_parameters.text import TextGenerationParameters
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
     HordeWorkerConfigDefaults,
@@ -43,13 +40,13 @@ class ImageSingleGeneration(HordeSingleGeneration[PIL.Image.Image]):
     def does_class_require_safety_check(cls) -> bool:
         return True
 
-    api_response: ImageGenerateJobPopResponse
+    generation_parameters: ImageGenerationParameters
 
     def __init__(
         self,
         *,
-        generation_id: GenerationID,
-        api_response: ImageGenerateJobPopResponse,
+        generation_id: GENERATION_ID_TYPES,
+        generation_parameters: ImageGenerationParameters,
         state_error_limits: (
             Mapping[GENERATION_PROGRESS, int] | None
         ) = HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS,
@@ -58,21 +55,18 @@ class ImageSingleGeneration(HordeSingleGeneration[PIL.Image.Image]):
         """Initialize the generation.
 
         Args:
-            generation_id (GenerationID): The unique identifier for the generation.
-            api_response (ImageGenerateJobPopResponse): The API response for the generation.
+            generation_id (str): The unique identifier for the generation.
+            generation_parameters (ImageGenerationParameters): The parameters for the generation.
             state_error_limits (Mapping[GENERATION_PROGRESS, int], optional): The maximum number of times a \
                 generation can be in an error state before it is considered failed. \
                 Defaults to HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS.
-            generate_progress_transitions (dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]], optional): \
-                Custom progress transitions for the generation. \
-                Defaults to default_image_generate_progress_transitions.
             extra_logging (bool, optional): Whether or not to enable extra debug-level logging, \
                 especially for state transitions. \
                 Defaults to True.
         """
-        self.api_response = api_response
+        self.generation_parameters = generation_parameters
 
-        requires_post_processing = bool(api_response.payload.post_processing)
+        requires_post_processing = self.generation_parameters.alchemy_params is not None
 
         generate_progress_transitions = default_image_generate_progress_transitions
 
@@ -119,13 +113,13 @@ class AlchemySingleGeneration(HordeSingleGeneration[PIL.Image.Image]):
     def does_class_require_safety_check(cls) -> bool:
         return False
 
-    form_payload: AlchemyPopFormPayload
+    single_alchemy_parameters: SingleAlchemyParameters
 
     def __init__(
         self,
         *,
-        generation_id: GenerationID,
-        form: AlchemyPopFormPayload,
+        generation_id: str,
+        single_alchemy_parameters: SingleAlchemyParameters,
         requires_generation: bool = False,
         requires_post_processing: bool = True,
         requires_safety_check: bool = False,
@@ -137,7 +131,8 @@ class AlchemySingleGeneration(HordeSingleGeneration[PIL.Image.Image]):
         """Initialize the generation.
 
         Args:
-            generation_id (GenerationID): The unique identifier for the generation.
+            generation_id (str): The unique identifier for the generation.
+            single_alchemy_parameters (SingleAlchemyParameters): The parameters for the generation.
             requires_generation (bool, optional): Whether the generation requires generation. \
                 Defaults to False.
             requires_post_processing (bool, optional): Whether the generation requires post-processing. \
@@ -147,14 +142,11 @@ class AlchemySingleGeneration(HordeSingleGeneration[PIL.Image.Image]):
             state_error_limits (Mapping[GENERATION_PROGRESS, int], optional): The maximum number of times a \
                 generation can be in an error state before it is considered failed. \
                 Defaults to HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS.
-            generate_progress_transitions (dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]], optional): \
-                Custom progress transitions for the generation. \
-                Defaults to default_image_generate_progress_transitions.
             extra_logging (bool, optional): Whether or not to enable extra debug-level logging, \
                 especially for state transitions. \
                 Defaults to True.
         """
-        self.form_payload = form
+        self.single_alchemy_parameters = single_alchemy_parameters
 
         generate_progress_transitions = default_alchemy_generate_progress_transitions
 
@@ -202,8 +194,8 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
     def __init__(
         self,
         *,
-        generation_id: GenerationID,
-        api_response: TextGenerateJobPopResponse,
+        generation_id: GENERATION_ID_TYPES,
+        generation_parameters: TextGenerationParameters,
         requires_post_processing: bool = False,
         requires_safety_check: bool = False,
         state_error_limits: (
@@ -214,8 +206,8 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
         """Initialize the generation.
 
         Args:
-            generation_id (GenerationID): The unique identifier for the generation.
-            api_response (TextGenerateJobPopResponse): The API response for the generation.
+            generation_id (str): The unique identifier for the generation.
+            generation_parameters (TextGenerationParameters): The parameters for the generation.
             requires_post_processing (bool, optional): Whether the generation requires post-processing. \
                 Defaults to False.
             requires_safety_check (bool, optional): Whether the generation requires a safety check. \
@@ -223,14 +215,11 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
             state_error_limits (Mapping[GENERATION_PROGRESS, int], optional): The maximum number of times a \
                 generation can be in an error state before it is considered failed. \
                 Defaults to HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS.
-            generate_progress_transitions (dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]], optional): \
-                Custom progress transitions for the generation. \
-                Defaults to default_text_generate_progress_transitions.
             extra_logging (bool, optional): Whether or not to enable extra debug-level logging, \
                 especially for state transitions. \
                 Defaults to True.
         """
-        self.api_response = api_response
+        self.generation_parameters = generation_parameters
 
         generate_progress_transitions = default_text_generate_progress_transitions
 

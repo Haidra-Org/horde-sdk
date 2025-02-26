@@ -2,15 +2,13 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from io import BytesIO
-from typing import Any, Callable, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from loguru import logger
 
-from horde_sdk.ai_horde_api.apimodels.base import GenMetadataEntry
-from horde_sdk.ai_horde_api.consts import GENERATION_STATE
-from horde_sdk.ai_horde_api.fields import GenerationID
+from horde_sdk.consts import GENERATION_ID_TYPES
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
     base_generate_progress_transitions,
@@ -61,7 +59,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
     def __init__(
         self,
         *,
-        generation_id: GenerationID,
+        generation_id: GENERATION_ID_TYPES,
         result_type: type,
         requires_generation: bool = True,
         requires_post_processing: bool = False,
@@ -76,11 +74,14 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
         """Initialize the generation.
 
         Args:
-            generation_id (GenerationID): The unique identifier for the generation.
+            generation_id (str): The unique identifier for the generation.
+            result_type (type): The type of the result of the generation.
             requires_generation (bool, optional): Whether or not the generation requires generation (inference, etc). \
                 Defaults to True.
             requires_post_processing (bool, optional): Whether or not the generation requires post-processing. \
                 Defaults to False.
+            requires_safety_check (bool, optional): Whether or not the generation requires a safety check. \
+                Defaults to True.
             state_error_limits (Mapping[GENERATION_PROGRESS, int], optional): The maximum number of times a \
                 generation can be in an error state before it is considered failed. \
                 Defaults to None.
@@ -90,20 +91,19 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
             extra_logging (bool, optional): Whether or not to enable extra debug-level logging, \
                 especially for state transitions. \
                 Defaults to True.
-            kwargs (dict[Any, Any]): Unused keyword arguments.
 
         Raises:
             ValueError: If generate_progress_transitions is None.
+            ValueError: If generation_id is None.
+            ValueError: If the generation class requires generation but requires_generation is False.
+            ValueError: If the generation class requires a safety check but requires_safety_check is False.
         """
         if generation_id is None:
-            raise TypeError("generation_id must not be None")
+            raise ValueError("generation_id must not be None")
 
-        if not (isinstance(generation_id, GenerationID)):
-            logger.warning(
-                f"Generation ID {generation_id} is not a GenerationID. This is likely to cause issues.",
-            )
+        self.generation_id = generation_id
+        self._result_type = result_type
 
-        self._generation_id = generation_id
         self._extra_logging = extra_logging
 
         if self.does_class_require_generation() and not requires_generation:
@@ -116,8 +116,6 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
             raise ValueError("Generation class requires safety check but requires_safety_check is False")
 
         self._requires_safety_check = requires_safety_check
-
-        self._generation_metadata = []
 
         if generate_progress_transitions is None:
             raise ValueError("generate_progress_transitions cannot be None")
@@ -134,27 +132,25 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
         # Errors are only allowed after the first "action" state where something is done.
         self._progress_history = [(GENERATION_PROGRESS.NOT_STARTED, time.time())]
 
-    _generation_id: GenerationID
+    generation_id: GENERATION_ID_TYPES
 
-    @property
-    def generation_id(self) -> GenerationID:
-        """The unique identifier for the generation."""
-        return self._generation_id
+    # TODO
+    # FIXME
+    # _generation_metadata: list[GenMetadataEntry]
 
-    _generation_metadata: list[GenMetadataEntry]
+    # @property
+    # def generation_metadata(self) -> list[GenMetadataEntry]:
+    #     """The metadata for the generation."""
+    #     return self._generation_metadata.copy()
 
-    @property
-    def generation_metadata(self) -> list[GenMetadataEntry]:
-        """The metadata for the generation."""
-        return self._generation_metadata.copy()
+    # def add_metadata_entry(self, entry: GenMetadataEntry) -> None:
+    #     """Add a metadata entry to the generation.
 
-    def add_metadata_entry(self, entry: GenMetadataEntry) -> None:
-        """Add a metadata entry to the generation.
-
-        Generation metadata includes information about the generation process, such as when errors were encountered or
-        if the generation was censored (either by user request or due to safety checks).
-        """
-        self._generation_metadata.append(entry)
+    #     Generation metadata includes information about the generation process, such as when errors were encountered
+    # or
+    #     if the generation was censored (either by user request or due to safety checks).
+    #     """
+    #     self._generation_metadata.append(entry)
 
     _generation_failure_count: int = 0
     """The number of times the generation has failed."""
@@ -183,7 +179,6 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
         return self._progress_history.copy()
 
     _generation_progress: GENERATION_PROGRESS = GENERATION_PROGRESS.NOT_STARTED
-    _generation_api_state: GENERATION_STATE = GENERATION_STATE._NONE
 
     _generation_failed_messages: list[str]
     """The reasons the generation failed."""
@@ -442,7 +437,6 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultType]):
         Args:
             result (Any): The result of the generation work.
         """
-
         self._generation_result = result
 
     _is_nsfw: bool | None = None

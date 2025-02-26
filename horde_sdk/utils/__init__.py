@@ -1,3 +1,5 @@
+"""Contains utility functions and classes for the Horde SDK."""
+
 import random
 
 

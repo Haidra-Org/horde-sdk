@@ -254,12 +254,18 @@ class KNOWN_DISPATCH_SOURCE(StrEnum):
     AI_HORDE_API_OFFICIAL = auto()
     """The source of the dispatch is the official AI Horde API."""
 
+    AI_HORDE_API_FORK = auto()
+    """The source of the dispatch is a fork of the official AI Horde API."""
+
 
 class KNOWN_INFERENCE_BACKEND(StrEnum):
     """The known generative inference backends."""
 
     UNKNOWN = auto()
     """The inference backend is unknown."""
+
+    IN_MODEL_NAME = auto()
+    """The model name is prepended with the backend name."""
 
     CUSTOM_UNPUBLISHED = auto()
     """The inference backend is a custom, unpublished backend."""
@@ -359,30 +365,3 @@ class WORKER_TYPE(StrEnum):
     """Alchemy/Interrogation worker."""
     alchemist = "interrogation"
     """Alchemy/Interrogation worker."""
-
-
-class POST_PROCESSOR_ORDER_TYPE(StrEnum):
-    """The post processor order types that are known to the API.
-
-    (facefixers_first, upscalers_first, custom, etc)
-    """
-
-    facefixers_first = auto()
-    """The facefixers are processed first."""
-    upscalers_first = auto()
-    """The upscalers are processed first."""
-    custom = auto()
-    """User specified post processor order."""
-
-
-DEFAULT_POST_PROCESSOR_ORDER = POST_PROCESSOR_ORDER_TYPE.facefixers_first
-"""The default post processor order."""
-
-
-class MODEL_TYPE(StrEnum):
-    """The model types that are known to the API."""
-
-    text = auto()
-    """Text generation models."""
-    image = auto()
-    """Image generation models."""

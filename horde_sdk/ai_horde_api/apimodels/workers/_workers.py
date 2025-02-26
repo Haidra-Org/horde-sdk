@@ -4,7 +4,7 @@ from pydantic import AliasChoices, Field
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, WorkerRequestMixin, WorkerRequestNameMixin
-from horde_sdk.worker.consts import WORKER_TYPE
+from horde_sdk.ai_horde_api.consts import AI_HORDE_WORKER_TYPES
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import TeamID, WorkerID
 from horde_sdk.consts import HTTPMethod
@@ -43,7 +43,7 @@ class WorkerKudosDetails(HordeAPIObjectBaseModel):
 
 @Unhashable
 class WorkerDetailItem(HordeAPIObjectBaseModel):
-    type_: WORKER_TYPE = Field(alias="type")
+    type_: AI_HORDE_WORKER_TYPES = Field(alias="type")
     """The type of worker."""
     name: str
     """The Name given to this worker."""
@@ -199,7 +199,7 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     If a moderator API key is specified, it will return additional information.
     """
 
-    type_: WORKER_TYPE = Field(WORKER_TYPE.all, alias="type")
+    type_: AI_HORDE_WORKER_TYPES = Field(AI_HORDE_WORKER_TYPES.all, alias="type")
     """Filter workers by type. Default is 'all' which returns all workers."""
     name: str | None = Field(default=None)
     """Returns a worker matching the exact name provided. Case insensitive."""

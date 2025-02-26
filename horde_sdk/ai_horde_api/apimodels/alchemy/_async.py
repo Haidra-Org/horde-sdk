@@ -10,10 +10,10 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,
     JobResponseMixin,
 )
-from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.metadata import AIHordePathData
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
