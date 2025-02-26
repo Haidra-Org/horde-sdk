@@ -3,7 +3,7 @@
     "info": "photorealism excellence.",
     "prompt": "{p}{np}",
     "params": {
-        "sampler_name": "k_dpmpp_2m",
+        "sampler_name": "k_dpmpp_sde",
         "cfg_scale": 0.0,
         "denoising_strength": 0.75,
         "hires_fix_denoising_strength": 0.75,
@@ -51,18 +51,18 @@
         "stable_diffusion"
     ],
     "sharedkey": "00000000-0000-0000-0000-000000000000",
-    "id": "4399f1e0-9a8d-44c0-91be-f3a81600007b",
+    "id": "00000000-0000-0000-0000-000000000000",
     "use_count": 0,
     "creator": "db0#1",
     "examples": [
         {
             "url": "https://lemmy.dbzer0.com/pictrs/image/c9915186-ca30-4f5a-873c-a91287fb4419.webp",
             "primary": false,
-            "id": "8098e555-84d4-4f92-b932-a9aed6d8205d"
+            "id": "00000000-0000-0000-0000-000000000000"
         }
     ],
     "shared_key": {
-        "id": "4d7c4e5f-dd2a-45f4-971f-d1422bb88ecd",
+        "id": "00000000-0000-0000-0000-000000000000",
         "username": "",
         "name": "",
         "kudos": 0,

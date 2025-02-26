@@ -839,14 +839,14 @@ class SwaggerDoc(BaseModel):
     ) -> object:
         """Get the example value, defaulting to a a value appropriate to the type with any constraints applied."""
         # If the model property has a description that includes the word "optionally", do nothing
-        if model_property.description and "optionally" in model_property.description:
-            pass
+        # if model_property.description and "optionally" in model_property.description:
+        # pass
 
         if prop_name == "id" and (
             (model_property.description)
             and ("uuid" in model_property.description.lower() or "sharedkey id" in model_property.description.lower())
         ):  # FIXME
-            return str(uuid.uuid4())
+            return str(uuid.UUID("00000000-0000-0000-0000-000000000000"))
 
         # If the model property has an example value, return it
         if model_property.example is not None:
