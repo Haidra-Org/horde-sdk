@@ -82,32 +82,6 @@ from horde_sdk.generic_api.generic_clients import (
 )
 
 
-def parse_image_from_base64(image_base64: str) -> PIL.Image.Image:
-    """Parse an image from base 64.
-
-    Args:
-        image_base64 (str): The base 64 encoded image.
-
-    Returns:
-        PIL.Image.Image: The parsed image.
-
-    Raises:
-        binascii.Error: If the image couldn't be parsed from base 64.
-        RuntimeError: If the image couldn't be parsed for any other reason.
-
-    """
-    try:
-        image_bytes = base64.b64decode(image_base64)
-    except Exception as e:
-        logger.error(f"Error parsing image: {e}")
-        raise e
-
-    if image_bytes is None:
-        raise RuntimeError("Error parsing image")
-
-    return PIL.Image.open(io.BytesIO(image_bytes))
-
-
 def download_image_bytes(url: str) -> io.BytesIO:
     """Download an image from a URL.
 
@@ -466,23 +440,6 @@ class BaseAIHordeSimpleClient(ABC):
         url: str,
     ) -> PIL.Image.Image | Coroutine[None, None, PIL.Image.Image]:
         """Download an image from a URL."""
-
-    @staticmethod
-    def parse_image_from_base64(image_base64: str) -> PIL.Image.Image:
-        """Parse an image from base 64.
-
-        Args:
-            image_base64 (str): The base 64 encoded image.
-
-        Returns:
-            PIL.Image.Image: The parsed image.
-
-        Raises:
-            binascii.Error: If the image couldn't be parsed from base 64.
-            RuntimeError: If the image couldn't be parsed for any other reason.
-
-        """
-        return parse_image_from_base64(image_base64)
 
     def _handle_initial_response(
         self,
