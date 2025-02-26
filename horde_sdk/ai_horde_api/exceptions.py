@@ -1,5 +1,3 @@
-from typing import Any
-
 from loguru import logger
 
 from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE, RC
@@ -19,15 +17,6 @@ class AIHordeRequestError(HordeException):
             logger.error(
                 f"Failed to parse the RC from the error response. RC: {error_response.rc}. Is the SDK out of date?",
             )
-
-
-class AIHordePayloadValidationError(HordeException):
-    """Exception for when the AI Horde API cannot parse a request payload."""
-
-    def __init__(self, errors: dict[str, Any], message: str) -> None:
-        """Exception for when the AI Horde API cannot parse a request payload."""
-        logger.error(f"The AI Horde API returned an error response. Response: {message}. Errors: {errors}")
-        super().__init__(message)
 
 
 class AIHordeImageValidationError(AIHordeRequestError):
