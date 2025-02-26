@@ -1,7 +1,7 @@
 {
     "type": "image",
     "name": "",
-    "id": "61ea8f2a-6d10-4f80-9c7e-0a85b894f616",
+    "id": "00000000-0000-0000-0000-000000000000",
     "online": false,
     "requests_fulfilled": 0,
     "kudos_rewards": 0.0,
@@ -30,7 +30,7 @@
     ],
     "team": {
         "name": "",
-        "id": "7836bf19-a570-48dd-8103-3cdc5bfe2ce9"
+        "id": "00000000-0000-0000-0000-000000000000"
     },
     "contact": "email@example.com",
     "bridge_agent": "AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen",

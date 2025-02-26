@@ -7,12 +7,12 @@ from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
-    HordeAPIObject,
+    HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
 )
 
 
-class SharedKeySettings(HordeAPIObject):
+class SharedKeySettings(HordeAPIObjectBaseModel):
     """Represents the settings for a SharedKey.
 
     v2 API Model: `SharedKeyInput`

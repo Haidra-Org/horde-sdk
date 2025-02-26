@@ -1,6 +1,6 @@
 {
     "payload": {
-        "sampler_name": "k_dpm_2_a",
+        "sampler_name": "k_dpmpp_sde",
         "cfg_scale": 7.5,
         "denoising_strength": 0.75,
         "hires_fix_denoising_strength": 0.75,
@@ -53,7 +53,7 @@
         "n_iter": 1,
         "use_nsfw_censor": false
     },
-    "id": "1284a329-49e9-44b5-ae69-b3a9f4d7c6ad",
+    "id": "00000000-0000-0000-0000-000000000000",
     "ids": [
         "00000000-0000-0000-0000-000000000000"
     ],

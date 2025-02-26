@@ -3,7 +3,7 @@
     "info": "photorealism excellence.",
     "prompt": "{p}{np}",
     "params": {
-        "sampler_name": "k_euler",
+        "sampler_name": "k_dpm_2",
         "cfg_scale": 0.0,
         "denoising_strength": 0.75,
         "hires_fix_denoising_strength": 0.75,
