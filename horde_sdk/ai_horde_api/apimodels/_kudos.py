@@ -49,3 +49,48 @@ class KudosTransferRequest(
     @classmethod
     def is_api_key_required(cls) -> bool:
         return True
+
+
+class KudosAwardResponse(HordeResponseBaseModel):
+    awarded: float | None = None
+    """The amount of Kudos awarded."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "KudosAwarded"
+
+
+class KudosAwardRequest(
+    BaseAIHordeRequest,
+    APIKeyAllowedInRequestMixin,
+):
+    username: str
+    """The username of the user to award Kudos to."""
+    amount: float
+    """The amount of Kudos to award."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return _ANONYMOUS_MODEL
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.POST
+
+    @override
+    @classmethod
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_kudos_award
+
+    @override
+    @classmethod
+    def get_default_success_response_type(cls) -> type[KudosAwardResponse]:
+        return KudosAwardResponse
+
+    @override
+    @classmethod
+    def is_api_key_required(cls) -> bool:
+        return True
