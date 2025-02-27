@@ -20,25 +20,72 @@ def write_all_example_responses(*, test_data_path: Path | None = None) -> None:
         )
     ai_horde_swagger_doc.write_all_response_examples_to_file(test_data_path)
 
+    files_to_make_arrays = [
+        "_v2_users_get_200.json",
+    ]
     # Compatibility hacks:
-    # `_v2_users_get_200.json` needs to have the object added to an array and overwritten
-    with open(test_data_path / "_v2_users_get_200.json") as f:
-        _v2_users_get_200 = f.read()
 
-    if not _v2_users_get_200.startswith("["):
-        logger.warning(
-            "The _v2_users_get_200.json file is not an array, converting it to one to make it compatible with the "
-            "tests. This is a compatibility hack due to the API docs not being correct.",
-        )
-        _v2_users_get_200 = f"[{_v2_users_get_200}]"
-        _v2_users_get_200 = json.loads(_v2_users_get_200)
+    for file_name in files_to_make_arrays:
+        if not (test_data_path / file_name).exists():
+            logger.warning(f"File {file_name} does not exist, skipping compatibility hack.")
+            continue
 
-        with open(test_data_path / "_v2_users_get_200.json", "w") as f:
-            json.dump(_v2_users_get_200, f, indent=4)
-            f.write("\n")
-    else:
-        logger.info("The _v2_users_get_200.json file is already compatible with the tests.")
-        logger.info("This script should be updated to remove this compatibility hack.")
+        file_contents: str | None = None
+        with open(test_data_path / file_name) as f:
+            file_contents = f.read()
+
+        if file_contents is None:
+            logger.warning(f"File {file_name} is empty, skipping compatibility hack.")
+            continue
+
+        if not file_contents.startswith("["):
+            logger.warning(
+                f"The {file_name} file is not an array, converting it to one to make it compatible with the tests. "
+                f"This is a compatibility hack due to the API docs not being correct.",
+            )
+            file_contents = f"[{file_contents}]"
+            file_contents = json.loads(file_contents)
+
+            with open(test_data_path / file_name, "w") as f:
+                json.dump(file_contents, f, indent=4)
+                f.write("\n")
+        else:
+            logger.info(f"The {file_name} file is already compatible with the tests.")
+            logger.info("This script should be updated to remove this compatibility hack.")
+
+    files_to_make_objects = [
+        "_v2_filters_filter_id_get_200.json",
+    ]
+
+    # Compatibility hacks:
+    for file_name in files_to_make_objects:
+        if not (test_data_path / file_name).exists():
+            logger.warning(f"File {file_name} does not exist, skipping compatibility hack.")
+            continue
+
+        file_contents_object: str | None = None
+        with open(test_data_path / file_name) as f:
+            file_contents_object = f.read()
+
+        if file_contents_object is None:
+            logger.warning(f"File {file_name} is empty, skipping compatibility hack.")
+            continue
+
+        if file_contents_object.startswith("["):
+            logger.warning(
+                f"The {file_name} file is an array, converting it to an object to make it compatible with the tests. "
+                f"This is a compatibility hack due to the API docs not being correct.",
+            )
+            file_contents_object = file_contents_object.strip().strip("[]").strip()
+            file_contents_object = json.loads(file_contents_object)
+
+            with open(test_data_path / file_name, "w") as f:
+                json.dump(file_contents_object, f, indent=4)
+                f.write("\n")
+
+        else:
+            logger.info(f"The {file_name} file is already compatible with the tests.")
+            logger.info("This script should be updated to remove this compatibility hack.")
 
 
 if __name__ == "__main__":
