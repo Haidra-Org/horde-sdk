@@ -5,7 +5,7 @@ from horde_sdk import RequestErrorResponse
 from horde_sdk.ai_horde_api.ai_horde_clients import (
     AIHordeAPIAsyncClientSession,
 )
-from horde_sdk.ai_horde_api.apimodels._stats import (
+from horde_sdk.ai_horde_api.apimodels import (
     ImageStatsModelsRequest,
     ImageStatsModelsResponse,
     ImageStatsModelsTotalRequest,

@@ -99,7 +99,7 @@
         "forms": {
             "description": "The list of forms (types of post-processing/interrogation/captioning/etc) to request.",
             "types": [
-                "list[horde_sdk.ai_horde_api.apimodels.alchemy._async.AlchemyAsyncRequestFormItem]"
+                "list[horde_sdk.ai_horde_api.apimodels.alchemy.async_.AlchemyAsyncRequestFormItem]"
             ]
         },
         "source_image": {
@@ -1467,7 +1467,7 @@
         "params": {
             "description": "The parameters to use for the generation.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels.generate.text._async.ModelGenerationInputKobold",
+                "horde_sdk.ai_horde_api.apimodels.generate.text.async_.ModelGenerationInputKobold",
                 "None"
             ]
         },

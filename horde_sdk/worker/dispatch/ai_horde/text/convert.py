@@ -1,6 +1,6 @@
 """Contains functions to convert API responses to text generation parameters."""
 
-from horde_sdk.ai_horde_api.apimodels.generate.text._pop import TextGenerateJobPopResponse
+from horde_sdk.ai_horde_api.apimodels.generate.text.pop import TextGenerateJobPopResponse
 from horde_sdk.generation_parameters.text import (
     BasicTextGenerationFormatParameters,
     BasicTextGenerationParameters,

@@ -12,25 +12,19 @@ import pytest
 from horde_sdk.ai_horde_api.apimodels import (
     AlchemyJobPopResponse,
     AlchemyPopFormPayload,
-    ImageGenerateAsyncResponse,
-)
-from horde_sdk.ai_horde_api.apimodels._find_user import (
+    AllWorkersDetailsResponse,
+    ContributionsDetails,
     FindUserRequest,
-)
-from horde_sdk.ai_horde_api.apimodels._users import ContributionsDetails, UsageDetails, UserDetailsResponse
-from horde_sdk.ai_horde_api.apimodels.base import GenMetadataEntry
-from horde_sdk.ai_horde_api.apimodels.generate._async import (
+    GenMetadataEntry,
     ImageGenerateAsyncRequest,
-    ImageGenerationInputPayload,
-)
-from horde_sdk.ai_horde_api.apimodels.generate._pop import (
+    ImageGenerateAsyncResponse,
     ImageGenerateJobPopPayload,
     ImageGenerateJobPopResponse,
     ImageGenerateJobPopSkippedStatus,
-)
-from horde_sdk.ai_horde_api.apimodels.workers._workers import (
-    AllWorkersDetailsResponse,
+    ImageGenerationInputPayload,
     TeamDetailsLite,
+    UsageDetails,
+    UserDetailsResponse,
     WorkerDetailItem,
     WorkerKudosDetails,
 )
