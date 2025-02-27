@@ -262,7 +262,7 @@ from horde_sdk.ai_horde_api.apimodels.users import (
     UserThingRecords,
     _ModifyUserBase,
 )
-from horde_sdk.ai_horde_api.apimodels.workers.messages.messages import (
+from horde_sdk.ai_horde_api.apimodels.workers.messages import (
     AllWorkerMessagesRequest,
     CreateWorkerMessageRequest,
     DeleteWorkerMessageRequest,
