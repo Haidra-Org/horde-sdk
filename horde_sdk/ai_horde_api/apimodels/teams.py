@@ -1,5 +1,3 @@
-from typing import Literal
-
 from pydantic import Field
 from typing_extensions import override
 
@@ -9,7 +7,6 @@ from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
-    ContainsMessageResponseMixin,
     HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
     HordeResponseRootModel,

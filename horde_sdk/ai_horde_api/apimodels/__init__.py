@@ -2,6 +2,48 @@
 
 from typing import TypeVar
 
+from horde_sdk.ai_horde_api.apimodels.alchemy.async_ import (
+    AlchemyAsyncRequest,
+    AlchemyAsyncRequestFormItem,
+    AlchemyAsyncResponse,
+)
+from horde_sdk.ai_horde_api.apimodels.alchemy.pop import (
+    AlchemyFormPayloadStable,
+    AlchemyJobPopResponse,
+    AlchemyPopFormPayload,
+    AlchemyPopRequest,
+    NoValidAlchemyFound,
+)
+from horde_sdk.ai_horde_api.apimodels.alchemy.status import (
+    AlchemyCaptionResult,
+    AlchemyDeleteRequest,
+    AlchemyFormStatus,
+    AlchemyInterrogationDetails,
+    AlchemyInterrogationResult,
+    AlchemyInterrogationResultItem,
+    AlchemyNSFWResult,
+    AlchemyStatusRequest,
+    AlchemyStatusResponse,
+    AlchemyUpscaleResult,
+)
+from horde_sdk.ai_horde_api.apimodels.alchemy.submit import AlchemyJobSubmitRequest, AlchemyJobSubmitResponse
+from horde_sdk.ai_horde_api.apimodels.base import (
+    ActiveModel,
+    ActiveModelLite,
+    ExtraSourceImageEntry,
+    ExtraTextEntry,
+    GenMetadataEntry,
+    ImageGenerateParamMixin,
+    JobRequestMixin,
+    JobResponseMixin,
+    JobSubmitResponse,
+    LorasPayloadEntry,
+    MessageSpecifiesSharedKeyMixin,
+    SingleWarningEntry,
+    TIPayloadEntry,
+    WorkerRequestMixin,
+    WorkerRequestNameMixin,
+)
 from horde_sdk.ai_horde_api.apimodels.collections import (
     AllCollectionsRequest,
     AllCollectionsResponse,
@@ -42,6 +84,64 @@ from horde_sdk.ai_horde_api.apimodels.filters import (
 )
 from horde_sdk.ai_horde_api.apimodels.find_user import (
     FindUserRequest,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.async_ import (
+    ImageGenerateAsyncDryRunResponse,
+    ImageGenerateAsyncRequest,
+    ImageGenerateAsyncResponse,
+    ImageGenerationInputPayload,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.check import ImageGenerateCheckRequest, ImageGenerateCheckResponse
+from horde_sdk.ai_horde_api.apimodels.generate.pop import (
+    ImageGenerateJobPopPayload,
+    ImageGenerateJobPopRequest,
+    ImageGenerateJobPopResponse,
+    ImageGenerateJobPopSkippedStatus,
+    NoValidRequestFound,
+    PopInput,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.progress import (
+    ResponseGenerationProgressCombinedMixin,
+    ResponseGenerationProgressInfoMixin,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.rate import (
+    AestheticRating,
+    AestheticsPayload,
+    RateRequest,
+    RateResponse,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.status import (
+    DeleteImageGenerateRequest,
+    ImageGenerateStatusRequest,
+    ImageGenerateStatusResponse,
+    ImageGeneration,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.submit import (
+    ImageGenerationJobSubmitRequest,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.text.async_ import (
+    ModelGenerationInputKobold,
+    ModelPayloadRootKobold,
+    TextGenerateAsyncDryRunResponse,
+    TextGenerateAsyncRequest,
+    TextGenerateAsyncResponse,
+    _BasePayloadKoboldMixin,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.text.pop import (
+    ModelPayloadKobold,
+    NoValidRequestFoundKobold,
+    TextGenerateJobPopRequest,
+    TextGenerateJobPopResponse,
+    _PopInputKobold,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.text.status import (
+    DeleteTextGenerateRequest,
+    GenerationKobold,
+    TextGenerateStatusRequest,
+    TextGenerateStatusResponse,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.text.submit import (
+    TextGenerationJobSubmitRequest,
 )
 from horde_sdk.ai_horde_api.apimodels.kudos import (
     KudosAwardRequest,
@@ -122,10 +222,10 @@ from horde_sdk.ai_horde_api.apimodels.styles import (
     SingleStyleTextByNameRequest,
     StyleExample,
     StyleImageExampleAddRequest,
-    StyleImageExampleModifyResponse,
     StyleImageExampleDeleteRequest,
     StyleImageExampleDeleteResponse,
     StyleImageExampleModifyRequest,
+    StyleImageExampleModifyResponse,
     StyleKobold,
     StyleStable,
     StyleType,
@@ -161,105 +261,14 @@ from horde_sdk.ai_horde_api.apimodels.users import (
     UserThingRecords,
     _ModifyUserBase,
 )
-from horde_sdk.ai_horde_api.apimodels.alchemy.async_ import (
-    AlchemyAsyncRequest,
-    AlchemyAsyncRequestFormItem,
-    AlchemyAsyncResponse,
-)
-from horde_sdk.ai_horde_api.apimodels.alchemy.pop import (
-    AlchemyFormPayloadStable,
-    AlchemyJobPopResponse,
-    AlchemyPopFormPayload,
-    AlchemyPopRequest,
-    NoValidAlchemyFound,
-)
-from horde_sdk.ai_horde_api.apimodels.alchemy.status import (
-    AlchemyCaptionResult,
-    AlchemyDeleteRequest,
-    AlchemyFormStatus,
-    AlchemyInterrogationDetails,
-    AlchemyInterrogationResult,
-    AlchemyInterrogationResultItem,
-    AlchemyNSFWResult,
-    AlchemyStatusRequest,
-    AlchemyStatusResponse,
-    AlchemyUpscaleResult,
-)
-from horde_sdk.ai_horde_api.apimodels.alchemy.submit import AlchemyJobSubmitRequest, AlchemyJobSubmitResponse
-from horde_sdk.ai_horde_api.apimodels.base import (
-    ActiveModel,
-    ActiveModelLite,
-    ExtraSourceImageEntry,
-    ExtraTextEntry,
-    GenMetadataEntry,
-    ImageGenerateParamMixin,
-    JobRequestMixin,
-    JobResponseMixin,
-    JobSubmitResponse,
-    LorasPayloadEntry,
-    MessageSpecifiesSharedKeyMixin,
-    SingleWarningEntry,
-    TIPayloadEntry,
-    WorkerRequestMixin,
-    WorkerRequestNameMixin,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.async_ import (
-    ImageGenerateAsyncDryRunResponse,
-    ImageGenerateAsyncRequest,
-    ImageGenerateAsyncResponse,
-    ImageGenerationInputPayload,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.check import ImageGenerateCheckRequest, ImageGenerateCheckResponse
-from horde_sdk.ai_horde_api.apimodels.generate.pop import (
-    ImageGenerateJobPopPayload,
-    ImageGenerateJobPopRequest,
-    ImageGenerateJobPopResponse,
-    ImageGenerateJobPopSkippedStatus,
-    NoValidRequestFound,
-    PopInput,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.progress import (
-    ResponseGenerationProgressCombinedMixin,
-    ResponseGenerationProgressInfoMixin,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.rate import (
-    AestheticRating,
-    AestheticsPayload,
-    RateRequest,
-    RateResponse,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.status import (
-    DeleteImageGenerateRequest,
-    ImageGenerateStatusRequest,
-    ImageGenerateStatusResponse,
-    ImageGeneration,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.submit import (
-    ImageGenerationJobSubmitRequest,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.text.async_ import (
-    ModelGenerationInputKobold,
-    ModelPayloadRootKobold,
-    TextGenerateAsyncDryRunResponse,
-    TextGenerateAsyncRequest,
-    TextGenerateAsyncResponse,
-    _BasePayloadKoboldMixin,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.text.pop import (
-    ModelPayloadKobold,
-    NoValidRequestFoundKobold,
-    TextGenerateJobPopRequest,
-    TextGenerateJobPopResponse,
-    _PopInputKobold,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.text.status import (
-    DeleteTextGenerateRequest,
-    GenerationKobold,
-    TextGenerateStatusRequest,
-    TextGenerateStatusResponse,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.text.submit import (
-    TextGenerationJobSubmitRequest,
+from horde_sdk.ai_horde_api.apimodels.workers.messages.messages import (
+    AllWorkerMessagesRequest,
+    CreateWorkerMessageRequest,
+    DeleteWorkerMessageRequest,
+    DeleteWorkerMessageResponse,
+    ResponseModelMessage,
+    ResponseModelMessages,
+    SingleWorkerMessageRequest,
 )
 from horde_sdk.ai_horde_api.apimodels.workers.workers import (
     AllWorkersDetailsRequest,
@@ -274,15 +283,6 @@ from horde_sdk.ai_horde_api.apimodels.workers.workers import (
     TeamDetailsLite,
     WorkerDetailItem,
     WorkerKudosDetails,
-)
-from horde_sdk.ai_horde_api.apimodels.workers.messages.messages import (
-    AllWorkerMessagesRequest,
-    CreateWorkerMessageRequest,
-    DeleteWorkerMessageRequest,
-    DeleteWorkerMessageResponse,
-    ResponseModelMessage,
-    ResponseModelMessages,
-    SingleWorkerMessageRequest,
 )
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.generic_api.apimodels import (

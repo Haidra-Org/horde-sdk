@@ -5,16 +5,15 @@ from pydantic import Field
 from strenum import StrEnum
 from typing_extensions import override
 
-from horde_sdk.ai_horde_api.apimodels.sharedkeys import SharedKeyDetailsResponse
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, _BaseImageGenerateParamMixin
 from horde_sdk.ai_horde_api.apimodels.generate.text.async_ import _BasePayloadKoboldMixin
+from horde_sdk.ai_horde_api.apimodels.sharedkeys import SharedKeyDetailsResponse
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
     ContainsWarningsResponseMixin,
-    HordeAPIData,
     HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
     HordeResponseRootModel,
