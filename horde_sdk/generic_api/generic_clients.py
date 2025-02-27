@@ -420,6 +420,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
             path_fields=path_fields,
             query_fields=query_fields,
             accept_types=accept_types,
+            ssl_context=ssl_context,
             **kwargs,
         )
         self._aiohttp_session = aiohttp_session
