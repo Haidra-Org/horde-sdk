@@ -6,7 +6,6 @@ from horde_sdk.ai_horde_api.ai_horde_clients import (
     AIHordeAPIAsyncClientSession,
 )
 from horde_sdk.ai_horde_api.apimodels._status import (
-    ActiveModel,
     AIHordeHeartbeatRequest,
     AIHordeHeartbeatResponse,
     HordePerformanceRequest,
@@ -19,6 +18,7 @@ from horde_sdk.ai_horde_api.apimodels._status import (
     NewsRequest,
     NewsResponse,
 )
+from horde_sdk.ai_horde_api.apimodels.base import ActiveModel
 
 
 class TestAIHordeStatus:

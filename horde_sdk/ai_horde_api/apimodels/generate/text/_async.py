@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from loguru import logger
-from pydantic import Field, model_validator
+from pydantic import BaseModel, Field, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
@@ -82,12 +82,12 @@ class TextGenerateAsyncResponse(
         return isinstance(__value, TextGenerateAsyncResponse) and self.id_ == __value.id_
 
 
-@Unhashable
-class ModelPayloadRootKobold(HordeAPIData):
+class _BasePayloadKoboldMixin(HordeAPIData):
     dynatemp_exponent: float | None = Field(1, ge=0.0, le=5.0)
     """Dynamic temperature exponent value."""
     dynatemp_range: float | None = Field(0, ge=0.0, le=5.0)
     """Dynamic temperature range value."""
+
     frmtadsnsp: bool | None = Field(
         default=None,
         description=(
@@ -132,24 +132,16 @@ class ModelPayloadRootKobold(HordeAPIData):
     )
     """Output formatting option. When enabled, removes some characters from the end of the output such that the output
     doesn't end in the middle of a sentence. If the output is less than one sentence long, does nothing."""
-    max_context_length: int | None = Field(
-        default=1024,
-        ge=80,
-        le=32000,
-    )
-    """Maximum number of tokens to send to the model."""
-    max_length: int | None = Field(80, ge=16, le=1024)
-    """Number of tokens to generate."""
+
     min_p: float | None = Field(0, ge=0.0, le=1.0)
     """Min-p sampling value."""
-    n: int | None = Field(default=None, examples=[1], ge=1, le=20)
-    """The number of generations to produce."""
     rep_pen: float | None = Field(default=None, ge=1.0, le=3.0)
     """Base repetition penalty value."""
     rep_pen_range: int | None = Field(default=None, ge=0, le=4096)
     """Repetition penalty range."""
     rep_pen_slope: float | None = Field(default=None, ge=0.0, le=10.0)
     """Repetition penalty slope."""
+
     sampler_order: list[int] | None = None
     """The sampler order to use for the generation."""
     singleline: bool | None = Field(
@@ -182,6 +174,22 @@ class ModelPayloadRootKobold(HordeAPIData):
     """Typical sampling value."""
     use_default_badwordsids: bool | None = None
     """When True, uses the default KoboldAI bad word IDs."""
+
+
+@Unhashable
+class ModelPayloadRootKobold(_BasePayloadKoboldMixin):
+    n: int | None = Field(default=None, examples=[1], ge=1, le=20)
+    """The number of generations to produce."""
+
+    max_length: int | None = Field(80, ge=16, le=1024)
+    """Number of tokens to generate."""
+
+    max_context_length: int | None = Field(
+        default=1024,
+        ge=80,
+        le=32000,
+    )
+    """Maximum number of tokens to send to the model."""
 
 
 @Unhashable

@@ -382,6 +382,29 @@ class ContainsMessageResponseMixin(HordeAPIData):
     """A message from the API. This is typically an error or warning message, but may also be informational."""
 
 
+class RequestSingleWarning(HordeAPIObjectBaseModel):
+    """Represents a single warning from the API."""
+
+    message: str | None = None
+    """A message from the API. This is typically an error or warning message, but may also be informational."""
+
+    code: str | None = None
+    """The code associated with this warning."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "RequestSingleWarning"
+
+
+class ContainsWarningsResponseMixin(HordeAPIData):
+    """Represents any response from any Horde API which contains warnings."""
+
+    warnings: list[RequestSingleWarning] | None = None
+    """A list of warnings from the API. This is typically an error or warning message,
+    but may also be informational."""
+
+
 class RequestErrorResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
     """The catch all error response for any request to any Horde API.
 
@@ -579,17 +602,23 @@ class RequestUsesWorkerMixin(HordeAPIData):
 
 
 __all__ = [
-    "APIKeyAllowedInRequestMixin",
-    "HordeRequest",
-    "HordeResponse",
-    "HordeResponseBaseModel",
-    "HordeResponseRootModel",
-    "ContainsMessageResponseMixin",
     "HordeAPIObject",
+    "HordeAPIObjectBaseModel",
+    "HordeAPIData",
     "HordeAPIMessage",
-    "RequestErrorResponse",
-    "MessageSpecifiesUserIDMixin",
-    "RequestUsesWorkerMixin",
+    "HordeResponse",
+    "HordeResponseRootModel",
+    "HordeResponseBaseModel",
+    "HordeResponseTypes",
     "ResponseRequiringFollowUpMixin",
     "ResponseWithProgressMixin",
+    "ResponseRequiringDownloadMixin",
+    "ContainsMessageResponseMixin",
+    "RequestSingleWarning",
+    "ContainsWarningsResponseMixin",
+    "RequestErrorResponse",
+    "HordeRequest",
+    "APIKeyAllowedInRequestMixin",
+    "MessageSpecifiesUserIDMixin",
+    "RequestUsesWorkerMixin",
 ]

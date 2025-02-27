@@ -26,6 +26,14 @@ class AIHordePathData(GenericPathFields):
     """The name of a model."""
     ipaddr = auto()
     """An IP address."""
+    message_id = auto()
+    """The ID of a message."""
+    style_id = auto()
+    """The ID of a style."""
+    style_name = auto()
+    """The name of a style."""
+    collection_id = auto()
+    """The ID of a collection."""
 
 
 class AIHordeQueryData(GenericQueryFields):
