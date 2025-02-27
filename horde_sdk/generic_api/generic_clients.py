@@ -94,7 +94,7 @@ class BaseHordeAPIClient(ABC):
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
         ssl_context: SSLContext = _default_sslcontext,
-        **kwargs: Any,  # noqa: ANN401
+        **kwargs: Any,  # noqa: ANN401 # FIXME
     ) -> None:
         """Initialize a new `GenericHordeAPIClient` instance.
 
@@ -402,7 +402,8 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
 
     _aiohttp_session: aiohttp.ClientSession
 
-    def __init__(  # noqa: D107
+    @override
+    def __init__(
         self,
         *,
         apikey: str | None = None,
@@ -412,7 +413,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
         ssl_context: SSLContext = _default_sslcontext,
-        **kwargs: Any,  # noqa: ANN401
+        **kwargs: Any,
     ) -> None:
         super().__init__(
             apikey=apikey,
@@ -511,7 +512,8 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         )
         self._pending_follow_ups = []
 
-    def submit_request(  # noqa: D102
+    @override
+    def submit_request(
         self,
         api_request: HordeRequest,
         expected_response_type: type[HordeResponseTypeVar],
@@ -671,7 +673,8 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
     it."""
     _pending_follow_ups_lock: asyncio.Lock = asyncio.Lock()
 
-    def __init__(  # noqa: D107
+    @override
+    def __init__(
         self,
         aiohttp_session: aiohttp.ClientSession,
         *,

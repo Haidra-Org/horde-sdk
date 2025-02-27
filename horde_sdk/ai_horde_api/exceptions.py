@@ -8,7 +8,12 @@ from horde_sdk.generic_api.apimodels import RequestErrorResponse
 class AIHordeRequestError(HordeException):
     """Exception for when the AI Horde API returns an error response."""
 
-    def __init__(self, error_response: RequestErrorResponse) -> None:  # noqa: D107
+    def __init__(self, error_response: RequestErrorResponse) -> None:
+        """Initialize an AI Horde request error.
+
+        Args:
+            error_response (RequestErrorResponse): The error response returned by the AI Horde API.
+        """
         logger.error(f"The AI Horde API returned an error response. Response: {error_response.message}")
         super().__init__(error_response.message)
         try:
@@ -26,7 +31,12 @@ class AIHordeImageValidationError(AIHordeRequestError):
 class AIHordeGenerationTimedOutError(HordeException):
     """Exception for when the time limit for a generation request is reached."""
 
-    def __init__(self, error_response: RequestErrorResponse) -> None:  # noqa: D107
+    def __init__(self, error_response: RequestErrorResponse) -> None:
+        """Initialize an AI Horde generation timed out error.
+
+        Args:
+            error_response (RequestErrorResponse): The error response returned by the AI Horde API.
+        """
         logger.error(
             f"The AI Horde API returned an error response. Response: {error_response.message}. "
             "This is likely because the generation timed out. "
