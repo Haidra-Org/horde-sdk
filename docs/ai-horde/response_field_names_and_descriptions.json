@@ -53,7 +53,7 @@
         "forms": {
             "description": "The status of each form in the job.",
             "types": [
-                "list[horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyFormStatus]"
+                "list[horde_sdk.ai_horde_api.apimodels.alchemy.status.AlchemyFormStatus]"
             ]
         }
     },
@@ -85,7 +85,7 @@
         "root": {
             "description": "The underlying list of worker details.",
             "types": [
-                "list[horde_sdk.ai_horde_api.apimodels.workers._workers.WorkerDetailItem]"
+                "list[horde_sdk.ai_horde_api.apimodels.workers.workers.WorkerDetailItem]"
             ]
         }
     },
@@ -153,7 +153,7 @@
         "generations": {
             "description": "The individual image generation responses in this request.",
             "types": [
-                "list[horde_sdk.ai_horde_api.apimodels.generate._status.ImageGeneration]"
+                "list[horde_sdk.ai_horde_api.apimodels.generate.status.ImageGeneration]"
             ]
         },
         "shared": {
@@ -228,7 +228,7 @@
         "generations": {
             "description": "The generations that have been completed in this request.",
             "types": [
-                "list[horde_sdk.ai_horde_api.apimodels.generate.text._status.GenerationKobold]"
+                "list[horde_sdk.ai_horde_api.apimodels.generate.text.status.GenerationKobold]"
             ]
         }
     },
@@ -252,7 +252,7 @@
         "active_generations": {
             "description": "The active generations this user has requested.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._users.ActiveGenerations",
+                "horde_sdk.ai_horde_api.apimodels.users.ActiveGenerations",
                 "None"
             ]
         },
@@ -287,7 +287,7 @@
         "contributions": {
             "description": "How many images and megapixelsteps this user has generated.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._users.ContributionsDetails",
+                "horde_sdk.ai_horde_api.apimodels.users.ContributionsDetails",
                 "None"
             ]
         },
@@ -329,7 +329,7 @@
         "kudos_details": {
             "description": "How much Kudos this user has accumulated or used for generating images.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._users.UserKudosDetails",
+                "horde_sdk.ai_horde_api.apimodels.users.UserKudosDetails",
                 "None"
             ]
         },
@@ -343,7 +343,7 @@
         "monthly_kudos": {
             "description": "How much recurring Kudos this user receives monthly.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._users.MonthlyKudos",
+                "horde_sdk.ai_horde_api.apimodels.users.MonthlyKudos",
                 "None"
             ]
         },
@@ -357,7 +357,7 @@
         "records": {
             "description": "How many images, texts, megapixelsteps and tokens this user has generated or requested.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._users.UserRecords",
+                "horde_sdk.ai_horde_api.apimodels.users.UserRecords",
                 "None"
             ]
         },
@@ -399,7 +399,7 @@
         "usage": {
             "description": "How many images and megapixelsteps this user has requested.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._users.UsageDetails",
+                "horde_sdk.ai_horde_api.apimodels.users.UsageDetails",
                 "None"
             ]
         },
@@ -448,7 +448,7 @@
         "styles": {
             "description": "The styles this user has created.",
             "types": [
-                "list[horde_sdk.ai_horde_api.apimodels._styles.ResponseModelStylesUser]",
+                "list[horde_sdk.ai_horde_api.apimodels.styles.ResponseModelStylesUser]",
                 "None"
             ]
         }
@@ -683,13 +683,13 @@
         "payload": {
             "description": "The parameters used to generate this image.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels.generate._pop.ImageGenerateJobPopPayload"
+                "horde_sdk.ai_horde_api.apimodels.generate.pop.ImageGenerateJobPopPayload"
             ]
         },
         "skipped": {
             "description": "The reasons this worker was not issued certain jobs, and the number of jobs for each reason.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels.generate._pop.ImageGenerateJobPopSkippedStatus"
+                "horde_sdk.ai_horde_api.apimodels.generate.pop.ImageGenerateJobPopSkippedStatus"
             ]
         },
         "model": {
@@ -820,7 +820,7 @@
         "root": {
             "description": "The underlying list of user details.",
             "types": [
-                "list[horde_sdk.ai_horde_api.apimodels._users.UserDetailsResponse]"
+                "list[horde_sdk.ai_horde_api.apimodels.users.UserDetailsResponse]"
             ]
         }
     },
@@ -1112,7 +1112,7 @@
         "kudos_details": {
             "description": "How much Kudos this worker has accumulated or used for generating images.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels.workers._workers.WorkerKudosDetails",
+                "horde_sdk.ai_horde_api.apimodels.workers.workers.WorkerKudosDetails",
                 "None"
             ]
         },
@@ -1223,7 +1223,7 @@
         "team": {
             "description": "The team this worker belongs to.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels.workers._workers.TeamDetailsLite",
+                "horde_sdk.ai_horde_api.apimodels.workers.workers.TeamDetailsLite",
                 "None"
             ]
         },
@@ -1365,7 +1365,7 @@
         "payload": {
             "description": "The settings for this text generation.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels.generate.text._pop.ModelPayloadKobold"
+                "horde_sdk.ai_horde_api.apimodels.generate.text.pop.ModelPayloadKobold"
             ]
         },
         "id_": {
@@ -1384,7 +1384,7 @@
         "skipped": {
             "description": "The skipped requests that were not valid for this worker.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels.generate.text._pop.NoValidRequestFoundKobold"
+                "horde_sdk.ai_horde_api.apimodels.generate.text.pop.NoValidRequestFoundKobold"
             ]
         },
         "softprompt": {

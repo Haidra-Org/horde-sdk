@@ -100,7 +100,7 @@ image_generate_async_request = ImageGenerateAsyncRequest(
 
 ### API Expectations
 #### Important note about manual clients
-A few endpoints, such as `/v2/generate/async` ([ImageGenerateAsyncRequest][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest]), will have their operations live on the API server until they are retrieved or cancelled (in this case, with either a [ImageGenerateStatusRequest][horde_sdk.ai_horde_api.apimodels.generate._status.ImageGenerateStatusRequest] or [DeleteImageGenerateRequest][horde_sdk.ai_horde_api.apimodels.generate._status.DeleteImageGenerateRequest]). If you use a manual client, you are assuming responsibility for making a best-effort for cleaning up errant requests, especially if your implementation crashes. If you use a simple client, you do not have to worry about this, as [context handlers][horde_sdk.generic_api.generic_clients.GenericHordeAPISession] take care of this.
+A few endpoints, such as `/v2/generate/async` ([ImageGenerateAsyncRequest][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest]), will have their operations live on the API server until they are retrieved or cancelled (in this case, with either a [ImageGenerateStatusRequest][horde_sdk.ai_horde_api.apimodels.generate.status.ImageGenerateStatusRequest] or [DeleteImageGenerateRequest][horde_sdk.ai_horde_api.apimodels.generate.status.DeleteImageGenerateRequest]). If you use a manual client, you are assuming responsibility for making a best-effort for cleaning up errant requests, especially if your implementation crashes. If you use a simple client, you do not have to worry about this, as [context handlers][horde_sdk.generic_api.generic_clients.GenericHordeAPISession] take care of this.
 
 ### Typing
 

@@ -12,33 +12,33 @@
         "GET": "horde_sdk.ai_horde_api.apimodels._status.AIHordeHeartbeatRequest"
     },
     "/v2/interrogate/async": {
-        "POST": "horde_sdk.ai_horde_api.apimodels.alchemy._async.AlchemyAsyncRequest"
+        "POST": "horde_sdk.ai_horde_api.apimodels.alchemy.async_.AlchemyAsyncRequest"
     },
     "/v2/interrogate/status/{id}": {
-        "DELETE": "horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyDeleteRequest",
-        "GET": "horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyStatusRequest"
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.alchemy.status.AlchemyDeleteRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.alchemy.status.AlchemyStatusRequest"
     },
     "/v2/interrogate/submit": {
-        "POST": "horde_sdk.ai_horde_api.apimodels.alchemy._submit.AlchemyJobSubmitRequest"
+        "POST": "horde_sdk.ai_horde_api.apimodels.alchemy.submit.AlchemyJobSubmitRequest"
     },
     "/v2/interrogate/pop": {
         "POST": "horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyPopRequest"
     },
     "/v2/workers": {
-        "GET": "horde_sdk.ai_horde_api.apimodels.workers._workers.AllWorkersDetailsRequest"
+        "GET": "horde_sdk.ai_horde_api.apimodels.workers.workers.AllWorkersDetailsRequest"
     },
     "/v2/generate/status/{id}": {
-        "DELETE": "horde_sdk.ai_horde_api.apimodels.generate._status.DeleteImageGenerateRequest",
-        "GET": "horde_sdk.ai_horde_api.apimodels.generate._status.ImageGenerateStatusRequest"
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.generate.status.DeleteImageGenerateRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.generate.status.ImageGenerateStatusRequest"
     },
     "/v2/generate/text/status/{id}": {
-        "DELETE": "horde_sdk.ai_horde_api.apimodels.generate.text._status.DeleteTextGenerateRequest",
-        "GET": "horde_sdk.ai_horde_api.apimodels.generate.text._status.TextGenerateStatusRequest"
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.generate.text.status.DeleteTextGenerateRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.generate.text.status.TextGenerateStatusRequest"
     },
     "/v2/workers/{worker_id}": {
-        "DELETE": "horde_sdk.ai_horde_api.apimodels.workers._workers.DeleteWorkerRequest",
-        "PUT": "horde_sdk.ai_horde_api.apimodels.workers._workers.ModifyWorkerRequest",
-        "GET": "horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsRequest"
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.workers.workers.DeleteWorkerRequest",
+        "PUT": "horde_sdk.ai_horde_api.apimodels.workers.workers.ModifyWorkerRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.workers.workers.SingleWorkerDetailsRequest"
     },
     "/v2/find_user": {
         "GET": "horde_sdk.ai_horde_api.apimodels._find_user.FindUserRequest"
@@ -56,13 +56,13 @@
         "POST": "horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest"
     },
     "/v2/generate/check/{id}": {
-        "GET": "horde_sdk.ai_horde_api.apimodels.generate._check.ImageGenerateCheckRequest"
+        "GET": "horde_sdk.ai_horde_api.apimodels.generate.check.ImageGenerateCheckRequest"
     },
     "/v2/generate/pop": {
-        "POST": "horde_sdk.ai_horde_api.apimodels.generate._pop.ImageGenerateJobPopRequest"
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate.pop.ImageGenerateJobPopRequest"
     },
     "/v2/generate/submit": {
-        "POST": "horde_sdk.ai_horde_api.apimodels.generate._submit.ImageGenerationJobSubmitRequest"
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate.submit.ImageGenerationJobSubmitRequest"
     },
     "/v2/stats/img/models": {
         "GET": "horde_sdk.ai_horde_api.apimodels._stats.ImageStatsModelsRequest"
@@ -74,31 +74,31 @@
         "POST": "horde_sdk.ai_horde_api.apimodels._kudos.KudosTransferRequest"
     },
     "/v2/users": {
-        "GET": "horde_sdk.ai_horde_api.apimodels._users.ListUsersDetailsRequest"
+        "GET": "horde_sdk.ai_horde_api.apimodels.users.ListUsersDetailsRequest"
     },
     "/v2/users/{user_id}": {
-        "PUT": "horde_sdk.ai_horde_api.apimodels._users.ModifyUserRequest",
-        "GET": "horde_sdk.ai_horde_api.apimodels._users.SingleUserDetailsRequest"
+        "PUT": "horde_sdk.ai_horde_api.apimodels.users.ModifyUserRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.users.SingleUserDetailsRequest"
     },
     "/v2/status/news": {
         "GET": "horde_sdk.ai_horde_api.apimodels._status.NewsRequest"
     },
     "/v2/sharedkeys": {
-        "PUT": "horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyCreateRequest"
+        "PUT": "horde_sdk.ai_horde_api.apimodels.sharedkeys.SharedKeyCreateRequest"
     },
     "/v2/sharedkeys/{sharedkey_id}": {
-        "DELETE": "horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyDeleteRequest",
-        "GET": "horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyDetailsRequest",
-        "PATCH": "horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyModifyRequest"
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.sharedkeys.SharedKeyDeleteRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.sharedkeys.SharedKeyDetailsRequest",
+        "PATCH": "horde_sdk.ai_horde_api.apimodels.sharedkeys.SharedKeyModifyRequest"
     },
     "/v2/workers/name/{worker_name}": {
-        "GET": "horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerNameDetailsRequest"
+        "GET": "horde_sdk.ai_horde_api.apimodels.workers.workers.SingleWorkerNameDetailsRequest"
     },
     "/v2/generate/text/async": {
-        "POST": "horde_sdk.ai_horde_api.apimodels.generate.text._async.TextGenerateAsyncRequest"
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate.text.async_.TextGenerateAsyncRequest"
     },
     "/v2/generate/text/pop": {
-        "POST": "horde_sdk.ai_horde_api.apimodels.generate.text._pop.TextGenerateJobPopRequest"
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate.text.pop.TextGenerateJobPopRequest"
     },
     "/v2/generate/text/submit": {
         "POST": "horde_sdk.ai_horde_api.apimodels.generate.text._submit.TextGenerationJobSubmitRequest"

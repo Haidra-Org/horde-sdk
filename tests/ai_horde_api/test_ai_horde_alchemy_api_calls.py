@@ -1,7 +1,7 @@
 import pytest
 
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIClientSession
-from horde_sdk.ai_horde_api.apimodels.alchemy._async import (
+from horde_sdk.ai_horde_api.apimodels.alchemy.async_ import (
     AlchemyAsyncRequest,
     AlchemyAsyncRequestFormItem,
     AlchemyAsyncResponse,

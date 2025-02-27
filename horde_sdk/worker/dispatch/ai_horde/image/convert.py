@@ -8,7 +8,7 @@ from horde_model_reference.meta_consts import (
 from horde_model_reference.model_reference_manager import ModelReferenceManager
 from loguru import logger
 
-from horde_sdk.ai_horde_api.apimodels.generate._pop import ImageGenerateJobPopResponse
+from horde_sdk.ai_horde_api.apimodels.generate.pop import ImageGenerateJobPopResponse
 from horde_sdk.ai_horde_api.consts import DEFAULT_HIRES_DENOISE_STRENGTH
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.image import (

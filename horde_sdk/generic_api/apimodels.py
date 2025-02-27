@@ -17,6 +17,7 @@ from typing_extensions import override
 from horde_sdk import _default_sslcontext
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.consts import ANON_API_KEY
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
@@ -397,6 +398,8 @@ class RequestSingleWarning(HordeAPIObjectBaseModel):
         return "RequestSingleWarning"
 
 
+@Unhashable
+@Unequatable
 class ContainsWarningsResponseMixin(HordeAPIData):
     """Represents any response from any Horde API which contains warnings."""
 

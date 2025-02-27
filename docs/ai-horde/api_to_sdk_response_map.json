@@ -12,31 +12,31 @@
         "200": "horde_sdk.ai_horde_api.apimodels._status.AIHordeHeartbeatResponse"
     },
     "/v2/interrogate/async": {
-        "202": "horde_sdk.ai_horde_api.apimodels.alchemy._async.AlchemyAsyncResponse"
+        "202": "horde_sdk.ai_horde_api.apimodels.alchemy.async_.AlchemyAsyncResponse"
     },
     "/v2/interrogate/status/{id}": {
-        "200": "horde_sdk.ai_horde_api.apimodels.alchemy._status.AlchemyStatusResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.alchemy.status.AlchemyStatusResponse"
     },
     "/v2/interrogate/submit": {
-        "200": "horde_sdk.ai_horde_api.apimodels.alchemy._submit.AlchemyJobSubmitResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.alchemy.submit.AlchemyJobSubmitResponse"
     },
     "/v2/interrogate/pop": {
         "200": "horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyJobPopResponse"
     },
     "/v2/workers": {
-        "200": "horde_sdk.ai_horde_api.apimodels.workers._workers.AllWorkersDetailsResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.workers.workers.AllWorkersDetailsResponse"
     },
     "/v2/generate/status/{id}": {
-        "200": "horde_sdk.ai_horde_api.apimodels.generate._status.ImageGenerateStatusResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.generate.status.ImageGenerateStatusResponse"
     },
     "/v2/generate/text/status/{id}": {
-        "200": "horde_sdk.ai_horde_api.apimodels.generate.text._status.TextGenerateStatusResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.generate.text.status.TextGenerateStatusResponse"
     },
     "/v2/workers/{worker_id}": {
-        "200": "horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.workers.workers.SingleWorkerDetailsResponse"
     },
     "/v2/find_user": {
-        "200": "horde_sdk.ai_horde_api.apimodels._users.UserDetailsResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.users.UserDetailsResponse"
     },
     "/v2/status/performance": {
         "200": "horde_sdk.ai_horde_api.apimodels._status.HordePerformanceResponse"
@@ -52,10 +52,10 @@
         "202": "horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse"
     },
     "/v2/generate/check/{id}": {
-        "200": "horde_sdk.ai_horde_api.apimodels.generate._check.ImageGenerateCheckResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.generate.check.ImageGenerateCheckResponse"
     },
     "/v2/generate/pop": {
-        "200": "horde_sdk.ai_horde_api.apimodels.generate._pop.ImageGenerateJobPopResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.generate.pop.ImageGenerateJobPopResponse"
     },
     "/v2/generate/submit": {
         "200": "horde_sdk.ai_horde_api.apimodels.base.JobSubmitResponse"
@@ -70,29 +70,29 @@
         "200": "horde_sdk.ai_horde_api.apimodels._kudos.KudosTransferResponse"
     },
     "/v2/users": {
-        "200": "horde_sdk.ai_horde_api.apimodels._users.ListUsersDetailsResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.users.ListUsersDetailsResponse"
     },
     "/v2/users/{user_id}": {
-        "200": "horde_sdk.ai_horde_api.apimodels._users.UserDetailsResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.users.UserDetailsResponse"
     },
     "/v2/status/news": {
         "200": "horde_sdk.ai_horde_api.apimodels._status.NewsResponse"
     },
     "/v2/sharedkeys": {
-        "200": "horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyDetailsResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.sharedkeys.SharedKeyDetailsResponse"
     },
     "/v2/sharedkeys/{sharedkey_id}": {
-        "200": "horde_sdk.ai_horde_api.apimodels._sharedkeys.SharedKeyDetailsResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.sharedkeys.SharedKeyDetailsResponse"
     },
     "/v2/workers/name/{worker_name}": {
-        "200": "horde_sdk.ai_horde_api.apimodels.workers._workers.SingleWorkerDetailsResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.workers.workers.SingleWorkerDetailsResponse"
     },
     "/v2/generate/text/async": {
-        "200": "horde_sdk.ai_horde_api.apimodels.generate.text._async.TextGenerateAsyncDryRunResponse",
-        "202": "horde_sdk.ai_horde_api.apimodels.generate.text._async.TextGenerateAsyncResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.generate.text.async_.TextGenerateAsyncDryRunResponse",
+        "202": "horde_sdk.ai_horde_api.apimodels.generate.text.async_.TextGenerateAsyncResponse"
     },
     "/v2/generate/text/pop": {
-        "200": "horde_sdk.ai_horde_api.apimodels.generate.text._pop.TextGenerateJobPopResponse"
+        "200": "horde_sdk.ai_horde_api.apimodels.generate.text.pop.TextGenerateJobPopResponse"
     },
     "/v2/generate/text/submit": {
         "200": "horde_sdk.ai_horde_api.apimodels.base.JobSubmitResponse"

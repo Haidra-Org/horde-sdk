@@ -3,7 +3,7 @@ import argparse
 from horde_sdk import RequestErrorResponse
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient
 from horde_sdk.ai_horde_api.apimodels import FindUserRequest
-from horde_sdk.ai_horde_api.apimodels._users import UserDetailsResponse
+from horde_sdk.ai_horde_api.apimodels.users import UserDetailsResponse
 
 
 def find_user_example(

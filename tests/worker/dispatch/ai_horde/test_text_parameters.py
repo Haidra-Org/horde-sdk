@@ -1,4 +1,4 @@
-from horde_sdk.ai_horde_api.apimodels.generate.text._pop import TextGenerateJobPopResponse
+from horde_sdk.ai_horde_api.apimodels.generate.text.pop import TextGenerateJobPopResponse
 from horde_sdk.worker.consts import (
     KNOWN_DISPATCH_SOURCE,
     KNOWN_INFERENCE_BACKEND,

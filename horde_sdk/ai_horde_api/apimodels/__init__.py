@@ -2,7 +2,7 @@
 
 from typing import TypeVar
 
-from horde_sdk.ai_horde_api.apimodels._collections import (
+from horde_sdk.ai_horde_api.apimodels.collections import (
     AllCollectionsRequest,
     AllCollectionsResponse,
     CollectionByIDRequest,
@@ -17,7 +17,7 @@ from horde_sdk.ai_horde_api.apimodels._collections import (
     UpdateCollectionResponse,
     _InputModelCollectionMixin,
 )
-from horde_sdk.ai_horde_api.apimodels._documents import (
+from horde_sdk.ai_horde_api.apimodels.documents import (
     AIHordeDocumentRequestMixin,
     AIHordeGetPrivacyPolicyRequest,
     AIHordeGetSponsorsRequest,
@@ -25,7 +25,7 @@ from horde_sdk.ai_horde_api.apimodels._documents import (
     DocumentFormat,
     HordeDocument,
 )
-from horde_sdk.ai_horde_api.apimodels._filters import (
+from horde_sdk.ai_horde_api.apimodels.filters import (
     DeleteFilterRequest,
     DeleteFilterResponse,
     FilterDetails,
@@ -40,16 +40,16 @@ from horde_sdk.ai_horde_api.apimodels._filters import (
     PutNewFilterRequest,
     SingleFilterRequest,
 )
-from horde_sdk.ai_horde_api.apimodels._find_user import (
+from horde_sdk.ai_horde_api.apimodels.find_user import (
     FindUserRequest,
 )
-from horde_sdk.ai_horde_api.apimodels._kudos import (
+from horde_sdk.ai_horde_api.apimodels.kudos import (
     KudosAwardRequest,
     KudosAwardResponse,
     KudosTransferRequest,
     KudosTransferResponse,
 )
-from horde_sdk.ai_horde_api.apimodels._operations import (
+from horde_sdk.ai_horde_api.apimodels.operations import (
     AllIPTimeoutsRequest,
     BlockIPAddressRequest,
     BlockIPAddressResponse,
@@ -63,7 +63,7 @@ from horde_sdk.ai_horde_api.apimodels._operations import (
     IPTimeoutListResponse,
     SingleIPTimeoutsRequest,
 )
-from horde_sdk.ai_horde_api.apimodels._sharedkeys import (
+from horde_sdk.ai_horde_api.apimodels.sharedkeys import (
     SharedKeyCreateRequest,
     SharedKeyDeleteRequest,
     SharedKeyDeleteResponse,
@@ -72,7 +72,7 @@ from horde_sdk.ai_horde_api.apimodels._sharedkeys import (
     SharedKeyModifyRequest,
     SharedKeySettings,
 )
-from horde_sdk.ai_horde_api.apimodels._stats import (
+from horde_sdk.ai_horde_api.apimodels.stats import (
     ImageStatsModelsRequest,
     ImageStatsModelsResponse,
     ImageStatsModelsTotalRequest,
@@ -85,7 +85,7 @@ from horde_sdk.ai_horde_api.apimodels._stats import (
     TextStatsModelsTotalRequest,
     TextStatsModelsTotalResponse,
 )
-from horde_sdk.ai_horde_api.apimodels._status import (
+from horde_sdk.ai_horde_api.apimodels.status import (
     AIHordeHeartbeatRequest,
     AIHordeHeartbeatResponse,
     HordeModes,
@@ -99,7 +99,7 @@ from horde_sdk.ai_horde_api.apimodels._status import (
     NewsRequest,
     NewsResponse,
 )
-from horde_sdk.ai_horde_api.apimodels._styles import (
+from horde_sdk.ai_horde_api.apimodels.styles import (
     AllStylesImageRequest,
     AllStylesImageResponse,
     AllStylesTextRequest,
@@ -122,7 +122,7 @@ from horde_sdk.ai_horde_api.apimodels._styles import (
     SingleStyleTextByNameRequest,
     StyleExample,
     StyleImageExampleAddRequest,
-    StyleImageExampleAddResponse,
+    StyleImageExampleModifyResponse,
     StyleImageExampleDeleteRequest,
     StyleImageExampleDeleteResponse,
     StyleImageExampleModifyRequest,
@@ -130,7 +130,7 @@ from horde_sdk.ai_horde_api.apimodels._styles import (
     StyleStable,
     StyleType,
 )
-from horde_sdk.ai_horde_api.apimodels._teams import (
+from horde_sdk.ai_horde_api.apimodels.teams import (
     AllTeamDetailsRequest,
     AllTeamDetailsResponse,
     CreateTeamRequest,
@@ -142,7 +142,7 @@ from horde_sdk.ai_horde_api.apimodels._teams import (
     SingleTeamDetailsRequest,
     TeamDetails,
 )
-from horde_sdk.ai_horde_api.apimodels._users import (
+from horde_sdk.ai_horde_api.apimodels.users import (
     ActiveGenerations,
     ContributionsDetails,
     ListUsersDetailsRequest,
@@ -161,19 +161,19 @@ from horde_sdk.ai_horde_api.apimodels._users import (
     UserThingRecords,
     _ModifyUserBase,
 )
-from horde_sdk.ai_horde_api.apimodels.alchemy._async import (
+from horde_sdk.ai_horde_api.apimodels.alchemy.async_ import (
     AlchemyAsyncRequest,
     AlchemyAsyncRequestFormItem,
     AlchemyAsyncResponse,
 )
-from horde_sdk.ai_horde_api.apimodels.alchemy._pop import (
+from horde_sdk.ai_horde_api.apimodels.alchemy.pop import (
     AlchemyFormPayloadStable,
     AlchemyJobPopResponse,
     AlchemyPopFormPayload,
     AlchemyPopRequest,
     NoValidAlchemyFound,
 )
-from horde_sdk.ai_horde_api.apimodels.alchemy._status import (
+from horde_sdk.ai_horde_api.apimodels.alchemy.status import (
     AlchemyCaptionResult,
     AlchemyDeleteRequest,
     AlchemyFormStatus,
@@ -185,7 +185,7 @@ from horde_sdk.ai_horde_api.apimodels.alchemy._status import (
     AlchemyStatusResponse,
     AlchemyUpscaleResult,
 )
-from horde_sdk.ai_horde_api.apimodels.alchemy._submit import AlchemyJobSubmitRequest, AlchemyJobSubmitResponse
+from horde_sdk.ai_horde_api.apimodels.alchemy.submit import AlchemyJobSubmitRequest, AlchemyJobSubmitResponse
 from horde_sdk.ai_horde_api.apimodels.base import (
     ActiveModel,
     ActiveModelLite,
@@ -203,14 +203,14 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     WorkerRequestMixin,
     WorkerRequestNameMixin,
 )
-from horde_sdk.ai_horde_api.apimodels.generate._async import (
+from horde_sdk.ai_horde_api.apimodels.generate.async_ import (
     ImageGenerateAsyncDryRunResponse,
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
     ImageGenerationInputPayload,
 )
-from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckRequest, ImageGenerateCheckResponse
-from horde_sdk.ai_horde_api.apimodels.generate._pop import (
+from horde_sdk.ai_horde_api.apimodels.generate.check import ImageGenerateCheckRequest, ImageGenerateCheckResponse
+from horde_sdk.ai_horde_api.apimodels.generate.pop import (
     ImageGenerateJobPopPayload,
     ImageGenerateJobPopRequest,
     ImageGenerateJobPopResponse,
@@ -218,26 +218,26 @@ from horde_sdk.ai_horde_api.apimodels.generate._pop import (
     NoValidRequestFound,
     PopInput,
 )
-from horde_sdk.ai_horde_api.apimodels.generate._progress import (
+from horde_sdk.ai_horde_api.apimodels.generate.progress import (
     ResponseGenerationProgressCombinedMixin,
     ResponseGenerationProgressInfoMixin,
 )
-from horde_sdk.ai_horde_api.apimodels.generate._rate import (
+from horde_sdk.ai_horde_api.apimodels.generate.rate import (
     AestheticRating,
     AestheticsPayload,
     RateRequest,
     RateResponse,
 )
-from horde_sdk.ai_horde_api.apimodels.generate._status import (
+from horde_sdk.ai_horde_api.apimodels.generate.status import (
     DeleteImageGenerateRequest,
     ImageGenerateStatusRequest,
     ImageGenerateStatusResponse,
     ImageGeneration,
 )
-from horde_sdk.ai_horde_api.apimodels.generate._submit import (
+from horde_sdk.ai_horde_api.apimodels.generate.submit import (
     ImageGenerationJobSubmitRequest,
 )
-from horde_sdk.ai_horde_api.apimodels.generate.text._async import (
+from horde_sdk.ai_horde_api.apimodels.generate.text.async_ import (
     ModelGenerationInputKobold,
     ModelPayloadRootKobold,
     TextGenerateAsyncDryRunResponse,
@@ -245,23 +245,23 @@ from horde_sdk.ai_horde_api.apimodels.generate.text._async import (
     TextGenerateAsyncResponse,
     _BasePayloadKoboldMixin,
 )
-from horde_sdk.ai_horde_api.apimodels.generate.text._pop import (
+from horde_sdk.ai_horde_api.apimodels.generate.text.pop import (
     ModelPayloadKobold,
     NoValidRequestFoundKobold,
     TextGenerateJobPopRequest,
     TextGenerateJobPopResponse,
     _PopInputKobold,
 )
-from horde_sdk.ai_horde_api.apimodels.generate.text._status import (
+from horde_sdk.ai_horde_api.apimodels.generate.text.status import (
     DeleteTextGenerateRequest,
     GenerationKobold,
     TextGenerateStatusRequest,
     TextGenerateStatusResponse,
 )
-from horde_sdk.ai_horde_api.apimodels.generate.text._submit import (
+from horde_sdk.ai_horde_api.apimodels.generate.text.submit import (
     TextGenerationJobSubmitRequest,
 )
-from horde_sdk.ai_horde_api.apimodels.workers._workers import (
+from horde_sdk.ai_horde_api.apimodels.workers.workers import (
     AllWorkersDetailsRequest,
     AllWorkersDetailsResponse,
     DeleteWorkerRequest,
@@ -275,7 +275,7 @@ from horde_sdk.ai_horde_api.apimodels.workers._workers import (
     WorkerDetailItem,
     WorkerKudosDetails,
 )
-from horde_sdk.ai_horde_api.apimodels.workers.messages._messages import (
+from horde_sdk.ai_horde_api.apimodels.workers.messages.messages import (
     AllWorkerMessagesRequest,
     CreateWorkerMessageRequest,
     DeleteWorkerMessageRequest,
@@ -383,7 +383,7 @@ __all__ = [
     "NewsResponse",
     "StyleExample",
     "StyleImageExampleAddRequest",
-    "StyleImageExampleAddResponse",
+    "StyleImageExampleModifyResponse",
     "StyleImageExampleDeleteRequest",
     "StyleImageExampleDeleteResponse",
     "StyleImageExampleModifyRequest",
