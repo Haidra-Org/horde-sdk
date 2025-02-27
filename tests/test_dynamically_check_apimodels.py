@@ -141,6 +141,8 @@ class Test_reflection_and_dynamic:
                             raise e
                     except Exception as e:
                         print(f"Failed to validate {example_response_file_path}")
+                        print(f"Request type: {request_type}")
+                        print(f"Response type: {success_response_type}")
                         print(f"Error: {e}")
                         print(f"Sample data: {sample_data_json}")
                         raise e
@@ -166,6 +168,8 @@ class Test_reflection_and_dynamic:
                                 raise e
                         except Exception as e:
                             print(f"Failed to validate {production_response_file_path}")
+                            print(f"Request type: {request_type}")
+                            print(f"Response type: {success_response_type}")
                             print(f"Error: {e}")
                             print(f"Sample data: {sample_data_json}")
                             raise e
@@ -188,6 +192,8 @@ class Test_reflection_and_dynamic:
                             logger.debug(f"Hashing not implemented for {example_response_file_path}")
                         except Exception as e:
                             print(f"Failed to hash {example_response_file_path}")
+                            print(f"Request type: {request_type}")
+                            print(f"Response type: {success_response_type}")
                             print(f"Error: {e}")
                             raise e
 
