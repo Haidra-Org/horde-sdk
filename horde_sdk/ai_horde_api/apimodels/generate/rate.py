@@ -14,7 +14,8 @@ best	string
 example: 6038971e-f0b0-4fdd-a3bb-148f561f815e
 minLength: 36
 maxLength: 36
-The UUID of the best image in this generation batch (only used when 2+ images generated). If 2+ aesthetic ratings are also provided, then they take precedence if they're not tied.
+The UUID of the best image in this generation batch (only used when 2+ images generated). If 2+ aesthetic ratings are
+also provided, then they take precedence if they're not tied.
 
 ratings	[AestheticRating{
 id*	string
@@ -51,15 +52,17 @@ class AestheticRating(HordeAPIObjectBaseModel):
     )
     """The UUID of image being rated."""
 
-    rating: int = Field(
-        description="The aesthetic rating 1-10 for this image.",
-    )
+    rating: int
     """The aesthetic rating 1-10 for this image."""
 
-    artifacts: int = Field(
-        description="The artifacts rating for this image. 0 for flawless generation that perfectly fits to the prompt. 1 for small, hardly recognizable flaws. 2 small flaws that can easily be spotted, but don not harm the aesthetic experience. 3 for flaws that look obviously wrong, but only mildly harm the aesthetic experience. 4 for flaws that look obviously wrong & significantly harm the aesthetic experience. 5 for flaws that make the image look like total garbage.",
-    )
-    """The artifacts rating for this image."""
+    artifacts: int
+    """The artifacts rating for this image.
+    0 for flawless generation that perfectly fits to the prompt.
+    1 for small, hardly recognizable flaws. 2 small flaws that can easily be spotted, but don not harm the aesthetic
+    experience.
+    3 for flaws that look obviously wrong, but only mildly harm the aesthetic experience.
+    4 for flaws that look obviously wrong & significantly harm the aesthetic experience.
+    5 for flaws that make the image look like total garbage."""
 
     @override
     @classmethod
