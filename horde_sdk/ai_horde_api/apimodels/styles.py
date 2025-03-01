@@ -660,6 +660,9 @@ class AllStylesTextResponse(HordeResponseRootModel[list[StyleKobold]]):
     v2 API Model: `_ANONYMOUS_MODEL`
     """
 
+    root: list[StyleKobold]
+    """The underlying list of styles."""
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:

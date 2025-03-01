@@ -86,13 +86,13 @@ class AlchemyPopFormPayload(HordeAPIObjectBaseModel, JobRequestMixin):
 class NoValidAlchemyFound(HordeAPIObjectBaseModel):
     """The number of jobs this worker was not eligible for, and why.
 
-    v2 API Model: `NoValidInterrogationsFoundStable`
+    v2 API Model: `NoValidInterrogationsFound`
     """
 
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
-        return "NoValidInterrogationsFoundStable"
+        return "NoValidInterrogationsFound"
 
     bridge_version: int | None = Field(
         default=None,
