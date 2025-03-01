@@ -4,6 +4,8 @@ import pkgutil
 import types
 from functools import cache
 
+from loguru import logger
+
 import horde_sdk
 import horde_sdk.ai_horde_api
 import horde_sdk.ai_horde_api.apimodels
@@ -359,7 +361,30 @@ def all_models_non_conforming_docstrings() -> dict[type, tuple[str | None, str |
 
             found_response_type = response_request_info.response
 
-            if not found_response_type.__doc__ or not found_response_type.__doc__.rstrip().endswith(
+            response_doc_string = found_response_type.__doc__.rstrip() if found_response_type.__doc__ else ""
+
+            # If the expected docstring contains any runs of text which are greater than 119 characters...
+
+            expected_exceeds_119 = False
+
+            for line in expected_response_docstring.split("\n"):
+                if len(line) > 119:
+                    expected_exceeds_119 = True
+                    break
+
+            # Due to the 119 ruff-enforced line limit in source files,
+            # we need to account for the fact that the expected docstring may require an
+            # unspecified (in the format string) line break.
+            if expected_exceeds_119:
+                response_doc_string = response_doc_string.replace("\n    ", " ")
+                expected_response_docstring = expected_response_docstring.replace("\n    ", " ")
+                logger.warning(
+                    f"Docstring for {found_response_type} exceeds 119 characters in places. "
+                    "Please manually verify the whitespace formatting as the testing script may not "
+                    "accurately reflect the expected docstring formatting.",
+                )
+
+            if not found_response_type.__doc__ or not response_doc_string.endswith(
                 expected_response_docstring,
             ):
                 non_conforming_responses[found_response_type] = (
@@ -375,6 +400,7 @@ def all_models_non_conforming_docstrings() -> dict[type, tuple[str | None, str |
                     and last_response_request_info.endpoint == response_request_info.endpoint
                     and last_response_request_info.http_method == response_request_info.http_method
                     and last_response_request_info.http_status_code == response_request_info.http_status_code
+                    and last_response_request_info.parent_request == response_request_info.parent_request
                 ):
                     continue
 
@@ -399,9 +425,13 @@ def all_models_non_conforming_docstrings() -> dict[type, tuple[str | None, str |
             for response_request_info in response_request_infos:
                 found_response_type = response_request_info.response
 
-                if not found_response_type.__doc__ or not found_response_type.__doc__.rstrip().endswith(
-                    expected_response_docstring,
-                ):
+                response_doc_string = found_response_type.__doc__.rstrip() if found_response_type.__doc__ else ""
+                response_doc_string.replace("\n            ", " ")
+                response_doc_string.replace("\n        ", " ")
+                response_doc_string.replace("\n    ", " ")
+                response_doc_string.replace("\n", " ")
+
+                if not found_response_type.__doc__ or not response_doc_string.endswith(expected_response_docstring):
                     non_conforming_responses[found_response_type] = (
                         found_response_type.__doc__,
                         expected_response_docstring,
