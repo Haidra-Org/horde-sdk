@@ -433,7 +433,7 @@ def test_ImageGenerateJobPopResponse() -> None:
     )
 
     assert all(
-        post_processor in KNOWN_UPSCALERS.__members__.keys() or post_processor in KNOWN_UPSCALERS.__members__.values()
+        post_processor in KNOWN_UPSCALERS.__members__ or post_processor in KNOWN_UPSCALERS.__members__.values()
         for post_processor in test_response.payload.post_processing
     )
 
