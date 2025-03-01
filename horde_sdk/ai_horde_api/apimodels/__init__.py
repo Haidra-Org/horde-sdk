@@ -99,6 +99,7 @@ from horde_sdk.ai_horde_api.apimodels.generate.pop import (
     ImageGenerateJobPopSkippedStatus,
     NoValidRequestFound,
     PopInput,
+    PopResponseModelMessage,
 )
 from horde_sdk.ai_horde_api.apimodels.generate.progress import (
     ResponseGenerationProgressCombinedMixin,
@@ -284,6 +285,7 @@ from horde_sdk.ai_horde_api.apimodels.workers.workers import (
     SingleWorkerNameDetailsRequest,
     TeamDetailsLite,
     WorkerDetailItem,
+    WorkerDetailLite,
     WorkerKudosDetails,
 )
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
@@ -486,6 +488,7 @@ __all__ = [
     "ImageGenerateJobPopResponse",
     "ImageGenerateJobPopSkippedStatus",
     "PopInput",
+    "PopResponseModelMessage",
     "NoValidRequestFound",
     "ResponseGenerationProgressCombinedMixin",
     "ResponseGenerationProgressInfoMixin",
@@ -527,6 +530,7 @@ __all__ = [
     "SingleWorkerDetailsResponse",
     "TeamDetailsLite",
     "WorkerDetailItem",
+    "WorkerDetailLite",
     "WorkerKudosDetails",
     "AllWorkerMessagesRequest",
     "CreateWorkerMessageRequest",
