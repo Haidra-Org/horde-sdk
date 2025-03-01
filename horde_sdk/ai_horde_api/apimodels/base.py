@@ -381,7 +381,11 @@ class ImageGenerateParamMixin(_BaseImageGenerateParamMixin):
 
 
 class JobSubmitResponse(HordeResponseBaseModel):
-    """Represents the data returned from the /v2/generate/submit endpoint with http status code 200.
+    """Indicates that a generation job was successfully submitted and the amount of kudos gained.
+
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/generate/text/submit | TextGenerationJobSubmitRequest [POST] -> 200
+        - /v2/generate/submit | ImageGenerationJobSubmitRequest [POST] -> 200
 
     v2 API Model: `GenerationSubmitted`
     """

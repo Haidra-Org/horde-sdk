@@ -8,10 +8,9 @@ from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, HordeRe
 
 
 class AlchemyJobSubmitResponse(HordeResponseBaseModel):
-    """The reward for submitting an alchemy job. Receipt of this response means the job was successfully submitted.
+    """Indicates that an alchemy job has been submitted successfully and the kudos gained.
 
     Represents the data returned from the following endpoints and http status codes:
-        - /v2/interrogate/submit | AlchemyJobSubmitRequest [POST] -> 200
         - /v2/interrogate/submit | AlchemyJobSubmitRequest [POST] -> 200
 
     v2 API Model: `GenerationSubmitted`

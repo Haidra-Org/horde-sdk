@@ -270,6 +270,8 @@ class DeleteTeamResponse(HordeResponseBaseModel):
     """The team id and name that was just deleted.
 
     Represents the data returned from the /v2/teams/{team_id} endpoint with http status code 200.
+
+    v2 API Model: `DeletedTeam`
     """
 
     deleted_id: str

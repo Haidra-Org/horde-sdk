@@ -97,7 +97,10 @@ class ImageGenerateJobPopSkippedStatus(NoValidRequestFound):
 
 
 class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
-    """Mixin for the additional image generation parameters used in dispatching a job to a worker."""
+    """Mixin for the additional image generation parameters used in dispatching a job to a worker.
+
+    v2 API Model: `ModelPayloadRootStable`
+    """
 
     prompt: str | None = None
     """The prompt to use for this image generation."""

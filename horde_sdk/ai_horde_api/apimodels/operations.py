@@ -37,7 +37,9 @@ class IPTimeout(HordeAPIObjectBaseModel):
 class IPTimeoutListResponse(HordeResponseRootModel[list[IPTimeout]]):
     """A list of IP addresses that are blocked.
 
-    Represents the data returned from the /v2/operations/ipaddr endpoint with http status code 200.
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/operations/ipaddr | SingleIPTimeoutsRequest [GET] -> 200
+        - /v2/operations/ipaddr | AllIPTimeoutsRequest [GET] -> 200
 
     v2 API Model: `_ANONYMOUS_MODEL`
     """
@@ -122,7 +124,9 @@ class SingleIPTimeoutsRequest(
 
 
 class BlockIPAddressResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
-    """The response to a request to block an IP address.
+    """Indicates that an IP address was successfully blocked.
+
+    Represents the data returned from the /v2/operations/ipaddr endpoint with http status code 200.
 
     v2 API Model: `SimpleResponse`
     """
@@ -180,7 +184,9 @@ class DeleteIPAddressResponse(
     HordeResponseBaseModel,
     ContainsMessageResponseMixin,
 ):
-    """The response to a request to unblock an IP address.
+    """Indicates that an IP address was successfully unblocked.
+
+    Represents the data returned from the /v2/operations/ipaddr endpoint with http status code 200.
 
     v2 API Model: `SimpleResponse`
     """
@@ -235,7 +241,9 @@ class BlockWorkerIPAddressResponse(
     HordeResponseBaseModel,
     ContainsMessageResponseMixin,
 ):
-    """The response to a request to block a worker's IP address.
+    """Indicates that a worker's IP address was successfully blocked.
+
+    Represents the data returned from the /v2/operations/block_worker_ipaddr/{worker_id} endpoint with http status code 200.
 
     v2 API Model: `SimpleResponse`
     """
@@ -293,7 +301,10 @@ class DeleteWorkerIPAddressResponse(
     HordeResponseBaseModel,
     ContainsMessageResponseMixin,
 ):
-    """The response to a request to unblock a worker's IP address.
+    """Indicates that a worker's IP address was successfully unblocked.
+
+    Represents the data returned from the /v2/operations/block_worker_ipaddr/{worker_id} endpoint with http status
+    code 200.
 
     v2 API Model: `SimpleResponse`
     """
