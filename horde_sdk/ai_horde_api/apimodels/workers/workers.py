@@ -4,6 +4,7 @@ from pydantic import AliasChoices, Field
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, WorkerRequestMixin, WorkerRequestNameMixin
+from horde_sdk.ai_horde_api.apimodels.workers.messages import ResponseModelMessage
 from horde_sdk.ai_horde_api.consts import AI_HORDE_WORKER_TYPES
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import TeamID, WorkerID
@@ -49,6 +50,30 @@ class WorkerKudosDetails(HordeAPIObjectBaseModel):
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "WorkerKudosDetails"
+
+
+class WorkerDetailLite(HordeAPIObjectBaseModel):
+    """The details of a worker, including its name and ID.
+
+    v2 API Model: `WorkerDetailLite`
+    """
+
+    type_: AI_HORDE_WORKER_TYPES = Field(alias="type")
+    """The type of worker."""
+
+    name: str
+    """The Name given to this worker."""
+
+    id_: str | WorkerID = Field(alias="id")
+    """The UUID of this worker."""
+
+    online: bool | None = None
+    """True if the worker has checked-in the past 5 minutes."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "WorkerDetailLite"
 
 
 @Unhashable
@@ -135,6 +160,9 @@ class WorkerDetailItem(HordeAPIObjectBaseModel):
     """If True, this worker supports and allows controlnet requests."""
     sdxl_controlnet: bool | None = Field(default=None, examples=[False])
     """If True, this worker supports and allows sdxl controlnet requests."""
+
+    messages: list[ResponseModelMessage] | None = None
+    """The messages that have been sent to this worker."""
 
     @override
     @classmethod

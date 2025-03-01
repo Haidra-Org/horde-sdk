@@ -8,7 +8,12 @@ from pydantic import Field, field_validator, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
-from horde_sdk.ai_horde_api.apimodels.generate.pop import ExtraSourceImageMixin, NoValidRequestFound, PopInput
+from horde_sdk.ai_horde_api.apimodels.generate.pop import (
+    ExtraSourceImageMixin,
+    NoValidRequestFound,
+    PopInput,
+    PopResponseModelMessage,
+)
 from horde_sdk.ai_horde_api.apimodels.generate.text.async_ import ModelPayloadRootKobold
 from horde_sdk.ai_horde_api.apimodels.generate.text.status import DeleteTextGenerateRequest, TextGenerateStatusRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
@@ -79,6 +84,9 @@ class TextGenerateJobPopResponse(
     """The model requested for this generation."""
     ttl: int | None = None
     """The amount of seconds before this job is considered stale and aborted."""
+
+    messages: list[PopResponseModelMessage] | None = None
+    """The messages sent to this worker."""
 
     @field_validator("id_", mode="before")
     def validate_id(cls, v: str | GenerationID) -> GenerationID | str:

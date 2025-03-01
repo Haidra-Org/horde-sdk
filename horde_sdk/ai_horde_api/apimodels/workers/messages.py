@@ -25,8 +25,6 @@ class _ResponseModelMessageData(HordeAPIObjectBaseModel):
     """The message."""
     origin: str | None = None
     """The origin of the message."""
-    expiry: int | None = None
-    """The number of hours after which this message expires."""
 
 
 class ResponseModelMessage(HordeResponseBaseModel, _ResponseModelMessageData):
@@ -38,6 +36,9 @@ class ResponseModelMessage(HordeResponseBaseModel, _ResponseModelMessageData):
 
     v2 API Model: `ResponseModelMessage`
     """
+
+    expiry: int | None = None
+    """The number of hours after which this message expires."""
 
     @override
     @classmethod

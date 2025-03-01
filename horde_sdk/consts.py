@@ -8,6 +8,9 @@ from strenum import StrEnum
 _ANONYMOUS_MODEL = "_ANONYMOUS_MODEL"
 """This model is on the API but does not have a name."""
 
+_MODEL_OVERLOADED = "_MODEL_OVERLOADED"
+"""The model is used incorrectly on the API."""
+
 GENERATION_ID_TYPES = str | UUID
 """The types that can be used as generation IDs."""
 

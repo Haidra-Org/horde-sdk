@@ -14,7 +14,10 @@ from horde_sdk.generic_api.apimodels import HordeAPIObjectBaseModel, HordeRespon
 
 
 class Generation(HordeAPIObjectBaseModel):
-    """Mixin that contains common fields for generation responses."""
+    """Mixin that contains common fields for generation responses.
+
+    v2 API Model: `Generation`
+    """
 
     model: str = Field(title="Generation Model")
     """The model which generated this image."""

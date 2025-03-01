@@ -69,6 +69,9 @@ class ResponseModelCollection(HordeResponseBaseModel):
     styles: list[ResponseModelStylesShort] = Field()
     """The styles contained in this collection."""
 
+    use_count: int | None = Field()
+    """The number of times this collection has been used."""
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:

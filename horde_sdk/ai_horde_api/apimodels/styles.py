@@ -149,6 +149,16 @@ class _StyleResponseMixin(_StyleMixin):
     use_count: int | None = None
     """The amount of times this style has been used in generations."""
 
+    sharedkey: str | None = Field(
+        default=None,
+        examples=[
+            "00000000-0000-0000-0000-000000000000",
+        ],
+        min_length=36,
+        max_length=36,
+    )
+    """The UUID of a shared key which will be used to fulfil this style when active."""
+
 
 @Unhashable
 @Unequatable
