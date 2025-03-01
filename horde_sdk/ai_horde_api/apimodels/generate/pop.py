@@ -15,12 +15,13 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     ImageGenerateParamMixin,
 )
 from horde_sdk.ai_horde_api.apimodels.generate.submit import ImageGenerationJobSubmitRequest
+from horde_sdk.ai_horde_api.apimodels.workers.messages import _ResponseModelMessageData, ResponseModelMessage
 from horde_sdk.ai_horde_api.consts import (
     GENERATION_STATE,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import GenerationID
-from horde_sdk.consts import HTTPMethod
+from horde_sdk.consts import _ANONYMOUS_MODEL, _MODEL_OVERLOADED, HTTPMethod
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_FACEFIXERS, KNOWN_UPSCALERS
 from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 from horde_sdk.generic_api.apimodels import (
@@ -33,7 +34,10 @@ from horde_sdk.generic_api.apimodels import (
 
 
 class NoValidRequestFound(HordeAPIObjectBaseModel):
-    """Base class for the number of jobs a worker skipped for, and why."""
+    """Base class for the number of jobs a worker skipped for, and why.
+
+    v2 API Model: `NoValidRequestFound`
+    """
 
     blacklist: int | None = Field(default=None, ge=0)
     """How many waiting requests were skipped because they demanded a generation with a word that this worker does
@@ -220,6 +224,21 @@ class ExtraSourceImageMixin(ResponseRequiringDownloadMixin):
         )
 
 
+class PopResponseModelMessage(_ResponseModelMessageData):
+    """The message data which appears in a job pop response."""
+
+    id_: str | None = Field(default=None, alias="id")
+    """The ID of the message."""
+
+    expiry: str | None = None
+    """The time at which this message expires."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return _MODEL_OVERLOADED
+
+
 class ImageGenerateJobPopResponse(
     HordeResponseBaseModel,
     ResponseRequiringFollowUpMixin,
@@ -263,6 +282,9 @@ class ImageGenerateJobPopResponse(
     """The r2 upload links for each this image. Each index matches the ID in self.ids"""
     ttl: int | None = None
     """The amount of seconds before this job is considered stale and aborted."""
+
+    messages: list[PopResponseModelMessage] | None = None
+    """The messages that have been sent to this worker."""
 
     @field_validator("source_processing")
     def source_processing_must_be_known(cls, v: str | KNOWN_SOURCE_PROCESSING) -> str | KNOWN_SOURCE_PROCESSING:

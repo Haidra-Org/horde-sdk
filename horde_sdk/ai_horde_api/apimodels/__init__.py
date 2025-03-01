@@ -112,6 +112,7 @@ from horde_sdk.ai_horde_api.apimodels.generate.rate import (
 )
 from horde_sdk.ai_horde_api.apimodels.generate.status import (
     DeleteImageGenerateRequest,
+    Generation,
     ImageGenerateStatusRequest,
     ImageGenerateStatusResponse,
     ImageGeneration,
@@ -493,6 +494,7 @@ __all__ = [
     "RateRequest",
     "RateResponse",
     "DeleteImageGenerateRequest",
+    "Generation",
     "ImageGenerateStatusRequest",
     "ImageGenerateStatusResponse",
     "ImageGeneration",

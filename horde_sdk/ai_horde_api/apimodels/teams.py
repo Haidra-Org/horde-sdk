@@ -2,7 +2,7 @@ from pydantic import Field
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import ActiveModelLite, BaseAIHordeRequest
-from horde_sdk.ai_horde_api.apimodels.workers.workers import TeamDetailsLite
+from horde_sdk.ai_horde_api.apimodels.workers.workers import TeamDetailsLite, WorkerDetailLite
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
@@ -55,7 +55,7 @@ class TeamDetails(HordeResponseBaseModel, TeamDetailsLite):
         examples=[10],
     )
     """How many workers have been dedicated to this team."""
-    workers: list[ActiveModelLite] | None = None
+    workers: list[WorkerDetailLite] | None = None
     """The workers that have been dedicated to this team."""
 
     @override
