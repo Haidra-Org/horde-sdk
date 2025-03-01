@@ -10,11 +10,11 @@ from PIL.Image import Image
 from horde_sdk import ANON_API_KEY, RequestErrorResponse
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIAsyncClientSession, AIHordeAPIAsyncSimpleClient
 from horde_sdk.ai_horde_api.apimodels import (
-    KNOWN_ALCHEMY_TYPES,
     AlchemyAsyncRequest,
     AlchemyAsyncRequestFormItem,
     AlchemyStatusResponse,
 )
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
 
 
 async def async_alchemy_example(
@@ -35,7 +35,7 @@ async def async_alchemy_example(
         source_image_base64: str = base64.b64encode(input_image_path.read_bytes()).decode()
 
         status_response: AlchemyStatusResponse | RequestErrorResponse
-        status_response, job_id = await simple_client.alchemy_request(
+        status_response, gen_id = await simple_client.alchemy_request(
             AlchemyAsyncRequest(
                 apikey=apikey,
                 forms=[
@@ -57,9 +57,9 @@ async def async_alchemy_example(
             example_path = Path("requested_images")
             example_path.mkdir(exist_ok=True, parents=True)
 
-            upscale_result_image.save(example_path / f"{job_id}_{upscale_result.upscaler_used}.webp")
+            upscale_result_image.save(example_path / f"{gen_id}_{upscale_result.upscaler_used}.webp")
 
-            logger.info(f"Upscaled image saved to {example_path / f'{job_id}_{upscale_result.upscaler_used}.webp'}")
+            logger.info(f"Upscaled image saved to {example_path / f'{gen_id}_{upscale_result.upscaler_used}.webp'}")
 
 
 if __name__ == "__main__":

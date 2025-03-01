@@ -5,17 +5,19 @@ from __future__ import annotations
 import abc
 import base64
 import os
+import time
 import uuid
 from typing import Any, TypeVar
 
 import aiohttp
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, Field, RootModel, field_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, RootModel, field_validator
 from typing_extensions import override
 
 from horde_sdk import _default_sslcontext
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.consts import ANON_API_KEY
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
@@ -129,6 +131,13 @@ class HordeAPIMessage(HordeAPIObject):
 class HordeResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
 
+    _time_constructed: float = PrivateAttr(default_factory=lambda: time.time())
+
+    @property
+    def time_constructed(self) -> float:
+        """The time the model was constructed (in epoch time)."""
+        return self._time_constructed
+
 
 T = TypeVar("T")
 
@@ -186,11 +195,11 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
     """Represents any response from any Horde API which requires a follow up request of some kind."""
 
     @abc.abstractmethod
-    def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
+    def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, Any]]:
         """Return the information required from this response to submit a follow up request.
 
         Note that this dict uses the alias field names (as seen on the API), not the python field names.
-        JobIDs will be returned as `{"id": "00000000-0000-0000-0000-000000000000"}` instead of
+        GenerationIDs will be returned as `{"id": "00000000-0000-0000-0000-000000000000"}` instead of
         `{"id_": "00000000-0000-0000-0000-000000000000"}`.
 
         Returns:
@@ -374,6 +383,31 @@ class ContainsMessageResponseMixin(HordeAPIData):
     """A message from the API. This is typically an error or warning message, but may also be informational."""
 
 
+class RequestSingleWarning(HordeAPIObjectBaseModel):
+    """Represents a single warning from the API."""
+
+    message: str | None = None
+    """A message from the API. This is typically an error or warning message, but may also be informational."""
+
+    code: str | None = None
+    """The code associated with this warning."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "RequestSingleWarning"
+
+
+@Unhashable
+@Unequatable
+class ContainsWarningsResponseMixin(HordeAPIData):
+    """Represents any response from any Horde API which contains warnings."""
+
+    warnings: list[RequestSingleWarning] | None = None
+    """A list of warnings from the API. This is typically an error or warning message,
+    but may also be informational."""
+
+
 class RequestErrorResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
     """The catch all error response for any request to any Horde API.
 
@@ -531,7 +565,7 @@ class APIKeyAllowedInRequestMixin(HordeAPIObjectBaseModel):
         return v
 
 
-class RequestSpecifiesUserIDMixin(HordeAPIData):
+class MessageSpecifiesUserIDMixin(HordeAPIData):
     """Mix-in class to describe an endpoint for which you can specify a user."""
 
     user_id: str
@@ -571,17 +605,23 @@ class RequestUsesWorkerMixin(HordeAPIData):
 
 
 __all__ = [
-    "APIKeyAllowedInRequestMixin",
-    "HordeRequest",
-    "HordeResponse",
-    "HordeResponseBaseModel",
-    "HordeResponseRootModel",
-    "ContainsMessageResponseMixin",
     "HordeAPIObject",
+    "HordeAPIObjectBaseModel",
+    "HordeAPIData",
     "HordeAPIMessage",
-    "RequestErrorResponse",
-    "RequestSpecifiesUserIDMixin",
-    "RequestUsesWorkerMixin",
+    "HordeResponse",
+    "HordeResponseRootModel",
+    "HordeResponseBaseModel",
+    "HordeResponseTypes",
     "ResponseRequiringFollowUpMixin",
     "ResponseWithProgressMixin",
+    "ResponseRequiringDownloadMixin",
+    "ContainsMessageResponseMixin",
+    "RequestSingleWarning",
+    "ContainsWarningsResponseMixin",
+    "RequestErrorResponse",
+    "HordeRequest",
+    "APIKeyAllowedInRequestMixin",
+    "MessageSpecifiesUserIDMixin",
+    "RequestUsesWorkerMixin",
 ]

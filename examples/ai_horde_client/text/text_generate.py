@@ -4,7 +4,7 @@ from pathlib import Path
 from loguru import logger
 
 from horde_sdk import ANON_API_KEY
-from horde_sdk.ai_horde_api import JobID
+from horde_sdk.ai_horde_api import GenerationID
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPISimpleClient
 from horde_sdk.ai_horde_api.apimodels import (
     ModelGenerationInputKobold,
@@ -23,9 +23,9 @@ def simple_generate_example(api_key: str = ANON_API_KEY) -> None:
     simple_client = AIHordeAPISimpleClient()
 
     status_response: TextGenerateStatusResponse
-    job_id: JobID
+    gen_id: GenerationID
 
-    status_response, job_id = simple_client.text_generate_request(
+    status_response, gen_id = simple_client.text_generate_request(
         TextGenerateAsyncRequest(
             apikey=api_key,
             prompt="Hello, world!",
@@ -66,7 +66,7 @@ def simple_generate_example(api_key: str = ANON_API_KEY) -> None:
     if len(status_response.generations) == 0:
         raise ValueError("No generations returned in the response.")
 
-    logger.debug(f"Job ID: {job_id}")
+    logger.debug(f"Job ID: {gen_id}")
     logger.debug(f"Response: {status_response}")
 
     text_generated = status_response.generations[0].text
@@ -76,7 +76,7 @@ def simple_generate_example(api_key: str = ANON_API_KEY) -> None:
     example_path = Path("requested_text")
     example_path.mkdir(exist_ok=True, parents=True)
 
-    with open(example_path / f"{job_id}_simple_sync_example.txt", "w") as f:
+    with open(example_path / f"{gen_id}_simple_sync_example.txt", "w") as f:
         f.write(status_response.model_dump_json(indent=4))
 
 

@@ -181,19 +181,19 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
             return obj.__module__ + "." + obj.__name__
         raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
-    with open("docs/api_to_sdk_payload_map.json", "w") as f:
+    with open("docs/ai-horde/api_to_sdk_payload_map.json", "w") as f:
         f.write(json.dumps(api_to_sdk_payload_model_map, indent=4, default=json_serializer))
         f.write("\n")
 
-    with open("docs/api_to_sdk_response_map.json", "w") as f:
+    with open("docs/ai-horde/api_to_sdk_response_map.json", "w") as f:
         f.write(json.dumps(api_to_sdk_response_model_map, indent=4, default=json_serializer))
         f.write("\n")
 
-    with open("docs/request_field_names_and_descriptions.json", "w") as f:
+    with open("docs/ai-horde/request_field_names_and_descriptions.json", "w") as f:
         f.write(json.dumps(request_field_names_and_descriptions, indent=4, default=json_serializer))
         f.write("\n")
 
-    with open("docs/response_field_names_and_descriptions.json", "w") as f:
+    with open("docs/ai-horde/response_field_names_and_descriptions.json", "w") as f:
         f.write(json.dumps(response_field_names_and_descriptions, indent=4, default=json_serializer))
         f.write("\n")
 

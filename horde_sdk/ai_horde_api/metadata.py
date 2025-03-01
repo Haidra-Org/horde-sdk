@@ -26,10 +26,18 @@ class AIHordePathData(GenericPathFields):
     """The name of a model."""
     ipaddr = auto()
     """An IP address."""
+    message_id = auto()
+    """The ID of a message."""
+    style_id = auto()
+    """The ID of a style."""
+    style_name = auto()
+    """The name of a style."""
+    collection_id = auto()
+    """The ID of a collection."""
 
 
 class AIHordeQueryData(GenericQueryFields):
     """AI Horde specific query data. See parent class for more information."""
 
-    model_state = auto()
+    api_model_state = "model_state"
     """The level of official support by the API."""

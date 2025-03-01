@@ -26,13 +26,21 @@
         "dynatemp_range": 0.0,
         "dynatemp_exponent": 1.0,
         "n": 1,
-        "max_context_length": 1024,
+        "max_context_length": 2048,
         "max_length": 80,
         "prompt": ""
     },
-    "id": "",
+    "id": "00000000-0000-0000-0000-000000000000",
     "ids": [
         "00000000-0000-0000-0000-000000000000"
+    ],
+    "messages": [
+        {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "message": "Hello Worker!",
+            "origin": "moderator",
+            "expiry": "2021-01-01T00:00:00Z"
+        }
     ],
     "ttl": 0,
     "extra_source_images": [

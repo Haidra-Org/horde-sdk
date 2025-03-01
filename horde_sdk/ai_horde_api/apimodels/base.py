@@ -12,20 +12,21 @@ from pydantic import ConfigDict, Field, field_validator, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.consts import (
-    KNOWN_CONTROLNETS,
-    KNOWN_FACEFIXERS,
-    KNOWN_MISC_POST_PROCESSORS,
-    KNOWN_SAMPLERS,
-    KNOWN_UPSCALERS,
-    KNOWN_WORKFLOWS,
     METADATA_TYPE,
     METADATA_VALUE,
+    MODEL_TYPE,
     POST_PROCESSOR_ORDER_TYPE,
     WarningCode,
-    _all_valid_post_processors_names_and_values,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
-from horde_sdk.ai_horde_api.fields import JobID, WorkerID
+from horde_sdk.ai_horde_api.fields import GenerationID, SharedKeyID, WorkerID
+from horde_sdk.generation_parameters.alchemy.consts import (
+    KNOWN_FACEFIXERS,
+    KNOWN_MISC_POST_PROCESSORS,
+    KNOWN_UPSCALERS,
+    _all_valid_post_processors_names_and_values,
+)
+from horde_sdk.generation_parameters.image.consts import KNOWN_CONTROLNETS, KNOWN_SAMPLERS, KNOWN_WORKFLOWS
 from horde_sdk.generic_api.apimodels import (
     HordeAPIData,
     HordeAPIObjectBaseModel,
@@ -46,15 +47,15 @@ class BaseAIHordeRequest(HordeRequest):
 class JobRequestMixin(HordeAPIData):
     """Mix-in class for data relating to any generation jobs."""
 
-    id_: JobID = Field(alias="id")
+    id_: GenerationID = Field(alias="id")
     """The UUID for this job. Use this to post the results in the future."""
 
     @field_validator("id_", mode="before")
-    def validate_id(cls, v: str | JobID) -> JobID | str:
+    def validate_id(cls, v: str | GenerationID) -> GenerationID | str:
         """Ensure that the job ID is not empty."""
         if isinstance(v, str) and v == "":
             logger.warning("Job ID is empty")
-            return JobID(root=uuid.uuid4())
+            return GenerationID(root=uuid.uuid4())
 
         return v
 
@@ -70,15 +71,15 @@ class JobRequestMixin(HordeAPIData):
 class JobResponseMixin(HordeAPIData):
     """Mix-in class for data relating to any generation jobs."""
 
-    id_: JobID = Field(alias="id")
+    id_: GenerationID = Field(alias="id")
     """The UUID for this job."""
 
     @field_validator("id_", mode="before")
-    def validate_id(cls, v: str | JobID) -> JobID | str:
+    def validate_id(cls, v: str | GenerationID) -> GenerationID | str:
         """Ensure that the job ID is not empty."""
         if isinstance(v, str) and v == "":
             logger.warning("Job ID is empty")
-            return JobID(root=uuid.uuid4())
+            return GenerationID(root=uuid.uuid4())
 
         return v
 
@@ -227,33 +228,25 @@ class SingleWarningEntry(HordeAPIObjectBaseModel):
         return "RequestSingleWarning"
 
 
-class ImageGenerateParamMixin(HordeAPIObjectBaseModel):
-    """Mix-in class of some of the data included in a request to the `/v2/generate/async` endpoint.
+class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
+    """Base class for all shared image generation parameters."""
 
-    Also is the corresponding information returned on a job pop to the `/v2/generate/pop` endpoint.
-    v2 API Model: `ModelPayloadRootStable`
-    """
-
-    model_config = (
-        ConfigDict(frozen=True, extra="allow")
-        if not os.getenv("TESTS_ONGOING")
-        else ConfigDict(frozen=True, extra="forbid")
-    )
-
-    sampler_name: KNOWN_SAMPLERS | str = KNOWN_SAMPLERS.k_lms
-    """The sampler to use for this generation. Defaults to `KNOWN_SAMPLERS.k_lms`."""
-    cfg_scale: float = 7.5
-    """The cfg_scale to use for this generation. Defaults to 7.5."""
-    denoising_strength: float | None = Field(default=1, ge=0, le=1)
-    """The denoising strength to use for this generation. Defaults to 1."""
-    seed: str | None = None
-    """The seed to use for this generation. If not provided, a random seed will be used."""
     height: int = Field(default=512, ge=64, le=3072)
     """The desired output image height."""
     width: int = Field(default=512, ge=64, le=3072)
     """The desired output image width."""
-    seed_variation: int | None = Field(default=None, ge=1, le=1000)
-    """Deprecated."""
+
+    sampler_name: KNOWN_SAMPLERS | str = KNOWN_SAMPLERS.k_lms
+    """The sampler to use for this generation. Defaults to `KNOWN_SAMPLERS.k_lms`."""
+    karras: bool = True
+    """Set to True if you want to use the Karras scheduling."""
+    cfg_scale: float = 7.5
+    """The cfg_scale to use for this generation. Defaults to 7.5."""
+    denoising_strength: float | None = Field(default=1, ge=0, le=1)
+    """The denoising strength to use for this generation. Defaults to 1."""
+    clip_skip: int = Field(default=1, ge=1, le=12)
+    """The number of clip layers to skip."""
+
     post_processing: list[str | KNOWN_UPSCALERS | KNOWN_FACEFIXERS | KNOWN_MISC_POST_PROCESSORS] = Field(
         default_factory=list,
     )
@@ -261,38 +254,44 @@ class ImageGenerateParamMixin(HordeAPIObjectBaseModel):
     post_processing_order: POST_PROCESSOR_ORDER_TYPE = POST_PROCESSOR_ORDER_TYPE.facefixers_first
     """The order in which to apply post-processing models.
     Applying upscalers or removing backgrounds before facefixers costs less kudos."""
-    karras: bool = True
-    """Set to True if you want to use the Karras scheduling."""
-    tiling: bool = False
-    """Set to True if you want to use seamless tiling."""
+    facefixer_strength: float | None = Field(default=None, ge=0, le=1)
+    """The strength of the facefixer model."""
+
     hires_fix: bool = False
     """Set to True if you want to use the hires fix."""
     hires_fix_denoising_strength: float | None = Field(default=None, ge=0, le=1)
     """The strength of the denoising for the hires fix second pass."""
-    clip_skip: int = Field(default=1, ge=1, le=12)
-    """The number of clip layers to skip."""
-    control_type: str | KNOWN_CONTROLNETS | None = None
-    """The type of control net type to use."""
-    image_is_control: bool | None = None
-    """Set to True if the image is a control image."""
-    return_control_map: bool | None = None
-    """Set to True if you want the ControlNet map returned instead of a generated image."""
-    facefixer_strength: float | None = Field(default=None, ge=0, le=1)
-    """The strength of the facefixer model."""
+
     loras: list[LorasPayloadEntry] | None = None
     """A list of lora parameters to use."""
     tis: list[TIPayloadEntry] | None = None
     """A list of textual inversion (embedding) parameters to use."""
-    extra_texts: list[ExtraTextEntry] | None = None
-    """A list of extra texts and prompts to use in the comfyUI workflow."""
+
     workflow: str | KNOWN_WORKFLOWS | None = None
     """The specific comfyUI workflow to use."""
     transparent: bool | None = None
     """When true, will generate an image with a transparent background"""
+    tiling: bool = False
+    """Set to True if you want to use seamless tiling."""
+
     special: dict[Any, Any] | None = None
     """Reserved for future use."""
-    use_nsfw_censor: bool = False
-    """If the request is SFW, and the worker accidentally generates NSFW, it will send back a censored image."""
+
+    @field_validator("post_processing")
+    def post_processors_must_be_known(
+        cls,
+        v: list[str | KNOWN_UPSCALERS | KNOWN_FACEFIXERS | KNOWN_MISC_POST_PROCESSORS],
+    ) -> list[str | KNOWN_UPSCALERS | KNOWN_FACEFIXERS | KNOWN_MISC_POST_PROCESSORS]:
+        """Ensure that the post processors are in this list of supported post processors."""
+        _valid_types: list[type] = [str, KNOWN_UPSCALERS, KNOWN_FACEFIXERS, KNOWN_MISC_POST_PROCESSORS]
+        for post_processor in v:
+            if post_processor not in _all_valid_post_processors_names_and_values or (
+                type(post_processor) not in _valid_types
+            ):
+                logger.warning(
+                    f"Unknown post processor {post_processor}. Is your SDK out of date or did the API change?",
+                )
+        return v
 
     @field_validator("width", "height", mode="before")
     def width_divisible_by_64(cls, value: int) -> int:
@@ -314,11 +313,46 @@ class ImageGenerateParamMixin(HordeAPIObjectBaseModel):
 
         return v
 
+
+class ImageGenerateParamMixin(_BaseImageGenerateParamMixin):
+    """Contains basic and api-specific parameters for image generation.
+
+    v2 API Model: `ModelPayloadRootStable`
+    """
+
+    model_config = (
+        ConfigDict(frozen=True, extra="allow")
+        if not os.getenv("TESTS_ONGOING")
+        else ConfigDict(frozen=True, extra="forbid")
+    )
+
+    seed: str | None = None
+    """The seed to use for this generation. If not provided, a random seed will be used."""
+    seed_variation: int | None = Field(default=None, ge=1, le=1000)
+    """Deprecated."""
+
+    control_type: str | KNOWN_CONTROLNETS | None = None
+    """The type of control net type to use."""
+    image_is_control: bool | None = None
+    """Set to True if the image is a control image."""
+    return_control_map: bool | None = None
+    """Set to True if you want the ControlNet map returned instead of a generated image."""
+
+    extra_texts: list[ExtraTextEntry] | None = None
+    """A list of extra texts and prompts to use in the comfyUI workflow."""
+    use_nsfw_censor: bool = False
+    """If the request is SFW, and the worker accidentally generates NSFW, it will send back a censored image."""
+
     # @model_validator(mode="after")
     # def validate_hires_fix(self) -> ImageGenerateParamMixin:
     #     if self.hires_fix and (self.width < 512 or self.height < 512):
     #         raise ValueError("hires_fix is only valid when width and height are both >= 512")
     #     return self
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ModelPayloadRootStable"
 
     @field_validator("seed")
     def random_seed_if_none(cls, v: str | None) -> str | None:
@@ -328,22 +362,6 @@ class ImageGenerateParamMixin(HordeAPIObjectBaseModel):
             logger.debug(f"Using random seed ({random_seed})")
             return random_seed
 
-        return v
-
-    @field_validator("post_processing")
-    def post_processors_must_be_known(
-        cls,
-        v: list[str | KNOWN_UPSCALERS | KNOWN_FACEFIXERS | KNOWN_MISC_POST_PROCESSORS],
-    ) -> list[str | KNOWN_UPSCALERS | KNOWN_FACEFIXERS | KNOWN_MISC_POST_PROCESSORS]:
-        """Ensure that the post processors are in this list of supported post processors."""
-        _valid_types: list[type] = [str, KNOWN_UPSCALERS, KNOWN_FACEFIXERS, KNOWN_MISC_POST_PROCESSORS]
-        for post_processor in v:
-            if post_processor not in _all_valid_post_processors_names_and_values or (
-                type(post_processor) not in _valid_types
-            ):
-                logger.warning(
-                    f"Unknown post processor {post_processor}. Is your SDK out of date or did the API change?",
-                )
         return v
 
     @field_validator("control_type")
@@ -361,14 +379,13 @@ class ImageGenerateParamMixin(HordeAPIObjectBaseModel):
 
         return v
 
-    @override
-    @classmethod
-    def get_api_model_name(cls) -> str | None:
-        return "ModelPayloadRootStable"
-
 
 class JobSubmitResponse(HordeResponseBaseModel):
-    """The response to a job submission request, indicating the number of kudos gained.
+    """Indicates that a generation job was successfully submitted and the amount of kudos gained.
+
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/generate/text/submit | TextGenerationJobSubmitRequest [POST] -> 200
+        - /v2/generate/submit | ImageGenerationJobSubmitRequest [POST] -> 200
 
     v2 API Model: `GenerationSubmitted`
     """
@@ -417,3 +434,94 @@ class GenMetadataEntry(HordeAPIObjectBaseModel):
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "GenerationMetadataStable"
+
+
+class MessageSpecifiesSharedKeyMixin(HordeAPIData):
+    """Mix-in class to describe an endpoint for which you can specify a shared key."""
+
+    sharedkey_id: SharedKeyID = Field(alias="id")
+    """The shared key ID to use for this request."""
+
+    @field_validator("sharedkey_id", mode="before")
+    def validate_sharedkey_id(cls, v: str | SharedKeyID) -> SharedKeyID | str:
+        """Ensure that the shared key ID is not empty."""
+        if isinstance(v, str) and v == "":
+            logger.warning("Shared key ID is empty")
+
+        return v
+
+
+class ActiveModelLite(HordeAPIObjectBaseModel):
+    """Represents a single active model.
+
+    v2 API Model: `ActiveModelLite`
+    """
+
+    count: int | None = Field(
+        default=None,
+    )
+    """How many of workers in this horde are running this model."""
+    name: str | None = Field(
+        default=None,
+    )
+    """The Name of a model available by workers in this horde."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ActiveModelLite"
+
+
+class ActiveModel(ActiveModelLite):
+    """Represents a single active model.
+
+    v2 API Model: `ActiveModel`
+    """
+
+    eta: int | None = Field(
+        default=None,
+    )
+    """Estimated time in seconds for this model's queue to be cleared."""
+    jobs: float | None = Field(
+        default=None,
+    )
+    """The job count waiting to be generated by this model."""
+    performance: float | None = Field(
+        default=None,
+    )
+    """The average speed of generation for this model."""
+    queued: float | None = Field(
+        default=None,
+    )
+    """The amount waiting to be generated by this model."""
+    type_: MODEL_TYPE | None = Field(
+        examples=[MODEL_TYPE.image, MODEL_TYPE.text],
+        alias="type",
+    )
+    """The model type (text or image)."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "ActiveModel"
+
+
+__all__ = [
+    "BaseAIHordeRequest",
+    "JobRequestMixin",
+    "JobResponseMixin",
+    "WorkerRequestMixin",
+    "WorkerRequestNameMixin",
+    "LorasPayloadEntry",
+    "TIPayloadEntry",
+    "ExtraSourceImageEntry",
+    "ExtraTextEntry",
+    "SingleWarningEntry",
+    "_BaseImageGenerateParamMixin",
+    "ImageGenerateParamMixin",
+    "JobSubmitResponse",
+    "GenMetadataEntry",
+    "MessageSpecifiesSharedKeyMixin",
+    "ActiveModelLite",
+    "ActiveModel",
+]

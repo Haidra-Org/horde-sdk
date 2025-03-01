@@ -81,14 +81,14 @@ def api_to_sdk_map_create_markdown() -> None:
     api_to_sdk_payload_map: dict[str, dict[str, str]] = {}
     api_to_sdk_response_map: dict[str, dict[str, str]] = {}
 
-    with open("docs/api_to_sdk_payload_map.json") as f:
+    with open("docs/ai-horde/api_to_sdk_payload_map.json") as f:
         api_to_sdk_payload_map = json.load(f)
 
-    with open("docs/api_to_sdk_response_map.json") as f:
+    with open("docs/ai-horde/api_to_sdk_response_map.json") as f:
         api_to_sdk_response_map = json.load(f)
 
     # Write the mapping page with the API Endpoint sorted alphabetically
-    with open("docs/api_to_sdk_map.md", "w") as f:
+    with open("docs/ai-horde/api_to_sdk_map.md", "w") as f:
         f.write("# AI-Horde API Model to SDK Class Map\n")
         f.write("This is a mapping of the AI-Horde API models (defined at ")
         f.write("[https://stablehorde.net/api/](https://stablehorde.net/api/), see also ")

@@ -16,8 +16,8 @@ from strenum import StrEnum
 from typing_extensions import override
 
 from horde_sdk import _default_sslcontext
-from horde_sdk.ai_horde_api.exceptions import AIHordePayloadValidationError
 from horde_sdk.consts import HTTPMethod
+from horde_sdk.exceptions import PayloadValidationError
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     HordeRequest,
@@ -94,7 +94,7 @@ class BaseHordeAPIClient(ABC):
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
         ssl_context: SSLContext = _default_sslcontext,
-        **kwargs: Any,  # noqa: ANN401
+        **kwargs: Any,  # noqa: ANN401 # FIXME
     ) -> None:
         """Initialize a new `GenericHordeAPIClient` instance.
 
@@ -154,7 +154,6 @@ class BaseHordeAPIClient(ABC):
 
         Args:
             api_request (HordeRequest): The `HordeRequest` instance to be validated and prepared.
-            expected_response_type (type[HordeResponse]): The expected response type.
 
         Returns:
             _ParsedRequest: A `_ParsedRequest` instance with the extracted data to be sent in the request.
@@ -213,6 +212,9 @@ class BaseHordeAPIClient(ABC):
             if request_key in specified_headers:
                 request_headers_dict[specified_headers[request_key]] = request_value
                 continue
+            if request_key in specified_queries:
+                request_queries_dict[specified_queries[request_key]] = request_value
+                continue
             if request_key in extra_header_keys:
                 # Remove any trailing underscores from the key as they are used to avoid python keyword conflicts
                 api_name = request_key if not request_key.endswith("_") else request_key[:-1]
@@ -220,10 +222,6 @@ class BaseHordeAPIClient(ABC):
                 request_headers_dict[api_name] = request_value
 
                 continue
-            if request_key in specified_queries:
-                request_queries_dict[specified_queries[request_key]] = request_value
-                continue
-
             if request_key in extra_query_keys:
                 # Remove any trailing underscores from the key as they are used to avoid python keyword conflicts
                 api_name = request_key if not request_key.endswith("_") else request_key[:-1]
@@ -277,7 +275,7 @@ class BaseHordeAPIClient(ABC):
         # If so, return a RequestErrorResponse
         if returned_status_code >= 400:
             if "errors" in raw_response_json:
-                raise AIHordePayloadValidationError(
+                raise PayloadValidationError(
                     raw_response_json.get("errors", ""),
                     raw_response_json.get("message", ""),
                 )
@@ -404,7 +402,8 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
 
     _aiohttp_session: aiohttp.ClientSession
 
-    def __init__(  # noqa: D107
+    @override
+    def __init__(
         self,
         *,
         apikey: str | None = None,
@@ -414,7 +413,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
         ssl_context: SSLContext = _default_sslcontext,
-        **kwargs: Any,  # noqa: ANN401
+        **kwargs: Any,
     ) -> None:
         super().__init__(
             apikey=apikey,
@@ -422,6 +421,7 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
             path_fields=path_fields,
             query_fields=query_fields,
             accept_types=accept_types,
+            ssl_context=ssl_context,
             **kwargs,
         )
         self._aiohttp_session = aiohttp_session
@@ -512,7 +512,8 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         )
         self._pending_follow_ups = []
 
-    def submit_request(  # noqa: D102
+    @override
+    def submit_request(
         self,
         api_request: HordeRequest,
         expected_response_type: type[HordeResponseTypeVar],
@@ -672,7 +673,8 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
     it."""
     _pending_follow_ups_lock: asyncio.Lock = asyncio.Lock()
 
-    def __init__(  # noqa: D107
+    @override
+    def __init__(
         self,
         aiohttp_session: aiohttp.ClientSession,
         *,

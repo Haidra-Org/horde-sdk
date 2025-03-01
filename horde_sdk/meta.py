@@ -4,17 +4,20 @@ import pkgutil
 import types
 from functools import cache
 
+from loguru import logger
+
 import horde_sdk
 import horde_sdk.ai_horde_api
 import horde_sdk.ai_horde_api.apimodels
-import horde_sdk.ai_horde_worker
 import horde_sdk.generic_api
 import horde_sdk.generic_api.apimodels
 import horde_sdk.ratings_api
 import horde_sdk.ratings_api.apimodels
+import horde_sdk.worker
 from horde_sdk import HordeAPIObject, HordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH, get_ai_horde_swagger_url
-from horde_sdk.generic_api.apimodels import HordeAPIData
+from horde_sdk.consts import HTTPMethod, HTTPStatusCode
+from horde_sdk.generic_api.apimodels import HordeAPIData, HordeResponse
 from horde_sdk.generic_api.utils.swagger import SwaggerParser
 
 
@@ -170,6 +173,8 @@ def all_models_missing_docstrings() -> set[type]:
     all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
     all_classes += find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIData)
 
+    all_classes = list(set(all_classes))
+
     missing_docstrings = set()
 
     for class_type in all_classes:
@@ -185,6 +190,8 @@ def all_model_and_fields_missing_docstrings() -> dict[type, set[str]]:
     all_classes += find_subclasses(horde_sdk.generic_api.apimodels, HordeAPIData)
     all_classes += find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
     all_classes += find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIData)
+
+    all_classes = list(set(all_classes))
 
     missing_docstrings: dict[type, set[str]] = {}
 
@@ -203,3 +210,297 @@ def all_model_and_fields_missing_docstrings() -> dict[type, set[str]]:
             missing_docstrings[class_type] = missing_fields
 
     return missing_docstrings
+
+
+class FoundResponseInfo:
+    """A class to store information about a found response class (type)."""
+
+    def __init__(
+        self,
+        *,
+        response: type[HordeResponse],
+        api_model_name: str | None,
+        parent_request: type[HordeRequest],
+        http_status_code: HTTPStatusCode,
+        endpoint: str,
+        http_method: HTTPMethod,
+    ) -> None:
+        """Initialize the FoundResponseInfo object.
+
+        Args:
+            response (type[HordeResponse]): The response class.
+            api_model_name (str | None): The API model name
+            parent_request (type[HordeRequest]): The parent request class.
+            http_status_code (HTTPStatusCode): The HTTP status code.
+            endpoint (str): The endpoint.
+            http_method (HTTPMethod): The HTTP method.
+        """
+        self.response = response
+        self.api_model_name = api_model_name
+        self.parent_request = parent_request
+        self.http_status_code = http_status_code
+        self.endpoint = endpoint
+        self.http_method = http_method
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, FoundResponseInfo):
+            return False
+
+        return (
+            self.response is other.response
+            and self.api_model_name == other.api_model_name
+            and self.parent_request is other.parent_request
+            and self.http_status_code == other.http_status_code
+            and self.endpoint == other.endpoint
+            and self.http_method == other.http_method
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.response, self.parent_request, self.http_status_code, self.endpoint, self.http_method))
+
+
+class FoundMixinInfo:
+    """A class to store information about a found mixin class (type)."""
+
+    def __init__(
+        self,
+        *,
+        mixin: type,
+        api_model_name: str | None,
+    ) -> None:
+        """Initialize the FoundMixinInfo object.
+
+        Args:
+            mixin (type): The mixin class.
+            api_model_name (str | None): The API model name
+        """
+        self.mixin = mixin
+        self.api_model_name = api_model_name
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, FoundMixinInfo):
+            return False
+
+        return self.mixin is other.mixin and self.api_model_name == other.api_model_name
+
+    def __hash__(self) -> int:
+        return hash((self.mixin, self.api_model_name))
+
+
+def all_models_non_conforming_docstrings() -> dict[type, tuple[str | None, str | None]]:
+    """Return all of the models that do not have a v2 API model."""
+    all_classes: list[type[HordeAPIObject] | type[HordeAPIData]]
+    all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
+
+    request_docstring_template = "Represents a {http_method} request to the {endpoint} endpoint."
+    response_docstring_template_single = (
+        "Represents the data returned from the {endpoint} endpoint with http status code {http_status_code}."
+    )
+    endpoint_status_codes_pairs_template = (
+        "        - {endpoint} | {request_type} [{http_method}] -> {http_status_code}\n"
+    )
+    response_docstring_template_multiple = (
+        "Represents the data returned from the following endpoints and http "
+        "status codes:\n{endpoint_status_codes_pairs}"
+    )
+
+    v2_api_model_template = "\n\n    v2 API Model: `{api_model}`"
+
+    non_conforming_requests: dict[type, tuple[str | None, str | None]] = {}
+    non_conforming_responses: dict[type, tuple[str | None, str | None]] = {}
+    non_conforming_other: dict[type, tuple[str | None, str | None]] = {}
+
+    request_response_map: dict[type[HordeRequest], list[FoundResponseInfo]] = {}
+    response_request_map: dict[type[HordeResponse], list[FoundResponseInfo]] = {}
+
+    def process_request(class_type: type[HordeRequest]) -> None:
+        request_response_map[class_type] = []
+
+        http_method = class_type.get_http_method()
+        endpoint = class_type.get_api_endpoint_subpath()
+
+        expected_request_docstring = request_docstring_template.format(
+            http_method=http_method,
+            endpoint=endpoint,
+        )
+
+        request_api_model_name = class_type.get_api_model_name()
+
+        if request_api_model_name is not None:
+            expected_request_docstring += v2_api_model_template.format(api_model=request_api_model_name)
+
+        expected_request_docstring = expected_request_docstring.replace("\n\n    ", "\n\n")
+
+        original_request_docstring = class_type.__doc__.rstrip() if class_type.__doc__ else ""
+        original_request_docstring = original_request_docstring.replace("\n\n    ", "\n\n")
+
+        if not class_type.__doc__ or not original_request_docstring.endswith(expected_request_docstring):
+            non_conforming_requests[class_type] = (original_request_docstring, expected_request_docstring)
+
+        for response_status_code, response_type in sorted(class_type.get_success_status_response_pairs().items()):
+            if not issubclass(response_type, HordeResponse):
+                raise TypeError(f"Expected {response_type} to be a HordeResponse")
+
+            found_response_info = FoundResponseInfo(
+                response=response_type,
+                api_model_name=response_type.get_api_model_name(),
+                parent_request=class_type,
+                http_status_code=response_status_code,
+                endpoint=endpoint,
+                http_method=http_method,
+            )
+
+            request_response_map[class_type].append(found_response_info)
+
+            if response_type not in response_request_map:
+                response_request_map[response_type] = []
+
+            response_request_map[response_type].append(found_response_info)
+
+    def process_response(response_request_infos: list[FoundResponseInfo]) -> None:
+        endpoint_status_codes_pairs = ""
+
+        if len(response_request_infos) == 1:
+            response_request_info = response_request_infos[0]
+
+            endpoint_status_codes_pairs += endpoint_status_codes_pairs_template.format(
+                endpoint=response_request_info.endpoint,
+                request_type=response_request_info.parent_request.__name__,
+                http_method=response_request_info.http_method,
+                http_status_code=response_request_info.http_status_code,
+            )
+
+            original_expected_response_docstring = response_docstring_template_single.format(
+                endpoint=response_request_info.endpoint,
+                http_status_code=response_request_info.http_status_code,
+            )
+
+            if response_request_info.api_model_name:
+                original_expected_response_docstring += v2_api_model_template.format(
+                    api_model=response_request_info.api_model_name,
+                )
+
+            found_response_type = response_request_info.response
+
+            response_doc_string = found_response_type.__doc__.rstrip() if found_response_type.__doc__ else ""
+            response_doc_string = response_doc_string.replace("\n\n    ", "\n\n")
+            response_doc_string = response_doc_string.replace("\n\n    ", "\n\n")
+
+            # If the expected docstring contains any runs of text which are greater than 119 characters...
+
+            expected_exceeds_119 = False
+
+            for line in original_expected_response_docstring.split("\n"):
+                if len(line) > 119:
+                    expected_exceeds_119 = True
+                    break
+
+            matching_response_docstring = original_expected_response_docstring
+            # Due to the 119 ruff-enforced line limit in source files,
+            # we need to account for the fact that the expected docstring may require an
+            # unspecified (in the format string) line break.
+            if expected_exceeds_119:
+                matching_response_docstring = matching_response_docstring.replace("\n", "")
+                matching_response_docstring = matching_response_docstring.replace(" ", "")
+                response_doc_string = response_doc_string.replace("\n", "")
+                response_doc_string = response_doc_string.replace(" ", "")
+                logger.warning(
+                    f"Docstring for {found_response_type} exceeds 119 characters in places. "
+                    "Please manually verify the whitespace formatting as the testing script may not "
+                    "accurately reflect the expected docstring formatting.",
+                )
+
+            matching_response_docstring = matching_response_docstring.replace("\n\n    ", "\n\n")
+
+            if not found_response_type.__doc__ or not response_doc_string.endswith(
+                matching_response_docstring,
+            ):
+                non_conforming_responses[found_response_type] = (
+                    response_doc_string,
+                    matching_response_docstring,
+                )
+
+        else:
+            last_response_request_info: FoundResponseInfo | None = None
+            for response_request_info in response_request_infos:
+                if (
+                    last_response_request_info is not None
+                    and last_response_request_info.endpoint == response_request_info.endpoint
+                    and last_response_request_info.http_method == response_request_info.http_method
+                    and last_response_request_info.http_status_code == response_request_info.http_status_code
+                    and last_response_request_info.parent_request == response_request_info.parent_request
+                ):
+                    continue
+
+                last_response_request_info = response_request_info
+                endpoint_status_codes_pairs += endpoint_status_codes_pairs_template.format(
+                    endpoint=response_request_info.endpoint,
+                    request_type=response_request_info.parent_request.__name__,
+                    http_method=response_request_info.http_method,
+                    http_status_code=response_request_info.http_status_code,
+                )
+
+            original_expected_response_docstring = response_docstring_template_multiple.format(
+                endpoint_status_codes_pairs=endpoint_status_codes_pairs,
+            )
+
+            if response_request_info.api_model_name:
+                original_expected_response_docstring = original_expected_response_docstring.rstrip()
+                original_expected_response_docstring += v2_api_model_template.format(
+                    api_model=response_request_info.api_model_name,
+                )
+
+            for response_request_info in response_request_infos:
+                found_response_type = response_request_info.response
+
+                response_doc_string = found_response_type.__doc__.rstrip() if found_response_type.__doc__ else ""
+                response_doc_string = response_doc_string.replace("        ", "    ")
+                response_doc_string = response_doc_string.replace("        ", "    ")
+                response_doc_string = response_doc_string.replace("\n\n    ", "\n\n")
+                response_doc_string = response_doc_string.replace("\n\n    ", "\n\n")
+
+                matching_response_docstring = original_expected_response_docstring.replace("\n\n    ", "\n\n")
+                matching_response_docstring = matching_response_docstring.replace("        ", "    ")
+                matching_response_docstring = matching_response_docstring.replace("        ", "    ")
+                matching_response_docstring = matching_response_docstring.replace("        ", "    ")
+
+                if not found_response_type.__doc__ or not response_doc_string.endswith(matching_response_docstring):
+                    non_conforming_responses[found_response_type] = (
+                        response_doc_string,
+                        matching_response_docstring,
+                    )
+
+    def process_other(class_type: type[HordeAPIObject]) -> None:
+        api_model_name = class_type.get_api_model_name()
+
+        expected_other_docstring = v2_api_model_template.format(api_model=api_model_name)
+
+        if not class_type.__doc__:
+            return
+
+        original_other_docstring = class_type.__doc__.rstrip()
+        original_other_docstring = original_other_docstring.replace("\n\n    ", "\n\n")
+
+        expected_other_docstring = expected_other_docstring.replace("\n\n    ", "\n\n")
+        if not original_other_docstring.endswith(expected_other_docstring):
+            non_conforming_other[class_type] = (class_type.__doc__, expected_other_docstring)
+
+    _sorted_all_classes = sorted(all_classes, key=lambda x: x.__name__)
+    _sorted_all_classes.reverse()
+    for class_type in _sorted_all_classes:
+        if issubclass(class_type, HordeResponse):
+            continue
+
+        if issubclass(class_type, HordeRequest):
+            process_request(class_type)
+        elif issubclass(class_type, HordeAPIObject):
+            process_other(class_type)
+
+    for _, response_request_infos in sorted(response_request_map.items(), key=lambda x: x[0].__name__):
+        process_response(response_request_infos)
+
+    return {
+        **non_conforming_requests,
+        **non_conforming_responses,
+        **non_conforming_other,
+    }

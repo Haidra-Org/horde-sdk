@@ -27,7 +27,7 @@
         "dynatemp_range": 0.0,
         "dynatemp_exponent": 1.0,
         "n": 1,
-        "max_context_length": 1024,
+        "max_context_length": 2048,
         "max_length": 80
     },
     "softprompt": "a",
