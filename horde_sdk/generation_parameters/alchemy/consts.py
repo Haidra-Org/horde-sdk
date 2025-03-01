@@ -144,7 +144,7 @@ def is_upscaler_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
     if isinstance(form, KNOWN_ALCHEMY_TYPES):
         value = form.value
 
-    return value in KNOWN_UPSCALERS or value in KNOWN_UPSCALERS.__members__.values()
+    return value in KNOWN_UPSCALERS.__members__ or value in KNOWN_UPSCALERS.__members__.values()
 
 
 def is_facefixer_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
@@ -153,7 +153,7 @@ def is_facefixer_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
     if isinstance(form, KNOWN_ALCHEMY_TYPES):
         value = form.value
 
-    return value in KNOWN_FACEFIXERS or value in KNOWN_FACEFIXERS.__members__.values()
+    return value in KNOWN_FACEFIXERS.__members__ or value in KNOWN_FACEFIXERS.__members__.values()
 
 
 def is_interrogator_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:

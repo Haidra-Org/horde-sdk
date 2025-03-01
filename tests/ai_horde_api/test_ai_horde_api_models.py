@@ -433,7 +433,7 @@ def test_ImageGenerateJobPopResponse() -> None:
     )
 
     assert all(
-        post_processor in KNOWN_UPSCALERS._value2member_map_
+        post_processor in KNOWN_UPSCALERS.__members__.keys() or post_processor in KNOWN_UPSCALERS.__members__.values()
         for post_processor in test_response.payload.post_processing
     )
 
@@ -448,7 +448,10 @@ def test_ImageGenerateJobPopResponse() -> None:
         skipped=ImageGenerateJobPopSkippedStatus(),
     )
 
-    assert all(post_processor in KNOWN_UPSCALERS for post_processor in test_response.payload.post_processing)
+    assert all(
+        post_processor in KNOWN_UPSCALERS.__members__ or post_processor in KNOWN_UPSCALERS.__members__.values()
+        for post_processor in test_response.payload.post_processing
+    )
 
     test_response = ImageGenerateJobPopResponse(
         ids=[
