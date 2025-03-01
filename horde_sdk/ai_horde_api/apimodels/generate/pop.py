@@ -225,7 +225,10 @@ class ExtraSourceImageMixin(ResponseRequiringDownloadMixin):
 
 
 class PopResponseModelMessage(_ResponseModelMessageData):
-    """The message data which appears in a job pop response."""
+    """The message data which appears in a job pop response.
+
+    v2 API Model: `_MODEL_OVERLOADED`
+    """
 
     id_: str | None = Field(default=None, alias="id")
     """The ID of the message."""

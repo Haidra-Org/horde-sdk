@@ -368,6 +368,11 @@ class UpdateCollectionResponse(
     v2 API Model: `StyleModify`
     """
 
+    id_: str = Field(
+        alias="id",
+    )
+    """The ID of the collection that was updated."""
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
