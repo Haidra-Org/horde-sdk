@@ -329,8 +329,13 @@ def all_models_non_conforming_docstrings() -> dict[type, tuple[str | None, str |
         if request_api_model_name is not None:
             expected_request_docstring += v2_api_model_template.format(api_model=request_api_model_name)
 
-        if not class_type.__doc__ or not class_type.__doc__.rstrip().endswith(expected_request_docstring):
-            non_conforming_requests[class_type] = (class_type.__doc__, expected_request_docstring)
+        expected_request_docstring = expected_request_docstring.replace("\n\n    ", "\n\n")
+
+        original_request_docstring = class_type.__doc__.rstrip() if class_type.__doc__ else ""
+        original_request_docstring = original_request_docstring.replace("\n\n    ", "\n\n")
+
+        if not class_type.__doc__ or not original_request_docstring.endswith(expected_request_docstring):
+            non_conforming_requests[class_type] = (original_request_docstring, expected_request_docstring)
 
         for response_status_code, response_type in sorted(class_type.get_success_status_response_pairs().items()):
             if not issubclass(response_type, HordeResponse):
@@ -365,47 +370,54 @@ def all_models_non_conforming_docstrings() -> dict[type, tuple[str | None, str |
                 http_status_code=response_request_info.http_status_code,
             )
 
-            expected_response_docstring = response_docstring_template_single.format(
+            original_expected_response_docstring = response_docstring_template_single.format(
                 endpoint=response_request_info.endpoint,
                 http_status_code=response_request_info.http_status_code,
             )
 
             if response_request_info.api_model_name:
-                expected_response_docstring += v2_api_model_template.format(
+                original_expected_response_docstring += v2_api_model_template.format(
                     api_model=response_request_info.api_model_name,
                 )
 
             found_response_type = response_request_info.response
 
             response_doc_string = found_response_type.__doc__.rstrip() if found_response_type.__doc__ else ""
+            response_doc_string = response_doc_string.replace("\n\n    ", "\n\n")
+            response_doc_string = response_doc_string.replace("\n\n    ", "\n\n")
 
             # If the expected docstring contains any runs of text which are greater than 119 characters...
 
             expected_exceeds_119 = False
 
-            for line in expected_response_docstring.split("\n"):
+            for line in original_expected_response_docstring.split("\n"):
                 if len(line) > 119:
                     expected_exceeds_119 = True
                     break
 
+            matching_response_docstring = original_expected_response_docstring
             # Due to the 119 ruff-enforced line limit in source files,
             # we need to account for the fact that the expected docstring may require an
             # unspecified (in the format string) line break.
             if expected_exceeds_119:
-                response_doc_string = response_doc_string.replace("\n    ", " ")
-                expected_response_docstring = expected_response_docstring.replace("\n    ", " ")
+                matching_response_docstring = matching_response_docstring.replace("\n", "")
+                matching_response_docstring = matching_response_docstring.replace(" ", "")
+                response_doc_string = response_doc_string.replace("\n", "")
+                response_doc_string = response_doc_string.replace(" ", "")
                 logger.warning(
                     f"Docstring for {found_response_type} exceeds 119 characters in places. "
                     "Please manually verify the whitespace formatting as the testing script may not "
                     "accurately reflect the expected docstring formatting.",
                 )
 
+            matching_response_docstring = matching_response_docstring.replace("\n\n    ", "\n\n")
+
             if not found_response_type.__doc__ or not response_doc_string.endswith(
-                expected_response_docstring,
+                matching_response_docstring,
             ):
                 non_conforming_responses[found_response_type] = (
-                    found_response_type.__doc__,
-                    expected_response_docstring,
+                    response_doc_string,
+                    matching_response_docstring,
                 )
 
         else:
@@ -428,13 +440,13 @@ def all_models_non_conforming_docstrings() -> dict[type, tuple[str | None, str |
                     http_status_code=response_request_info.http_status_code,
                 )
 
-            expected_response_docstring = response_docstring_template_multiple.format(
+            original_expected_response_docstring = response_docstring_template_multiple.format(
                 endpoint_status_codes_pairs=endpoint_status_codes_pairs,
             )
 
             if response_request_info.api_model_name:
-                expected_response_docstring = expected_response_docstring.rstrip()
-                expected_response_docstring += v2_api_model_template.format(
+                original_expected_response_docstring = original_expected_response_docstring.rstrip()
+                original_expected_response_docstring += v2_api_model_template.format(
                     api_model=response_request_info.api_model_name,
                 )
 
@@ -442,15 +454,20 @@ def all_models_non_conforming_docstrings() -> dict[type, tuple[str | None, str |
                 found_response_type = response_request_info.response
 
                 response_doc_string = found_response_type.__doc__.rstrip() if found_response_type.__doc__ else ""
-                response_doc_string.replace("\n            ", " ")
-                response_doc_string.replace("\n        ", " ")
-                response_doc_string.replace("\n    ", " ")
-                response_doc_string.replace("\n", " ")
+                response_doc_string = response_doc_string.replace("        ", "    ")
+                response_doc_string = response_doc_string.replace("        ", "    ")
+                response_doc_string = response_doc_string.replace("\n\n    ", "\n\n")
+                response_doc_string = response_doc_string.replace("\n\n    ", "\n\n")
 
-                if not found_response_type.__doc__ or not response_doc_string.endswith(expected_response_docstring):
+                matching_response_docstring = original_expected_response_docstring.replace("\n\n    ", "\n\n")
+                matching_response_docstring = matching_response_docstring.replace("        ", "    ")
+                matching_response_docstring = matching_response_docstring.replace("        ", "    ")
+                matching_response_docstring = matching_response_docstring.replace("        ", "    ")
+
+                if not found_response_type.__doc__ or not response_doc_string.endswith(matching_response_docstring):
                     non_conforming_responses[found_response_type] = (
-                        found_response_type.__doc__,
-                        expected_response_docstring,
+                        response_doc_string,
+                        matching_response_docstring,
                     )
 
     def process_other(class_type: type[HordeAPIObject]) -> None:
@@ -461,7 +478,11 @@ def all_models_non_conforming_docstrings() -> dict[type, tuple[str | None, str |
         if not class_type.__doc__:
             return
 
-        if not class_type.__doc__.rstrip().endswith(expected_other_docstring):
+        original_other_docstring = class_type.__doc__.rstrip()
+        original_other_docstring = original_other_docstring.replace("\n\n    ", "\n\n")
+
+        expected_other_docstring = expected_other_docstring.replace("\n\n    ", "\n\n")
+        if not original_other_docstring.endswith(expected_other_docstring):
             non_conforming_other[class_type] = (class_type.__doc__, expected_other_docstring)
 
     _sorted_all_classes = sorted(all_classes, key=lambda x: x.__name__)
