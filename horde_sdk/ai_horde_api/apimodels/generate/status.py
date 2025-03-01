@@ -14,6 +14,8 @@ from horde_sdk.generic_api.apimodels import HordeAPIObjectBaseModel, HordeRespon
 
 
 class Generation(HordeAPIObjectBaseModel):
+    """Mixin that contains common fields for generation responses."""
+
     model: str = Field(title="Generation Model")
     """The model which generated this image."""
     state: GENERATION_STATE = Field(
@@ -33,7 +35,9 @@ class Generation(HordeAPIObjectBaseModel):
 
 
 class ImageGeneration(Generation):
-    """Represents the individual image generation responses in a ImageGenerateStatusResponse.
+    """Represents an individual image generation in a status response, including the image data.
+
+    Represents the individual image generation responses in a ImageGenerateStatusResponse.
 
     v2 API Model: `GenerationStable`
     """
@@ -77,7 +81,9 @@ class ImageGenerateStatusResponse(
     ResponseWithProgressMixin,
     ResponseGenerationProgressInfoMixin,
 ):
-    """Represent the response from the AI-Horde API when checking the status of an image generation job.
+    """The current status of an image generation request and the data if it is complete.
+
+    Represents the data returned from the /v2/generate/status/{id} endpoint with http status code 200.
 
     v2 API Model: `RequestStatusStable`
     """
@@ -123,7 +129,10 @@ class DeleteImageGenerateRequest(
     BaseAIHordeRequest,
     JobRequestMixin,
 ):
-    """Represents a DELETE request to the `/v2/generate/status/{id}` endpoint."""
+    """Request to cancel an image generation by ID.
+
+    Represents a DELETE request to the /v2/generate/status/{id} endpoint.
+    """
 
     @override
     @classmethod
@@ -158,7 +167,15 @@ class DeleteImageGenerateRequest(
 
 
 class ImageGenerateStatusRequest(BaseAIHordeRequest, JobRequestMixin):
-    """Represents a GET request to the `/v2/generate/status/{id}` endpoint."""
+    """Request the status of an image generation by ID.
+
+    Important: This is a rate limited endpoint. Prefer using the check endpoint when simply checking the status.
+    Use this endpoint when you need to get the resulting image data.
+    See :class:`horde_sdk.api_horde_api.apimodels.generate.check.ImageGenerateCheckRequest`
+    for more information.
+
+    Represents a GET request to the /v2/generate/status/{id} endpoint.
+    """
 
     @override
     @classmethod

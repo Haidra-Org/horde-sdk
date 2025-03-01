@@ -2,6 +2,8 @@ from horde_sdk.generic_api.apimodels import HordeAPIObjectBaseModel, ResponseWit
 
 
 class ResponseGenerationProgressInfoMixin(HordeAPIObjectBaseModel):
+    """A mixin for responses that contain information about the progress of a generation request."""
+
     finished: int
     """The amount of finished jobs in this request."""
     processing: int
@@ -25,4 +27,4 @@ class ResponseGenerationProgressInfoMixin(HordeAPIObjectBaseModel):
 
 
 class ResponseGenerationProgressCombinedMixin(ResponseWithProgressMixin, ResponseGenerationProgressInfoMixin):
-    pass
+    """A mixin for responses which provide progress and detailed information about a generation."""

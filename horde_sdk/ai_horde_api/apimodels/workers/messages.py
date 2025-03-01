@@ -17,6 +17,8 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class _ResponseModelMessageData(HordeAPIObjectBaseModel):
+    """The data for a message, including the message, origin and expiry."""
+
     worker_id: str | None = None
     """The ID of the worker that the message is for."""
     message: str
@@ -28,6 +30,14 @@ class _ResponseModelMessageData(HordeAPIObjectBaseModel):
 
 
 class ResponseModelMessage(HordeResponseBaseModel, _ResponseModelMessageData):
+    """A single message object.
+
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/workers/messages/{message_id} | SingleWorkerMessageRequest [GET] -> 200
+        - /v2/workers/messages | CreateWorkerMessageRequest [POST] -> 200
+
+    v2 API Model: `ResponseModelMessage`
+    """
 
     @override
     @classmethod
@@ -38,6 +48,12 @@ class ResponseModelMessage(HordeResponseBaseModel, _ResponseModelMessageData):
 @Unhashable
 @Unequatable
 class ResponseModelMessages(HordeResponseRootModel[list[ResponseModelMessage]]):
+    """A list of messages.
+
+    Represents the data returned from the /v2/workers/messages endpoint with http status code 200.
+
+    v2 API Model: `SimpleResponse`
+    """
 
     root: list[ResponseModelMessage]
     """The underlying list of messages."""
@@ -52,6 +68,11 @@ class AllWorkerMessagesRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
+    """Request paginated worker messages, optionally filtered by user/worker ID and validity.
+
+    Represents a GET request to the /v2/workers/messages endpoint.
+    """
+
     user_id: str | None = None
     """The ID of the user to retrieve messages for. If not specified, all messages will be retrieved."""
     worker_id: str | None = None
@@ -95,6 +116,11 @@ class AllWorkerMessagesRequest(
 class SingleWorkerMessageRequest(
     BaseAIHordeRequest,
 ):
+    """Request a single worker message by ID.
+
+    Represents a GET request to the /v2/workers/messages/{message_id} endpoint.
+    """
+
     message_id: str = Field(alias="id")
     """The ID of the message to retrieve."""
 
@@ -124,6 +150,15 @@ class CreateWorkerMessageRequest(
     APIKeyAllowedInRequestMixin,
     _ResponseModelMessageData,
 ):
+    """Request to create a new worker message.
+
+    Note that you can only create messages for your own workers unless you are a moderator/admin.
+
+    Represents a POST request to the /v2/workers/messages endpoint.
+
+    v2 API Model: `ResponseModelMessage`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:
@@ -154,6 +189,13 @@ class DeleteWorkerMessageResponse(
     HordeResponseBaseModel,
     ContainsMessageResponseMixin,
 ):
+    """Confirmation that a worker message was deleted.
+
+    Represents the data returned from the /v2/workers/messages/{message_id} endpoint with http status code 200.
+
+    v2 API Model: `SimpleResponse`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:
@@ -164,6 +206,14 @@ class DeleteWorkerMessageRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
+    """Request to delete a worker message by ID.
+
+    Note that this is a privileged operation and requires the API key that created the message or
+    admin/moderator privileges.
+
+    Represents a DELETE request to the /v2/workers/messages/{message_id} endpoint.
+    """
+
     message_id: str = Field(alias="id")
     """The ID of the message to delete."""
 

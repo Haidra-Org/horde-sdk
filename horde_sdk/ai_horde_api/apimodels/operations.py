@@ -16,6 +16,11 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class IPTimeout(HordeAPIObjectBaseModel):
+    """An IP address that is blocked and the number of seconds left in the timeout.
+
+    v2 API Model: `IPTimeout`
+    """
+
     ipaddr: str
     """The IP address of the user to block."""
     seconds: int
@@ -30,7 +35,12 @@ class IPTimeout(HordeAPIObjectBaseModel):
 @Unhashable
 @Unequatable
 class IPTimeoutListResponse(HordeResponseRootModel[list[IPTimeout]]):
-    """A response containing a list of IP addresses that are blocked."""
+    """A list of IP addresses that are blocked.
+
+    Represents the data returned from the /v2/operations/ipaddr endpoint with http status code 200.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
+    """
 
     root: list[IPTimeout]
     """The underlying list of IP addresses that are blocked."""
@@ -45,7 +55,10 @@ class AllIPTimeoutsRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
-    """A request to get all IP addresses that are blocked."""
+    """A request to get all IP addresses that are blocked.
+
+    Represents a GET request to the /v2/operations/ipaddr endpoint.
+    """
 
     @override
     @classmethod
@@ -77,7 +90,10 @@ class SingleIPTimeoutsRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
-    """A request to get all IP addresses that are blocked."""
+    """A request to get a single IP address that is blocked.
+
+    Represents a GET request to the /v2/operations/ipaddr endpoint.
+    """
 
     @override
     @classmethod
@@ -106,6 +122,11 @@ class SingleIPTimeoutsRequest(
 
 
 class BlockIPAddressResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
+    """The response to a request to block an IP address.
+
+    v2 API Model: `SimpleResponse`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:
@@ -116,7 +137,12 @@ class BlockIPAddressRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
-    """A request to block an IP address."""
+    """Establish a timeout for an IP address for a specified number of hours.
+
+    Represents a POST request to the /v2/operations/ipaddr endpoint.
+
+    v2 API Model: `AddTimeoutIPInput`
+    """
 
     ipaddr: str
     """The IP address of the user to block."""
@@ -154,6 +180,11 @@ class DeleteIPAddressResponse(
     HordeResponseBaseModel,
     ContainsMessageResponseMixin,
 ):
+    """The response to a request to unblock an IP address.
+
+    v2 API Model: `SimpleResponse`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:
@@ -164,7 +195,12 @@ class DeleteIPAddressRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
-    """A request to delete an IP address from the block list."""
+    """Remove a timeout for an IP address.
+
+    Represents a DELETE request to the /v2/operations/ipaddr endpoint.
+
+    v2 API Model: `DeleteTimeoutIPInput`
+    """
 
     ipaddr: str
     """The IP address of the user to unblock."""
@@ -199,6 +235,11 @@ class BlockWorkerIPAddressResponse(
     HordeResponseBaseModel,
     ContainsMessageResponseMixin,
 ):
+    """The response to a request to block a worker's IP address.
+
+    v2 API Model: `SimpleResponse`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:
@@ -209,7 +250,12 @@ class BlockWorkerIPAddressRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
-    """A request to block a worker IP address."""
+    """Request to block a worker's IP address for a specified number of days.
+
+    Represents a PUT request to the /v2/operations/block_worker_ipaddr/{worker_id} endpoint.
+
+    v2 API Model: `AddWorkerTimeout`
+    """
 
     worker_id: str
     """The ID of the worker to block."""
@@ -247,6 +293,11 @@ class DeleteWorkerIPAddressResponse(
     HordeResponseBaseModel,
     ContainsMessageResponseMixin,
 ):
+    """The response to a request to unblock a worker's IP address.
+
+    v2 API Model: `SimpleResponse`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:
@@ -257,6 +308,10 @@ class DeleteWorkerIPAddressRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
+    """Request to unblock a worker's IP address.
+
+    Represents a DELETE request to the /v2/operations/block_worker_ipaddr/{worker_id} endpoint.
+    """
 
     worker_id: str
     """The ID of the worker to unblock."""

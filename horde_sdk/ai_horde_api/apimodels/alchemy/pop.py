@@ -48,7 +48,10 @@ class AlchemyFormPayloadStable(HordeAPIObjectBaseModel):
 
 
 class AlchemyPopFormPayload(HordeAPIObjectBaseModel, JobRequestMixin):
-    """v2 API Model: `InterrogationPopFormPayload`."""
+    """Contains the data for a single alchemy generation form for workers (pop).
+
+    v2 API Model: `InterrogationPopFormPayload`
+    """
 
     @override
     @classmethod
@@ -81,7 +84,10 @@ class AlchemyPopFormPayload(HordeAPIObjectBaseModel, JobRequestMixin):
 
 
 class NoValidAlchemyFound(HordeAPIObjectBaseModel):
-    """v2 API Model: `NoValidInterrogationsFoundStable`."""
+    """The number of jobs this worker was not eligible for, and why.
+
+    v2 API Model: `NoValidInterrogationsFoundStable`
+    """
 
     @override
     @classmethod
@@ -128,7 +134,14 @@ class NoValidAlchemyFound(HordeAPIObjectBaseModel):
 
 
 class AlchemyJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMixin):
-    """v2 API Model: `InterrogationPopPayload`."""
+    """Contains job data for workers, if any were available. Also contains data for jobs this worker was skipped for.
+
+    This is the key response type for all alchemy workers as it contains all assignment data for the worker.
+
+    Represents the data returned from the /v2/interrogate/pop endpoint with http status code 200.
+
+    v2 API Model: `InterrogationPopPayload`
+    """
 
     # and not actually specifying a schema
     forms: list[AlchemyPopFormPayload] | None = None
@@ -209,7 +222,11 @@ class AlchemyJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMix
 
 
 class AlchemyPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
-    """Represents the data needed to make a request to the `/v2/interrogate/pop` endpoint.
+    """Request additional jobs, if any are available, for an alchemy worker.
+
+    This is the key request type for all alchemy workers as it requests all available jobs for the worker.
+
+    Represents a POST request to the /v2/interrogate/pop endpoint.
 
     v2 API Model: `InterrogationPopInput`
     """

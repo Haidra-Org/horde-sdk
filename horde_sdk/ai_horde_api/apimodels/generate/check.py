@@ -14,7 +14,9 @@ class ImageGenerateCheckResponse(
     ResponseWithProgressMixin,
     ResponseGenerationProgressInfoMixin,
 ):
-    """Represents the data returned from the `/v2/generate/check/{id}` endpoint.
+    """The progress of an image request. This does not return any image data.
+
+    Represents the data returned from the /v2/generate/check/{id} endpoint with http status code 200.
 
     v2 API Model: `RequestStatusCheck`
     """
@@ -44,7 +46,12 @@ class ImageGenerateCheckResponse(
 
 
 class ImageGenerateCheckRequest(BaseAIHordeRequest, JobRequestMixin):
-    """Represents a GET request to the `/v2/generate/check/{id}` endpoint."""
+    """Request the progress of an image request.
+
+    This is the preferred way to check the progress of a generate request.
+
+    Represents a GET request to the /v2/generate/check/{id} endpoint.
+    """
 
     @override
     @classmethod

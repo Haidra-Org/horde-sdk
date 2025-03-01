@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from loguru import logger
 from pydantic import model_validator
 from typing_extensions import override
@@ -21,13 +23,15 @@ class ImageGenerationJobSubmitRequest(
     JobRequestMixin,
     APIKeyAllowedInRequestMixin,
 ):
-    """Represents the data needed to make a job submit 'request' from a worker to the /v2/generate/submit endpoint.
+    """Used when a worker submits a generation job. Includes metadata about the generation.
+
+    Represents a POST request to the /v2/generate/submit endpoint.
 
     v2 API Model: `SubmitInputStable`
     """
 
-    generation: str = ""
-    """R2 result was uploaded to R2, else the string of the result."""
+    generation: str | Literal["R2"] = ""
+    """R2 result was uploaded to R2, else the string of the result as base64."""
     state: GENERATION_STATE
     """The state of this generation."""
     seed: int = 0

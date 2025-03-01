@@ -13,11 +13,23 @@ from horde_sdk.generic_api.apimodels import (
 
 
 class DocumentFormat(StrEnum):
+    """The supported formats for documents."""
+
     html = "html"
     markdown = "markdown"
 
 
 class HordeDocument(HordeResponseBaseModel):
+    """A document from the Horde, in the specified format.
+
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/documents/terms | AIHordeGetTermsRequest [GET] -> 200
+        - /v2/documents/sponsors | AIHordeGetSponsorsRequest [GET] -> 200
+        - /v2/documents/privacy | AIHordeGetPrivacyPolicyRequest [GET] -> 200
+
+    v2 API Model: `HordeDocument`
+    """
+
     html: str | None = None
     """The HTML content of the document, if requested."""
     markdown: str | None = None
@@ -30,6 +42,8 @@ class HordeDocument(HordeResponseBaseModel):
 
 
 class AIHordeDocumentRequestMixin(HordeAPIObjectBaseModel):
+    """A mixin for requests that retrieve documents from the Horde using a format parameter."""
+
     format: DocumentFormat | str = DocumentFormat.html
 
     """The format of the document to return. Default is markdown."""
@@ -48,6 +62,10 @@ class AIHordeDocumentRequestMixin(HordeAPIObjectBaseModel):
 
 
 class AIHordeGetPrivacyPolicyRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin):
+    """Request the privacy policy document from the Horde in the specified format.
+
+    Represents a GET request to the /v2/documents/privacy endpoint.
+    """
 
     @override
     @classmethod
@@ -71,6 +89,10 @@ class AIHordeGetPrivacyPolicyRequest(BaseAIHordeRequest, AIHordeDocumentRequestM
 
 
 class AIHordeGetSponsorsRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin):
+    """Request the list of sponsors from the Horde in the specified format.
+
+    Represents a GET request to the /v2/documents/sponsors endpoint.
+    """
 
     @override
     @classmethod
@@ -94,6 +116,10 @@ class AIHordeGetSponsorsRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin)
 
 
 class AIHordeGetTermsRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin):
+    """Request the terms document from the Horde in the specified format.
+
+    Represents a GET request to the /v2/documents/terms endpoint.
+    """
 
     @override
     @classmethod

@@ -117,9 +117,11 @@ class AlchemyFormStatus(HordeAPIData):
 
 
 class AlchemyStatusResponse(HordeResponseBaseModel, ResponseWithProgressMixin):
-    """The response from the `/v2/interrogate/status/{id}` endpoint.
+    """Contains the status of an alchemy job and any completed work (if any).
 
-    You will find the results of the alchemy here.
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/interrogate/status/{id} | AlchemyStatusRequest [GET] -> 200
+        - /v2/interrogate/status/{id} | AlchemyDeleteRequest [DELETE] -> 200
 
     v2 API Model: `InterrogationStatus`
     """
@@ -194,7 +196,10 @@ class AlchemyStatusRequest(
     JobRequestMixin,
     APIKeyAllowedInRequestMixin,
 ):
-    """Represents the data needed to make a request to the `/v2/interrogate/status/{id}` endpoint."""
+    """Poll for the status of an interrogation job, and retrieve any completed work.
+
+    Represents a GET request to the /v2/interrogate/status/{id} endpoint.
+    """
 
     @override
     @classmethod
@@ -221,7 +226,10 @@ class AlchemyDeleteRequest(
     BaseAIHordeRequest,
     JobRequestMixin,
 ):
-    """Represents the data needed to make a request to the `/v2/interrogate/status/{id}` endpoint."""
+    """Cancel an in-progress interrogation job.
+
+    Represents a DELETE request to the /v2/interrogate/status/{id} endpoint.
+    """
 
     @override
     @classmethod

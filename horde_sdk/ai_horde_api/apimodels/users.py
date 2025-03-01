@@ -19,9 +19,9 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class ContributionsDetails(HordeAPIObjectBaseModel):
-    """How many images and megapixelsteps this user has generated.
+    """Details about the contribution of a user, including the number of images and megapixelsteps they have generated.
 
-    v2 API Model: ContributionsDetails
+    v2 API Model: `ContributionsDetails`
     """
 
     fulfillments: int | None = Field(
@@ -40,9 +40,9 @@ class ContributionsDetails(HordeAPIObjectBaseModel):
 
 
 class UserKudosDetails(HordeAPIObjectBaseModel):
-    """The details of the kudos this user has accumulated, used, sent and received.
+    """A breakdown of inflows and outflows of Kudos for a user, by type.
 
-    v2 API Model: UserKudosDetails
+    v2 API Model: `UserKudosDetails`
     """
 
     accumulated: float | None = Field(0)
@@ -76,9 +76,9 @@ class UserKudosDetails(HordeAPIObjectBaseModel):
 
 
 class MonthlyKudos(HordeAPIObjectBaseModel):
-    """The details of the monthly kudos this user receives.
+    """Details about recurring Kudos for a user.
 
-    v2 API Model: MonthlyKudos
+    v2 API Model: `MonthlyKudos`
     """
 
     amount: int | None = Field(default=None)
@@ -94,9 +94,9 @@ class MonthlyKudos(HordeAPIObjectBaseModel):
 
 
 class UserThingRecords(HordeAPIObjectBaseModel):
-    """How many images, texts, megapixelsteps and tokens this user has generated or requested.
+    """Details about a user's megapixelsteps and/or tokens activity.
 
-    v2 API Model: UserThingRecords
+    v2 API Model: `UserThingRecords`
     """
 
     megapixelsteps: float | None = Field(0)
@@ -112,9 +112,9 @@ class UserThingRecords(HordeAPIObjectBaseModel):
 
 
 class UserAmountRecords(HordeAPIObjectBaseModel):
-    """How many images, texts, megapixelsteps and tokens this user has generated or requested.
+    """Details about a user's image, text, and/or interrogation activity.
 
-    v2 API Model: UserAmountRecords
+    v2 API Model: `UserAmountRecords`
     """
 
     image: int | None = Field(0)
@@ -133,9 +133,9 @@ class UserAmountRecords(HordeAPIObjectBaseModel):
 
 
 class UserRecords(HordeAPIObjectBaseModel):
-    """How many images, texts, megapixelsteps, tokens and styles this user has generated, requested or has had used.
+    """Details about a user's activity.
 
-    v2 API Model: UserRecords
+    v2 API Model: `UserRecords`
     """
 
     contribution: UserThingRecords | None = None
@@ -156,9 +156,9 @@ class UserRecords(HordeAPIObjectBaseModel):
 
 
 class UsageDetails(HordeAPIObjectBaseModel):
-    """How many images and megapixelsteps this user has requested.
+    """Details about a user's image and megapixelsteps requests.
 
-    v2 API Model: UsageDetails
+    v2 API Model: `UsageDetails`
     """
 
     megapixelsteps: float | None = Field(default=None)
@@ -176,9 +176,9 @@ class UsageDetails(HordeAPIObjectBaseModel):
 @Unhashable
 @Unequatable
 class ActiveGenerations(HordeAPIObjectBaseModel):
-    """A list of generations that are currently active for this user.
+    """Details about a user's active generations.
 
-    v2 API Model: ActiveGenerations
+    v2 API Model: `ActiveGenerations`
     """
 
     """A list of generations that are currently active for this user."""
@@ -201,9 +201,14 @@ class ActiveGenerations(HordeAPIObjectBaseModel):
 @Unhashable
 @Unequatable
 class UserDetailsResponse(HordeResponseBaseModel):
-    """The details of a user.
+    """Details about an AI-Horde user, including their activity and permissions.
 
-    v2 API Model: UserDetails
+    Note that the response will contain only information the requesting user has permission to see.
+    The owner of the account, moderators and admins will see more information than other users.
+
+    Represents the data returned from the /v2/users/{user_id} endpoint with http status code 200.
+
+    v2 API Model: `UserDetails`
     """
 
     @override
@@ -364,9 +369,11 @@ class UserDetailsResponse(HordeResponseBaseModel):
 @Unhashable
 @Unequatable
 class ListUsersDetailsResponse(HordeResponseRootModel[list[UserDetailsResponse]]):
-    """The response for a list of user details.
+    """A list of user details.
 
-    v2 API Model: _ANONYMOUS_MODEL
+    Represents the data returned from the /v2/users endpoint with http status code 200.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
     """
 
     root: list[UserDetailsResponse]
@@ -379,7 +386,10 @@ class ListUsersDetailsResponse(HordeResponseRootModel[list[UserDetailsResponse]]
 
 
 class ListUsersDetailsRequest(BaseAIHordeRequest):
-    """Represents a request to list all users."""
+    """Request paginated user details. Be sure to set `page` and `sort` fields.
+
+    Represents a GET request to the /v2/users endpoint.
+    """
 
     page: int
     """The page number to request. There are up to 25 users per page."""
@@ -414,6 +424,10 @@ class ListUsersDetailsRequest(BaseAIHordeRequest):
 
 
 class SingleUserDetailsRequest(BaseAIHordeRequest, MessageSpecifiesUserIDMixin):
+    """Request details about a single user.
+
+    Represents a GET request to the /v2/users/{user_id} endpoint.
+    """
 
     @override
     @classmethod
@@ -437,6 +451,8 @@ class SingleUserDetailsRequest(BaseAIHordeRequest, MessageSpecifiesUserIDMixin):
 
 
 class _ModifyUserBase(HordeAPIObjectBaseModel):
+    """Mixin for user details that can be modified."""
+
     admin_comment: str | None = Field(
         default=None,
         max_length=500,
@@ -538,6 +554,8 @@ class _ModifyUserBase(HordeAPIObjectBaseModel):
 
 
 class ModifyUser(_ModifyUserBase):
+    """Details about a user that can be modified."""
+
     kudos: float | None = Field(default=None)
     """The amount of kudos to modify (can be negative)."""
 
@@ -546,6 +564,8 @@ class ModifyUser(_ModifyUserBase):
 
 
 class ModifyUserReply(_ModifyUserBase):
+    """Confirmation of the user details that were modified."""
+
     new_kudos: float | None = Field(default=None)
     """The new amount of kudos this user has."""
     new_suspicion: int | None = Field(default=None)
@@ -553,6 +573,13 @@ class ModifyUserReply(_ModifyUserBase):
 
 
 class ModifyUserResponse(HordeResponseBaseModel, ModifyUserReply):
+    """Response to a successful user modification request.
+
+    Represents the data returned from the /v2/users/{user_id} endpoint with http status code 200.
+
+    v2 API Model: `ModifyUser`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:
@@ -565,6 +592,15 @@ class ModifyUserRequest(
     ModifyUser,
     APIKeyAllowedInRequestMixin,
 ):
+    """Request to modify a user's details.
+
+    Note that this is a privileged operation and requires a moderator or admin API key.
+
+    Represents a PUT request to the /v2/users/{user_id} endpoint.
+
+    v2 API Model: `ModifyUserInput`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:

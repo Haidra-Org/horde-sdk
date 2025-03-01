@@ -14,6 +14,8 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class StatsModelsTimeframe(StrEnum):
+    """A timeframe for stats data."""
+
     day = auto()
     month = auto()
     total = auto()
@@ -22,7 +24,9 @@ class StatsModelsTimeframe(StrEnum):
 @Unequatable
 @Unhashable
 class ImageStatsModelsResponse(HordeResponseBaseModel):
-    """Represents the data returned from the `/v2/stats/img/models` endpoint.
+    """Statistics for image model usage.
+
+    Represents the data returned from the /v2/stats/img/models endpoint with http status code 200.
 
     v2 API Model: `ImgModelStats`
     """
@@ -90,7 +94,10 @@ class ImageStatsModelsResponse(HordeResponseBaseModel):
 
 
 class ImageStatsModelsRequest(BaseAIHordeRequest):
-    """Represents the data needed to make a request to the `/v2/stats/img/models` endpoint."""
+    """Request the usage statistics for image models.
+
+    Represents a GET request to the /v2/stats/img/models endpoint.
+    """
 
     api_model_state: MODEL_STATE = Field(
         default=MODEL_STATE.all,
@@ -149,7 +156,12 @@ class SinglePeriodImgStat(HordeAPIObjectBaseModel):
 
 
 class ImageStatsModelsTotalResponse(HordeResponseBaseModel):
-    """Represents the data returned from the `/v2/stats/img/totals` endpoint."""
+    """Summary statistics for all image models.
+
+    Represents the data returned from the /v2/stats/img/totals endpoint with http status code 200.
+
+    v2 API Model: `StatsImgTotals`
+    """
 
     day: SinglePeriodImgStat | None = None
     """The total stats for the past day."""
@@ -169,7 +181,10 @@ class ImageStatsModelsTotalResponse(HordeResponseBaseModel):
 
 
 class ImageStatsModelsTotalRequest(BaseAIHordeRequest):
-    """Represents the data needed to make a request to the `/v2/stats/img/totals` endpoint."""
+    """Request summary usage statistics across all image models.
+
+    Represents a GET request to the /v2/stats/img/totals endpoint.
+    """
 
     @override
     @classmethod
@@ -194,7 +209,12 @@ class ImageStatsModelsTotalRequest(BaseAIHordeRequest):
 
 @Unhashable
 class TextStatsModelResponse(HordeResponseBaseModel):
-    """Represents the data returned from the `/v2/stats/text/models` endpoint."""
+    """Statistics for text model usage.
+
+    Represents the data returned from the /v2/stats/text/models endpoint with http status code 200.
+
+    v2 API Model: `TxtModelStats`
+    """
 
     day: dict[str, int]
     """The stats for the past day."""
@@ -237,7 +257,10 @@ class TextStatsModelResponse(HordeResponseBaseModel):
 
 
 class TextStatsModelsRequest(BaseAIHordeRequest):
-    """Represents the data needed to make a request to the `/v2/stats/text/models` endpoint."""
+    """Request the usage statistics for text models.
+
+    Represents a GET request to the /v2/stats/text/models endpoint.
+    """
 
     @override
     @classmethod
@@ -283,7 +306,12 @@ class SinglePeriodTxtStat(HordeAPIObjectBaseModel):
 
 @Unhashable
 class TextStatsModelsTotalResponse(HordeResponseBaseModel):
-    """Represents the data returned from the `/v2/stats/text/totals` endpoint."""
+    """Summary statistics for all text models.
+
+    Represents the data returned from the /v2/stats/text/totals endpoint with http status code 200.
+
+    v2 API Model: `StatsTxtTotals`
+    """
 
     minute: dict[str, int]
     """The total stats for the past minute."""
@@ -303,7 +331,10 @@ class TextStatsModelsTotalResponse(HordeResponseBaseModel):
 
 
 class TextStatsModelsTotalRequest(BaseAIHordeRequest):
-    """Represents the data needed to make a request to the `/v2/stats/text/totals` endpoint."""
+    """Summary usage statistics across all text models.
+
+    Represents a GET request to the /v2/stats/text/totals endpoint.
+    """
 
     @override
     @classmethod

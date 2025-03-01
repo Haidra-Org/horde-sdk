@@ -14,6 +14,11 @@ from horde_sdk.generic_api.apimodels import HordeResponseBaseModel, ResponseWith
 
 
 class GenerationKobold(Generation):
+    """Represents a text generation, including its ID, seed, and text.
+
+    v2 API Model: `GenerationKobold`
+    """
+
     id_: str | None = Field(default=None, title="Generation ID")
     """The ID for this generation."""
     gen_metadata: list[GenMetadataEntry] | None = None  # FIXME: API declares a `GenerationMetadataKobold` here
@@ -50,6 +55,13 @@ class TextGenerateStatusResponse(
     ResponseWithProgressMixin,
     ResponseGenerationProgressInfoMixin,
 ):
+    """The current status of a text generation request and the data if it is complete.
+
+    Represents the data returned from the /v2/generate/text/status/{id} endpoint with http status code 200.
+
+    v2 API Model: `RequestStatusKobold`
+    """
+
     generations: list[GenerationKobold] = Field(
         default_factory=list,
         title="Generations",
@@ -92,7 +104,10 @@ class DeleteTextGenerateRequest(
     BaseAIHordeRequest,
     JobRequestMixin,
 ):
-    """Represents a DELETE request to the `/v2/generate/text/status/{id}` endpoint."""
+    """Request to cancel a text generation by ID.
+
+    Represents a DELETE request to the /v2/generate/text/status/{id} endpoint.
+    """
 
     @override
     @classmethod
@@ -127,7 +142,10 @@ class DeleteTextGenerateRequest(
 
 
 class TextGenerateStatusRequest(BaseAIHordeRequest, JobRequestMixin):
-    """Represents a GET request to the `/v2/generate/status/{id}` endpoint."""
+    """Request the status of a text generation by ID.
+
+    Represents a GET request to the /v2/generate/text/status/{id} endpoint.
+    """
 
     @override
     @classmethod

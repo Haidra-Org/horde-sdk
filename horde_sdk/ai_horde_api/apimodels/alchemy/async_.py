@@ -30,7 +30,7 @@ class AlchemyAsyncResponse(
     ResponseRequiringFollowUpMixin,
     ContainsMessageResponseMixin,
 ):
-    """Represents the data returned from the `/v2/alchemy/async` endpoint.
+    """Represents the data returned from the /v2/interrogate/async endpoint with http status code 202.
 
     v2 API Model: `RequestInterrogationResponse`
     """
@@ -65,6 +65,12 @@ class AlchemyAsyncResponse(
 
 
 class AlchemyAsyncRequestFormItem(HordeAPIData):
+    """Represents a single form of alchemy to request.
+
+    See :class:`horde_sdk.generation_parameters.alchemy.consts.KNOWN_ALCHEMY_TYPES` for the list of
+    known alchemy types.
+    """
+
     name: KNOWN_ALCHEMY_TYPES | str
     """The name of the form to request."""
 
@@ -81,6 +87,18 @@ class AlchemyAsyncRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
+    """Data required to request an alchemy job. Alchemy includes upscaling, captioning, etc.
+
+    Multiple forms of alchemy can be requested at once.
+
+    See :class:`horde_sdk.generation_parameters.alchemy.consts.KNOWN_ALCHEMY_TYPES` for the list of
+    known alchemy types.
+
+    Represents a POST request to the /v2/interrogate/async endpoint.
+
+    v2 API Model: `ModelInterrogationInputStable`
+    """
+
     forms: list[AlchemyAsyncRequestFormItem]
     """The list of forms (types of post-processing/interrogation/captioning/etc) to request."""
     source_image: str

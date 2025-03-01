@@ -229,6 +229,7 @@ class SingleWarningEntry(HordeAPIObjectBaseModel):
 
 
 class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
+    """Base class for all shared image generation parameters."""
 
     height: int = Field(default=512, ge=64, le=3072)
     """The desired output image height."""
@@ -314,9 +315,8 @@ class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
 
 
 class ImageGenerateParamMixin(_BaseImageGenerateParamMixin):
-    """Mix-in class of some of the data included in a request to the `/v2/generate/async` endpoint.
+    """Contains basic and api-specific parameters for image generation.
 
-    Also is the corresponding information returned on a job pop to the `/v2/generate/pop` endpoint.
     v2 API Model: `ModelPayloadRootStable`
     """
 
@@ -381,7 +381,7 @@ class ImageGenerateParamMixin(_BaseImageGenerateParamMixin):
 
 
 class JobSubmitResponse(HordeResponseBaseModel):
-    """The response to a job submission request, indicating the number of kudos gained.
+    """Represents the data returned from the /v2/generate/submit endpoint with http status code 200.
 
     v2 API Model: `GenerationSubmitted`
     """

@@ -18,6 +18,8 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class TeamDetailsLite(HordeAPIObjectBaseModel):
+    """The name and ID of a team."""
+
     name: str | None = None
     """The Name given to this team."""
     id_: str | TeamID | None = Field(default=None, alias="id")
@@ -30,6 +32,8 @@ class TeamDetailsLite(HordeAPIObjectBaseModel):
 
 
 class WorkerKudosDetails(HordeAPIObjectBaseModel):
+    """The Kudos details of a worker."""
+
     generated: float | None = None
     """How much Kudos this worker has received for generating images."""
     uptime: int | None = None
@@ -43,6 +47,8 @@ class WorkerKudosDetails(HordeAPIObjectBaseModel):
 
 @Unhashable
 class WorkerDetailItem(HordeAPIObjectBaseModel):
+    """The details of a worker, including its performance, uptime, permissions, and other details."""
+
     type_: AI_HORDE_WORKER_TYPES = Field(alias="type")
     """The type of worker."""
     name: str
@@ -170,6 +176,13 @@ class WorkerDetailItem(HordeAPIObjectBaseModel):
 @Unhashable
 @Unequatable
 class AllWorkersDetailsResponse(HordeResponseRootModel[list[WorkerDetailItem]]):
+    """A list of worker details.
+
+    Represents the data returned from the /v2/workers endpoint with http status code 200.
+
+    v2 API Model: `WorkerDetails`
+    """
+
     # @tazlin: The typing of __iter__ in BaseModel seems to assume that RootModel wouldn't also be a parent class.
     # without a `type: ignore``, mypy feels that this is a bad override. This is probably a sub-optimal solution
     # on my part with me hoping to come up with a more elegant path in the future.
@@ -197,6 +210,8 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     """Returns information on all workers.
 
     If a moderator API key is specified, it will return additional information.
+
+    Represents a GET request to the /v2/workers endpoint.
     """
 
     type_: AI_HORDE_WORKER_TYPES = Field(AI_HORDE_WORKER_TYPES.all, alias="type")
@@ -238,6 +253,15 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
 @Unhashable
 @Unequatable
 class SingleWorkerDetailsResponse(HordeResponseBaseModel, WorkerDetailItem):
+    """The details of a single worker.
+
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/workers/name/{worker_name} | SingleWorkerNameDetailsRequest [GET] -> 200
+        - /v2/workers/{worker_id} | SingleWorkerDetailsRequest [GET] -> 200
+
+    v2 API Model: `WorkerDetails`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -245,9 +269,9 @@ class SingleWorkerDetailsResponse(HordeResponseBaseModel, WorkerDetailItem):
 
 
 class SingleWorkerNameDetailsRequest(BaseAIHordeRequest, WorkerRequestNameMixin, APIKeyAllowedInRequestMixin):
-    """Returns information on a single worker.
+    """Returns information on a single worker by name.
 
-    If a moderator API key is specified, additional information is returned.
+    Represents a GET request to the /v2/workers/name/{worker_name} endpoint.
     """
 
     @override
@@ -277,9 +301,9 @@ class SingleWorkerNameDetailsRequest(BaseAIHordeRequest, WorkerRequestNameMixin,
 
 
 class SingleWorkerDetailsRequest(BaseAIHordeRequest, WorkerRequestMixin, APIKeyAllowedInRequestMixin):
-    """Returns information on a single worker.
+    """Returns information on a single worker by ID.
 
-    If a moderator API key is specified, additional information is returned.
+    Represents a GET request to the /v2/workers/{worker_id} endpoint.
     """
 
     @override
@@ -309,6 +333,13 @@ class SingleWorkerDetailsRequest(BaseAIHordeRequest, WorkerRequestMixin, APIKeyA
 
 
 class ModifyWorkerResponse(HordeResponseBaseModel):
+    """Information about a worker that has been created or modified.
+
+    Represents the data returned from the /v2/workers/{worker_id} endpoint with http status code 200.
+
+    v2 API Model: `ModifyWorker`
+    """
+
     info: str | None = Field(default=None)
     """The new state of the 'info' var for this worker."""
     maintenance: bool | None = Field(default=None)
@@ -332,6 +363,15 @@ class ModifyWorkerRequest(
     APIKeyAllowedInRequestMixin,
     WorkerRequestMixin,
 ):
+    """Request to modify a worker.
+
+    Note that this is a privileged endpoint and requires a moderator or admin API key.
+
+    Represents a PUT request to the /v2/workers/{worker_id} endpoint.
+
+    v2 API Model: `ModifyWorkerInput`
+    """
+
     info: str | None = Field(default=None, max_length=1000)
     """You can optionally provide a server note which will be seen in the server details. No profanity allowed!"""
     maintenance: bool | None = Field(default=None)
@@ -368,6 +408,13 @@ class ModifyWorkerRequest(
 
 
 class DeleteWorkerResponse(HordeResponseBaseModel):
+    """The id and name of a worker that has been deleted.
+
+    Represents the data returned from the /v2/workers/{worker_id} endpoint with http status code 200.
+
+    v2 API Model: `DeletedWorker`
+    """
+
     deleted_id: str | None = None
     """The ID of the deleted worker."""
     deleted_name: str | None = None
@@ -384,6 +431,13 @@ class DeleteWorkerRequest(
     APIKeyAllowedInRequestMixin,
     WorkerRequestMixin,
 ):
+    """Request to delete a worker.
+
+    Note that this is a privileged endpoint and requires a moderator or admin API key.
+
+    Represents a DELETE request to the /v2/workers/{worker_id} endpoint.
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:

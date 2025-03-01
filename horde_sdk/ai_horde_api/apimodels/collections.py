@@ -19,6 +19,11 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class ResponseModelStylesShort(HordeAPIObjectBaseModel):
+    """The name and ID of a style.
+
+    v2 API Model: `ResponseModelStylesShort`
+    """
+
     name: str = Field(
         description="The unique name for this style",
     )
@@ -36,6 +41,11 @@ class ResponseModelStylesShort(HordeAPIObjectBaseModel):
 @Unhashable
 @Unequatable
 class ResponseModelCollection(HordeResponseBaseModel):
+    """A collection of styles.
+
+    v2 API Model: `ResponseModelCollection`
+    """
+
     id: str
     """The UUID of the collection. Use this to use this collection of retrieve its information in the future."""
 
@@ -64,6 +74,12 @@ class ResponseModelCollection(HordeResponseBaseModel):
 @Unhashable
 @Unequatable
 class AllCollectionsResponse(HordeResponseRootModel[list[ResponseModelCollection]]):
+    """A list of collections.
+
+    Represents the data returned from the /v2/collections endpoint with http status code 200.
+
+    v2 API Model: `ResponseModelCollection`
+    """
 
     root: list[ResponseModelCollection]
     """The underlying list of collections."""
@@ -75,9 +91,11 @@ class AllCollectionsResponse(HordeResponseRootModel[list[ResponseModelCollection
 
 
 class AllCollectionsRequest(BaseAIHordeRequest):
-    """Represents the data needed to make a request to the `/v2/collections` endpoint.
+    """Request to get all collections, optionally filtered by type and sorted by popularity or age.
 
-    v2 API Model: `CollectionsInput`
+    Data is paginated. Each page has 25 collections. Set `page` to get the next page.
+
+    Represents a GET request to the /v2/collections endpoint.
     """
 
     sort: Literal["popular", "age"] = Field(
@@ -123,9 +141,9 @@ class AllCollectionsRequest(BaseAIHordeRequest):
 
 
 class CollectionByIDRequest(BaseAIHordeRequest):
-    """Represents the data needed to make a request to the `/v2/collections/{collection_id}` endpoint.
+    """Request to get a collection by its ID.
 
-    v2 API Model: `CollectionsInput`
+    Represents a GET request to the /v2/collections/{collection_id} endpoint.
     """
 
     collection_id: str = Field(
@@ -154,9 +172,9 @@ class CollectionByIDRequest(BaseAIHordeRequest):
 
 
 class CollectionByNameRequest(BaseAIHordeRequest):
-    """Represents the data needed to make a request to the `/v2/collection_by_name/{collection_name}` endpoint.
+    """Request to get a collection by its name.
 
-    v2 API Model: `CollectionsInput`
+    Represents a GET request to the /v2/collection_by_name/{collection_name} endpoint.
     """
 
     collection_name: str = Field(
@@ -189,6 +207,13 @@ class CreateCollectionResponse(
     ContainsMessageResponseMixin,
     ContainsWarningsResponseMixin,
 ):
+    """Request to create a collection.
+
+    Represents the data returned from the /v2/collections endpoint with http status code 201.
+
+    v2 API Model: `StyleModify`
+    """
+
     id_: str = Field(
         alias="id",
         description="The ID of the collection.",
@@ -201,6 +226,8 @@ class CreateCollectionResponse(
 
 
 class _InputModelCollectionMixin(HordeAPIData):
+    """Mixin class containing the fields for creating or updating a collection."""
+
     name: str = Field(
         min_length=1,
         max_length=100,
@@ -231,6 +258,12 @@ class CreateCollectionRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
+    """Request to create a collection.
+
+    Represents a POST request to the /v2/collections endpoint.
+
+    v2 API Model: `InputModelCollection`
+    """
 
     @override
     @classmethod
@@ -262,6 +295,13 @@ class DeleteCollectionResponse(
     HordeResponseBaseModel,
     ContainsMessageResponseMixin,
 ):
+    """Returns an "OK" message when a collection is successfully deleted with http status code 200.
+
+    Represents the data returned from the /v2/collections/{collection_id} endpoint with http status code 200.
+
+    v2 API Model: `SimpleResponse`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -272,6 +312,11 @@ class DeleteCollectionRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
+    """Request to delete a collection by its ID.
+
+    Represents a DELETE request to the /v2/collections/{collection_id} endpoint.
+    """
+
     collection_id: str = Field(
         description="The ID of the collection.",
     )
@@ -307,6 +352,15 @@ class UpdateCollectionResponse(
     ContainsMessageResponseMixin,
     ContainsWarningsResponseMixin,
 ):
+    """Returns an "OK" message when a collection is successfully updated with http status code 200.
+
+    Note: If issues are detected, they will be returned in the warnings field.
+
+    Represents the data returned from the /v2/collections/{collection_id} endpoint with http status code 200.
+
+    v2 API Model: `StyleModify`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -318,6 +372,15 @@ class UpdateCollectionRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
+    """Request to update a collection by its ID.
+
+    Note: Always check the warnings field on response for any issues that may have occurred during the update.
+
+    Represents a PATCH request to the /v2/collections/{collection_id} endpoint.
+
+    v2 API Model: `InputModelCollection`
+    """
+
     collection_id: str
     """The ID of the collection to update."""
 

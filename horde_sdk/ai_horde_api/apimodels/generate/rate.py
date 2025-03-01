@@ -9,43 +9,13 @@ from horde_sdk.generic_api.apimodels import (
     HordeResponseBaseModel,
 )
 
-"""AestheticsPayload{
-best	string
-example: 6038971e-f0b0-4fdd-a3bb-148f561f815e
-minLength: 36
-maxLength: 36
-The UUID of the best image in this generation batch (only used when 2+ images generated). If 2+ aesthetic ratings are
-also provided, then they take precedence if they're not tied.
-
-ratings	[AestheticRating{
-id*	string
-example: 6038971e-f0b0-4fdd-a3bb-148f561f815e
-minLength: 36
-maxLength: 36
-The UUID of image being rated.
-
-rating*	integer
-minimum: 1
-maximum: 10
-The aesthetic rating 1-10 for this image.
-
-artifacts	integer
-example: 1
-minimum: 0
-maximum: 5
-The artifacts rating for this image.
-0 for flawless generation that perfectly fits to the prompt.
-1 for small, hardly recognizable flaws.
-2 small flaws that can easily be spotted, but don not harm the aesthetic experience.
-3 for flaws that look obviously wrong, but only mildly harm the aesthetic experience.
-4 for flaws that look obviously wrong & significantly harm the aesthetic experience.
-5 for flaws that make the image look like total garbage.
-
-}]
-}"""
-
 
 class AestheticRating(HordeAPIObjectBaseModel):
+    """Represents an aesthetic rating for an image.
+
+    v2 API Model: `AestheticRating`
+    """
+
     id_: str = Field(
         alias="id",
         description="The UUID of image being rated.",
@@ -71,6 +41,11 @@ class AestheticRating(HordeAPIObjectBaseModel):
 
 
 class AestheticsPayload(HordeAPIObjectBaseModel):
+    """Represents the payload for rating images.
+
+    v2 API Model: `AestheticsPayload`
+    """
+
     best: str | None = None
     """The UUID of the best image in this generation batch (only used when 2+ images generated).
     If 2+ aesthetic ratings are also provided, then they take precedence if they're not tied."""
@@ -85,6 +60,12 @@ class AestheticsPayload(HordeAPIObjectBaseModel):
 
 
 class RateResponse(HordeResponseBaseModel):
+    """The response to a rating submission, including the reward amount.
+
+    Represents the data returned from the /v2/generate/rate/{id} endpoint with http status code 200.
+
+    v2 API Model: `GenerationSubmitted`
+    """
 
     reward: float
     """The reward for the rating."""
@@ -96,7 +77,9 @@ class RateResponse(HordeResponseBaseModel):
 
 
 class RateRequest(AestheticsPayload, BaseAIHordeRequest):
-    """Represents the data needed to make a request to the `/v2/rate` endpoint.
+    """Submit ratings for a batch of images.
+
+    Represents a POST request to the /v2/generate/rate/{id} endpoint.
 
     v2 API Model: `AestheticsPayload`
     """
