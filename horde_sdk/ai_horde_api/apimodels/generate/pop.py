@@ -66,6 +66,11 @@ class NoValidRequestFound(HordeAPIObjectBaseModel):
         """Whether or not this object has any non-zero values."""
         return len(self.model_fields_set) == 0
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "NoValidRequestFound"
+
 
 class ImageGenerateJobPopSkippedStatus(NoValidRequestFound):
     """The number of jobs a worker was skipped for, and why.

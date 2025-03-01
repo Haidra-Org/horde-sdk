@@ -164,6 +164,7 @@ class ModifyTeam(HordeResponseBaseModel):
             "Anarchy is emergent order.",
         ],
     )
+    """Extra information or comments about this team provided by its owner."""
 
     @override
     @classmethod
@@ -179,6 +180,7 @@ class ModifyTeamInput(HordeAPIObjectBaseModel):
 
     name: str
     """The name of the team."""
+
     info: str | None = Field(
         default=None,
         examples=[
@@ -239,6 +241,7 @@ class ModifyTeamRequest(
     """
 
     team_id: str
+    """The ID of the team to modify."""
 
     @override
     @classmethod

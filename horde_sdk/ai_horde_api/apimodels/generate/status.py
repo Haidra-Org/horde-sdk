@@ -33,6 +33,11 @@ class Generation(HordeAPIObjectBaseModel):
     )
     """The name of the worker which generated this image."""
 
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "Generation"
+
 
 class ImageGeneration(Generation):
     """Represents an individual image generation in a status response, including the image data.
