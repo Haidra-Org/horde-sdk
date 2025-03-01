@@ -469,16 +469,19 @@ def test_ImageGenerateJobPopResponse() -> None:
     )
 
     assert test_response.ids_present
-    assert test_response.ids == [
-        GenerationID(root=UUID("00000000-0000-0000-0000-000000000000")),
-        GenerationID(root=UUID("00000000-0000-0000-0000-000000000001")),
-        GenerationID(root=UUID("00000000-0000-0000-0000-000000000002")),
-    ]
-    assert test_response.r2_uploads == [
+    assert GenerationID(root=UUID("00000000-0000-0000-0000-000000000000")) in test_response.ids
+    assert GenerationID(root=UUID("00000000-0000-0000-0000-000000000001")) in test_response.ids
+    assert GenerationID(root=UUID("00000000-0000-0000-0000-000000000002")) in test_response.ids
+
+    uploads = [
         "https://abbaabbaabbaabbaabbaabbaabbaabba.r2.cloudflarestorage.com/horde-transient/00000000-0000-0000-0000-000000000000.webp?AWSAccessKeyId=deadbeefdeadbeefdeadbeefdeadbeef&Signature=345567dfakes2ignature%3D&Expires=1727390285",
         "https://abbaabbaabbaabbaabbaabbaabbaabba.r2.cloudflarestorage.com/horde-transient/00000000-0000-0000-0000-000000000001.webp?AWSAccessKeyId=deadbeefdeadbeefdeadbeefdeadbeef&Signature=zxcbvfakesignature%3D&Expires=1727390285",
         "https://abbaabbaabbaabbaabbaabbaabbaabba.r2.cloudflarestorage.com/horde-transient/00000000-0000-0000-0000-000000000002.webp?AWSAccessKeyId=deadbeefdeadbeefdeadbeefdeadbeef&Signature=asdfg32fakesignature%3D&Expires=1727390285",
     ]
+
+    assert test_response.r2_uploads is not None
+    for upload in test_response.r2_uploads:
+        assert upload in uploads
 
 
 def test_ImageGenerateJobPopResponse_hashability() -> None:

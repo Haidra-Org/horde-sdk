@@ -464,7 +464,7 @@ class ImageGenerateJobPopResponse(
             return hash(ImageGenerateJobPopResponse.__name__) + hash(self.id_)
 
         if len(self.ids) > 0:
-            return hash(ImageGenerateJobPopResponse.__name__) + hash(tuple(self.ids))
+            return hash(ImageGenerateJobPopResponse.__name__) + hash(tuple(sorted(self.ids)))
 
         logger.warning("No ID or IDs found in response. This is a bug.")
         return hash(0)

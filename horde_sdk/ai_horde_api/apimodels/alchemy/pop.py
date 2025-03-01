@@ -206,7 +206,7 @@ class AlchemyJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMix
         if self.forms is None:
             return hash(self.skipped)
 
-        return hash((tuple([form.id_ for form in self.forms]), self.skipped))
+        return hash((tuple(sorted([form.id_ for form in self.forms])), self.skipped))
 
     @property
     def ids(self) -> list[GenerationID]:

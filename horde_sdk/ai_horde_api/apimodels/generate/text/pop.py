@@ -151,7 +151,7 @@ class TextGenerateJobPopResponse(
 
     def __hash__(self) -> int:
         if self.ids:
-            return hash(tuple(self.ids))
+            return hash(tuple(sorted(self.ids)))
 
         return hash(self.id_)
 
