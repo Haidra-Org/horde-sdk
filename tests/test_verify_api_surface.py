@@ -237,14 +237,19 @@ def test_all_models_non_conforming_docstrings() -> None:
             map_to_dump[model.__name__] = {
                 "new": new_docstring or "",
             }
-    with open("docstrings.json", "w", encoding="utf-8") as f:
-        json.dump(map_to_dump, f, indent=4)
-        f.write("\n")
 
-    with open("missing_original_docstrings.json", "w", encoding="utf-8") as f:
-        json.dump(missing_original_docstrings, f, indent=4)
-        f.write("\n")
+    if len(map_to_dump) > 0:
+        with open("non_conforming_docstrings.json", "w", encoding="utf-8") as f:
+            json.dump(map_to_dump, f, indent=4)
+            f.write("\n")
+
+    if len(missing_original_docstrings) > 0:
+        with open("missing_original_docstrings.json", "w", encoding="utf-8") as f:
+            json.dump(missing_original_docstrings, f, indent=4)
+            f.write("\n")
 
     assert not non_conforming_docstrings, (
-        "The following models have non-conforming docstrings: " f"{jsonified_non_conforming_docstrings}"
+        "The following models have non-conforming docstrings: "
+        f"{jsonified_non_conforming_docstrings}"
+        "\n\nSee `non_conforming_docstrings.json` and `missing_original_docstrings.json` for more details."
     )
