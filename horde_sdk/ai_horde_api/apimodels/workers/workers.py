@@ -18,7 +18,10 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class TeamDetailsLite(HordeAPIObjectBaseModel):
-    """The name and ID of a team."""
+    """The name and ID of a team.
+
+    v2 API Model: `TeamDetailsLite`
+    """
 
     name: str | None = None
     """The Name given to this team."""
@@ -32,7 +35,10 @@ class TeamDetailsLite(HordeAPIObjectBaseModel):
 
 
 class WorkerKudosDetails(HordeAPIObjectBaseModel):
-    """The Kudos details of a worker."""
+    """The Kudos details of a worker.
+
+    v2 API Model: `WorkerKudosDetails`
+    """
 
     generated: float | None = None
     """How much Kudos this worker has received for generating images."""
@@ -47,7 +53,10 @@ class WorkerKudosDetails(HordeAPIObjectBaseModel):
 
 @Unhashable
 class WorkerDetailItem(HordeAPIObjectBaseModel):
-    """The details of a worker, including its performance, uptime, permissions, and other details."""
+    """The details of a worker, including its performance, uptime, permissions, and other details.
+
+    v2 API Model: `WorkerDetailItem`
+    """
 
     type_: AI_HORDE_WORKER_TYPES = Field(alias="type")
     """The type of worker."""

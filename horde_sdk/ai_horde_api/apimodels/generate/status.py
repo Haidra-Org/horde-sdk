@@ -83,7 +83,9 @@ class ImageGenerateStatusResponse(
 ):
     """The current status of an image generation request and the data if it is complete.
 
-    Represents the data returned from the /v2/generate/status/{id} endpoint with http status code 200.
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/generate/status/{id} | ImageGenerateStatusRequest [GET] -> 200
+        - /v2/generate/status/{id} | DeleteImageGenerateRequest [DELETE] -> 200
 
     v2 API Model: `RequestStatusStable`
     """

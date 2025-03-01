@@ -206,7 +206,9 @@ class UserDetailsResponse(HordeResponseBaseModel):
     Note that the response will contain only information the requesting user has permission to see.
     The owner of the account, moderators and admins will see more information than other users.
 
-    Represents the data returned from the /v2/users/{user_id} endpoint with http status code 200.
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/users/{user_id} | SingleUserDetailsRequest [GET] -> 200
+        - /v2/find_user | FindUserRequest [GET] -> 200
 
     v2 API Model: `UserDetails`
     """

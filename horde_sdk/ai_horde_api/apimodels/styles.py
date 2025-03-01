@@ -312,13 +312,13 @@ class ModifyStyleImageResponse(
     ContainsMessageResponseMixin,
     ContainsWarningsResponseMixin,
 ):
-    """Represents the data returned from the following endpoints and http status codes.
+    """The response to modifying an image style, including any warnings.
 
-    - /v2/styles/image/{style_id} | ModifyStyleImageRequest [PATCH] -> 200
-    - /v2/styles/image | CreateStyleImageRequest [POST] -> 200
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/styles/image/{style_id} | ModifyStyleImageRequest [PATCH] -> 200
+        - /v2/styles/image | CreateStyleImageRequest [POST] -> 200
 
-
-    v2 API Model: `StyleModify
+    v2 API Model: `StyleModify`
     """
 
     id_: str = Field(alias="id")
@@ -632,9 +632,11 @@ class ModelStyleInputParamsKobold(HordeResponseBaseModel, _BasePayloadKoboldMixi
 
 
 class StyleKobold(HordeResponseBaseModel, _StyleResponseMixin):
-    """A text generation style.
+    """The details of a text style, including its parameters.
 
-    Represents the data returned from the /v2/styles/text/{style_id} endpoint with http status code 200.
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/styles/text_by_name/{style_name} | SingleStyleTextByNameRequest [GET] -> 200
+        - /v2/styles/text/{style_id} | SingleStyleTextByIDRequest [GET] -> 200
 
     v2 API Model: `StyleKobold`
     """

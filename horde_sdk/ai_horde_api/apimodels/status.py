@@ -175,7 +175,9 @@ class HordePerformanceRequest(BaseAIHordeRequest):
 
 
 class Newspiece(HordeAPIObjectBaseModel):
-    """A piece of news from the horde, such as updates or other news from the AI-Horde team."""
+    """A piece of news from the horde, such as updates or other news from the AI-Horde team.
+
+    v2 API Model: `Newspiece`"""
 
     date_published: str | None = Field(
         default=None,
@@ -406,7 +408,9 @@ class HordeStatusModelsSingleRequest(BaseAIHordeRequest):
 
 
 class HordeModes(HordeAPIObjectBaseModel):
-    """The current modes of the horde, such as maintenance mode, invite-only mode, and raid mode."""
+    """The current modes of the horde, such as maintenance mode, invite-only mode, and raid mode.
+
+    v2 API Model: `HordeModes`"""
 
     maintenance_mode: bool = Field(
         default=False,

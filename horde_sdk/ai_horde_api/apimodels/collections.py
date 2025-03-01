@@ -43,6 +43,10 @@ class ResponseModelStylesShort(HordeAPIObjectBaseModel):
 class ResponseModelCollection(HordeResponseBaseModel):
     """A collection of styles.
 
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/collection_by_name/{collection_name} | CollectionByNameRequest [GET] -> 200
+        - /v2/collections/{collection_id} | CollectionByIDRequest [GET] -> 200
+
     v2 API Model: `ResponseModelCollection`
     """
 
@@ -78,7 +82,7 @@ class AllCollectionsResponse(HordeResponseRootModel[list[ResponseModelCollection
 
     Represents the data returned from the /v2/collections endpoint with http status code 200.
 
-    v2 API Model: `ResponseModelCollection`
+    v2 API Model: `_ANONYMOUS_MODEL`
     """
 
     root: list[ResponseModelCollection]
@@ -207,9 +211,9 @@ class CreateCollectionResponse(
     ContainsMessageResponseMixin,
     ContainsWarningsResponseMixin,
 ):
-    """Request to create a collection.
+    """Indicates that a collection was created and provides its ID and any warnings.
 
-    Represents the data returned from the /v2/collections endpoint with http status code 201.
+    Represents the data returned from the /v2/collections endpoint with http status code 200.
 
     v2 API Model: `StyleModify`
     """

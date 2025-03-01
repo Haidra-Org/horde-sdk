@@ -60,7 +60,10 @@ class SharedKeyDetailsResponse(HordeResponseBaseModel, MessageSpecifiesSharedKey
 
     The data returned in this response can vary depending on the user's permissions, (creator, owner, or admin).
 
-    Represents the data returned from the /v2/sharedkeys/{sharedkey_id} endpoint with http status code 200.
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/sharedkeys/{sharedkey_id} | SharedKeyModifyRequest [PATCH] -> 200
+        - /v2/sharedkeys/{sharedkey_id} | SharedKeyDetailsRequest [GET] -> 200
+        - /v2/sharedkeys | SharedKeyCreateRequest [PUT] -> 200
 
     v2 API Model: `SharedKeyDetails`
     """
@@ -124,9 +127,11 @@ class SharedKeyDetailsRequest(BaseAIHordeRequest, MessageSpecifiesSharedKeyMixin
 
 
 class SharedKeyDeleteResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
-    """The response to a request to delete a SharedKey.
+    """Indicates that a SharedKey was successfully deleted.
 
     Represents the data returned from the /v2/sharedkeys/{sharedkey_id} endpoint with http status code 200.
+
+    v2 API Model: `SimpleResponse`
     """
 
     @override

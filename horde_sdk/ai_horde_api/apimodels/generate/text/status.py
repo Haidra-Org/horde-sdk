@@ -57,7 +57,9 @@ class TextGenerateStatusResponse(
 ):
     """The current status of a text generation request and the data if it is complete.
 
-    Represents the data returned from the /v2/generate/text/status/{id} endpoint with http status code 200.
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/generate/text/status/{id} | TextGenerateStatusRequest [GET] -> 200
+        - /v2/generate/text/status/{id} | DeleteTextGenerateRequest [DELETE] -> 200
 
     v2 API Model: `RequestStatusKobold`
     """

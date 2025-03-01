@@ -18,7 +18,10 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 class FilterDetails(HordeResponseBaseModel):
     """Details about a filter.
 
-    Represents the data returned from the /v2/filters endpoint with http status code 200.
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/filters/{filter_id} | SingleFilterRequest [GET] -> 200
+        - /v2/filters | PutNewFilterRequest [PUT] -> 201
+        - /v2/filters/{filter_id} | PatchExistingFilter [PATCH] -> 200
 
     v2 API Model: `FilterDetails`
     """

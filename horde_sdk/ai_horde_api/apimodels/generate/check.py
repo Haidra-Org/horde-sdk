@@ -16,7 +16,8 @@ class ImageGenerateCheckResponse(
 ):
     """The progress of an image request. This does not return any image data.
 
-    Represents the data returned from the /v2/generate/check/{id} endpoint with http status code 200.
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/generate/check/{id} | ImageGenerateCheckRequest [GET] -> 200
 
     v2 API Model: `RequestStatusCheck`
     """
