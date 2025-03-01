@@ -7,6 +7,13 @@ from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, HordeRe
 
 
 class KudosTransferResponse(HordeResponseBaseModel):
+    """The transferred amount of Kudos.
+
+    Represents the data returned from the /v2/kudos/transfer endpoint with http status code 200.
+
+    v2 API Model: `KudosTransferred`
+    """
+
     transferred: float | None = None
     """The amount of Kudos transferred."""
 
@@ -20,8 +27,15 @@ class KudosTransferRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
+    """Request to transfer Kudos to another user. Be sure to use their entire username (e.g., db0#1).
+
+    Represents a POST request to the /v2/kudos/transfer endpoint.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
+    """
+
     username: str
-    """The username of the user to transfer Kudos to."""
+    """The username of the user to transfer Kudos to, including the '#'. For example, 'db0#1'."""
     amount: float
     """The amount of Kudos to transfer."""
 
@@ -52,6 +66,13 @@ class KudosTransferRequest(
 
 
 class KudosAwardResponse(HordeResponseBaseModel):
+    """The awarded amount of Kudos.
+
+    Represents the data returned from the /v2/kudos/award endpoint with http status code 200.
+
+    v2 API Model: `KudosAwarded`
+    """
+
     awarded: float | None = None
     """The amount of Kudos awarded."""
 
@@ -65,6 +86,15 @@ class KudosAwardRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
+    """Request to award Kudos to another user. Be sure to use their entire username (e.g., db0#1).
+
+    This is a privileged endpoint that requires an admin API key.
+
+    Represents a POST request to the /v2/kudos/award endpoint.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
+    """
+
     username: str
     """The username of the user to award Kudos to."""
     amount: float

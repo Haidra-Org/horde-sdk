@@ -22,11 +22,18 @@ from horde_sdk.generic_api.apimodels import (
 
 
 class ModelPayloadKobold(ModelPayloadRootKobold):
+    """Mixin for the model payload for Kobold."""
+
     prompt: str | None = None
     """The prompt for the text generation."""
 
 
 class NoValidRequestFoundKobold(NoValidRequestFound):
+    """The number of jobs a worker was skipped for, and why.
+
+    v2 API Model: `NoValidRequestFoundKobold`
+    """
+
     max_context_length: int | None = Field(default=None)
     """How many waiting requests were skipped because they demanded a higher max_context_length than what this
     worker provides."""
@@ -48,6 +55,16 @@ class TextGenerateJobPopResponse(
     ResponseRequiringFollowUpMixin,
     ExtraSourceImageMixin,
 ):
+    """Request additional jobs, if any are available, for a text generation worker.
+
+    This is the key response type for all text generation workers as it contains all assignment
+    data for the worker.
+
+    Represents the data returned from the /v2/generate/text/pop endpoint with http status code 200.
+
+    v2 API Model: `GenerationPayloadKobold`
+    """
+
     payload: ModelPayloadKobold
     """The settings for this text generation."""
     id_: GenerationID | None = Field(default=None, alias="id")
@@ -145,6 +162,15 @@ class TextGenerateJobPopRequest(
     APIKeyAllowedInRequestMixin,
     _PopInputKobold,
 ):
+    """Request additional jobs, if any are available, for a text worker.
+
+    This is the key request type for all text workers as it contains all the parameters needed to request a job.
+
+    Represents a POST request to the /v2/generate/text/pop endpoint.
+
+    v2 API Model: `PopInputKobold`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:

@@ -16,6 +16,13 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class FilterDetails(HordeResponseBaseModel):
+    """Details about a filter.
+
+    Represents the data returned from the /v2/filters endpoint with http status code 200.
+
+    v2 API Model: `FilterDetails`
+    """
+
     description: str | None = Field(default=None, description="Description about this regex.")
     """The description of this filter."""
     filter_type: int = Field(examples=[10], ge=10, le=29)
@@ -38,7 +45,12 @@ class FilterDetails(HordeResponseBaseModel):
 @Unhashable
 @Unequatable
 class FiltersListResponse(HordeResponseRootModel[list[FilterDetails]]):
-    """Response model for the filters endpoint."""
+    """A list of filters.
+
+    Represents the data returned from the /v2/filters endpoint with http status code 200.
+
+    v2 API Model: `FiltersList`
+    """
 
     root: list[FilterDetails]
     """The underlying list of filters."""
@@ -53,7 +65,10 @@ class FiltersListRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
-    """Request model for the filters endpoint."""
+    """Request to get a list of filters, with optional filtering.
+
+    Represents a GET request to the /v2/filters endpoint.
+    """
 
     filter_type: int | None = Field(
         default=None,
@@ -103,7 +118,12 @@ class FiltersListRequest(
 @Unhashable
 @Unequatable
 class FilterPromptSuspicionResponse(HordeResponseBaseModel):
-    """Response model for the filter prompt suspicion endpoint."""
+    """The degree of suspicion for a prompt and the sections of the prompt that matched the filter.
+
+    Represents the data returned from the /v2/filters endpoint with http status code 200.
+
+    v2 API Model: `FilterPromptSuspicion`
+    """
 
     matches: list[str] | None = None
     """The sections of the prompt that matched the filter."""
@@ -121,7 +141,12 @@ class FilterPromptSuspicionRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
-    """Request model for the filter prompt suspicion endpoint."""
+    """Request to check a prompt for suspicion and return the sections that matched the filter.
+
+    Represents a POST request to the /v2/filters endpoint.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
+    """
 
     prompt: str = Field(description="The prompt to check for suspicion.", examples=["cat"])
     filter_type: int = Field(
@@ -161,7 +186,12 @@ class PutNewFilterRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
-    """Request model for the put new filter endpoint."""
+    """Create a new filter.
+
+    Represents a PUT request to the /v2/filters endpoint.
+
+    v2 API Model: `PutNewFilter`
+    """
 
     description: str = Field(default="")
     """The description of the filter."""
@@ -206,6 +236,11 @@ class PutNewFilterRequest(
 
 
 class FilterRegex(HordeAPIObjectBaseModel):
+    """Details about a filter, including the regex and its type.
+
+    v2 API Model: `FilterRegex`
+    """
+
     filter_type: int = Field(examples=[10], ge=10, le=29)
     """The type of filter."""
     regex: str = Field(examples=["ac.*"])
@@ -220,7 +255,12 @@ class FilterRegex(HordeAPIObjectBaseModel):
 @Unhashable
 @Unequatable
 class FilterRegexResponse(HordeResponseRootModel[list[FilterRegex]]):
-    """Response model for the filter regex endpoint."""
+    """A list of filters.
+
+    Represents the data returned from the /v2/filters/regex endpoint with http status code 200.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
+    """
 
     root: list[FilterRegex]
     """The underlying list of filters."""
@@ -235,7 +275,10 @@ class FilterRegexRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
-    """Request model for the filter regex endpoint."""
+    """Request to get a list of regex filters.
+
+    Represents a GET request to the /v2/filters/regex endpoint.
+    """
 
     @override
     @classmethod
@@ -267,7 +310,10 @@ class SingleFilterRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
-    """Request model for the single filter endpoint."""
+    """Request details about a single filter.
+
+    Represents a GET request to the /v2/filters/{filter_id} endpoint.
+    """
 
     filter_id: str
     """The ID of the filter to retrieve."""
@@ -307,7 +353,12 @@ class DeleteFilterResponse(
     HordeResponseBaseModel,
     ContainsMessageResponseMixin,
 ):
-    """Response model for the delete filter endpoint."""
+    """Response to deleting a filter, with a message.
+
+    Represents the data returned from the /v2/filters/{filter_id} endpoint with http status code 200.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
+    """
 
     @override
     @classmethod
@@ -319,7 +370,10 @@ class DeleteFilterRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
-    """Request model for the delete filter endpoint."""
+    """Request to delete a filter by its filter_id.
+
+    Represents a DELETE request to the /v2/filters/{filter_id} endpoint.
+    """
 
     filter_id: str
     """The ID of the filter to delete."""
@@ -354,7 +408,12 @@ class PatchExistingFilter(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
-    """Request model for the patch existing filter endpoint."""
+    """Update an existing filter by its filter_id.
+
+    Represents a PATCH request to the /v2/filters/{filter_id} endpoint.
+
+    v2 API Model: `PatchExistingFilter`
+    """
 
     description: str | None = Field(default=None)
     """The description of the filter."""

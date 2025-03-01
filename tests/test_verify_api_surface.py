@@ -172,3 +172,48 @@ def test_all_models_have_docstrings() -> None:
     jsonified_missing_docstrings = json.dumps(stringified_missing_docstrings, indent=4)
 
     assert not missing_docstrings, "The following models are missing docstrings: " f"{jsonified_missing_docstrings}"
+
+
+@pytest.mark.object_verify
+def test_all_models_non_conforming_docstrings() -> None:
+    import horde_sdk.meta
+
+    non_conforming_docstrings = horde_sdk.meta.all_models_non_conforming_docstrings()
+
+    import json
+
+    stringified_non_conforming_docstrings = {k.__name__: v for k, v in non_conforming_docstrings.items()}
+    jsonified_non_conforming_docstrings = json.dumps(stringified_non_conforming_docstrings, indent=4)
+
+    map_to_dump: dict[str, dict[str, str]] = {}
+    missing_original_docstrings: dict[str, dict[str, str]] = {}
+
+    for model, docstrings in non_conforming_docstrings.items():
+        original_docstring, new_docstring = docstrings
+
+        if original_docstring is None:
+            missing_original_docstrings[model.__name__] = {
+                "new": new_docstring or "",
+            }
+            continue
+
+        if original_docstring:
+            map_to_dump[model.__name__] = {
+                "original": original_docstring,
+                "new": new_docstring or "",
+            }
+        else:
+            map_to_dump[model.__name__] = {
+                "new": new_docstring or "",
+            }
+    with open("docstrings.json", "w", encoding="utf-8") as f:
+        json.dump(map_to_dump, f, indent=4)
+        f.write("\n")
+
+    with open("missing_original_docstrings.json", "w", encoding="utf-8") as f:
+        json.dump(missing_original_docstrings, f, indent=4)
+        f.write("\n")
+
+    assert not non_conforming_docstrings, (
+        "The following models have non-conforming docstrings: " f"{jsonified_non_conforming_docstrings}"
+    )

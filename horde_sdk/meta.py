@@ -14,7 +14,8 @@ import horde_sdk.ratings_api.apimodels
 import horde_sdk.worker
 from horde_sdk import HordeAPIObject, HordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH, get_ai_horde_swagger_url
-from horde_sdk.generic_api.apimodels import HordeAPIData
+from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod, HTTPStatusCode
+from horde_sdk.generic_api.apimodels import HordeAPIData, HordeResponse
 from horde_sdk.generic_api.utils.swagger import SwaggerParser
 
 
@@ -170,6 +171,8 @@ def all_models_missing_docstrings() -> set[type]:
     all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
     all_classes += find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIData)
 
+    all_classes = list(set(all_classes))
+
     missing_docstrings = set()
 
     for class_type in all_classes:
@@ -185,6 +188,8 @@ def all_model_and_fields_missing_docstrings() -> dict[type, set[str]]:
     all_classes += find_subclasses(horde_sdk.generic_api.apimodels, HordeAPIData)
     all_classes += find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
     all_classes += find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIData)
+
+    all_classes = list(set(all_classes))
 
     missing_docstrings: dict[type, set[str]] = {}
 
@@ -203,3 +208,232 @@ def all_model_and_fields_missing_docstrings() -> dict[type, set[str]]:
             missing_docstrings[class_type] = missing_fields
 
     return missing_docstrings
+
+
+class FoundResponseInfo:
+    """A class to store information about a found response class (type)."""
+
+    def __init__(
+        self,
+        *,
+        response: type[HordeResponse],
+        api_model_name: str | None,
+        parent_request: type[HordeRequest],
+        http_status_code: HTTPStatusCode,
+        endpoint: str,
+        http_method: HTTPMethod,
+    ) -> None:
+        self.response = response
+        self.api_model_name = api_model_name
+        self.parent_request = parent_request
+        self.http_status_code = http_status_code
+        self.endpoint = endpoint
+        self.http_method = http_method
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, FoundResponseInfo):
+            return False
+
+        return (
+            self.response is other.response
+            and self.api_model_name == other.api_model_name
+            and self.parent_request is other.parent_request
+            and self.http_status_code == other.http_status_code
+            and self.endpoint == other.endpoint
+            and self.http_method == other.http_method
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.response, self.parent_request, self.http_status_code, self.endpoint, self.http_method))
+
+
+class FoundMixinInfo:
+    """A class to store information about a found mixin class (type)."""
+
+    def __init__(
+        self,
+        *,
+        mixin: type,
+        api_model_name: str | None,
+    ) -> None:
+        self.mixin = mixin
+        self.api_model_name = api_model_name
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, FoundMixinInfo):
+            return False
+
+        return self.mixin is other.mixin and self.api_model_name == other.api_model_name
+
+    def __hash__(self) -> int:
+        return hash((self.mixin, self.api_model_name))
+
+
+def all_models_non_conforming_docstrings() -> dict[type, tuple[str | None, str | None]]:
+    """Return all of the models that do not have a v2 API model."""
+    all_classes: list[type[HordeAPIObject] | type[HordeAPIData]]
+    all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
+
+    request_docstring_template = "Represents a {http_method} request to the {endpoint} endpoint."
+    response_docstring_template_single = (
+        "Represents the data returned from the {endpoint} endpoint with http status code {http_status_code}."
+    )
+    endpoint_status_codes_pairs_template = (
+        "        - {endpoint} | {request_type} [{http_method}] -> {http_status_code}\n"
+    )
+    response_docstring_template_multiple = (
+        "Represents the data returned from the following endpoints and http "
+        "status codes:\n{endpoint_status_codes_pairs}"
+    )
+
+    v2_api_model_template = "\n\n    v2 API Model: `{api_model}`"
+
+    non_conforming_requests: dict[type, tuple[str | None, str | None]] = {}
+    non_conforming_responses: dict[type, tuple[str | None, str | None]] = {}
+    non_conforming_other: dict[type, tuple[str | None, str | None]] = {}
+
+    request_response_map: dict[type[HordeRequest], list[FoundResponseInfo]] = {}
+    response_request_map: dict[type[HordeResponse], list[FoundResponseInfo]] = {}
+
+    def process_request(class_type: type[HordeRequest]) -> None:
+        request_response_map[class_type] = []
+
+        http_method = class_type.get_http_method()
+        endpoint = class_type.get_api_endpoint_subpath()
+
+        expected_request_docstring = request_docstring_template.format(
+            http_method=http_method,
+            endpoint=endpoint,
+        )
+
+        request_api_model_name = class_type.get_api_model_name()
+
+        if request_api_model_name is not None:
+            expected_request_docstring += v2_api_model_template.format(api_model=request_api_model_name)
+
+        if not class_type.__doc__ or not class_type.__doc__.rstrip().endswith(expected_request_docstring):
+            non_conforming_requests[class_type] = (class_type.__doc__, expected_request_docstring)
+
+        for response_status_code, response_type in sorted(class_type.get_success_status_response_pairs().items()):
+            if not issubclass(response_type, HordeResponse):
+                raise TypeError(f"Expected {response_type} to be a HordeResponse")
+
+            found_response_info = FoundResponseInfo(
+                response=response_type,
+                api_model_name=response_type.get_api_model_name(),
+                parent_request=class_type,
+                http_status_code=response_status_code,
+                endpoint=endpoint,
+                http_method=http_method,
+            )
+
+            request_response_map[class_type].append(found_response_info)
+
+            if response_type not in response_request_map:
+                response_request_map[response_type] = []
+
+            response_request_map[response_type].append(found_response_info)
+
+    def process_response(response_request_infos: list[FoundResponseInfo]) -> None:
+        endpoint_status_codes_pairs = ""
+
+        if len(response_request_infos) == 1:
+            response_request_info = response_request_infos[0]
+
+            endpoint_status_codes_pairs += endpoint_status_codes_pairs_template.format(
+                endpoint=response_request_info.endpoint,
+                request_type=response_request_info.parent_request.__name__,
+                http_method=response_request_info.http_method,
+                http_status_code=response_request_info.http_status_code,
+            )
+
+            expected_response_docstring = response_docstring_template_single.format(
+                endpoint=response_request_info.endpoint,
+                http_status_code=response_request_info.http_status_code,
+            )
+
+            if response_request_info.api_model_name:
+                expected_response_docstring += v2_api_model_template.format(
+                    api_model=response_request_info.api_model_name,
+                )
+
+            found_response_type = response_request_info.response
+
+            if not found_response_type.__doc__ or not found_response_type.__doc__.rstrip().endswith(
+                expected_response_docstring,
+            ):
+                non_conforming_responses[found_response_type] = (
+                    found_response_type.__doc__,
+                    expected_response_docstring,
+                )
+
+        else:
+            last_response_request_info: FoundResponseInfo | None = None
+            for response_request_info in response_request_infos:
+                if (
+                    last_response_request_info is not None
+                    and last_response_request_info.endpoint == response_request_info.endpoint
+                    and last_response_request_info.http_method == response_request_info.http_method
+                    and last_response_request_info.http_status_code == response_request_info.http_status_code
+                ):
+                    continue
+
+                last_response_request_info = response_request_info
+                endpoint_status_codes_pairs += endpoint_status_codes_pairs_template.format(
+                    endpoint=response_request_info.endpoint,
+                    request_type=response_request_info.parent_request.__name__,
+                    http_method=response_request_info.http_method,
+                    http_status_code=response_request_info.http_status_code,
+                )
+
+            expected_response_docstring = response_docstring_template_multiple.format(
+                endpoint_status_codes_pairs=endpoint_status_codes_pairs,
+            )
+
+            if response_request_info.api_model_name:
+                expected_response_docstring = expected_response_docstring.rstrip()
+                expected_response_docstring += v2_api_model_template.format(
+                    api_model=response_request_info.api_model_name,
+                )
+
+            for response_request_info in response_request_infos:
+                found_response_type = response_request_info.response
+
+                if not found_response_type.__doc__ or not found_response_type.__doc__.rstrip().endswith(
+                    expected_response_docstring,
+                ):
+                    non_conforming_responses[found_response_type] = (
+                        found_response_type.__doc__,
+                        expected_response_docstring,
+                    )
+
+    def process_other(class_type: type[HordeAPIObject]) -> None:
+        api_model_name = class_type.get_api_model_name()
+
+        expected_other_docstring = v2_api_model_template.format(api_model=api_model_name)
+
+        if not class_type.__doc__:
+            return
+
+        if not class_type.__doc__.rstrip().endswith(expected_other_docstring):
+            non_conforming_other[class_type] = (class_type.__doc__, expected_other_docstring)
+
+    _sorted_all_classes = sorted(all_classes, key=lambda x: x.__name__)
+    _sorted_all_classes.reverse()
+    for class_type in _sorted_all_classes:
+        if issubclass(class_type, HordeResponse):
+            continue
+
+        if issubclass(class_type, HordeRequest):
+            process_request(class_type)
+        elif issubclass(class_type, HordeAPIObject):
+            process_other(class_type)
+
+    for _, response_request_infos in sorted(response_request_map.items(), key=lambda x: x[0].__name__):
+        process_response(response_request_infos)
+
+    return {
+        **non_conforming_requests,
+        **non_conforming_responses,
+        **non_conforming_other,
+    }

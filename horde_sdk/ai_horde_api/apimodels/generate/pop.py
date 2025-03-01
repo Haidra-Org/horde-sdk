@@ -33,6 +33,8 @@ from horde_sdk.generic_api.apimodels import (
 
 
 class NoValidRequestFound(HordeAPIObjectBaseModel):
+    """Base class for the number of jobs a worker skipped for, and why."""
+
     blacklist: int | None = Field(default=None, ge=0)
     """How many waiting requests were skipped because they demanded a generation with a word that this worker does
     not accept."""
@@ -66,7 +68,7 @@ class NoValidRequestFound(HordeAPIObjectBaseModel):
 
 
 class ImageGenerateJobPopSkippedStatus(NoValidRequestFound):
-    """Represents the data returned from the `/v2/generate/pop` endpoint for why a worker was skipped.
+    """The number of jobs a worker was skipped for, and why.
 
     v2 API Model: `NoValidRequestFoundStable`
     """
@@ -95,6 +97,8 @@ class ImageGenerateJobPopSkippedStatus(NoValidRequestFound):
 
 
 class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
+    """Mixin for the additional image generation parameters used in dispatching a job to a worker."""
+
     prompt: str | None = None
     """The prompt to use for this image generation."""
 
@@ -106,6 +110,8 @@ class ImageGenerateJobPopPayload(ImageGenerateParamMixin):
 
 
 class ExtraSourceImageMixin(ResponseRequiringDownloadMixin):
+    """Mixin for jobs which have extra source images."""
+
     extra_source_images: list[ExtraSourceImageEntry] | None = None
     """Additional uploaded images (as base64) which can be used for further operations."""
     _downloaded_extra_source_images: list[ExtraSourceImageEntry] | None = None
@@ -211,7 +217,11 @@ class ImageGenerateJobPopResponse(
     ResponseRequiringFollowUpMixin,
     ExtraSourceImageMixin,
 ):
-    """Represents the data returned from the `/v2/generate/pop` endpoint.
+    """Contains job data for workers, if any were available. Also contains data for jobs this worker was skipped for.
+
+    This is the key response type for all image workers as it contains all assignment data for the worker.
+
+    Represents the data returned from the /v2/generate/pop endpoint with http status code 200.
 
     v2 API Model: `GenerationPayloadStable`
     """
@@ -428,6 +438,11 @@ class ImageGenerateJobPopResponse(
 
 
 class PopInput(HordeAPIObjectBaseModel):
+    """The input data for a image worker requesting jobs.
+
+    v2 API Model: `PopInput`
+    """
+
     amount: int | None = Field(1, ge=1, le=20)
     """The number of jobs to pop at the same time."""
     bridge_agent: str | None = Field(
@@ -476,7 +491,11 @@ class PopInput(HordeAPIObjectBaseModel):
 
 
 class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin, PopInput):
-    """Represents the data needed to make a job request from a worker to the /v2/generate/pop endpoint.
+    """Request additional jobs, if any are available, for an image worker.
+
+    This is the key request type for all image workers as it contains all the parameters needed to request a job.
+
+    Represents a POST request to the /v2/generate/pop endpoint.
 
     v2 API Model: `PopInputStable`
     """

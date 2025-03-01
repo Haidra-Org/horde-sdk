@@ -21,9 +21,11 @@ class TextGenerationJobSubmitRequest(
     JobRequestMixin,
     APIKeyAllowedInRequestMixin,
 ):
-    """Represents the data needed to make a job submit 'request' from a worker to the /v2/generate/submit endpoint.
+    """Used when a worker submits a generation job. Includes metadata about the generation.
 
-    v2 API Model: `SubmitInputStable`
+    Represents a POST request to the /v2/generate/text/submit endpoint.
+
+    v2 API Model: `SubmitInputKobold`
     """
 
     generation: str = ""

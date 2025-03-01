@@ -17,6 +17,13 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 @Unhashable
 @Unequatable
 class TeamDetails(HordeResponseBaseModel, TeamDetailsLite):
+    """Details about a team, including the models and workers that are part of it.
+
+    Represents the data returned from the /v2/teams/{team_id} endpoint with http status code 200.
+
+    v2 API Model: `TeamDetails`
+    """
+
     info: str | None = Field(
         default=None,
         examples=[
@@ -60,6 +67,12 @@ class TeamDetails(HordeResponseBaseModel, TeamDetailsLite):
 @Unhashable
 @Unequatable
 class AllTeamDetailsResponse(HordeResponseRootModel[list[TeamDetails]]):
+    """Details about all teams, including the models and workers that are part of them.
+
+    Represents the data returned from the /v2/teams endpoint with http status code 200.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
+    """
 
     root: list[TeamDetails]
     """The underlying list of teams."""
@@ -73,6 +86,11 @@ class AllTeamDetailsResponse(HordeResponseRootModel[list[TeamDetails]]):
 class AllTeamDetailsRequest(
     BaseAIHordeRequest,
 ):
+    """Request to get details about all teams.
+
+    Represents a GET request to the /v2/teams endpoint.
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> None:
@@ -97,6 +115,11 @@ class AllTeamDetailsRequest(
 class SingleTeamDetailsRequest(
     BaseAIHordeRequest,
 ):
+    """Request to get details about a single team by ID.
+
+    Represents a GET request to the /v2/teams/{team_id} endpoint.
+    """
+
     team_id: str
     """The ID of the team to get details for."""
 
@@ -122,6 +145,15 @@ class SingleTeamDetailsRequest(
 
 
 class ModifyTeam(HordeResponseBaseModel):
+    """Details about a team that has been modified.
+
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/teams/{team_id} | ModifyTeamRequest [PATCH] -> 200
+        - /v2/teams | CreateTeamRequest [POST] -> 200
+
+    v2 API Model: `ModifyTeam`
+    """
+
     id_: str = Field(alias="id")
     """The ID of the team."""
     name: str
@@ -140,6 +172,11 @@ class ModifyTeam(HordeResponseBaseModel):
 
 
 class ModifyTeamInput(HordeAPIObjectBaseModel):
+    """Input data for modifying a team.
+
+    v2 API Model: `ModifyTeamInput`
+    """
+
     name: str
     """The name of the team."""
     info: str | None = Field(
@@ -161,6 +198,12 @@ class CreateTeamRequest(
     APIKeyAllowedInRequestMixin,
     ModifyTeamInput,
 ):
+    """Request to create a new team.
+
+    Represents a POST request to the /v2/teams endpoint.
+
+    v2 API Model: `CreateTeamInput`
+    """
 
     @override
     @classmethod
@@ -188,6 +231,13 @@ class ModifyTeamRequest(
     APIKeyAllowedInRequestMixin,
     ModifyTeamInput,
 ):
+    """Request to modify a team by ID.
+
+    Represents a PATCH request to the /v2/teams/{team_id} endpoint.
+
+    v2 API Model: `ModifyTeamInput`
+    """
+
     team_id: str
 
     @override
@@ -217,6 +267,10 @@ class ModifyTeamRequest(
 
 
 class DeleteTeamResponse(HordeResponseBaseModel):
+    """The team id and name that was just deleted.
+
+    Represents the data returned from the /v2/teams/{team_id} endpoint with http status code 200.
+    """
 
     deleted_id: str
     """The ID of the team that was deleted."""
@@ -233,6 +287,11 @@ class DeleteTeamRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
 ):
+    """Request to delete a team by ID.
+
+    Represents a DELETE request to the /v2/teams/{team_id} endpoint.
+    """
+
     team_id: str
     """The ID of the team to delete."""
 

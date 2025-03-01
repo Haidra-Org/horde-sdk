@@ -8,6 +8,15 @@ from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin, HordeRe
 
 
 class AlchemyJobSubmitResponse(HordeResponseBaseModel):
+    """The reward for submitting an alchemy job. Receipt of this response means the job was successfully submitted.
+
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/interrogate/submit | AlchemyJobSubmitRequest [POST] -> 200
+        - /v2/interrogate/submit | AlchemyJobSubmitRequest [POST] -> 200
+
+    v2 API Model: `GenerationSubmitted`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -18,6 +27,13 @@ class AlchemyJobSubmitResponse(HordeResponseBaseModel):
 
 
 class AlchemyJobSubmitRequest(BaseAIHordeRequest, JobRequestMixin, APIKeyAllowedInRequestMixin):
+    """Request to submit an alchemy job once a worker has completed it.
+
+    Represents a POST request to the /v2/interrogate/submit endpoint.
+
+    v2 API Model: `SubmitInputStable`
+    """
+
     result: str  # FIXME
     """The result of the alchemy job."""
     state: GENERATION_STATE

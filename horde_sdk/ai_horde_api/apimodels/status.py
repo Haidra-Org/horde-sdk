@@ -6,7 +6,7 @@ from typing_extensions import override
 from horde_sdk.ai_horde_api.apimodels.base import ActiveModel, BaseAIHordeRequest
 from horde_sdk.ai_horde_api.consts import MODEL_STATE, MODEL_TYPE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
-from horde_sdk.consts import HTTPMethod
+from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     ContainsMessageResponseMixin,
     HordeAPIObjectBaseModel,
@@ -17,16 +17,30 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class AIHordeHeartbeatResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
+    """Returns the status of the AI Horde API and a message if present.
+
+    Represents the data returned from the /v2/status/heartbeat endpoint with http status code 200.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
+    """
+
     version: str
     """The version of the AI Horde API that this node is running."""
 
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
-        return None
+        return _ANONYMOUS_MODEL
 
 
 class AIHordeHeartbeatRequest(BaseAIHordeRequest):
+    """Request a heartbeat from the AI Horde API, suitable for checking if the API is up and running.
+
+    These requests may also return other meta information, such as the version of the API.
+
+    Represents a GET request to the /v2/status/heartbeat endpoint.
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -49,6 +63,13 @@ class AIHordeHeartbeatRequest(BaseAIHordeRequest):
 
 
 class HordePerformanceResponse(HordeResponseBaseModel):
+    """Information about the performance of the horde, such as worker counts and queue sizes.
+
+    Represents the data returned from the /v2/status/performance endpoint with http status code 200.
+
+    v2 API Model: `HordePerformance`
+    """
+
     interrogator_count: int | None = Field(
         default=None,
         description=(
@@ -127,6 +148,11 @@ class HordePerformanceResponse(HordeResponseBaseModel):
 
 
 class HordePerformanceRequest(BaseAIHordeRequest):
+    """Request performance information about the horde, such as worker counts and queue sizes.
+
+    Represents a GET request to the /v2/status/performance endpoint.
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -149,6 +175,8 @@ class HordePerformanceRequest(BaseAIHordeRequest):
 
 
 class Newspiece(HordeAPIObjectBaseModel):
+    """A piece of news from the horde, such as updates or other news from the AI-Horde team."""
+
     date_published: str | None = Field(
         default=None,
     )
@@ -181,6 +209,11 @@ class Newspiece(HordeAPIObjectBaseModel):
 @Unhashable
 @Unequatable
 class NewsResponse(HordeResponseRootModel[list[Newspiece]]):
+    """A list of newspieces from the horde, which are updates or other news from the AI-Horde team.
+
+    Represents the data returned from the /v2/status/news endpoint with http status code 200.
+    """
+
     root: list[Newspiece]
     """The underlying list of newspieces."""
 
@@ -202,6 +235,11 @@ class NewsResponse(HordeResponseRootModel[list[Newspiece]]):
 
 
 class NewsRequest(BaseAIHordeRequest):
+    """Request news from the horde, such as updates or other news from the AI-Horde team.
+
+    Represents a GET request to the /v2/status/news endpoint.
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -226,6 +264,11 @@ class NewsRequest(BaseAIHordeRequest):
 @Unhashable
 @Unequatable
 class HordeStatusModelsAllResponse(HordeResponseRootModel[list[ActiveModel]]):
+    """A list of details about active models in the horde.
+
+    Represents the data returned from the /v2/status/models endpoint with http status code 200.
+    """
+
     root: list[ActiveModel]
     """The underlying list of models."""
 
@@ -247,6 +290,11 @@ class HordeStatusModelsAllResponse(HordeResponseRootModel[list[ActiveModel]]):
 
 
 class HordeStatusModelsAllRequest(BaseAIHordeRequest):
+    """Request details about models in the horde.
+
+    Represents a GET request to the /v2/status/models endpoint.
+    """
+
     model_config = ConfigDict(
         protected_namespaces=(),  # Allows the "model_" prefix on attrs
     )
@@ -296,6 +344,11 @@ class HordeStatusModelsAllRequest(BaseAIHordeRequest):
 @Unhashable
 @Unequatable
 class HordeStatusModelsSingleResponse(HordeResponseRootModel[list[ActiveModel]]):
+    """A list of details about a single active model in the horde.
+
+    Represents the data returned from the /v2/status/models/{model_name} endpoint with http status code 200.
+    """
+
     # This is a list because of an oversight in the structure of the API response. # FIXME
 
     root: list[ActiveModel]
@@ -319,6 +372,11 @@ class HordeStatusModelsSingleResponse(HordeResponseRootModel[list[ActiveModel]])
 
 
 class HordeStatusModelsSingleRequest(BaseAIHordeRequest):
+    """Request details about a single model in the horde by its name.
+
+    Represents a GET request to the /v2/status/models/{model_name} endpoint.
+    """
+
     model_config = ConfigDict(
         protected_namespaces=(),  # Allows the "model_" prefix on attrs
     )
@@ -348,6 +406,8 @@ class HordeStatusModelsSingleRequest(BaseAIHordeRequest):
 
 
 class HordeModes(HordeAPIObjectBaseModel):
+    """The current modes of the horde, such as maintenance mode, invite-only mode, and raid mode."""
+
     maintenance_mode: bool = Field(
         default=False,
     )

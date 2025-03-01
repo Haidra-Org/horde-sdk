@@ -8,6 +8,13 @@ from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin
 
 
 class FindUserRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
+    """Request to find a user by their API key.
+
+    This is useful for frontend applications first confirming that a user is registered with the Horde.
+
+    Represents a GET request to the /v2/find_user endpoint.
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:

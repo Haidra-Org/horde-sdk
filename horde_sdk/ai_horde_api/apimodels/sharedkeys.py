@@ -56,7 +56,11 @@ class SharedKeySettings(HordeAPIObjectBaseModel):
 
 
 class SharedKeyDetailsResponse(HordeResponseBaseModel, MessageSpecifiesSharedKeyMixin, SharedKeySettings):
-    """Represents the data returned from the `/v2/sharedkeys/{sharedkey_id}` endpoint.
+    """Information about a SharedKey, including its creating user, settings and utilization.
+
+    The data returned in this response can vary depending on the user's permissions, (creator, owner, or admin).
+
+    Represents the data returned from the /v2/sharedkeys/{sharedkey_id} endpoint with http status code 200.
 
     v2 API Model: `SharedKeyDetails`
     """
@@ -91,9 +95,11 @@ class SharedKeyDetailsResponse(HordeResponseBaseModel, MessageSpecifiesSharedKey
 
 
 class SharedKeyDetailsRequest(BaseAIHordeRequest, MessageSpecifiesSharedKeyMixin):
-    """Represents the request data for the `/v2/sharedkeys/{sharedkey_id}` endpoint.
+    """Request the details of a SharedKey, including its creating user, settings, and utilization.
 
-    v2 API Model: `SharedKeyDetails`
+    The response data can vary depending on the user's permissions, (e.g., if they are a creator, owner, or admin).
+
+    Represents a GET request to the /v2/sharedkeys/{sharedkey_id} endpoint.
     """
 
     @override
@@ -118,15 +124,15 @@ class SharedKeyDetailsRequest(BaseAIHordeRequest, MessageSpecifiesSharedKeyMixin
 
 
 class SharedKeyDeleteResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
-    """Represents the data returned from the DELETE `/v2/sharedkeys/{sharedkey_id}` endpoint.
+    """The response to a request to delete a SharedKey.
 
-    v2 API Model: None (`message` only)
+    Represents the data returned from the /v2/sharedkeys/{sharedkey_id} endpoint with http status code 200.
     """
 
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
-        return None
+        return "SimpleResponse"
 
 
 class SharedKeyDeleteRequest(
@@ -134,9 +140,11 @@ class SharedKeyDeleteRequest(
     MessageSpecifiesSharedKeyMixin,
     APIKeyAllowedInRequestMixin,
 ):
-    """Represents the request data for the `/v2/sharedkeys/{sharedkey_id}` endpoint.
+    """Request to delete a SharedKey.
 
-    v2 API Model: None
+    This is a privileged operation that requires the user to be the owner, a moderator, or an admin.
+
+    Represents a DELETE request to the /v2/sharedkeys/{sharedkey_id} endpoint.
     """
 
     @override
@@ -166,9 +174,13 @@ class SharedKeyModifyRequest(
     MessageSpecifiesSharedKeyMixin,
     APIKeyAllowedInRequestMixin,
 ):
-    """Represents the request data for the PATCH `/v2/sharedkeys/{sharedkey_id}` endpoint.
+    """Request to modify a SharedKey.
 
-    v2 API Model: `SharedKeyModify`
+    This is a privileged operation that requires the user to be the owner, a moderator, or an admin.
+
+    Represents a PATCH request to the /v2/sharedkeys/{sharedkey_id} endpoint.
+
+    v2 API Model: `SharedKeyInput`
     """
 
     @override
@@ -197,9 +209,11 @@ class SharedKeyCreateRequest(
     SharedKeySettings,
     APIKeyAllowedInRequestMixin,
 ):
-    """Represents the request data for the POST `/v2/sharedkeys` endpoint.
+    """Request to create a new SharedKey.
 
-    v2 API Model: `SharedKeyCreate`
+    Represents a PUT request to the /v2/sharedkeys endpoint.
+
+    v2 API Model: `SharedKeyInput`
     """
 
     @override
