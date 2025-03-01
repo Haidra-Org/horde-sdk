@@ -52,19 +52,34 @@ def assert_common_parameters(
 
         if isinstance(single_generation, UpscaleAlchemyParameters):
             assert single_generation.form == KNOWN_ALCHEMY_FORMS.post_process
-            assert single_generation.upscaler in KNOWN_UPSCALERS
+            assert (
+                single_generation.upscaler in KNOWN_UPSCALERS.__members__
+                or single_generation.upscaler in KNOWN_UPSCALERS.__members__.values()
+            )
         elif isinstance(single_generation, FacefixAlchemyParameters):
             assert single_generation.form == KNOWN_ALCHEMY_FORMS.post_process
-            assert single_generation.facefixer in KNOWN_FACEFIXERS
+            assert (
+                single_generation.facefixer in KNOWN_FACEFIXERS.__members__
+                or single_generation.facefixer in KNOWN_FACEFIXERS.__members__.values()
+            )
         elif isinstance(single_generation, InterrogateAlchemyParameters):
             assert single_generation.form == KNOWN_ALCHEMY_FORMS.interrogation
-            assert single_generation.interrogator in KNOWN_INTERROGATORS
+            assert (
+                single_generation.interrogator in KNOWN_INTERROGATORS.__members__
+                or single_generation.interrogator in KNOWN_INTERROGATORS.__members__.values()
+            )
         elif isinstance(single_generation, CaptionAlchemyParameters):
             assert single_generation.form == KNOWN_ALCHEMY_FORMS.caption
-            assert single_generation.caption_model in KNOWN_CAPTION_MODELS
+            assert (
+                single_generation.caption_model in KNOWN_CAPTION_MODELS.__members__
+                or single_generation.caption_model in KNOWN_CAPTION_MODELS.__members__.values()
+            )
         elif isinstance(single_generation, NSFWAlchemyParameters):
             assert single_generation.form == KNOWN_ALCHEMY_FORMS.nsfw
-            assert single_generation.nsfw_detector in KNOWN_NSFW_DETECTOR
+            assert (
+                single_generation.nsfw_detector in KNOWN_NSFW_DETECTOR.__members__
+                or single_generation.nsfw_detector in KNOWN_NSFW_DETECTOR.__members__.values()
+            )
 
 
 def test_convert_alchemy_job_pop_response_to_parameters_interrogate(

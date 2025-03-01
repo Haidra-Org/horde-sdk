@@ -381,7 +381,7 @@ class ImageGenerateJobPopResponse(
             return False
 
         return any(
-            post_processing in KNOWN_UPSCALERS.__members__ or post_processing in KNOWN_UPSCALERS._value2member_map_
+            post_processing in KNOWN_UPSCALERS.__members__ or post_processing in KNOWN_UPSCALERS.__members__.values()
             for post_processing in self.payload.post_processing
         )
 
