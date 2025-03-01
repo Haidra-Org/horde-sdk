@@ -87,6 +87,7 @@ class AlchemyFormStatus(HordeAPIData):
 
     @field_validator("form", mode="before")
     def validate_form(cls, v: str | KNOWN_ALCHEMY_TYPES) -> KNOWN_ALCHEMY_TYPES | str:
+        """Ensure that the form is a known alchemy type."""
         if isinstance(v, KNOWN_ALCHEMY_TYPES):
             return v
         if str(v) not in KNOWN_ALCHEMY_TYPES.__members__:
@@ -103,6 +104,7 @@ class AlchemyFormStatus(HordeAPIData):
         cls,
         v: dict[str, object],
     ) -> dict[str, object] | None:
+        """Ensure that the result is valid and convert it to the correct type, if possible."""
         if "additionalProp1" in v:
             logger.debug("Found additionalProp1 in result, this is a dummy result. Ignoring.")
             return None
@@ -153,6 +155,7 @@ class AlchemyStatusResponse(HordeResponseBaseModel, ResponseWithProgressMixin):
         """Return all completed upscale results."""
         return [form.result for form in self.forms if form.done and isinstance(form.result, AlchemyUpscaleResult)]
 
+    @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "InterrogationStatus"

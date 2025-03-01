@@ -243,7 +243,8 @@ class BlockWorkerIPAddressResponse(
 ):
     """Indicates that a worker's IP address was successfully blocked.
 
-    Represents the data returned from the /v2/operations/block_worker_ipaddr/{worker_id} endpoint with http status code 200.
+    Represents the data returned from the /v2/operations/block_worker_ipaddr/{worker_id} endpoint with http status
+    code 200.
 
     v2 API Model: `SimpleResponse`
     """

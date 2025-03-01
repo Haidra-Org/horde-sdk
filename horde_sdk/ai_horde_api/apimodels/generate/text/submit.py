@@ -37,6 +37,7 @@ class TextGenerationJobSubmitRequest(
 
     @model_validator(mode="after")
     def validate_generation(self) -> TextGenerationJobSubmitRequest:
+        """Validate the generation field is not an empty string."""
         if self.generation == "":
             logger.error("Generation cannot be an empty string.")
             logger.error(self.log_safe_model_dump())
