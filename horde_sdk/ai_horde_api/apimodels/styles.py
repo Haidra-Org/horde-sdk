@@ -543,7 +543,8 @@ class StyleImageExampleAddRequest(
 class StyleImageExampleDeleteResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
     """Indicates that an example was successfully deleted.
 
-    Represents the data returned from the /v2/styles/image/{style_id}/example/{example_id} endpoint with http status code 200.
+    Represents the data returned from the /v2/styles/image/{style_id}/example/{example_id} endpoint with http status
+    code 200.
 
     v2 API Model: `SimpleResponse`
     """

@@ -15,13 +15,13 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     ImageGenerateParamMixin,
 )
 from horde_sdk.ai_horde_api.apimodels.generate.submit import ImageGenerationJobSubmitRequest
-from horde_sdk.ai_horde_api.apimodels.workers.messages import _ResponseModelMessageData, ResponseModelMessage
+from horde_sdk.ai_horde_api.apimodels.workers.messages import _ResponseModelMessageData
 from horde_sdk.ai_horde_api.consts import (
     GENERATION_STATE,
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import GenerationID
-from horde_sdk.consts import _ANONYMOUS_MODEL, _MODEL_OVERLOADED, HTTPMethod
+from horde_sdk.consts import _MODEL_OVERLOADED, HTTPMethod
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_FACEFIXERS, KNOWN_UPSCALERS
 from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 from horde_sdk.generic_api.apimodels import (
@@ -303,6 +303,7 @@ class ImageGenerateJobPopResponse(
 
     @field_validator("id_", mode="before")
     def validate_id(cls, v: str | GenerationID) -> GenerationID | str:
+        """Validate the ID is not an empty string."""
         if isinstance(v, str) and v == "":
             logger.warning("Job ID is empty")
             return GenerationID(root=uuid.uuid4())

@@ -1,5 +1,5 @@
-from loguru import logger
 import pytest
+from loguru import logger
 
 
 @pytest.mark.object_verify

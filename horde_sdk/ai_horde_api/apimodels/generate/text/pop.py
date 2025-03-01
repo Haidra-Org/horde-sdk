@@ -90,6 +90,7 @@ class TextGenerateJobPopResponse(
 
     @field_validator("id_", mode="before")
     def validate_id(cls, v: str | GenerationID) -> GenerationID | str:
+        """Validate the ID is not an empty string."""
         if isinstance(v, str) and v == "":
             logger.warning("Job ID is empty")
             return GenerationID(root=uuid.uuid4())

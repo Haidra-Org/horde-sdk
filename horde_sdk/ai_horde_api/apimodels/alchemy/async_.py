@@ -75,7 +75,8 @@ class AlchemyAsyncRequestFormItem(HordeAPIData):
     """The name of the form to request."""
 
     @field_validator("name")
-    def check_name(cls, v: KNOWN_ALCHEMY_TYPES | str) -> KNOWN_ALCHEMY_TYPES | str:
+    def validate_name(cls, v: KNOWN_ALCHEMY_TYPES | str) -> KNOWN_ALCHEMY_TYPES | str:
+        """Validate the name of the form to request."""
         if isinstance(v, KNOWN_ALCHEMY_TYPES):
             return v
         if str(v) not in KNOWN_ALCHEMY_TYPES.__members__:
@@ -109,13 +110,15 @@ class AlchemyAsyncRequest(
     """Whether to use the super slow workers."""
 
     @field_validator("forms")
-    def check_at_least_one_form(cls, v: list[AlchemyAsyncRequestFormItem]) -> list[AlchemyAsyncRequestFormItem]:
+    def validate_at_least_one_form(cls, v: list[AlchemyAsyncRequestFormItem]) -> list[AlchemyAsyncRequestFormItem]:
+        """Ensure at least one form is provided."""
         if not v:
             raise ValueError("At least one form must be provided.")
         return v
 
     @field_validator("source_image")
-    def check_source_image(cls, v: str) -> str:
+    def validate_source_image(cls, v: str) -> str:
+        """Validate the source image URL or base64 string."""
         if "http" in v:
             parsed_url = urllib.parse.urlparse(v)
             if parsed_url.scheme not in ["http", "https"]:

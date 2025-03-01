@@ -50,6 +50,7 @@ class AIHordeDocumentRequestMixin(HordeAPIObjectBaseModel):
 
     @field_validator("format")
     def validate_format(cls, value: DocumentFormat | str) -> DocumentFormat | str:
+        """Validate the format is a valid document format."""
         if isinstance(value, DocumentFormat):
             return value
 

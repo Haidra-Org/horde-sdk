@@ -65,6 +65,7 @@ class AlchemyPopFormPayload(HordeAPIObjectBaseModel, JobRequestMixin):
 
     @field_validator("form", mode="before")
     def validate_form(cls, v: str | KNOWN_ALCHEMY_TYPES) -> KNOWN_ALCHEMY_TYPES | str:
+        """Ensure that the form is a known alchemy type."""
         if isinstance(v, KNOWN_ALCHEMY_TYPES):
             return v
         if isinstance(v, str) and v not in KNOWN_ALCHEMY_TYPES.__members__:

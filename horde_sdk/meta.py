@@ -16,7 +16,7 @@ import horde_sdk.ratings_api.apimodels
 import horde_sdk.worker
 from horde_sdk import HordeAPIObject, HordeRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH, get_ai_horde_swagger_url
-from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod, HTTPStatusCode
+from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.generic_api.apimodels import HordeAPIData, HordeResponse
 from horde_sdk.generic_api.utils.swagger import SwaggerParser
 
@@ -225,6 +225,16 @@ class FoundResponseInfo:
         endpoint: str,
         http_method: HTTPMethod,
     ) -> None:
+        """Initialize the FoundResponseInfo object.
+
+        Args:
+            response (type[HordeResponse]): The response class.
+            api_model_name (str | None): The API model name
+            parent_request (type[HordeRequest]): The parent request class.
+            http_status_code (HTTPStatusCode): The HTTP status code.
+            endpoint (str): The endpoint.
+            http_method (HTTPMethod): The HTTP method.
+        """
         self.response = response
         self.api_model_name = api_model_name
         self.parent_request = parent_request
@@ -258,6 +268,12 @@ class FoundMixinInfo:
         mixin: type,
         api_model_name: str | None,
     ) -> None:
+        """Initialize the FoundMixinInfo object.
+
+        Args:
+            mixin (type): The mixin class.
+            api_model_name (str | None): The API model name
+        """
         self.mixin = mixin
         self.api_model_name = api_model_name
 

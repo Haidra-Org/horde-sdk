@@ -43,6 +43,7 @@ class ImageGenerationJobSubmitRequest(
 
     @model_validator(mode="after")
     def validate_generation(self) -> ImageGenerationJobSubmitRequest:
+        """Validate the generation field is not an empty string and warn if the seed is 0."""
         if self.generation == "":
             logger.error("Generation cannot be an empty string.")
             logger.error(self.log_safe_model_dump())
