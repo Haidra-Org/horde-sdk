@@ -1,0 +1,27 @@
+interfaces = []
+exclude = [
+    "**/*__pycache__",
+    "**/*egg-info",
+    "**/docs",
+    "**/tests",
+    "**/venv",
+]
+source_roots = [
+    ".",
+]
+
+[[modules ]]
+path = "horde_sdk.ai_horde_api"
+depends_on = ["horde_sdk.generation_parameters", "horde_sdk.generic_api"]
+
+[[modules ]]
+path = "horde_sdk.worker"
+depends_on = ["horde_sdk.ai_horde_api", "horde_sdk.generic_api", "horde_sdk.generation_parameters"]
+
+[[modules ]]
+path = "horde_sdk.generation_parameters"
+depends_on = []
+
+[[modules ]]
+path = "horde_sdk.generic_api"
+depends_on = []
