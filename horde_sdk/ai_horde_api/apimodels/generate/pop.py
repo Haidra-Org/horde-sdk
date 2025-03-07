@@ -21,7 +21,7 @@ from horde_sdk.ai_horde_api.consts import (
 )
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import GenerationID
-from horde_sdk.consts import _MODEL_OVERLOADED, HTTPMethod
+from horde_sdk.consts import _OVERLOADED_MODEL, HTTPMethod
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_FACEFIXERS, KNOWN_UPSCALERS
 from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
 from horde_sdk.generic_api.apimodels import (
@@ -31,6 +31,7 @@ from horde_sdk.generic_api.apimodels import (
     ResponseRequiringDownloadMixin,
     ResponseRequiringFollowUpMixin,
 )
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class NoValidRequestFound(HordeAPIObjectBaseModel):
@@ -239,7 +240,7 @@ class PopResponseModelMessage(_ResponseModelMessageData):
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
-        return _MODEL_OVERLOADED
+        return _OVERLOADED_MODEL
 
 
 class ImageGenerateJobPopResponse(
@@ -524,6 +525,8 @@ class PopInput(HordeAPIObjectBaseModel):
         return "PopInput"
 
 
+@Unhashable
+@Unequatable
 class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin, PopInput):
     """Request additional jobs, if any are available, for an image worker.
 

@@ -24,6 +24,7 @@ from horde_sdk.generic_api.apimodels import (
     RequestUsesWorkerMixin,
     ResponseRequiringFollowUpMixin,
 )
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class ImageGenerateAsyncResponse(
@@ -139,6 +140,8 @@ class ImageGenerationInputPayload(ImageGenerateParamMixin):
         return value
 
 
+@Unhashable
+@Unequatable
 class ImageGenerateAsyncRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,

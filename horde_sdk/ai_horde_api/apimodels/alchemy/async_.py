@@ -1,5 +1,6 @@
 import base64
 import urllib.parse
+from typing import Any
 
 from loguru import logger
 from pydantic import field_validator
@@ -22,6 +23,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeResponseTypes,
     ResponseRequiringFollowUpMixin,
 )
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class AlchemyAsyncResponse(
@@ -74,6 +76,9 @@ class AlchemyAsyncRequestFormItem(HordeAPIData):
     name: KNOWN_ALCHEMY_TYPES | str
     """The name of the form to request."""
 
+    payload: Any | None = None
+    """Not currently supported."""
+
     @field_validator("name")
     def validate_name(cls, v: KNOWN_ALCHEMY_TYPES | str) -> KNOWN_ALCHEMY_TYPES | str:
         """Validate the name of the form to request."""
@@ -84,6 +89,8 @@ class AlchemyAsyncRequestFormItem(HordeAPIData):
         return v
 
 
+@Unhashable
+@Unequatable
 class AlchemyAsyncRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,
@@ -108,6 +115,9 @@ class AlchemyAsyncRequest(
     """Whether to use the slower workers. Costs additional kudos if `False`."""
     extra_slow_workers: bool = False
     """Whether to use the super slow workers."""
+    webhook: str | None = None
+    """Provide a URL where the AI Horde will send a POST call after each delivered generation. The request will
+    include the details of the job as well as the request ID."""
 
     @field_validator("forms")
     def validate_at_least_one_form(cls, v: list[AlchemyAsyncRequestFormItem]) -> list[AlchemyAsyncRequestFormItem]:

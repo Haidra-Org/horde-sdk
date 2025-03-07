@@ -19,6 +19,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeResponseBaseModel,
     ResponseRequiringFollowUpMixin,
 )
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 # FIXME
@@ -222,6 +223,8 @@ class AlchemyJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMix
         return bool(self.ids)
 
 
+@Unhashable
+@Unequatable
 class AlchemyPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     """Request additional jobs, if any are available, for an alchemy worker.
 
@@ -232,12 +235,30 @@ class AlchemyPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     v2 API Model: `InterrogationPopInput`
     """
 
+    bridge_agent: str = Field(
+        default="unknown",
+        examples=["AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen"],
+        max_length=1000,
+    )
     name: str
     """The name of the request. This is used to identify the request in the logs."""
     priority_usernames: list[str]
     """The usernames that should be prioritized for this request."""
     forms: list[KNOWN_ALCHEMY_TYPES]
     """The types of alchemy that should be generated."""
+    amount: int
+    """The number of jobs to request."""
+    threads: int = Field(
+        default=1,
+        ge=1,
+    )
+    """The number of threads to report that this bridge is using to the API."""
+    max_tiles: int = Field(
+        default=16,
+        ge=1,
+        le=256,
+    )
+    """The maximum number of 512x512 tiles that this worker can process."""
 
     @override
     @classmethod

@@ -231,16 +231,16 @@ class SingleWarningEntry(HordeAPIObjectBaseModel):
 class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
     """Base class for all shared image generation parameters."""
 
-    height: int = Field(default=512, ge=64, le=3072)
+    height: int = Field(default=512, ge=64, le=3072, multiple_of=64)
     """The desired output image height."""
-    width: int = Field(default=512, ge=64, le=3072)
+    width: int = Field(default=512, ge=64, le=3072, multiple_of=64)
     """The desired output image width."""
 
     sampler_name: KNOWN_SAMPLERS | str = KNOWN_SAMPLERS.k_lms
     """The sampler to use for this generation. Defaults to `KNOWN_SAMPLERS.k_lms`."""
     karras: bool = True
     """Set to True if you want to use the Karras scheduling."""
-    cfg_scale: float = 7.5
+    cfg_scale: float = Field(default=7.5, ge=0, le=10)
     """The cfg_scale to use for this generation. Defaults to 7.5."""
     denoising_strength: float | None = Field(default=1, ge=0, le=1)
     """The denoising strength to use for this generation. Defaults to 1."""
@@ -292,13 +292,6 @@ class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
                     f"Unknown post processor {post_processor}. Is your SDK out of date or did the API change?",
                 )
         return v
-
-    @field_validator("width", "height", mode="before")
-    def width_divisible_by_64(cls, value: int) -> int:
-        """Ensure that the width is divisible by 64."""
-        if value % 64 != 0:
-            raise ValueError("width must be divisible by 64")
-        return value
 
     @field_validator("sampler_name")
     def sampler_name_must_be_known(cls, v: str | KNOWN_SAMPLERS) -> str | KNOWN_SAMPLERS:

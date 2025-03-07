@@ -160,6 +160,9 @@ class CreateWorkerMessageRequest(
     v2 API Model: `ResponseModelMessage`
     """
 
+    expiry: int
+    """The number of hours after which this message expires."""
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:

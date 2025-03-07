@@ -595,13 +595,29 @@ class RequestUsesWorkerMixin(HordeAPIData):
     workers: list[str] = Field(default_factory=list)
     """A list of worker IDs to use for this request. If empty, any worker can pick up the request. Using this incurs
     and extra kudos cost."""
-    worker_blacklist: list[str] = Field(default_factory=list)
+    worker_blacklist: bool = False
     """If true, the worker list will be treated as a blacklist instead of a whitelist."""
     models: list[str]
     """The generative models to use for this request."""
 
+    validated_backends: bool | None = Field(default=None)
+    """When true, only inference backends that are validated by the AI Horde devs will serve this request. When False,
+    non-validated backends will also be used which can increase speed but you may end up with unexpected results."""
+    style: str | None = Field(default=None, examples=["00000000-0000-0000-0000-000000000000"])
+    """The style ID to use for the generation."""
+
     dry_run: bool = False
     """If true, the request will not be processed, but will return a response with the estimated kudos cost."""
+    webhook: str | None = Field(default=None)
+    """Provide a URL where the AI Horde will send a POST call after each delivered generation.
+    The request will include the details of the job as well as the request ID."""
+    allow_downgrade: bool = False
+    """If true, the request can be modified to lesser parameters if the original request is too expensive."""
+    proxied_account: str | None = Field(default=None)
+    """The account this request is being proxied for. This requires the sending API to be a service account."""
+    disable_batching: bool | None = Field(False)
+    """When true, This request will not use batching. This will allow you to retrieve accurate seeds.
+    Feature is restricted to Trusted users and Patreons."""
 
 
 __all__ = [
