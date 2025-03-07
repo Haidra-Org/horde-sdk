@@ -24,6 +24,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeResponseBaseModel,
     ResponseRequiringFollowUpMixin,
 )
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class ModelPayloadKobold(ModelPayloadRootKobold):
@@ -164,8 +165,15 @@ class _PopInputKobold(PopInput):
     """The max amount of context to submit to this AI for sampling."""
     softprompts: list[str] | None = Field(default=None)
     """The available softprompt files on this worker for the currently running model."""
+    extra_slow_worker: bool = Field(default=False)
+    """If this worker is extra slow and requires a longer timeout.
+
+    Note that this reduces the pool of jobs available to this worker.
+    """
 
 
+@Unhashable
+@Unequatable
 class TextGenerateJobPopRequest(
     BaseAIHordeRequest,
     APIKeyAllowedInRequestMixin,

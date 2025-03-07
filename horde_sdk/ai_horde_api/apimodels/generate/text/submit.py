@@ -14,8 +14,11 @@ from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
+@Unhashable
+@Unequatable
 class TextGenerationJobSubmitRequest(
     BaseAIHordeRequest,
     JobRequestMixin,

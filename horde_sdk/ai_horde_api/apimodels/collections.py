@@ -260,6 +260,8 @@ class _InputModelCollectionMixin(HordeAPIData):
     """The styles to use in this collection."""
 
 
+@Unhashable
+@Unequatable
 class CreateCollectionRequest(
     _InputModelCollectionMixin,
     BaseAIHordeRequest,
@@ -379,6 +381,8 @@ class UpdateCollectionResponse(
         return "StyleModify"
 
 
+@Unhashable
+@Unequatable
 class UpdateCollectionRequest(
     _InputModelCollectionMixin,
     BaseAIHordeRequest,

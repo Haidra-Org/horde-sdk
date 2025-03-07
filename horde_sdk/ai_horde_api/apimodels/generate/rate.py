@@ -8,6 +8,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
 )
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
 class AestheticRating(HordeAPIObjectBaseModel):
@@ -76,6 +77,8 @@ class RateResponse(HordeResponseBaseModel):
         return "GenerationSubmitted"
 
 
+@Unhashable
+@Unequatable
 class RateRequest(AestheticsPayload, BaseAIHordeRequest):
     """Submit ratings for a batch of images.
 

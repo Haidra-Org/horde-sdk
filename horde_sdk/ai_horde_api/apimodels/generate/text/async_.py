@@ -249,12 +249,6 @@ class TextGenerateAsyncRequest(
     prompt: str | None = None
     """The prompt which will be sent to KoboldAI to generate text."""
 
-    allow_downgrade: bool | None = Field(False)
-    """When true and the request requires upfront kudos and the account does not have enough The request will be
-    downgraded in max context and max tokens so that it does not need upfront kudos."""
-    disable_batching: bool | None = Field(False)
-    """When true, This request will not use batching. This will allow you to retrieve accurate seeds.
-    Feature is restricted to Trusted users and Patreons."""
     extra_source_images: list[ExtraSourceImageEntry] | None = None
     """Any extra source images that should be used for this request; e.g., for multi-modal models."""
     proxied_account: str | None = Field(default=None)
@@ -265,9 +259,6 @@ class TextGenerateAsyncRequest(
         min_length=1,
     )
     """Specify which softprompt needs to be used to service this request."""
-    webhook: str | None = Field(default=None)
-    """Provide a URL where the AI Horde will send a POST call after each delivered generation.
-    The request will include the details of the job as well as the request ID."""
 
     @override
     @classmethod

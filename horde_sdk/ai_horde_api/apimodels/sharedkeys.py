@@ -1,9 +1,9 @@
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, MessageSpecifiesSharedKeyMixin
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
-from horde_sdk.consts import HTTPMethod
+from horde_sdk.consts import _OVERLOADED_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
@@ -12,16 +12,9 @@ from horde_sdk.generic_api.apimodels import (
 )
 
 
-class SharedKeySettings(HordeAPIObjectBaseModel):
-    """Represents the settings for a SharedKey.
-
-    v2 API Model: `SharedKeyInput`
-    """
-
+class _BaseSharedKeySettings(HordeAPIObjectBaseModel):
     kudos: int
     """The Kudos limit assigned to this key."""
-    expiry: str
-    """The date at which this API key will expire."""
     name: str
     """The Shared Key Name."""
     max_image_pixels: int
@@ -53,6 +46,16 @@ class SharedKeySettings(HordeAPIObjectBaseModel):
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "SharedKeyInput"
+
+
+class SharedKeySettings(_BaseSharedKeySettings):
+    """Represents the settings for a SharedKey.
+
+    v2 API Model: `SharedKeyInput`
+    """
+
+    expiry: int = Field(default=-1, ge=-1)
+    """The number of days until this key expires. -1 means never expires."""
 
 
 class SharedKeyDetailsResponse(HordeResponseBaseModel, MessageSpecifiesSharedKeyMixin, SharedKeySettings):
@@ -97,6 +100,29 @@ class SharedKeyDetailsResponse(HordeResponseBaseModel, MessageSpecifiesSharedKey
         return v
 
 
+class _ExpiryStrSharedKeyDetailsResponse(
+    HordeResponseBaseModel,
+    MessageSpecifiesSharedKeyMixin,
+    _BaseSharedKeySettings,
+):
+    """The shared key details for a style.
+
+    v2 API Model: `_OVERLOADED_MODEL`
+    """
+
+    expiry: str | None = None  # FIXME - duplicated in SharedKeyDetailsResponse due to overloaded model
+    """The expiry date of the shared key."""
+    username: str  # FIXME - duplicated in SharedKeyDetailsResponse due to overloaded model
+    """The owning user's unique Username. It is a combination of their chosen alias plus their ID."""
+    utilized: int  # FIXME - duplicated in SharedKeyDetailsResponse due to overloaded model
+    """How much kudos has been utilized via this shared key until now."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return _OVERLOADED_MODEL
+
+
 class SharedKeyDetailsRequest(BaseAIHordeRequest, MessageSpecifiesSharedKeyMixin):
     """Request the details of a SharedKey, including its creating user, settings, and utilization.
 
@@ -122,8 +148,8 @@ class SharedKeyDetailsRequest(BaseAIHordeRequest, MessageSpecifiesSharedKeyMixin
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[SharedKeyDetailsResponse]:
-        return SharedKeyDetailsResponse
+    def get_default_success_response_type(cls) -> type[_ExpiryStrSharedKeyDetailsResponse]:
+        return _ExpiryStrSharedKeyDetailsResponse
 
 
 class SharedKeyDeleteResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
@@ -205,8 +231,8 @@ class SharedKeyModifyRequest(
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[SharedKeyDetailsResponse]:
-        return SharedKeyDetailsResponse
+    def get_default_success_response_type(cls) -> type[_ExpiryStrSharedKeyDetailsResponse]:
+        return _ExpiryStrSharedKeyDetailsResponse
 
 
 class SharedKeyCreateRequest(
@@ -238,5 +264,5 @@ class SharedKeyCreateRequest(
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[SharedKeyDetailsResponse]:
-        return SharedKeyDetailsResponse
+    def get_default_success_response_type(cls) -> type[_ExpiryStrSharedKeyDetailsResponse]:
+        return _ExpiryStrSharedKeyDetailsResponse

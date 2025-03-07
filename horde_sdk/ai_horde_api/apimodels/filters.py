@@ -1,4 +1,7 @@
-from pydantic import Field
+from typing import Any
+
+from loguru import logger
+from pydantic import Field, model_validator
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
@@ -154,6 +157,7 @@ class FilterPromptSuspicionRequest(
     prompt: str = Field(description="The prompt to check for suspicion.", examples=["cat"])
     filter_type: int = Field(
         description="The type of filter to use. If not specified, all filters are used.",
+        default=0,
         examples=[10],
         ge=10,
         le=29,
@@ -183,6 +187,14 @@ class FilterPromptSuspicionRequest(
     @classmethod
     def is_api_key_required(cls) -> bool:
         return True
+
+    @model_validator(mode="before")
+    def validate_filter_type(cls, v: dict[Any, Any]) -> dict[Any, Any]:
+        """Ensure filter_type is not 0."""
+        if v["filter_type"] == 0:
+            logger.warning("Filter type 0 is not allowed. Defaulting to 10.")
+            v["filter_type"] = 10
+        return v
 
 
 class PutNewFilterRequest(
