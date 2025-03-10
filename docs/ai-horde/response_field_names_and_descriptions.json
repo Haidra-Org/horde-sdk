@@ -69,15 +69,63 @@
         "forms": {
             "description": "The forms that to be generated",
             "types": [
-                "list[horde_sdk.ai_horde_api.apimodels.alchemy._pop.AlchemyPopFormPayload]",
+                "list[horde_sdk.ai_horde_api.apimodels.alchemy.pop.AlchemyPopFormPayload]",
                 "None"
             ]
         },
         "skipped": {
             "description": "The requests that were skipped because this worker were not eligible for them.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels.alchemy._pop.NoValidAlchemyFound",
+                "horde_sdk.ai_horde_api.apimodels.alchemy.pop.NoValidAlchemyFound",
                 "None"
+            ]
+        }
+    },
+    "AllCollectionsResponse": {
+        "root": {
+            "description": "The underlying list of collections.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.collections.ResponseModelCollection]"
+            ]
+        }
+    },
+    "IPTimeoutListResponse": {
+        "root": {
+            "description": "The underlying list of IP addresses that are blocked.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.operations.IPTimeout]"
+            ]
+        }
+    },
+    "AllStylesImageResponse": {
+        "root": {
+            "description": "The underlying list of styles.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.styles.StyleStable]"
+            ]
+        }
+    },
+    "AllStylesTextResponse": {
+        "root": {
+            "description": "The underlying list of styles.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.styles.StyleKobold]"
+            ]
+        }
+    },
+    "AllTeamDetailsResponse": {
+        "root": {
+            "description": "The underlying list of teams.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.teams.TeamDetails]"
+            ]
+        }
+    },
+    "ResponseModelMessages": {
+        "root": {
+            "description": "The underlying list of messages.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.workers.messages.ResponseModelMessage]"
             ]
         }
     },
@@ -86,6 +134,205 @@
             "description": "The underlying list of worker details.",
             "types": [
                 "list[horde_sdk.ai_horde_api.apimodels.workers.workers.WorkerDetailItem]"
+            ]
+        }
+    },
+    "BlockIPAddressResponse": {
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "BlockWorkerIPAddressResponse": {
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "ResponseModelCollection": {
+        "id": {
+            "description": "The UUID of the collection. Use this to use this collection of retrieve its information in the future.",
+            "types": [
+                "str"
+            ]
+        },
+        "name": {
+            "description": "The name for the collection. Case-sensitive and unique per user.",
+            "types": [
+                "str"
+            ]
+        },
+        "type": {
+            "description": "The kind of styles stored in this collection.",
+            "types": [
+                "Literal"
+            ]
+        },
+        "info": {
+            "description": "Extra information about this collection.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "public": {
+            "description": "When true this collection will be listed among all collection publicly.When false, information about this\ncollection can only be seen by people who know its ID or name.",
+            "types": [
+                "bool"
+            ]
+        },
+        "styles": {
+            "description": "The styles contained in this collection.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.collections.ResponseModelStylesShort]"
+            ]
+        },
+        "use_count": {
+            "description": "The number of times this collection has been used.",
+            "types": [
+                "int",
+                "None"
+            ]
+        }
+    },
+    "CreateCollectionResponse": {
+        "warnings": {
+            "description": "A list of warnings from the API. This is typically an error or warning message,\nbut may also be informational.",
+            "types": [
+                "list[horde_sdk.generic_api.apimodels.RequestSingleWarning]",
+                "None"
+            ]
+        },
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        },
+        "id_": {
+            "description": "The ID of the collection.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "ModifyStyleImageResponse": {
+        "warnings": {
+            "description": "A list of warnings from the API. This is typically an error or warning message,\nbut may also be informational.",
+            "types": [
+                "list[horde_sdk.generic_api.apimodels.RequestSingleWarning]",
+                "None"
+            ]
+        },
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        },
+        "id_": {
+            "description": "The ID of the style.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "ModifyStyleTextResponse": {
+        "warnings": {
+            "description": "A list of warnings from the API. This is typically an error or warning message,\nbut may also be informational.",
+            "types": [
+                "list[horde_sdk.generic_api.apimodels.RequestSingleWarning]",
+                "None"
+            ]
+        },
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        },
+        "id_": {
+            "description": "The ID of the style.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "ModifyTeam": {
+        "id_": {
+            "description": "The ID of the team.",
+            "types": [
+                "str"
+            ]
+        },
+        "name": {
+            "description": "The name of the team.",
+            "types": [
+                "str"
+            ]
+        },
+        "info": {
+            "description": "Extra information or comments about this team provided by its owner.",
+            "types": [
+                "str",
+                "None"
+            ]
+        }
+    },
+    "ResponseModelMessage": {
+        "worker_id": {
+            "description": "The ID of the worker that the message is for.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "message": {
+            "description": "The message.",
+            "types": [
+                "str"
+            ]
+        },
+        "origin": {
+            "description": "The origin of the message.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "expiry": {
+            "description": "The number of hours after which this message expires.",
+            "types": [
+                "int",
+                "None"
+            ]
+        }
+    },
+    "DeleteCollectionResponse": {
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "DeleteFilterResponse": {
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "DeleteIPAddressResponse": {
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
             ]
         }
     },
@@ -164,6 +411,36 @@
             ]
         }
     },
+    "DeleteStyleImageResponse": {
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "DeleteStyleTextResponse": {
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "DeleteTeamResponse": {
+        "deleted_id": {
+            "description": "The ID of the team that was deleted.",
+            "types": [
+                "str"
+            ]
+        },
+        "deleted_name": {
+            "description": "The name of the team that was deleted.",
+            "types": [
+                "str"
+            ]
+        }
+    },
     "TextGenerateStatusResponse": {
         "finished": {
             "description": "The amount of finished jobs in this request.",
@@ -232,6 +509,22 @@
             ]
         }
     },
+    "DeleteWorkerIPAddressResponse": {
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "DeleteWorkerMessageResponse": {
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        }
+    },
     "DeleteWorkerResponse": {
         "deleted_id": {
             "description": "The ID of the deleted worker.",
@@ -245,6 +538,37 @@
             "types": [
                 "str",
                 "None"
+            ]
+        }
+    },
+    "FilterPromptSuspicionResponse": {
+        "matches": {
+            "description": "The sections of the prompt that matched the filter.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "suspicion": {
+            "description": "Rates how suspicious the provided prompt is. A suspicion over 2 means it would be blocked.",
+            "types": [
+                "int"
+            ]
+        }
+    },
+    "FilterRegexResponse": {
+        "root": {
+            "description": "The underlying list of filters.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.filters.FilterRegex]"
+            ]
+        }
+    },
+    "FiltersListResponse": {
+        "root": {
+            "description": "The underlying list of filters.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.filters.FilterDetails]"
             ]
         }
     },
@@ -550,7 +874,7 @@
         "root": {
             "description": "The underlying list of models.",
             "types": [
-                "list[horde_sdk.ai_horde_api.apimodels._status.ActiveModel]"
+                "list[horde_sdk.ai_horde_api.apimodels.base.ActiveModel]"
             ]
         }
     },
@@ -558,7 +882,7 @@
         "root": {
             "description": "The underlying list of models.",
             "types": [
-                "list[horde_sdk.ai_horde_api.apimodels._status.ActiveModel]"
+                "list[horde_sdk.ai_horde_api.apimodels.base.ActiveModel]"
             ]
         }
     },
@@ -740,6 +1064,13 @@
                 "int",
                 "None"
             ]
+        },
+        "messages": {
+            "description": "The messages that have been sent to this worker.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.generate.pop.PopResponseModelMessage]",
+                "None"
+            ]
         }
     },
     "JobSubmitResponse": {
@@ -774,35 +1105,44 @@
         "day": {
             "description": "The total stats for the past day.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._stats.SinglePeriodImgStat",
+                "horde_sdk.ai_horde_api.apimodels.stats.SinglePeriodImgStat",
                 "None"
             ]
         },
         "hour": {
             "description": "The total stats for the past hour.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._stats.SinglePeriodImgStat",
+                "horde_sdk.ai_horde_api.apimodels.stats.SinglePeriodImgStat",
                 "None"
             ]
         },
         "minute": {
             "description": "The total stats for the past minute.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._stats.SinglePeriodImgStat",
+                "horde_sdk.ai_horde_api.apimodels.stats.SinglePeriodImgStat",
                 "None"
             ]
         },
         "month": {
             "description": "The total stats for the past month.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._stats.SinglePeriodImgStat",
+                "horde_sdk.ai_horde_api.apimodels.stats.SinglePeriodImgStat",
                 "None"
             ]
         },
         "total": {
             "description": "The total stats for all time.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._stats.SinglePeriodImgStat",
+                "horde_sdk.ai_horde_api.apimodels.stats.SinglePeriodImgStat",
+                "None"
+            ]
+        }
+    },
+    "KudosAwardResponse": {
+        "awarded": {
+            "description": "The amount of Kudos awarded.",
+            "types": [
+                "float",
                 "None"
             ]
         }
@@ -1000,21 +1340,63 @@
         "root": {
             "description": "The underlying list of newspieces.",
             "types": [
-                "list[horde_sdk.ai_horde_api.apimodels._status.Newspiece]"
+                "list[horde_sdk.ai_horde_api.apimodels.status.Newspiece]"
             ]
         }
     },
-    "SharedKeyDetailsResponse": {
-        "kudos": {
-            "description": "The Kudos limit assigned to this key.",
+    "FilterDetails": {
+        "description": {
+            "description": "Description about this regex.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "filter_type": {
+            "description": "The type of this filter.",
             "types": [
                 "int"
             ]
         },
-        "expiry": {
-            "description": "The date at which this API key will expire.",
+        "id_": {
+            "description": "The UUID of this filter.",
             "types": [
                 "str"
+            ]
+        },
+        "regex": {
+            "description": "The regex for this filter.",
+            "types": [
+                "str"
+            ]
+        },
+        "replacement": {
+            "description": "The replacement string for this regex.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "user": {
+            "description": "The moderator which added or last updated this regex.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "RateResponse": {
+        "reward": {
+            "description": "The reward for the rating.",
+            "types": [
+                "float"
+            ]
+        }
+    },
+    "ExpiryStrSharedKeyDetailsResponse": {
+        "kudos": {
+            "description": "The Kudos limit assigned to this key.",
+            "types": [
+                "int"
             ]
         },
         "name": {
@@ -1047,6 +1429,13 @@
                 "horde_sdk.ai_horde_api.fields.SharedKeyID"
             ]
         },
+        "expiry": {
+            "description": "The expiry date of the shared key.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
         "username": {
             "description": "The owning user's unique Username. It is a combination of their chosen alias plus their ID.",
             "types": [
@@ -1065,6 +1454,255 @@
             "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
             "types": [
                 "str"
+            ]
+        }
+    },
+    "StyleStable": {
+        "name": {
+            "description": "The name of the style.",
+            "types": [
+                "str"
+            ]
+        },
+        "info": {
+            "description": "Extra information or comments about this style provided by its creator.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "prompt": {
+            "description": "The prompt template which will be sent to generate an image.\n\nThe user's prompt will be injected into this. This argument MUST include a '{p}' which specifies the part where     the user's prompt will be injected and an '{np}' where the user's negative prompt will be injected (if any)",
+            "types": [
+                "str"
+            ]
+        },
+        "public": {
+            "description": "When true this style will be listed among all styles publicly.\n\nWhen false, information about this style can only be seen by people who know its ID or name.",
+            "types": [
+                "bool"
+            ]
+        },
+        "nsfw": {
+            "description": "When true, it signified this style is expected to generate NSFW images primarily.",
+            "types": [
+                "bool"
+            ]
+        },
+        "tags": {
+            "description": "Tags associated with this style.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "models": {
+            "description": "The models which this style will attempt to use.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "id_": {
+            "description": "The UUID of the style. Use this to use the style or retrieve its information in the future.",
+            "types": [
+                "str"
+            ]
+        },
+        "creator": {
+            "description": "The alias of the user which created this style.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "use_count": {
+            "description": "The amount of times this style has been used in generations.",
+            "types": [
+                "int",
+                "None"
+            ]
+        },
+        "sharedkey": {
+            "description": "The UUID of a shared key which will be used to fulfil this style when active.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "params": {
+            "description": "The parameters to use for all generations using this style, if not set by the user.",
+            "types": [
+                "horde_sdk.ai_horde_api.apimodels.styles.ModelStyleInputParamsStable",
+                "None"
+            ]
+        },
+        "examples": {
+            "description": "A list of examples of images generated by this style.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.styles.StyleExample]",
+                "None"
+            ]
+        },
+        "shared_key": {
+            "description": "The shared key backing this style, if any.",
+            "types": [
+                "horde_sdk.ai_horde_api.apimodels.sharedkeys.ExpiryStrSharedKeyDetailsResponse",
+                "None"
+            ]
+        }
+    },
+    "StyleKobold": {
+        "name": {
+            "description": "The name of the style.",
+            "types": [
+                "str"
+            ]
+        },
+        "info": {
+            "description": "Extra information or comments about this style provided by its creator.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "prompt": {
+            "description": "The prompt template which will be sent to generate an image.\n\nThe user's prompt will be injected into this. This argument MUST include a '{p}' which specifies the part where     the user's prompt will be injected and an '{np}' where the user's negative prompt will be injected (if any)",
+            "types": [
+                "str"
+            ]
+        },
+        "public": {
+            "description": "When true this style will be listed among all styles publicly.\n\nWhen false, information about this style can only be seen by people who know its ID or name.",
+            "types": [
+                "bool"
+            ]
+        },
+        "nsfw": {
+            "description": "When true, it signified this style is expected to generate NSFW images primarily.",
+            "types": [
+                "bool"
+            ]
+        },
+        "tags": {
+            "description": "Tags associated with this style.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "models": {
+            "description": "The models which this style will attempt to use.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "id_": {
+            "description": "The UUID of the style. Use this to use the style or retrieve its information in the future.",
+            "types": [
+                "str"
+            ]
+        },
+        "creator": {
+            "description": "The alias of the user which created this style.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "use_count": {
+            "description": "The amount of times this style has been used in generations.",
+            "types": [
+                "int",
+                "None"
+            ]
+        },
+        "sharedkey": {
+            "description": "The UUID of a shared key which will be used to fulfil this style when active.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "params": {
+            "description": "The parameters to use for all generations using this style, if not set by the user.",
+            "types": [
+                "horde_sdk.ai_horde_api.apimodels.styles.ModelStyleInputParamsKobold",
+                "None"
+            ]
+        }
+    },
+    "TeamDetails": {
+        "name": {
+            "description": "The Name given to this team.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "id_": {
+            "description": "The UUID of this team.",
+            "types": [
+                "str",
+                "horde_sdk.ai_horde_api.fields.TeamID",
+                "None"
+            ]
+        },
+        "info": {
+            "description": "Extra information or comments about this team provided by its owner.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "creator": {
+            "description": "The alias of the user which created this team.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "kudos": {
+            "description": "How many Kudos the workers in this team have been rewarded while part of this team.",
+            "types": [
+                "float",
+                "None"
+            ]
+        },
+        "models": {
+            "description": "The models that this team has run.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.base.ActiveModelLite]",
+                "None"
+            ]
+        },
+        "requests_fulfilled": {
+            "description": "How many images this team's workers have generated.",
+            "types": [
+                "int",
+                "None"
+            ]
+        },
+        "uptime": {
+            "description": "The total amount of time workers have stayed online while on this team.",
+            "types": [
+                "int",
+                "None"
+            ]
+        },
+        "worker_count": {
+            "description": "How many workers have been dedicated to this team.",
+            "types": [
+                "int",
+                "None"
+            ]
+        },
+        "workers": {
+            "description": "The workers that have been dedicated to this team.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.workers.workers.WorkerDetailLite]",
+                "None"
             ]
         }
     },
@@ -1316,6 +1954,42 @@
                 "bool",
                 "None"
             ]
+        },
+        "messages": {
+            "description": "The messages that have been sent to this worker.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.workers.messages.ResponseModelMessage]",
+                "None"
+            ]
+        }
+    },
+    "StyleImageExampleModifyResponse": {
+        "warnings": {
+            "description": "A list of warnings from the API. This is typically an error or warning message,\nbut may also be informational.",
+            "types": [
+                "list[horde_sdk.generic_api.apimodels.RequestSingleWarning]",
+                "None"
+            ]
+        },
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        },
+        "id_": {
+            "description": "The ID of the example.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "StyleImageExampleDeleteResponse": {
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
         }
     },
     "TextGenerateAsyncDryRunResponse": {
@@ -1407,6 +2081,13 @@
                 "int",
                 "None"
             ]
+        },
+        "messages": {
+            "description": "The messages sent to this worker.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.generate.pop.PopResponseModelMessage]",
+                "None"
+            ]
         }
     },
     "TextStatsModelResponse": {
@@ -1458,6 +2139,27 @@
             "description": "The total stats for all time.",
             "types": [
                 "dict[str, int]"
+            ]
+        }
+    },
+    "UpdateCollectionResponse": {
+        "warnings": {
+            "description": "A list of warnings from the API. This is typically an error or warning message,\nbut may also be informational.",
+            "types": [
+                "list[horde_sdk.generic_api.apimodels.RequestSingleWarning]",
+                "None"
+            ]
+        },
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        },
+        "id_": {
+            "description": "The ID of the collection that was updated.",
+            "types": [
+                "str"
             ]
         }
     }

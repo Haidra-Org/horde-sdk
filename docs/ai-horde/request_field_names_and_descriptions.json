@@ -3,7 +3,7 @@
         "format": {
             "description": "The format of the document to return. Default is markdown.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._documents.DocumentFormat",
+                "horde_sdk.ai_horde_api.apimodels.documents.DocumentFormat",
                 "str"
             ]
         },
@@ -24,7 +24,7 @@
         "format": {
             "description": "The format of the document to return. Default is markdown.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._documents.DocumentFormat",
+                "horde_sdk.ai_horde_api.apimodels.documents.DocumentFormat",
                 "str"
             ]
         },
@@ -45,7 +45,7 @@
         "format": {
             "description": "The format of the document to return. Default is markdown.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels._documents.DocumentFormat",
+                "horde_sdk.ai_horde_api.apimodels.documents.DocumentFormat",
                 "str"
             ]
         },
@@ -118,6 +118,13 @@
             "description": "Whether to use the super slow workers.",
             "types": [
                 "bool"
+            ]
+        },
+        "webhook": {
+            "description": "Provide a URL where the AI Horde will send a POST call after each delivered generation. The request will\ninclude the details of the job as well as the request ID.",
+            "types": [
+                "str",
+                "None"
             ]
         }
     },
@@ -200,6 +207,12 @@
                 "str"
             ]
         },
+        "bridge_agent": {
+            "description": "The agent string for the bridge, in the format `name:version:url or contact info`.",
+            "types": [
+                "str"
+            ]
+        },
         "name": {
             "description": "The name of the request. This is used to identify the request in the logs.",
             "types": [
@@ -216,6 +229,24 @@
             "description": "The types of alchemy that should be generated.",
             "types": [
                 "list[horde_sdk.generation_parameters.alchemy.consts.KNOWN_ALCHEMY_TYPES]"
+            ]
+        },
+        "amount": {
+            "description": "The number of jobs to request.",
+            "types": [
+                "int"
+            ]
+        },
+        "threads": {
+            "description": "The number of threads to report that this bridge is using to the API.",
+            "types": [
+                "int"
+            ]
+        },
+        "max_tiles": {
+            "description": "The maximum number of 512x512 tiles that this worker can process.",
+            "types": [
+                "int"
             ]
         }
     },
@@ -243,6 +274,200 @@
             "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
             "types": [
                 "str"
+            ]
+        }
+    },
+    "AllCollectionsRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "sort": {
+            "description": "The sort order for the collections.",
+            "types": [
+                "Literal"
+            ]
+        },
+        "page": {
+            "description": "The page number for the collections. Each page has 25 styles.",
+            "types": [
+                "int"
+            ]
+        },
+        "type_": {
+            "description": "The type of collections to retrieve.",
+            "types": [
+                "Literal"
+            ]
+        }
+    },
+    "AllIPTimeoutsRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "AllStylesImageRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "sort": {
+            "description": "The sort order of the styles.",
+            "types": [
+                "Literal"
+            ]
+        },
+        "page": {
+            "description": "The page of styles to retrieve. Each page has 25 styles.",
+            "types": [
+                "int"
+            ]
+        },
+        "tag": {
+            "description": "If specified, return only styles with this tag.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "model": {
+            "description": "If specified, return only styles which use this model.",
+            "types": [
+                "str",
+                "None"
+            ]
+        }
+    },
+    "AllStylesTextRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "sort": {
+            "description": "The sort order of the styles.",
+            "types": [
+                "Literal"
+            ]
+        },
+        "page": {
+            "description": "The page of styles to retrieve. Each page has 25 styles.",
+            "types": [
+                "int"
+            ]
+        },
+        "tag": {
+            "description": "If specified, return only styles with this tag.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "model": {
+            "description": "If specified, return only styles which use this model.",
+            "types": [
+                "str",
+                "None"
+            ]
+        }
+    },
+    "AllTeamDetailsRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "AllWorkerMessagesRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "user_id": {
+            "description": "The ID of the user to retrieve messages for. If not specified, all messages will be retrieved.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "worker_id": {
+            "description": "The ID of the worker to retrieve messages for. If not specified, all messages will be retrieved.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "validity": {
+            "description": "The validity of the messages to retrieve.",
+            "types": [
+                "Literal"
+            ]
+        },
+        "page": {
+            "description": "The page of messages to retrieve. Each page has 50 messages.",
+            "types": [
+                "int"
             ]
         }
     },
@@ -280,6 +505,471 @@
             ]
         }
     },
+    "BlockIPAddressRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "ipaddr": {
+            "description": "The IP address of the user to block.",
+            "types": [
+                "str"
+            ]
+        },
+        "hours": {
+            "description": "The number of hours to block the IP address for.",
+            "types": [
+                "int"
+            ]
+        }
+    },
+    "BlockWorkerIPAddressRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "worker_id": {
+            "description": "The ID of the worker to block.",
+            "types": [
+                "str"
+            ]
+        },
+        "days": {
+            "description": "The number of days to block the worker IP address for.",
+            "types": [
+                "int"
+            ]
+        }
+    },
+    "CollectionByIDRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "collection_id": {
+            "description": "The ID of the collection.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "CollectionByNameRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "collection_name": {
+            "description": "The name of the collection.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "CreateCollectionRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "name": {
+            "description": "The name for the collection. Case-sensitive and unique per user.",
+            "types": [
+                "str"
+            ]
+        },
+        "info": {
+            "description": "Extra information about this collection.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "public": {
+            "description": "When true this collection will be listed among all collections publicly.When false, information about this\ncollection can only be seen by people who know its ID or name.",
+            "types": [
+                "bool"
+            ]
+        },
+        "styles": {
+            "description": "The styles to use in this collection.",
+            "types": [
+                "list[str]"
+            ]
+        }
+    },
+    "CreateStyleImageRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "name": {
+            "description": "The name of the style.",
+            "types": [
+                "str"
+            ]
+        },
+        "info": {
+            "description": "Extra information or comments about this style provided by its creator.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "prompt": {
+            "description": "The prompt template which will be sent to generate an image.\n\nThe user's prompt will be injected into this. This argument MUST include a '{p}' which specifies the part where     the user's prompt will be injected and an '{np}' where the user's negative prompt will be injected (if any)",
+            "types": [
+                "str"
+            ]
+        },
+        "public": {
+            "description": "When true this style will be listed among all styles publicly.\n\nWhen false, information about this style can only be seen by people who know its ID or name.",
+            "types": [
+                "bool"
+            ]
+        },
+        "nsfw": {
+            "description": "When true, it signified this style is expected to generate NSFW images primarily.",
+            "types": [
+                "bool"
+            ]
+        },
+        "tags": {
+            "description": "Tags associated with this style.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "models": {
+            "description": "The models which this style will attempt to use.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "params": {
+            "description": "The parameters to use for all generations using this style, if not set by the user.",
+            "types": [
+                "horde_sdk.ai_horde_api.apimodels.styles.ModelStyleInputParamsStable"
+            ]
+        },
+        "sharedkey": {
+            "description": "The UUID of a shared key which will be used to fulfil this style when active.",
+            "types": [
+                "str",
+                "None"
+            ]
+        }
+    },
+    "CreateStyleTextRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "name": {
+            "description": "The name of the style.",
+            "types": [
+                "str"
+            ]
+        },
+        "info": {
+            "description": "Extra information or comments about this style provided by its creator.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "prompt": {
+            "description": "The prompt template which will be sent to generate an image.\n\nThe user's prompt will be injected into this. This argument MUST include a '{p}' which specifies the part where     the user's prompt will be injected and an '{np}' where the user's negative prompt will be injected (if any)",
+            "types": [
+                "str"
+            ]
+        },
+        "public": {
+            "description": "When true this style will be listed among all styles publicly.\n\nWhen false, information about this style can only be seen by people who know its ID or name.",
+            "types": [
+                "bool"
+            ]
+        },
+        "nsfw": {
+            "description": "When true, it signified this style is expected to generate NSFW images primarily.",
+            "types": [
+                "bool"
+            ]
+        },
+        "tags": {
+            "description": "Tags associated with this style.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "models": {
+            "description": "The models which this style will attempt to use.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "params": {
+            "description": "The parameters to use for all generations using this style, if not set by the user.",
+            "types": [
+                "horde_sdk.ai_horde_api.apimodels.styles.ModelStyleInputParamsKobold"
+            ]
+        }
+    },
+    "CreateTeamRequest": {
+        "name": {
+            "description": "The name of the team.",
+            "types": [
+                "str"
+            ]
+        },
+        "info": {
+            "description": "Extra information or comments about this team provided by its owner.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "CreateWorkerMessageRequest": {
+        "worker_id": {
+            "description": "The ID of the worker that the message is for.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "message": {
+            "description": "The message.",
+            "types": [
+                "str"
+            ]
+        },
+        "origin": {
+            "description": "The origin of the message.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "expiry": {
+            "description": "The number of hours after which this message expires.",
+            "types": [
+                "int"
+            ]
+        }
+    },
+    "DeleteCollectionRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "collection_id": {
+            "description": "The ID of the collection.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "DeleteFilterRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "filter_id": {
+            "description": "The ID of the filter to delete.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "DeleteIPAddressRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "ipaddr": {
+            "description": "The IP address of the user to unblock.",
+            "types": [
+                "str"
+            ]
+        }
+    },
     "DeleteImageGenerateRequest": {
         "id_": {
             "description": "The UUID for this job. Use this to post the results in the future.",
@@ -300,6 +990,87 @@
             ]
         }
     },
+    "DeleteStyleImageRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "style_id": {
+            "description": "The ID of the style to delete.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "DeleteStyleTextRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "style_id": {
+            "description": "The ID of the style to delete.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "DeleteTeamRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "team_id": {
+            "description": "The ID of the team to delete.",
+            "types": [
+                "str"
+            ]
+        }
+    },
     "DeleteTextGenerateRequest": {
         "id_": {
             "description": "The UUID for this job. Use this to post the results in the future.",
@@ -315,6 +1086,60 @@
         },
         "client_agent": {
             "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "DeleteWorkerIPAddressRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "worker_id": {
+            "description": "The ID of the worker to unblock.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "DeleteWorkerMessageRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "message_id": {
+            "description": "The ID of the message to delete.",
             "types": [
                 "str"
             ]
@@ -345,6 +1170,95 @@
             "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
             "types": [
                 "str"
+            ]
+        }
+    },
+    "FilterPromptSuspicionRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "prompt": {
+            "description": "The prompt to check for suspicion.",
+            "types": [
+                "str"
+            ]
+        },
+        "filter_type": {
+            "description": "The type of filter to use. If not specified, all filters are used.",
+            "types": [
+                "int"
+            ]
+        }
+    },
+    "FilterRegexRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "FiltersListRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "filter_type": {
+            "description": "The type of filter to return. If not specified, all filters are returned.",
+            "types": [
+                "int",
+                "None"
+            ]
+        },
+        "contains": {
+            "description": "A string to search for in the filter description.",
+            "types": [
+                "str",
+                "None"
             ]
         }
     },
@@ -471,7 +1385,7 @@
         "worker_blacklist": {
             "description": "If true, the worker list will be treated as a blacklist instead of a whitelist.",
             "types": [
-                "list[str]"
+                "bool"
             ]
         },
         "models": {
@@ -480,10 +1394,51 @@
                 "list[str]"
             ]
         },
+        "validated_backends": {
+            "description": "When true, only inference backends that are validated by the AI Horde devs will serve this request. When False,\nnon-validated backends will also be used which can increase speed but you may end up with unexpected results.",
+            "types": [
+                "bool",
+                "None"
+            ]
+        },
+        "style": {
+            "description": "The style ID to use for the generation.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
         "dry_run": {
             "description": "If true, the request will not be processed, but will return a response with the estimated kudos cost.",
             "types": [
                 "bool"
+            ]
+        },
+        "webhook": {
+            "description": "Provide a URL where the AI Horde will send a POST call after each delivered generation.\nThe request will include the details of the job as well as the request ID.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "allow_downgrade": {
+            "description": "If true, the request can be modified to lesser parameters if the original request is too expensive.",
+            "types": [
+                "bool"
+            ]
+        },
+        "proxied_account": {
+            "description": "The account this request is being proxied for. This requires the sending API to be a service account.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "disable_batching": {
+            "description": "When true, This request will not use batching. This will allow you to retrieve accurate seeds.\nFeature is restricted to Trusted users and Patreons.",
+            "types": [
+                "bool",
+                "None"
             ]
         },
         "apikey": {
@@ -514,7 +1469,7 @@
         "params": {
             "description": "The parameters for the image generation.",
             "types": [
-                "horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerationInputPayload",
+                "horde_sdk.ai_horde_api.apimodels.generate.async_.ImageGenerationInputPayload",
                 "None"
             ]
         },
@@ -792,9 +1747,9 @@
             ]
         },
         "generation": {
-            "description": "R2 result was uploaded to R2, else the string of the result.",
+            "description": "R2 result was uploaded to R2, else the string of the result as base64.",
             "types": [
-                "str"
+                "Union"
             ]
         },
         "state": {
@@ -857,6 +1812,39 @@
             ]
         }
     },
+    "KudosAwardRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "username": {
+            "description": "The username of the user to award Kudos to.",
+            "types": [
+                "str"
+            ]
+        },
+        "amount": {
+            "description": "The amount of Kudos to award.",
+            "types": [
+                "float"
+            ]
+        }
+    },
     "KudosTransferRequest": {
         "apikey": {
             "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
@@ -878,7 +1866,7 @@
             ]
         },
         "username": {
-            "description": "The username of the user to transfer Kudos to.",
+            "description": "The username of the user to transfer Kudos to, including the '#'. For example, 'db0#1'.",
             "types": [
                 "str"
             ]
@@ -911,6 +1899,209 @@
         },
         "sort": {
             "description": "The field to sort the users by. The default is by kudos.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "ModifyStyleImageRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "name": {
+            "description": "The name of the style.",
+            "types": [
+                "str"
+            ]
+        },
+        "info": {
+            "description": "Extra information or comments about this style provided by its creator.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "prompt": {
+            "description": "The prompt template which will be sent to generate an image.\n\nThe user's prompt will be injected into this. This argument MUST include a '{p}' which specifies the part where     the user's prompt will be injected and an '{np}' where the user's negative prompt will be injected (if any)",
+            "types": [
+                "str"
+            ]
+        },
+        "public": {
+            "description": "When true this style will be listed among all styles publicly.\n\nWhen false, information about this style can only be seen by people who know its ID or name.",
+            "types": [
+                "bool"
+            ]
+        },
+        "nsfw": {
+            "description": "When true, it signified this style is expected to generate NSFW images primarily.",
+            "types": [
+                "bool"
+            ]
+        },
+        "tags": {
+            "description": "Tags associated with this style.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "models": {
+            "description": "The models which this style will attempt to use.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "style_id": {
+            "description": "The ID of the style to modify.",
+            "types": [
+                "str"
+            ]
+        },
+        "params": {
+            "description": "The parameters to use for all generations using this style, if not set by the user.",
+            "types": [
+                "horde_sdk.ai_horde_api.apimodels.styles.ModelStyleInputParamsStable"
+            ]
+        },
+        "sharedkey": {
+            "description": "The UUID of a shared key which will be used to fulfil this style when active.",
+            "types": [
+                "str",
+                "None"
+            ]
+        }
+    },
+    "ModifyStyleTextRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "name": {
+            "description": "The name of the style.",
+            "types": [
+                "str"
+            ]
+        },
+        "info": {
+            "description": "Extra information or comments about this style provided by its creator.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "prompt": {
+            "description": "The prompt template which will be sent to generate an image.\n\nThe user's prompt will be injected into this. This argument MUST include a '{p}' which specifies the part where     the user's prompt will be injected and an '{np}' where the user's negative prompt will be injected (if any)",
+            "types": [
+                "str"
+            ]
+        },
+        "public": {
+            "description": "When true this style will be listed among all styles publicly.\n\nWhen false, information about this style can only be seen by people who know its ID or name.",
+            "types": [
+                "bool"
+            ]
+        },
+        "nsfw": {
+            "description": "When true, it signified this style is expected to generate NSFW images primarily.",
+            "types": [
+                "bool"
+            ]
+        },
+        "tags": {
+            "description": "Tags associated with this style.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "models": {
+            "description": "The models which this style will attempt to use.",
+            "types": [
+                "list[str]",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "style_id": {
+            "description": "The ID of the style to modify.",
+            "types": [
+                "str"
+            ]
+        },
+        "params": {
+            "description": "The parameters to use for all generations using this style, if not set by the user.",
+            "types": [
+                "horde_sdk.ai_horde_api.apimodels.styles.ModelStyleInputParamsKobold"
+            ]
+        }
+    },
+    "ModifyTeamRequest": {
+        "name": {
+            "description": "The name of the team.",
+            "types": [
+                "str"
+            ]
+        },
+        "info": {
+            "description": "Extra information or comments about this team provided by its owner.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "team_id": {
+            "description": "The ID of the team to modify.",
             "types": [
                 "str"
             ]
@@ -1160,6 +2351,134 @@
             ]
         }
     },
+    "PatchExistingFilter": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "description": {
+            "description": "The description of the filter.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "regex": {
+            "description": "The regex for this filter.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "replacement": {
+            "description": "The replacement string for this regex.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "filter_type": {
+            "description": "The type of filter to add.",
+            "types": [
+                "int",
+                "None"
+            ]
+        },
+        "filter_id": {
+            "description": "The ID of the filter to update.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "PutNewFilterRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "description": {
+            "description": "The description of the filter.",
+            "types": [
+                "str"
+            ]
+        },
+        "filter_type": {
+            "description": "The type of filter to add.",
+            "types": [
+                "int"
+            ]
+        },
+        "regex": {
+            "description": "The regex for this filter.",
+            "types": [
+                "str"
+            ]
+        },
+        "replacement": {
+            "description": "The replacement string for this regex.",
+            "types": [
+                "str",
+                "None"
+            ]
+        }
+    },
+    "RateRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "best": {
+            "description": "The UUID of the best image in this generation batch (only used when 2+ images generated).\nIf 2+ aesthetic ratings are also provided, then they take precedence if they're not tied.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "ratings": {
+            "description": "The aesthetic ratings for each image in the batch.",
+            "types": [
+                "list[horde_sdk.ai_horde_api.apimodels.generate.rate.AestheticRating]"
+            ]
+        }
+    },
     "SharedKeyCreateRequest": {
         "apikey": {
             "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
@@ -1172,12 +2491,6 @@
             "description": "The Kudos limit assigned to this key.",
             "types": [
                 "int"
-            ]
-        },
-        "expiry": {
-            "description": "The date at which this API key will expire.",
-            "types": [
-                "str"
             ]
         },
         "name": {
@@ -1200,6 +2513,12 @@
         },
         "max_text_tokens": {
             "description": "The maximum amount of text tokens this key can generate per job. -1 means unlimited.",
+            "types": [
+                "int"
+            ]
+        },
+        "expiry": {
+            "description": "The number of days until this key expires. -1 means never expires.",
             "types": [
                 "int"
             ]
@@ -1284,12 +2603,6 @@
                 "int"
             ]
         },
-        "expiry": {
-            "description": "The date at which this API key will expire.",
-            "types": [
-                "str"
-            ]
-        },
         "name": {
             "description": "The Shared Key Name.",
             "types": [
@@ -1314,6 +2627,12 @@
                 "int"
             ]
         },
+        "expiry": {
+            "description": "The number of days until this key expires. -1 means never expires.",
+            "types": [
+                "int"
+            ]
+        },
         "accept": {
             "description": "The 'accept' header field.",
             "types": [
@@ -1322,6 +2641,154 @@
         },
         "client_agent": {
             "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "SingleFilterRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "filter_id": {
+            "description": "The ID of the filter to retrieve.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "SingleIPTimeoutsRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "SingleStyleImageByIDRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "style_id": {
+            "description": "The ID of the style to retrieve.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "SingleStyleImageByNameRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "style_name": {
+            "description": "The name of the style to retrieve.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "SingleStyleTextByIDRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "style_id": {
+            "description": "The ID of the style to retrieve.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "SingleStyleTextByNameRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "style_name": {
+            "description": "The name of the style to retrieve.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "SingleTeamDetailsRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "team_id": {
+            "description": "The ID of the team to get details for.",
             "types": [
                 "str"
             ]
@@ -1375,6 +2842,26 @@
             ]
         }
     },
+    "SingleWorkerMessageRequest": {
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "message_id": {
+            "description": "The ID of the message to retrieve.",
+            "types": [
+                "str"
+            ]
+        }
+    },
     "SingleWorkerNameDetailsRequest": {
         "apikey": {
             "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
@@ -1399,6 +2886,123 @@
             "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
             "types": [
                 "str"
+            ]
+        }
+    },
+    "StyleImageExampleAddRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "style_id": {
+            "description": "The ID of the style to add the example to.",
+            "types": [
+                "str"
+            ]
+        },
+        "url": {
+            "description": "The URL of the image to add as an example.",
+            "types": [
+                "str"
+            ]
+        },
+        "primary": {
+            "description": "When true this image is to be used as the primary example for this style.",
+            "types": [
+                "bool"
+            ]
+        }
+    },
+    "StyleImageExampleDeleteRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "style_id": {
+            "description": "The ID of the style to delete the example from.",
+            "types": [
+                "str"
+            ]
+        },
+        "example_id": {
+            "description": "The ID of the example to delete.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "StyleImageExampleModifyRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "style_id": {
+            "description": "The ID of the style to modify the example of.",
+            "types": [
+                "str"
+            ]
+        },
+        "example_id": {
+            "description": "The ID of the example to modify.",
+            "types": [
+                "str"
+            ]
+        },
+        "url": {
+            "description": "The URL of the image to add as an example.",
+            "types": [
+                "str"
+            ]
+        },
+        "primary": {
+            "description": "When true this image is to be used as the primary example for this style.",
+            "types": [
+                "bool"
             ]
         }
     },
@@ -1430,7 +3034,7 @@
         "worker_blacklist": {
             "description": "If true, the worker list will be treated as a blacklist instead of a whitelist.",
             "types": [
-                "list[str]"
+                "bool"
             ]
         },
         "models": {
@@ -1439,10 +3043,51 @@
                 "list[str]"
             ]
         },
+        "validated_backends": {
+            "description": "When true, only inference backends that are validated by the AI Horde devs will serve this request. When False,\nnon-validated backends will also be used which can increase speed but you may end up with unexpected results.",
+            "types": [
+                "bool",
+                "None"
+            ]
+        },
+        "style": {
+            "description": "The style ID to use for the generation.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
         "dry_run": {
             "description": "If true, the request will not be processed, but will return a response with the estimated kudos cost.",
             "types": [
                 "bool"
+            ]
+        },
+        "webhook": {
+            "description": "Provide a URL where the AI Horde will send a POST call after each delivered generation.\nThe request will include the details of the job as well as the request ID.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "allow_downgrade": {
+            "description": "If true, the request can be modified to lesser parameters if the original request is too expensive.",
+            "types": [
+                "bool"
+            ]
+        },
+        "proxied_account": {
+            "description": "If using a service account as a proxy, provide this value to identify the actual account from which this\nrequest is coming from.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "disable_batching": {
+            "description": "When true, This request will not use batching. This will allow you to retrieve accurate seeds.\nFeature is restricted to Trusted users and Patreons.",
+            "types": [
+                "bool",
+                "None"
             ]
         },
         "apikey": {
@@ -1478,20 +3123,6 @@
                 "None"
             ]
         },
-        "allow_downgrade": {
-            "description": "When true and the request requires upfront kudos and the account does not have enough The request will be\ndowngraded in max context and max tokens so that it does not need upfront kudos.",
-            "types": [
-                "bool",
-                "None"
-            ]
-        },
-        "disable_batching": {
-            "description": "When true, This request will not use batching. This will allow you to retrieve accurate seeds.\nFeature is restricted to Trusted users and Patreons.",
-            "types": [
-                "bool",
-                "None"
-            ]
-        },
         "extra_source_images": {
             "description": "Any extra source images that should be used for this request; e.g., for multi-modal models.",
             "types": [
@@ -1499,22 +3130,8 @@
                 "None"
             ]
         },
-        "proxied_account": {
-            "description": "If using a service account as a proxy, provide this value to identify the actual account from which this\nrequest is coming from.",
-            "types": [
-                "str",
-                "None"
-            ]
-        },
         "softprompt": {
             "description": "Specify which softprompt needs to be used to service this request.",
-            "types": [
-                "str",
-                "None"
-            ]
-        },
-        "webhook": {
-            "description": "Provide a URL where the AI Horde will send a POST call after each delivered generation.\nThe request will include the details of the job as well as the request ID.",
             "types": [
                 "str",
                 "None"
@@ -1593,6 +3210,12 @@
             "types": [
                 "list[str]",
                 "None"
+            ]
+        },
+        "extra_slow_worker": {
+            "description": "If this worker is extra slow and requires a longer timeout.\n\nNote that this reduces the pool of jobs available to this worker.",
+            "types": [
+                "bool"
             ]
         },
         "apikey": {
@@ -1704,6 +3327,58 @@
         },
         "client_agent": {
             "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
+    "UpdateCollectionRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        },
+        "name": {
+            "description": "The name for the collection. Case-sensitive and unique per user.",
+            "types": [
+                "str"
+            ]
+        },
+        "info": {
+            "description": "Extra information about this collection.",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "public": {
+            "description": "When true this collection will be listed among all collections publicly.When false, information about this\ncollection can only be seen by people who know its ID or name.",
+            "types": [
+                "bool"
+            ]
+        },
+        "styles": {
+            "description": "The styles to use in this collection.",
+            "types": [
+                "list[str]"
+            ]
+        },
+        "collection_id": {
+            "description": "The ID of the collection to update.",
             "types": [
                 "str"
             ]
