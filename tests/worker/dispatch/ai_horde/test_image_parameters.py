@@ -16,7 +16,7 @@ from horde_sdk.generation_parameters.image import (
     TIEntry,
 )
 from horde_sdk.generation_parameters.image.consts import (
-    KNOWN_SOURCE_PROCESSING,
+    KNOWN_IMAGE_SOURCE_PROCESSING,
     LORA_TRIGGER_INJECT_CHOICE,
     TI_TRIGGER_INJECT_CHOICE,
 )
@@ -200,7 +200,7 @@ def test_convert_image_job_pop_response_to_parameters_outpainting_alpha(
         simple_image_gen_job_pop_response_outpainting_alpha,
     )
 
-    assert generation_parameters.source_processing == KNOWN_SOURCE_PROCESSING.inpainting
+    assert generation_parameters.source_processing == KNOWN_IMAGE_SOURCE_PROCESSING.inpainting
 
     assert_features_selected(generation_parameters, img2img=True)
 

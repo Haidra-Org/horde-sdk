@@ -35,7 +35,11 @@ from horde_sdk.ai_horde_api.consts import (
 )
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES, KNOWN_FACEFIXERS, KNOWN_UPSCALERS
-from horde_sdk.generation_parameters.image.consts import KNOWN_CONTROLNETS, KNOWN_SAMPLERS, KNOWN_SOURCE_PROCESSING
+from horde_sdk.generation_parameters.image.consts import (
+    KNOWN_IMAGE_CONTROLNETS,
+    KNOWN_IMAGE_SAMPLERS,
+    KNOWN_IMAGE_SOURCE_PROCESSING,
+)
 
 
 def test_api_endpoint() -> None:
@@ -51,7 +55,7 @@ def test_ImageGenerateAsyncRequest(ai_horde_api_key: str) -> None:
         prompt="test prompt",
         params=ImageGenerationInputPayload(
             # sampler_name="DDIM",
-            sampler_name=KNOWN_SAMPLERS.DDIM,
+            sampler_name=KNOWN_IMAGE_SAMPLERS.DDIM,
             cfg_scale=7.5,
             denoising_strength=1,
             seed="123456789",
@@ -80,7 +84,7 @@ def test_ImageGenerateAsyncRequest(ai_horde_api_key: str) -> None:
         workers=[],
         censor_nsfw=False,
         source_image="test source image (usually base64)",
-        source_processing=KNOWN_SOURCE_PROCESSING.txt2img,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         source_mask="test source mask (usually base64)",
         r2=True,
         shared=False,
@@ -120,7 +124,7 @@ def test_ImageGenerateAsyncRequest(ai_horde_api_key: str) -> None:
     assert test_async_request.workers == []
     assert test_async_request.censor_nsfw is False
     assert test_async_request.source_image == "test source image (usually base64)"
-    assert test_async_request.source_processing == KNOWN_SOURCE_PROCESSING.txt2img
+    assert test_async_request.source_processing == KNOWN_IMAGE_SOURCE_PROCESSING.txt2img
     assert test_async_request.source_mask == "test source mask (usually base64)"
     assert test_async_request.r2 is True
     assert test_async_request.shared is False
@@ -163,7 +167,7 @@ def test_ImageGenerateAsyncRequest_unknown_sampler(ai_horde_api_key: str) -> Non
         workers=[],
         censor_nsfw=False,
         source_image="test source image (usually base64)",
-        source_processing=KNOWN_SOURCE_PROCESSING.txt2img,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         source_mask="test source mask (usually base64)",
         r2=True,
         shared=False,
@@ -403,7 +407,7 @@ def test_ImageGenerateJobPopResponse() -> None:
         ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
         payload=ImageGenerateJobPopPayload(
             post_processing=["unknown post processor"],
-            control_type=KNOWN_CONTROLNETS.canny,
+            control_type=KNOWN_IMAGE_CONTROLNETS.canny,
             sampler_name="unknown sampler",
             prompt="A cat in a hat",
         ),

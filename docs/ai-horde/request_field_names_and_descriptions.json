@@ -559,7 +559,7 @@
         "source_processing": {
             "description": "If source_image is provided, specifies how to process it.",
             "types": [
-                "horde_sdk.generation_parameters.image.consts.KNOWN_SOURCE_PROCESSING"
+                "horde_sdk.generation_parameters.image.consts.KNOWN_IMAGE_SOURCE_PROCESSING"
             ]
         },
         "source_mask": {

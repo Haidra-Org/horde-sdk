@@ -26,8 +26,8 @@ from horde_sdk.generation_parameters.image import (
     TIEntry,
 )
 from horde_sdk.generation_parameters.image.consts import (
-    KNOWN_SCHEDULERS,
-    KNOWN_SOURCE_PROCESSING,
+    KNOWN_IMAGE_SCHEDULERS,
+    KNOWN_IMAGE_SOURCE_PROCESSING,
     LORA_TRIGGER_INJECT_CHOICE,
     TI_TRIGGER_INJECT_CHOICE,
 )
@@ -48,9 +48,9 @@ from horde_sdk.worker.dispatch.ai_horde_parameters import AIHordeR2DispatchParam
 def _get_img2img_params(api_response: ImageGenerateJobPopResponse) -> Image2ImageGenerationParameters | None:
     """Get the image-to-image parameters from the API response, if applicable."""
     if api_response.source_processing in [
-        KNOWN_SOURCE_PROCESSING.img2img,
-        KNOWN_SOURCE_PROCESSING.inpainting,
-        KNOWN_SOURCE_PROCESSING.outpainting,
+        KNOWN_IMAGE_SOURCE_PROCESSING.img2img,
+        KNOWN_IMAGE_SOURCE_PROCESSING.inpainting,
+        KNOWN_IMAGE_SOURCE_PROCESSING.outpainting,
     ]:
         source_image: PIL.Image.Image | None = None
         if isinstance(api_response.source_image, str):
@@ -74,7 +74,7 @@ def _get_img2img_params(api_response: ImageGenerateJobPopResponse) -> Image2Imag
 
 def _get_remix_params(api_response: ImageGenerateJobPopResponse) -> RemixGenerationParameters | None:
     """Get the remix parameters from the API response, if applicable."""
-    if api_response.source_processing == KNOWN_SOURCE_PROCESSING.remix:
+    if api_response.source_processing == KNOWN_IMAGE_SOURCE_PROCESSING.remix:
         source_image: PIL.Image.Image | None = None
         if isinstance(api_response.source_image, str):
             source_image = base64_str_to_pil_image(api_response.source_image)
@@ -163,7 +163,9 @@ def _get_hires_fix_params(
                 steps=api_response.payload.ddim_steps,
                 cfg_scale=api_response.payload.cfg_scale,
                 sampler_name=api_response.payload.sampler_name,
-                scheduler=KNOWN_SCHEDULERS.karras if api_response.payload.karras else KNOWN_SCHEDULERS.normal,
+                scheduler=(
+                    KNOWN_IMAGE_SCHEDULERS.karras if api_response.payload.karras else KNOWN_IMAGE_SCHEDULERS.normal
+                ),
                 clip_skip=api_response.payload.clip_skip,
                 denoising_strength=api_response.payload.denoising_strength,
             ),
@@ -179,7 +181,9 @@ def _get_hires_fix_params(
                 steps=second_pass_steps,
                 cfg_scale=api_response.payload.cfg_scale,
                 sampler_name=api_response.payload.sampler_name,
-                scheduler=KNOWN_SCHEDULERS.karras if api_response.payload.karras else KNOWN_SCHEDULERS.normal,
+                scheduler=(
+                    KNOWN_IMAGE_SCHEDULERS.karras if api_response.payload.karras else KNOWN_IMAGE_SCHEDULERS.normal
+                ),
                 clip_skip=api_response.payload.clip_skip,
                 denoising_strength=api_response.payload.hires_fix_denoising_strength or DEFAULT_HIRES_DENOISE_STRENGTH,
             ),
@@ -306,7 +310,7 @@ def convert_image_job_pop_response_to_parameters(
         steps=api_response.payload.ddim_steps,
         cfg_scale=api_response.payload.cfg_scale,
         sampler_name=api_response.payload.sampler_name,
-        scheduler=KNOWN_SCHEDULERS.karras if api_response.payload.karras else KNOWN_SCHEDULERS.normal,
+        scheduler=KNOWN_IMAGE_SCHEDULERS.karras if api_response.payload.karras else KNOWN_IMAGE_SCHEDULERS.normal,
         clip_skip=api_response.payload.clip_skip,
         denoising_strength=api_response.payload.denoising_strength,
     )

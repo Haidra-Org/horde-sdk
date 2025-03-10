@@ -43,7 +43,11 @@ from horde_sdk.generation_parameters.alchemy.object_models import (
     NSFWAlchemyParameters,
     UpscaleAlchemyParameters,
 )
-from horde_sdk.generation_parameters.image.consts import KNOWN_SAMPLERS, KNOWN_SCHEDULERS, KNOWN_SOURCE_PROCESSING
+from horde_sdk.generation_parameters.image.consts import (
+    KNOWN_IMAGE_SAMPLERS,
+    KNOWN_IMAGE_SCHEDULERS,
+    KNOWN_IMAGE_SOURCE_PROCESSING,
+)
 from horde_sdk.generation_parameters.image.object_models import (
     BasicImageGenerationParameters,
     ImageGenerationParameters,
@@ -267,7 +271,7 @@ def simple_image_generation_parameters(
     """Return a simple `ImageGenerationParameters` object."""
     return ImageGenerationParameters(
         generation_ids=[single_id_str],
-        source_processing=KNOWN_SOURCE_PROCESSING.txt2img,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         base_params=BasicImageGenerationParameters(
             model="Deliberate",
             prompt="a cat in a hat",
@@ -276,8 +280,8 @@ def simple_image_generation_parameters(
             height=512,
             steps=10,
             cfg_scale=5,
-            sampler_name=KNOWN_SAMPLERS.k_euler_a,
-            scheduler=KNOWN_SCHEDULERS.normal,
+            sampler_name=KNOWN_IMAGE_SAMPLERS.k_euler_a,
+            scheduler=KNOWN_IMAGE_SCHEDULERS.normal,
             clip_skip=1,
             denoising_strength=1.0,
         ),
@@ -305,7 +309,7 @@ def simple_image_generation_parameters_n_iter(
     return ImageGenerationParameters(
         generation_ids=[id_factory_str() for _ in range(batch_size)],
         batch_size=batch_size,
-        source_processing=KNOWN_SOURCE_PROCESSING.txt2img,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         base_params=BasicImageGenerationParameters(
             model="Deliberate",
             prompt="a cat in a hat",
@@ -314,8 +318,8 @@ def simple_image_generation_parameters_n_iter(
             height=512,
             steps=10,
             cfg_scale=5,
-            sampler_name=KNOWN_SAMPLERS.k_euler_a,
-            scheduler=KNOWN_SCHEDULERS.normal,
+            sampler_name=KNOWN_IMAGE_SAMPLERS.k_euler_a,
+            scheduler=KNOWN_IMAGE_SCHEDULERS.normal,
             clip_skip=1,
             denoising_strength=1.0,
         ),
@@ -407,7 +411,7 @@ def simple_image_generation_parameters_post_processing(
     """Return a simple `ImageGenerationParameters` object."""
     return ImageGenerationParameters(
         generation_ids=[single_id_str],
-        source_processing=KNOWN_SOURCE_PROCESSING.txt2img,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         base_params=BasicImageGenerationParameters(
             model="Deliberate",
             prompt="a cat in a hat",
@@ -416,8 +420,8 @@ def simple_image_generation_parameters_post_processing(
             height=512,
             steps=10,
             cfg_scale=5,
-            sampler_name=KNOWN_SAMPLERS.k_euler_a,
-            scheduler=KNOWN_SCHEDULERS.normal,
+            sampler_name=KNOWN_IMAGE_SAMPLERS.k_euler_a,
+            scheduler=KNOWN_IMAGE_SCHEDULERS.normal,
             clip_skip=1,
             denoising_strength=1.0,
         ),
@@ -455,7 +459,7 @@ def simple_image_generation_parameters_n_iter_post_processing(
     return ImageGenerationParameters(
         generation_ids=[id_factory_str() for _ in range(batch_size)],
         batch_size=batch_size,
-        source_processing=KNOWN_SOURCE_PROCESSING.txt2img,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         base_params=BasicImageGenerationParameters(
             model="Deliberate",
             prompt="a cat in a hat",
@@ -464,8 +468,8 @@ def simple_image_generation_parameters_n_iter_post_processing(
             height=512,
             steps=10,
             cfg_scale=5,
-            sampler_name=KNOWN_SAMPLERS.k_euler_a,
-            scheduler=KNOWN_SCHEDULERS.normal,
+            sampler_name=KNOWN_IMAGE_SAMPLERS.k_euler_a,
+            scheduler=KNOWN_IMAGE_SCHEDULERS.normal,
             clip_skip=1,
             denoising_strength=1.0,
         ),
@@ -548,7 +552,7 @@ def simple_image_gen_job_pop_response_img2img(
     img2img_testing_image_base64: str,
 ) -> ImageGenerateJobPopResponse:
     """Return a `ImageGenerateJobPopResponse` instance for `img2img`"""
-    from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
+    from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SOURCE_PROCESSING
 
     return ImageGenerateJobPopResponse(
         ids=[single_id],
@@ -559,7 +563,7 @@ def simple_image_gen_job_pop_response_img2img(
         skipped=ImageGenerateJobPopSkippedStatus(),
         model="Deliberate",
         source_image=img2img_testing_image_base64,
-        source_processing=KNOWN_SOURCE_PROCESSING.img2img,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.img2img,
         r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
     )
 
@@ -570,7 +574,7 @@ def simple_image_gen_job_pop_response_img2img_masked(
     inpainting_source_image_and_mask_base64: tuple[str, str],
 ) -> ImageGenerateJobPopResponse:
     """Return a `ImageGenerateJobPopResponse` instance for `img2img`"""
-    from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
+    from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SOURCE_PROCESSING
 
     source_image, source_mask = inpainting_source_image_and_mask_base64
 
@@ -584,7 +588,7 @@ def simple_image_gen_job_pop_response_img2img_masked(
         model="Deliberate",
         source_image=source_image,
         source_mask=source_mask,
-        source_processing=KNOWN_SOURCE_PROCESSING.img2img,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.img2img,
         r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
     )
 
@@ -595,7 +599,7 @@ def simple_image_gen_job_pop_response_inpainting(
     inpainting_source_image_and_mask_base64: tuple[str, str],
 ) -> ImageGenerateJobPopResponse:
     """Return a `ImageGenerateJobPopResponse` instance for `img2img`"""
-    from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
+    from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SOURCE_PROCESSING
 
     source_image, source_mask = inpainting_source_image_and_mask_base64
 
@@ -609,7 +613,7 @@ def simple_image_gen_job_pop_response_inpainting(
         model="Deliberate",
         source_image=source_image,
         source_mask=source_mask,
-        source_processing=KNOWN_SOURCE_PROCESSING.inpainting,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.inpainting,
         r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
     )
 
@@ -620,7 +624,7 @@ def simple_image_gen_job_pop_response_outpainting_alpha(
     outpaint_alpha_source_image_base64: str,
 ) -> ImageGenerateJobPopResponse:
     """Return a `ImageGenerateJobPopResponse` instance for `img2img`"""
-    from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
+    from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SOURCE_PROCESSING
 
     return ImageGenerateJobPopResponse(
         ids=[single_id],
@@ -631,7 +635,7 @@ def simple_image_gen_job_pop_response_outpainting_alpha(
         skipped=ImageGenerateJobPopSkippedStatus(),
         model="Deliberate",
         source_image=outpaint_alpha_source_image_base64,
-        source_processing=KNOWN_SOURCE_PROCESSING.inpainting,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.inpainting,
         r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
     )
 
@@ -642,14 +646,14 @@ def simple_image_gen_job_pop_response_controlnet_openpose(
     openpose_control_map_base64: str,
 ) -> ImageGenerateJobPopResponse:
     """Return a `ImageGenerateJobPopResponse` instance with `controlnet` set"""
-    from horde_sdk.generation_parameters.image.consts import KNOWN_CONTROLNETS
+    from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_CONTROLNETS
 
     return ImageGenerateJobPopResponse(
         ids=[single_id],
         payload=ImageGenerateJobPopPayload(
             prompt="a cat in a hat",
             image_is_control=True,
-            control_type=KNOWN_CONTROLNETS.openpose,
+            control_type=KNOWN_IMAGE_CONTROLNETS.openpose,
             seed="42",
         ),
         skipped=ImageGenerateJobPopSkippedStatus(),
@@ -749,7 +753,7 @@ def simple_image_gen_job_pop_response_remix(
     woman_headshot_testing_image_base64: str,
 ) -> ImageGenerateJobPopResponse:
     """Return a `ImageGenerateJobPopResponse` instance with `remix`"""
-    from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
+    from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SOURCE_PROCESSING
 
     return ImageGenerateJobPopResponse(
         ids=[single_id],
@@ -760,7 +764,7 @@ def simple_image_gen_job_pop_response_remix(
             seed="42",
         ),
         skipped=ImageGenerateJobPopSkippedStatus(),
-        source_processing=KNOWN_SOURCE_PROCESSING.remix,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.remix,
         model="Stable Cascade 1.0",
         r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
         source_image=woman_headshot_testing_image_base64,

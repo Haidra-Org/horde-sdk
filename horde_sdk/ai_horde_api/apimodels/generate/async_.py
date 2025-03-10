@@ -15,7 +15,7 @@ from horde_sdk.ai_horde_api.apimodels.generate.check import ImageGenerateCheckRe
 from horde_sdk.ai_horde_api.apimodels.generate.status import DeleteImageGenerateRequest, ImageGenerateStatusRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod, HTTPStatusCode
-from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
+from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SOURCE_PROCESSING
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
@@ -181,7 +181,7 @@ class ImageGenerateAsyncRequest(
 
     source_image: str | None = None
     """The public URL of the source image or a base64 string to use."""
-    source_processing: KNOWN_SOURCE_PROCESSING = KNOWN_SOURCE_PROCESSING.txt2img
+    source_processing: KNOWN_IMAGE_SOURCE_PROCESSING = KNOWN_IMAGE_SOURCE_PROCESSING.txt2img
     """If source_image is provided, specifies how to process it."""
     source_mask: str | None = None
     """If source_processing is set to 'inpainting' or 'outpainting', this parameter can be optionally provided as the

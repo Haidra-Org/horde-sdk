@@ -26,7 +26,11 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_UPSCALERS,
     _all_valid_post_processors_names_and_values,
 )
-from horde_sdk.generation_parameters.image.consts import KNOWN_CONTROLNETS, KNOWN_SAMPLERS, KNOWN_WORKFLOWS
+from horde_sdk.generation_parameters.image.consts import (
+    KNOWN_IMAGE_CONTROLNETS,
+    KNOWN_IMAGE_SAMPLERS,
+    KNOWN_IMAGE_WORKFLOWS,
+)
 from horde_sdk.generic_api.apimodels import (
     HordeAPIData,
     HordeAPIObjectBaseModel,
@@ -236,8 +240,8 @@ class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
     width: int = Field(default=512, ge=64, le=3072, multiple_of=64)
     """The desired output image width."""
 
-    sampler_name: KNOWN_SAMPLERS | str = KNOWN_SAMPLERS.k_lms
-    """The sampler to use for this generation. Defaults to `KNOWN_SAMPLERS.k_lms`."""
+    sampler_name: KNOWN_IMAGE_SAMPLERS | str = KNOWN_IMAGE_SAMPLERS.k_lms
+    """The sampler to use for this generation. Defaults to `KNOWN_IMAGE_SAMPLERS.k_lms`."""
     karras: bool = True
     """Set to True if you want to use the Karras scheduling."""
     cfg_scale: float = Field(default=7.5, ge=0, le=10)
@@ -267,7 +271,7 @@ class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
     tis: list[TIPayloadEntry] | None = None
     """A list of textual inversion (embedding) parameters to use."""
 
-    workflow: str | KNOWN_WORKFLOWS | None = None
+    workflow: str | KNOWN_IMAGE_WORKFLOWS | None = None
     """The specific comfyUI workflow to use."""
     transparent: bool | None = None
     """When true, will generate an image with a transparent background"""
@@ -294,13 +298,13 @@ class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
         return v
 
     @field_validator("sampler_name")
-    def sampler_name_must_be_known(cls, v: str | KNOWN_SAMPLERS) -> str | KNOWN_SAMPLERS:
+    def sampler_name_must_be_known(cls, v: str | KNOWN_IMAGE_SAMPLERS) -> str | KNOWN_IMAGE_SAMPLERS:
         """Ensure that the sampler name is in this list of supported samplers."""
-        if isinstance(v, KNOWN_SAMPLERS):
+        if isinstance(v, KNOWN_IMAGE_SAMPLERS):
             return v
 
         try:
-            KNOWN_SAMPLERS(v)
+            KNOWN_IMAGE_SAMPLERS(v)
         except ValueError:
             logger.warning(f"Unknown sampler name {v}. Is your SDK out of date or did the API change?")
 
@@ -324,7 +328,7 @@ class ImageGenerateParamMixin(_BaseImageGenerateParamMixin):
     seed_variation: int | None = Field(default=None, ge=1, le=1000)
     """Deprecated."""
 
-    control_type: str | KNOWN_CONTROLNETS | None = None
+    control_type: str | KNOWN_IMAGE_CONTROLNETS | None = None
     """The type of control net type to use."""
     image_is_control: bool | None = None
     """Set to True if the image is a control image."""
@@ -358,15 +362,18 @@ class ImageGenerateParamMixin(_BaseImageGenerateParamMixin):
         return v
 
     @field_validator("control_type")
-    def control_type_must_be_known(cls, v: str | KNOWN_CONTROLNETS | None) -> str | KNOWN_CONTROLNETS | None:
+    def control_type_must_be_known(
+        cls,
+        v: str | KNOWN_IMAGE_CONTROLNETS | None,
+    ) -> str | KNOWN_IMAGE_CONTROLNETS | None:
         """Ensure that the control type is in this list of supported control types."""
         if v is None:
             return None
-        if isinstance(v, KNOWN_CONTROLNETS):
+        if isinstance(v, KNOWN_IMAGE_CONTROLNETS):
             return v
 
         try:
-            KNOWN_CONTROLNETS(v)
+            KNOWN_IMAGE_CONTROLNETS(v)
         except ValueError:
             logger.warning(f"Unknown control type {v}. Is your SDK out of date or did the API change?")
 

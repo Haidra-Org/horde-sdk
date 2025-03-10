@@ -155,6 +155,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--apikey",
         "--api-key",
+        "--api_key",
         "-k",
         type=str,
         default=ANON_API_KEY,

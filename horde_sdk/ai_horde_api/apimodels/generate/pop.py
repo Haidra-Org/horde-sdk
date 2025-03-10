@@ -23,7 +23,7 @@ from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import _OVERLOADED_MODEL, HTTPMethod
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_FACEFIXERS, KNOWN_UPSCALERS
-from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
+from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SOURCE_PROCESSING
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     HordeAPIObjectBaseModel,
@@ -272,7 +272,7 @@ class ImageGenerateJobPopResponse(
     """The URL or Base64-encoded webp to use for img2img."""
     _downloaded_source_image: str | None = None
     """The downloaded source image (as base64), if any. This is not part of the API response."""
-    source_processing: str | KNOWN_SOURCE_PROCESSING = KNOWN_SOURCE_PROCESSING.txt2img
+    source_processing: str | KNOWN_IMAGE_SOURCE_PROCESSING = KNOWN_IMAGE_SOURCE_PROCESSING.txt2img
     """If source_image is provided, specifies how to process it."""
     source_mask: str | None = None
     """If img_processing is set to 'inpainting' or 'outpainting', this parameter can be optionally provided as the
@@ -291,13 +291,16 @@ class ImageGenerateJobPopResponse(
     """The messages that have been sent to this worker."""
 
     @field_validator("source_processing")
-    def source_processing_must_be_known(cls, v: str | KNOWN_SOURCE_PROCESSING) -> str | KNOWN_SOURCE_PROCESSING:
+    def source_processing_must_be_known(
+        cls,
+        v: str | KNOWN_IMAGE_SOURCE_PROCESSING,
+    ) -> str | KNOWN_IMAGE_SOURCE_PROCESSING:
         """Ensure that the source processing is in this list of supported source processing."""
-        if isinstance(v, KNOWN_SOURCE_PROCESSING):
+        if isinstance(v, KNOWN_IMAGE_SOURCE_PROCESSING):
             return v
 
         try:
-            KNOWN_SOURCE_PROCESSING(v)
+            KNOWN_IMAGE_SOURCE_PROCESSING(v)
         except ValueError:
             logger.warning(f"Unknown source processing {v}. Is your SDK out of date or did the API change?")
         return v
