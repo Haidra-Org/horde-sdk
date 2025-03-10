@@ -23,6 +23,7 @@ repos:
         additional_dependencies: [
             pytest,
             pydantic>=2.9.2,
+            logfire,
             types-Pillow,
             types-requests,
             types-pytz,
