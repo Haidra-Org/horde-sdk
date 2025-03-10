@@ -166,6 +166,7 @@ from horde_sdk.ai_horde_api.apimodels.operations import (
     SingleIPTimeoutsRequest,
 )
 from horde_sdk.ai_horde_api.apimodels.sharedkeys import (
+    ExpiryStrSharedKeyDetailsResponse,
     SharedKeyCreateRequest,
     SharedKeyDeleteRequest,
     SharedKeyDeleteResponse,
@@ -357,6 +358,7 @@ __all__ = [
     "IPTimeout",
     "IPTimeoutListResponse",
     "SingleIPTimeoutsRequest",
+    "ExpiryStrSharedKeyDetailsResponse",
     "SharedKeyCreateRequest",
     "SharedKeyDeleteRequest",
     "SharedKeyDeleteResponse",

@@ -240,6 +240,8 @@ class AlchemyPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
         examples=["AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen"],
         max_length=1000,
     )
+    """The agent string for the bridge, in the format `name:version:url or contact info`."""
+
     name: str
     """The name of the request. This is used to identify the request in the logs."""
     priority_usernames: list[str]
