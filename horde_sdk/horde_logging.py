@@ -90,7 +90,36 @@ if HORDE_SDK_LOG_VERBOSITY is not None:
 
 set_logger_handlers = os.getenv("HORDE_SDK_SET_DEFAULT_LOG_HANDLERS")
 
-if set_logger_handlers:
+HORDE_SDK_TELEMETRY = os.getenv("HORDE_SDK_TELEMETRY")
+
+if HORDE_SDK_TELEMETRY is not None and HORDE_SDK_TELEMETRY != "" and HORDE_SDK_TELEMETRY != "0":
+    import logfire
+
+    import horde_sdk._version
+
+    logfire.configure(
+        send_to_logfire=False,
+        service_name="horde-sdk",
+        service_version=horde_sdk._version.__version__,
+        console=False,
+    )
+
+    if HORDE_SDK_TELEMETRY.lower() == "full":
+        logger.info("Enabling full telemetry instrumentation.")
+        logfire.instrument_aiohttp_client()
+        logfire.instrument_requests()
+    else:
+        logger.info("Enabling basic telemetry instrumentation.")
+
+    logfire.instrument_pydantic()
+
+    logger.remove()
+    handler_config.append(logfire.loguru_handler())
+    logger.configure(handlers=handler_config)  # type: ignore
+    logger.info("Telemetry instrumentation enabled.")
+
+
+elif set_logger_handlers:
     logger.info("Setting default logger handlers.")
     logger.remove()
     logger.configure(handlers=handler_config)  # type: ignore

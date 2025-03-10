@@ -14,6 +14,7 @@ from ssl import SSLContext
 from typing import cast
 
 import aiohttp
+import logfire
 import PIL.Image
 import requests
 from loguru import logger
@@ -392,6 +393,8 @@ class AIHordeAPIAsyncClientSession(GenericAsyncHordeAPISession):
 class BaseAIHordeSimpleClient(ABC):
     """The base class for the most straightforward clients which interact with the AI-Horde API."""
 
+    _msg_format_sleep = "sleeping for {seconds} seconds"
+
     reasonable_minimum_timeout = 20
 
     def validate_timeout(
@@ -586,6 +589,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         """
         return download_image_from_url(url)
 
+    @logfire.instrument()
     def _do_request_with_check(
         self,
         api_request: BaseAIHordeRequest,
@@ -612,9 +616,10 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         if check_callback is not None and len(inspect.getfullargspec(check_callback).args) == 0:
             raise ValueError("Callback must take at least one argument")
 
+        logger.debug("Starting request with check")
+
         # This session class will cleanup incomplete requests in the event of an exception
         with AIHordeAPIClientSession() as horde_session:
-            # Submit the initial request
             logger.debug(
                 f"Submitting request: {api_request.log_safe_model_dump()} with timeout {timeout}",
             )
@@ -658,7 +663,9 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                     break
 
                 # Wait for 4 seconds before checking again
-                time.sleep(4)
+                sleep_time = 4
+                with logfire.span(self._msg_format_sleep.format(seconds=sleep_time), sleep_time=sleep_time):
+                    time.sleep(sleep_time)
 
             # Check if the check response has progress
             if not isinstance(check_response, ResponseWithProgressMixin):
@@ -1306,6 +1313,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
 
         return PIL.Image.open(io.BytesIO(image_bytes))
 
+    @logfire.instrument()
     async def _do_request_with_check(
         self,
         api_request: BaseAIHordeRequest,
@@ -1335,7 +1343,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         if check_callback is not None and len(inspect.getfullargspec(check_callback).args) == 0:
             raise ValueError("Callback must take at least one argument")
 
-        # This session class will cleanup incomplete requests in the event of an exception
+        logger.debug("Starting async request with check.")
 
         # Submit the initial request
         logger.debug(
@@ -1381,7 +1389,9 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
                 break
 
             # Wait for 4 seconds before checking again
-            await asyncio.sleep(4)
+            sleep_time = 4
+            with logfire.span(self._msg_format_sleep.format(seconds=sleep_time), sleep_time=sleep_time):
+                await asyncio.sleep(sleep_time)
 
         # This is for type safety, but should never happen in production
         if not isinstance(check_response, ResponseWithProgressMixin):  # pragma: no cover

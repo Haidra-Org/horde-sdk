@@ -9,6 +9,7 @@ from ssl import SSLContext
 from typing import Any, TypeVar
 
 import aiohttp
+import logfire
 import requests
 from loguru import logger
 from pydantic import BaseModel, ValidationError
@@ -16,6 +17,12 @@ from strenum import StrEnum
 from typing_extensions import override
 
 from horde_sdk import _default_sslcontext
+from horde_sdk._telemetry.metrics import (
+    _telemetry_client_critical_errors_counter,
+    _telemetry_client_horde_api_errors_counter,
+    _telemetry_client_requests_finished_successfully_counter,
+    _telemetry_client_requests_started_counter,
+)
 from horde_sdk.consts import HTTPMethod
 from horde_sdk.exceptions import PayloadValidationError
 from horde_sdk.generic_api.apimodels import (
@@ -82,6 +89,10 @@ class BaseHordeAPIClient(ABC):
 
     _accept_types: type[GenericAcceptTypes] = GenericAcceptTypes
     """A list of all valid values for the header key 'accept'."""
+
+    _msg_format_submit_request = (
+        "submit_request {sync_async} {http_method_name} for {api_request_type} expecting {expected_response_type}"
+    )
 
     # endregion
 
@@ -249,12 +260,14 @@ class BaseHordeAPIClient(ABC):
 
         if not request_body_data_dict:
             # This is explicitly set to None for clarity that it is unspecified
-            # i.e., and empty body is not the same as an unspecified body
+            # i.e., an empty body is not the same as an unspecified body
             request_body_data_dict = None
 
         # Add the API key to the request headers if the request is authenticated and an API key is provided
         if isinstance(api_request, APIKeyAllowedInRequestMixin) and "apikey" not in request_headers_dict:
             request_headers_dict["apikey"] = self._apikey
+
+        _telemetry_client_requests_started_counter.add(1)
 
         return ParsedRawRequest(
             endpoint_no_query=endpoint_url,
@@ -274,6 +287,7 @@ class BaseHordeAPIClient(ABC):
         # If requests response is a failure code, see if a `message` key exists in the response.
         # If so, return a RequestErrorResponse
         if returned_status_code >= 400:
+            _telemetry_client_horde_api_errors_counter.add(1)
             if "errors" in raw_response_json:
                 raise PayloadValidationError(
                     raw_response_json.get("errors", ""),
@@ -283,6 +297,7 @@ class BaseHordeAPIClient(ABC):
             try:
                 return RequestErrorResponse(**raw_response_json)
             except ValidationError:
+                _telemetry_client_critical_errors_counter.add(1)
                 return RequestErrorResponse(
                     message="The API returned an error we didn't recognize! See `object_data` for the raw response.",
                     rc=raw_response_json.get("rc", returned_status_code),
@@ -299,6 +314,7 @@ class BaseHordeAPIClient(ABC):
                     message="The response type doesn't match expected one! See `object_data` for the raw response.",
                     object_data={"raw_response": raw_response_json},
                 )
+                _telemetry_client_horde_api_errors_counter.add(1)
         except ValidationError as e:
             if not isinstance(handled_response, expected_response_type):  # pragma: no cover
                 error_response = RequestErrorResponse(
@@ -306,6 +322,10 @@ class BaseHordeAPIClient(ABC):
                     object_data={"exception": e, "raw_response": raw_response_json},
                 )
                 handled_response = error_response
+
+            _telemetry_client_critical_errors_counter.add(1)
+
+        _telemetry_client_requests_finished_successfully_counter.add(1)
 
         return handled_response
 
@@ -336,62 +356,83 @@ class GenericHordeAPIManualClient(BaseHordeAPIClient):
         """
         http_method_name = api_request.get_http_method()
 
-        parsed_request = self._validate_and_prepare_request(api_request)
+        if expected_response_type not in api_request.get_success_status_response_pairs().values():
+            logger.warning(
+                "The expected response type is not in the list of success status response pairs! This may result in "
+                "unexpected behavior.",
+            )
+            logger.warning(f"Passed expected_response_type: {expected_response_type}")
+            logger.warning(f"Allowable pairs defined in the SDK : {api_request.get_success_status_response_pairs()}")
 
-        raw_response: requests.Response | None = None
+        with logfire.span(
+            self._msg_format_submit_request.format(
+                sync_async="sync",
+                http_method_name=http_method_name,
+                api_request_type=type(api_request).__name__,
+                expected_response_type=expected_response_type.__name__,
+            ),
+            sync_async="sync",
+            http_method_name=http_method_name,
+            api_request_type=type(api_request).__name__,
+            expected_response_type=expected_response_type.__name__,
+        ):
 
-        if http_method_name == HTTPMethod.GET:
-            if parsed_request.request_body is not None:
-                raise RuntimeError(
-                    "GET requests cannot have a body! This may mean you forgot to override `get_header_fields()` "
-                    "or perhaps you may need to define a `metadata.py` module or entry in it for your API.",
+            parsed_request = self._validate_and_prepare_request(api_request)
+
+            raw_response: requests.Response | None = None
+
+            if http_method_name == HTTPMethod.GET:
+                if parsed_request.request_body is not None:
+                    raise RuntimeError(
+                        "GET requests cannot have a body! This may mean you forgot to override `get_header_fields()` "
+                        "or perhaps you may need to define a `metadata.py` module or entry in it for your API.",
+                    )
+                raw_response = requests.get(
+                    parsed_request.endpoint_no_query,
+                    headers=parsed_request.request_headers,
+                    params=parsed_request.request_queries,
+                    allow_redirects=True,
                 )
-            raw_response = requests.get(
-                parsed_request.endpoint_no_query,
-                headers=parsed_request.request_headers,
-                params=parsed_request.request_queries,
-                allow_redirects=True,
-            )
-        elif http_method_name == HTTPMethod.POST:
-            raw_response = requests.post(
-                parsed_request.endpoint_no_query,
-                headers=parsed_request.request_headers,
-                params=parsed_request.request_queries,
-                json=parsed_request.request_body,
-                allow_redirects=True,
-            )
-        elif http_method_name == HTTPMethod.PUT:
-            raw_response = requests.put(
-                parsed_request.endpoint_no_query,
-                headers=parsed_request.request_headers,
-                params=parsed_request.request_queries,
-                json=parsed_request.request_body,
-                allow_redirects=True,
-            )
-        elif http_method_name == HTTPMethod.PATCH:
-            raw_response = requests.patch(
-                parsed_request.endpoint_no_query,
-                headers=parsed_request.request_headers,
-                params=parsed_request.request_queries,
-                json=parsed_request.request_body,
-                allow_redirects=True,
-            )
-        elif http_method_name == HTTPMethod.DELETE:
-            raw_response = requests.delete(
-                parsed_request.endpoint_no_query,
-                headers=parsed_request.request_headers,
-                params=parsed_request.request_queries,
-                json=parsed_request.request_body,
-                allow_redirects=True,
-            )
-        else:
-            raise RuntimeError(f"Unknown HTTP method: {http_method_name}")
+            elif http_method_name == HTTPMethod.POST:
+                raw_response = requests.post(
+                    parsed_request.endpoint_no_query,
+                    headers=parsed_request.request_headers,
+                    params=parsed_request.request_queries,
+                    json=parsed_request.request_body,
+                    allow_redirects=True,
+                )
+            elif http_method_name == HTTPMethod.PUT:
+                raw_response = requests.put(
+                    parsed_request.endpoint_no_query,
+                    headers=parsed_request.request_headers,
+                    params=parsed_request.request_queries,
+                    json=parsed_request.request_body,
+                    allow_redirects=True,
+                )
+            elif http_method_name == HTTPMethod.PATCH:
+                raw_response = requests.patch(
+                    parsed_request.endpoint_no_query,
+                    headers=parsed_request.request_headers,
+                    params=parsed_request.request_queries,
+                    json=parsed_request.request_body,
+                    allow_redirects=True,
+                )
+            elif http_method_name == HTTPMethod.DELETE:
+                raw_response = requests.delete(
+                    parsed_request.endpoint_no_query,
+                    headers=parsed_request.request_headers,
+                    params=parsed_request.request_queries,
+                    json=parsed_request.request_body,
+                    allow_redirects=True,
+                )
+            else:
+                raise RuntimeError(f"Unknown HTTP method: {http_method_name}")
 
-        return self._after_request_handling(
-            raw_response_json=raw_response.json(),
-            returned_status_code=raw_response.status_code,
-            expected_response_type=expected_response_type,
-        )
+            return self._after_request_handling(
+                raw_response_json=raw_response.json(),
+                returned_status_code=raw_response.status_code,
+                expected_response_type=expected_response_type,
+            )
 
 
 class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
@@ -457,25 +498,38 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
         if not self._aiohttp_session:
             raise RuntimeError("No aiohttp session was provided but an async method was called!")
 
-        async with (
-            self._aiohttp_session.request(
-                http_method_name.value,
-                parsed_request.endpoint_no_query,
-                headers=parsed_request.request_headers,
-                params=parsed_request.request_queries,
-                json=parsed_request.request_body,
-                allow_redirects=True,
-                ssl=self._ssl_context,
-            ) as response,
+        with logfire.span(
+            self._msg_format_submit_request.format(
+                sync_async="async",
+                http_method_name=http_method_name,
+                api_request_type=type(api_request).__name__,
+                expected_response_type=expected_response_type.__name__,
+            ),
+            sync_async="async",
+            http_method_name=http_method_name,
+            api_request_type=type(api_request).__name__,
+            expected_response_type=expected_response_type.__name__,
         ):
-            raw_response_json = await response.json()
-            response_status = response.status
 
-        return self._after_request_handling(
-            raw_response_json=raw_response_json,
-            returned_status_code=response_status,
-            expected_response_type=expected_response_type,
-        )
+            async with (
+                self._aiohttp_session.request(
+                    http_method_name.value,
+                    parsed_request.endpoint_no_query,
+                    headers=parsed_request.request_headers,
+                    params=parsed_request.request_queries,
+                    json=parsed_request.request_body,
+                    allow_redirects=True,
+                    ssl=self._ssl_context,
+                ) as response,
+            ):
+                raw_response_json = await response.json()
+                response_status = response.status
+
+            return self._after_request_handling(
+                raw_response_json=raw_response_json,
+                returned_status_code=response_status,
+                expected_response_type=expected_response_type,
+            )
 
 
 class GenericHordeAPISession(GenericHordeAPIManualClient):
