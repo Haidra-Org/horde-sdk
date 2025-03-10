@@ -42,11 +42,6 @@ class _BaseSharedKeySettings(HordeAPIObjectBaseModel):
             raise ValueError("Restriction values must be -1 or greater.")
         return v
 
-    @override
-    @classmethod
-    def get_api_model_name(cls) -> str | None:
-        return "SharedKeyInput"
-
 
 class SharedKeySettings(_BaseSharedKeySettings):
     """Represents the settings for a SharedKey.
@@ -100,14 +95,19 @@ class SharedKeyDetailsResponse(HordeResponseBaseModel, MessageSpecifiesSharedKey
         return v
 
 
-class _ExpiryStrSharedKeyDetailsResponse(
+class ExpiryStrSharedKeyDetailsResponse(
     HordeResponseBaseModel,
     MessageSpecifiesSharedKeyMixin,
     _BaseSharedKeySettings,
 ):
     """The shared key details for a style.
 
-    v2 API Model: `_OVERLOADED_MODEL`
+    Represents the data returned from the following endpoints and http status codes:
+        - /v2/sharedkeys/{sharedkey_id} | SharedKeyModifyRequest [PATCH] -> 200
+        - /v2/sharedkeys/{sharedkey_id} | SharedKeyDetailsRequest [GET] -> 200
+        - /v2/sharedkeys | SharedKeyCreateRequest [PUT] -> 200
+
+    v2 API Model: `_MODEL_OVERLOADED`
     """
 
     expiry: str | None = None  # FIXME - duplicated in SharedKeyDetailsResponse due to overloaded model
@@ -148,8 +148,8 @@ class SharedKeyDetailsRequest(BaseAIHordeRequest, MessageSpecifiesSharedKeyMixin
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[_ExpiryStrSharedKeyDetailsResponse]:
-        return _ExpiryStrSharedKeyDetailsResponse
+    def get_default_success_response_type(cls) -> type[ExpiryStrSharedKeyDetailsResponse]:
+        return ExpiryStrSharedKeyDetailsResponse
 
 
 class SharedKeyDeleteResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
@@ -231,8 +231,8 @@ class SharedKeyModifyRequest(
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[_ExpiryStrSharedKeyDetailsResponse]:
-        return _ExpiryStrSharedKeyDetailsResponse
+    def get_default_success_response_type(cls) -> type[ExpiryStrSharedKeyDetailsResponse]:
+        return ExpiryStrSharedKeyDetailsResponse
 
 
 class SharedKeyCreateRequest(
@@ -264,5 +264,5 @@ class SharedKeyCreateRequest(
 
     @override
     @classmethod
-    def get_default_success_response_type(cls) -> type[_ExpiryStrSharedKeyDetailsResponse]:
-        return _ExpiryStrSharedKeyDetailsResponse
+    def get_default_success_response_type(cls) -> type[ExpiryStrSharedKeyDetailsResponse]:
+        return ExpiryStrSharedKeyDetailsResponse
