@@ -3,7 +3,7 @@ from enum import auto
 from strenum import StrEnum
 
 
-class KNOWN_SAMPLERS(StrEnum):
+class KNOWN_IMAGE_SAMPLERS(StrEnum):
     """The samplers that are known to the API.
 
     (k_lms, k_heun, DDIM, etc)
@@ -25,7 +25,7 @@ class KNOWN_SAMPLERS(StrEnum):
     DDIM = "DDIM"
 
 
-class KNOWN_SCHEDULERS(StrEnum):
+class KNOWN_IMAGE_SCHEDULERS(StrEnum):
     """The schedulers that are known to the API.
 
     (normal, karras, exponential, etc)
@@ -42,7 +42,7 @@ class KNOWN_SCHEDULERS(StrEnum):
     kl_optimal = auto()
 
 
-class KNOWN_CONTROLNETS(StrEnum):
+class KNOWN_IMAGE_CONTROLNETS(StrEnum):
     """The controlnets that are known to the API."""
 
     canny = auto()
@@ -56,7 +56,7 @@ class KNOWN_CONTROLNETS(StrEnum):
     hough = auto()
 
 
-class KNOWN_SOURCE_PROCESSING(StrEnum):
+class KNOWN_IMAGE_SOURCE_PROCESSING(StrEnum):
     """The source processing methods that are known to the API.
 
     (txt2img, img2img, inpainting, etc)
@@ -103,7 +103,7 @@ class LORA_TRIGGER_INJECT_CHOICE(StrEnum):
     """Attempt to match the specified trigger term to a published trigger term into the 'negative' prompt."""
 
 
-class KNOWN_WORKFLOWS(StrEnum):
+class KNOWN_IMAGE_WORKFLOWS(StrEnum):
     """The controlnets that are known to the API."""
 
     qr_code = auto()

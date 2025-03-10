@@ -26,7 +26,7 @@ from horde_sdk.ai_horde_api.exceptions import (
 from horde_sdk.ai_horde_api.fields import GenerationID, ImageID, TeamID, WorkerID
 from horde_sdk.exceptions import PayloadValidationError
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_FORMS
-from horde_sdk.generation_parameters.image.consts import KNOWN_SAMPLERS, KNOWN_SOURCE_PROCESSING
+from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SAMPLERS, KNOWN_IMAGE_SOURCE_PROCESSING
 
 __all__ = [
     "AIHordeAPIAsyncClientSession",
@@ -50,6 +50,6 @@ __all__ = [
     "WorkerID",
     "PayloadValidationError",
     "KNOWN_ALCHEMY_FORMS",
-    "KNOWN_SAMPLERS",
-    "KNOWN_SOURCE_PROCESSING",
+    "KNOWN_IMAGE_SAMPLERS",
+    "KNOWN_IMAGE_SOURCE_PROCESSING",
 ]

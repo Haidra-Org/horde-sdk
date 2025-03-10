@@ -32,7 +32,7 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_MISC_POST_PROCESSORS,
     KNOWN_UPSCALERS,
 )
-from horde_sdk.generation_parameters.image.consts import KNOWN_SOURCE_PROCESSING
+from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SOURCE_PROCESSING
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 
 
@@ -596,7 +596,7 @@ class TestAIHordeGenerate:
                                 seed="1234",
                                 n=n,
                             ),
-                            source_processing=KNOWN_SOURCE_PROCESSING.remix,
+                            source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.remix,
                             models=["Stable Cascade 1.0"],
                             source_image=woman_headshot_testing_image_base64,
                             extra_source_images=[
@@ -625,7 +625,7 @@ class TestAIHordeGenerate:
                                 seed="1234",
                                 n=n,
                             ),
-                            source_processing=KNOWN_SOURCE_PROCESSING.remix,
+                            source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.remix,
                             models=["Stable Cascade 1.0"],
                             source_image=default_testing_image_base64,
                             extra_source_images=[

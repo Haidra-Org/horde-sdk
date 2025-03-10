@@ -27,11 +27,11 @@ from horde_sdk.generation_parameters.alchemy.consts import (
 from horde_sdk.generation_parameters.generic import BasicModelGenerationParameters, ComposedParameterSetBase
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.image.consts import (
-    KNOWN_CONTROLNETS,
-    KNOWN_SAMPLERS,
-    KNOWN_SCHEDULERS,
-    KNOWN_SOURCE_PROCESSING,
-    KNOWN_WORKFLOWS,
+    KNOWN_IMAGE_CONTROLNETS,
+    KNOWN_IMAGE_SAMPLERS,
+    KNOWN_IMAGE_SCHEDULERS,
+    KNOWN_IMAGE_SOURCE_PROCESSING,
+    KNOWN_IMAGE_WORKFLOWS,
     LORA_TRIGGER_INJECT_CHOICE,
     TI_TRIGGER_INJECT_CHOICE,
 )
@@ -58,11 +58,11 @@ __all__ = [
     "BasicModelGenerationParameters",
     "ComposedParameterSetBase",
     "KNOWN_AUX_MODEL_SOURCE",
-    "KNOWN_CONTROLNETS",
-    "KNOWN_SAMPLERS",
-    "KNOWN_SCHEDULERS",
-    "KNOWN_SOURCE_PROCESSING",
-    "KNOWN_WORKFLOWS",
+    "KNOWN_IMAGE_CONTROLNETS",
+    "KNOWN_IMAGE_SAMPLERS",
+    "KNOWN_IMAGE_SCHEDULERS",
+    "KNOWN_IMAGE_SOURCE_PROCESSING",
+    "KNOWN_IMAGE_WORKFLOWS",
     "LORA_TRIGGER_INJECT_CHOICE",
     "TI_TRIGGER_INJECT_CHOICE",
     "ImageGenerationParameters",

@@ -10,11 +10,11 @@ from horde_sdk.generation_parameters.alchemy import AlchemyParameters
 from horde_sdk.generation_parameters.generic import BasicModelGenerationParameters, ComposedParameterSetBase
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.image.consts import (
-    KNOWN_CONTROLNETS,
-    KNOWN_SAMPLERS,
-    KNOWN_SCHEDULERS,
-    KNOWN_SOURCE_PROCESSING,
-    KNOWN_WORKFLOWS,
+    KNOWN_IMAGE_CONTROLNETS,
+    KNOWN_IMAGE_SAMPLERS,
+    KNOWN_IMAGE_SCHEDULERS,
+    KNOWN_IMAGE_SOURCE_PROCESSING,
+    KNOWN_IMAGE_WORKFLOWS,
     LORA_TRIGGER_INJECT_CHOICE,
     TI_TRIGGER_INJECT_CHOICE,
 )
@@ -42,9 +42,9 @@ class BasicImageGenerationParameters(BasicModelGenerationParameters):
 
     cfg_scale: float
     """The scale to use for the generation."""
-    sampler_name: KNOWN_SAMPLERS | str
+    sampler_name: KNOWN_IMAGE_SAMPLERS | str
     """The sampler to use for the generation."""
-    scheduler: KNOWN_SCHEDULERS | str
+    scheduler: KNOWN_IMAGE_SCHEDULERS | str
     """The scheduler to use for the generation."""
     clip_skip: int
     """The offset of layer numbers to skip. 1 means no layers are skipped."""
@@ -93,7 +93,7 @@ class ControlnetGenerationParameters(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    controlnet_type: KNOWN_CONTROLNETS | str
+    controlnet_type: KNOWN_IMAGE_CONTROLNETS | str
     """The type of controlnet to use for the generation."""
 
     source_image: PIL.Image.Image | None
@@ -171,7 +171,7 @@ class TIEntry(AuxModelEntry):
 class CustomWorkflowGenerationParameters(BaseModel):
     """Represents the parameters for a custom workflow generation."""
 
-    custom_workflow_name: KNOWN_WORKFLOWS | str
+    custom_workflow_name: KNOWN_IMAGE_WORKFLOWS | str
     """The name of the custom workflow to use for the generation."""
     custom_workflow_version: str | None = None
     """The version of the custom workflow to use for the generation. \
@@ -192,8 +192,8 @@ class ImageGenerationParameters(ComposedParameterSetBase):
     tiling: bool = False
     """If true, the generation will be generated with seamless tiling."""
 
-    source_processing: KNOWN_SOURCE_PROCESSING | str
-    """txt2img, img2img, etc. See `KNOWN_SOURCE_PROCESSING` for more information."""
+    source_processing: KNOWN_IMAGE_SOURCE_PROCESSING | str
+    """txt2img, img2img, etc. See `KNOWN_IMAGE_SOURCE_PROCESSING` for more information."""
 
     base_params: BasicImageGenerationParameters
     """The base parameters for the generation."""
@@ -221,13 +221,13 @@ class ImageGenerationParameters(ComposedParameterSetBase):
     def verify_source_processing(self: ImageGenerationParameters) -> ImageGenerationParameters:
         """Ensure that the appropriate parameters are set based on the source processing type."""
         if self.source_processing in [
-            KNOWN_SOURCE_PROCESSING.img2img,
-            KNOWN_SOURCE_PROCESSING.inpainting,
-            KNOWN_SOURCE_PROCESSING.outpainting,
+            KNOWN_IMAGE_SOURCE_PROCESSING.img2img,
+            KNOWN_IMAGE_SOURCE_PROCESSING.inpainting,
+            KNOWN_IMAGE_SOURCE_PROCESSING.outpainting,
         ]:
             if self.img2img_params is None:
                 raise ValueError("img2img_params must be provided for img2img source processing.")
-        elif self.source_processing == KNOWN_SOURCE_PROCESSING.remix and self.remix_params is None:
+        elif self.source_processing == KNOWN_IMAGE_SOURCE_PROCESSING.remix and self.remix_params is None:
             raise ValueError("remix_params must be provided for remix source processing.")
 
         return self

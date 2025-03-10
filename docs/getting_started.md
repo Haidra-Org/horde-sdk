@@ -54,7 +54,7 @@ image_generate_async_request = ImageGenerateAsyncRequest(
     params=ImageGenerationInputPayload(
         width=512,
         height=768,
-        sampler_name=KNOWN_SAMPLERS.k_euler_a,
+        sampler_name=KNOWN_IMAGE_SAMPLERS.k_euler_a,
         clip_skip=1,
         n=2,
     ),
