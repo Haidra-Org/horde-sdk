@@ -23,7 +23,7 @@ pip install horde_sdk
 
 2. Find the `*Request` object type appropriate to what you want to do. (see also: [naming](getting_started.md#naming))
     - These objects types are always found in the `apimodels` namespace of the `*_api` sub package.
-    - e.g., [ImageGenerateAsyncRequest][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest]
+    - e.g., [ImageGenerateAsyncRequest][horde_sdk.ai_horde_api.apimodels.generate.async.ImageGenerateAsyncRequest]
     - **Note** that there is always one or more response types mapped to a request. You can get the default success response `type` like so:
 
 
@@ -36,7 +36,7 @@ pip install horde_sdk
     >>> image_gen_request.get_success_response_type()
     <class 'horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse'>
     ```
-    Accordingly, the [ImageGenerateAsyncResponse][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse] type is expected to be the return type from the API.
+    Accordingly, the [ImageGenerateAsyncResponse][horde_sdk.ai_horde_api.apimodels.generate.async.ImageGenerateAsyncResponse] type is expected to be the return type from the API.
 
     <div class="warning" markdown="1">
         <div class="title" markdown="1">
