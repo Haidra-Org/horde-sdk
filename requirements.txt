@@ -30,3 +30,7 @@ typing-extensions==4.12.2
 urllib3==2.3.0
 win32-setctime==1.2.0 ; sys_platform == 'win32'
 yarl==1.18.3
+
+logfire>=3.7.1
+opentelemetry-instrumentation-aiohttp-client>=0.51b0
+opentelemetry-instrumentation-requests>=0.51b0
