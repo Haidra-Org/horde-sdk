@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, RootModel, field
 from typing_extensions import override
 
 from horde_sdk import _default_sslcontext
-from horde_sdk.consts import HTTPMethod, HTTPStatusCode
+from horde_sdk.consts import HTTPMethod, HTTPStatusCode, get_default_frozen_model_config_dict
 from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
@@ -86,19 +86,7 @@ class HordeAPIObject(abc.ABC):
 class HordeAPIObjectBaseModel(HordeAPIObject, BaseModel):
     """Base class for all Horde API data models (leveraging pydantic)."""
 
-    model_config = (
-        ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="allow",
-        )
-        if not os.getenv("TESTS_ONGOING")
-        else ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="forbid",
-        )
-    )
+    model_config = get_default_frozen_model_config_dict()
 
 
 class HordeAPIData(BaseModel):
@@ -109,19 +97,7 @@ class HordeAPIData(BaseModel):
     models.
     """
 
-    model_config = (
-        ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="allow",
-        )
-        if not os.getenv("TESTS_ONGOING")
-        else ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="forbid",
-        )
-    )
+    model_config = get_default_frozen_model_config_dict()
 
 
 class HordeAPIMessage(HordeAPIObject):
@@ -160,11 +136,13 @@ class HordeResponseRootModel(RootModel[T], HordeResponse):
         ConfigDict(
             frozen=True,
             use_attribute_docstrings=True,
+            # `extra` is not allowed with RootModel
         )
         if not os.getenv("TESTS_ONGOING")
         else ConfigDict(
             frozen=True,
             use_attribute_docstrings=True,
+            # `extra` is not allowed with RootModel
         )
     )
 
@@ -172,19 +150,7 @@ class HordeResponseRootModel(RootModel[T], HordeResponse):
 class HordeResponseBaseModel(HordeResponse, BaseModel):
     """Base class for all Horde API response data models (leveraging pydantic)."""
 
-    model_config = (
-        ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="allow",
-        )
-        if not os.getenv("TESTS_ONGOING")
-        else ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="forbid",
-        )
-    )
+    model_config = get_default_frozen_model_config_dict()
 
 
 HordeResponseTypes = HordeResponseRootModel[Any] | HordeResponseBaseModel
@@ -429,19 +395,7 @@ class RequestErrorResponse(HordeResponseBaseModel, ContainsMessageResponseMixin)
 class HordeRequest(HordeAPIMessage, BaseModel):
     """Represents any request to any Horde API."""
 
-    model_config = (
-        ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="allow",
-        )
-        if not os.getenv("TESTS_ONGOING")
-        else ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="forbid",
-        )
-    )
+    model_config = get_default_frozen_model_config_dict()
 
     @classmethod
     @abc.abstractmethod

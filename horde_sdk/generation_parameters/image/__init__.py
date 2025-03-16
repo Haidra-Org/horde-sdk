@@ -14,6 +14,7 @@ from horde_sdk.generation_parameters.image.object_models import (
     RemixGenerationParameters,
     RemixImageEntry,
     TIEntry,
+    default_basic_image_generation_parameters,
 )
 
 __all__ = [
@@ -30,4 +31,5 @@ __all__ = [
     "RemixGenerationParameters",
     "RemixImageEntry",
     "TIEntry",
+    "default_basic_image_generation_parameters",
 ]

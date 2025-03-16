@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from pydantic import ConfigDict, Field
+from pydantic import Field
 from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import ActiveModel, BaseAIHordeRequest
@@ -298,10 +298,6 @@ class HordeStatusModelsAllRequest(BaseAIHordeRequest):
     Represents a GET request to the /v2/status/models endpoint.
     """
 
-    model_config = ConfigDict(
-        protected_namespaces=(),  # Allows the "model_" prefix on attrs
-    )
-
     type_: MODEL_TYPE = Field(
         default=MODEL_TYPE.image,
         examples=[MODEL_TYPE.image, MODEL_TYPE.text],
@@ -379,10 +375,6 @@ class HordeStatusModelsSingleRequest(BaseAIHordeRequest):
 
     Represents a GET request to the /v2/status/models/{model_name} endpoint.
     """
-
-    model_config = ConfigDict(
-        protected_namespaces=(),  # Allows the "model_" prefix on attrs
-    )
 
     model_name: str
     """The name of the model to request."""

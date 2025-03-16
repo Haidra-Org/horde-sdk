@@ -22,7 +22,7 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     is_upscaler_form,
 )
 from horde_sdk.utils.image_utils import (
-    base64_str_to_pil_image,
+    base64_str_to_bytes,
 )
 from horde_sdk.worker.consts import (
     KNOWN_ALCHEMY_BACKEND,
@@ -61,7 +61,7 @@ def convert_alchemy_job_pop_response_to_parameters(
                 UpscaleAlchemyParameters(
                     generation_id=str(form.id_),
                     form=KNOWN_ALCHEMY_FORMS.post_process,
-                    source_image=base64_str_to_pil_image(form.source_image),
+                    source_image=base64_str_to_bytes(form.source_image),
                     upscaler=form.form,
                 ),
             )
@@ -71,7 +71,7 @@ def convert_alchemy_job_pop_response_to_parameters(
                 FacefixAlchemyParameters(
                     generation_id=str(form.id_),
                     form=KNOWN_ALCHEMY_FORMS.post_process,
-                    source_image=base64_str_to_pil_image(form.source_image),
+                    source_image=base64_str_to_bytes(form.source_image),
                     facefixer=form.form,
                 ),
             )
@@ -81,7 +81,7 @@ def convert_alchemy_job_pop_response_to_parameters(
                 InterrogateAlchemyParameters(
                     generation_id=str(form.id_),
                     form=KNOWN_ALCHEMY_FORMS.interrogation,
-                    source_image=base64_str_to_pil_image(form.source_image),
+                    source_image=base64_str_to_bytes(form.source_image),
                     interrogator=KNOWN_INTERROGATORS.vit_l_14,
                 ),
             )
@@ -91,7 +91,7 @@ def convert_alchemy_job_pop_response_to_parameters(
                 CaptionAlchemyParameters(
                     generation_id=str(form.id_),
                     form=KNOWN_ALCHEMY_FORMS.caption,
-                    source_image=base64_str_to_pil_image(form.source_image),
+                    source_image=base64_str_to_bytes(form.source_image),
                     caption_model=KNOWN_CAPTION_MODELS.BLIP_BASE_SALESFORCE,
                 ),
             )
@@ -101,7 +101,7 @@ def convert_alchemy_job_pop_response_to_parameters(
                 NSFWAlchemyParameters(
                     generation_id=str(form.id_),
                     form=KNOWN_ALCHEMY_FORMS.nsfw,
-                    source_image=base64_str_to_pil_image(form.source_image),
+                    source_image=base64_str_to_bytes(form.source_image),
                     nsfw_detector=KNOWN_NSFW_DETECTOR.horde_safety,
                 ),
             )
@@ -111,7 +111,7 @@ def convert_alchemy_job_pop_response_to_parameters(
                 SingleAlchemyParameters(
                     generation_id=str(form.id_),
                     form=form.form,
-                    source_image=base64_str_to_pil_image(form.source_image),
+                    source_image=base64_str_to_bytes(form.source_image),
                 ),
             )
 
