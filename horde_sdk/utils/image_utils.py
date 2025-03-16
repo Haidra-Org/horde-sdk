@@ -3,7 +3,7 @@ import io
 
 import PIL.Image
 from horde_model_reference.meta_consts import (
-    STABLE_DIFFUSION_BASELINE_CATEGORY,
+    KNOWN_IMAGE_GENERATION_BASELINE,
 )
 from loguru import logger
 
@@ -172,12 +172,12 @@ def get_first_pass_image_resolution_sdxl(
 def get_first_pass_image_resolution_by_baseline(
     width: int,
     height: int,
-    baseline: STABLE_DIFFUSION_BASELINE_CATEGORY | None,
+    baseline: KNOWN_IMAGE_GENERATION_BASELINE | None,
 ) -> tuple[int, int]:
     """Get the first pass image resolution based on the baseline category."""
-    if baseline == STABLE_DIFFUSION_BASELINE_CATEGORY.stable_cascade:
+    if baseline == KNOWN_IMAGE_GENERATION_BASELINE.stable_cascade:
         return get_first_pass_image_resolution_max(width, height)
-    if baseline == STABLE_DIFFUSION_BASELINE_CATEGORY.stable_diffusion_xl:
+    if baseline == KNOWN_IMAGE_GENERATION_BASELINE.stable_diffusion_xl:
         return get_first_pass_image_resolution_sdxl(width, height)
 
     return get_first_pass_image_resolution_min(width, height)
@@ -294,6 +294,54 @@ def base64_str_to_pil_image(
     try:
         image_bytes = base64.b64decode(base64_str)
         return PIL.Image.open(io.BytesIO(image_bytes))
+    except Exception as e:
+        if except_on_parse_fail:
+            raise e
+        logger.error(f"({type(e)}) Failed to parse base64 image: {e}")
+        return None
+
+
+def bytes_to_pil_image(
+    image_bytes: bytes,
+    *,
+    except_on_parse_fail: bool = False,
+) -> PIL.Image.Image | None:
+    """Convert bytes to a PIL image.
+
+    Args:
+        image_bytes (bytes): The bytes to convert to a PIL image.
+        except_on_parse_fail (bool): Whether to raise an exception if the bytes cannot be parsed. \
+            Defaults to False.
+
+    Returns:
+        PIL.Image.Image: The PIL image.
+    """
+    try:
+        return PIL.Image.open(io.BytesIO(image_bytes))
+    except Exception as e:
+        if except_on_parse_fail:
+            raise e
+        logger.error(f"({type(e)}) Failed to parse image bytes: {e}")
+        return None
+
+
+def base64_str_to_bytes(
+    base64_str: str,
+    *,
+    except_on_parse_fail: bool = False,
+) -> bytes | None:
+    """Convert a base64 string to bytes.
+
+    Args:
+        base64_str (str): The base64 string to convert to bytes.
+        except_on_parse_fail (bool): Whether to raise an exception if the base64 string cannot be parsed. \
+            Defaults to False.
+
+    Returns:
+        bytes: The bytes.
+    """
+    try:
+        return base64.b64decode(base64_str)
     except Exception as e:
         if except_on_parse_fail:
             raise e

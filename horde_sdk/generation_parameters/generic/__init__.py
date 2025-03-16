@@ -4,6 +4,7 @@ See :class:`horde_sdk.generation_parameters.generic.object_models.BasicModelGene
 base model for generation parameters.
 """
 
+from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
 from pydantic import BaseModel
 
 
@@ -21,8 +22,8 @@ class BasicModelGenerationParameters(BaseModel):
     model: str
     """The model to use for the generation."""
 
-    model_baseline: str | None = None
-    """The baseline of the model."""
+    model_baseline: str | KNOWN_IMAGE_GENERATION_BASELINE | None = None
+    """The baseline of the model. If not specified, it is generally up to the bridge or backend to infer it."""
     model_filename: str | None = None
     """The filename of the model to use for the generation"""
     model_hash: str | None = None

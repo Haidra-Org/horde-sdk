@@ -19,6 +19,7 @@ import os
 # We import the horde_sdk logging module first so that we can use it to configure the logging system before importing
 from horde_sdk.horde_logging import COMPLETE_LOGGER_LABEL, PROGRESS_LOGGER_LABEL
 
+
 from loguru import logger
 
 # isort: on
@@ -72,12 +73,15 @@ _async_client_exceptions: tuple[type[Exception], ...] = (TimeoutError, aiohttp.c
 if sys.version_info[:2] == (3, 10):
     _async_client_exceptions = (asyncio.exceptions.TimeoutError, aiohttp.client_exceptions.ClientError, OSError)
 
+# It is important to load `horde_sdk.consts` here (and before `horde_sdk.generic_api`), after env vars are loaded
+# so the CI will work as intended. See `get_default_frozen_model_config_dict` for more details.
 from horde_sdk.consts import (
     PAYLOAD_HTTP_METHODS,
     HTTPMethod,
     HTTPStatusCode,
     get_all_error_status_codes,
     get_all_success_status_codes,
+    get_default_frozen_model_config_dict,
     is_error_status_code,
     is_success_status_code,
 )
@@ -103,6 +107,7 @@ __all__ = [
     "HTTPStatusCode",
     "get_all_error_status_codes",
     "get_all_success_status_codes",
+    "get_default_frozen_model_config_dict",
     "is_error_status_code",
     "is_success_status_code",
     "APIKeyAllowedInRequestMixin",

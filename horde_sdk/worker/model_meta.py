@@ -1,7 +1,7 @@
 import os
 import re
 
-from horde_model_reference.meta_consts import MODEL_REFERENCE_CATEGORY, STABLE_DIFFUSION_BASELINE_CATEGORY
+from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE, MODEL_REFERENCE_CATEGORY
 from horde_model_reference.model_reference_manager import ModelReferenceManager
 from horde_model_reference.model_reference_records import StableDiffusion_ModelRecord
 from loguru import logger
@@ -162,8 +162,8 @@ class ImageModelLoadResolver:
         """Remove large models from the input set of models."""
         AI_HORDE_MODEL_META_LARGE_MODELS = os.getenv("AI_HORDE_MODEL_META_LARGE_MODELS")
         if not AI_HORDE_MODEL_META_LARGE_MODELS or not load_large_models:
-            cascade_models = self.resolve_all_models_of_baseline(STABLE_DIFFUSION_BASELINE_CATEGORY.stable_cascade)
-            flux_models = self.resolve_all_models_of_baseline(STABLE_DIFFUSION_BASELINE_CATEGORY.flux_1)
+            cascade_models = self.resolve_all_models_of_baseline(KNOWN_IMAGE_GENERATION_BASELINE.stable_cascade)
+            flux_models = self.resolve_all_models_of_baseline(KNOWN_IMAGE_GENERATION_BASELINE.flux_1)
 
             if not AI_HORDE_MODEL_META_LARGE_MODELS:
                 logger.debug(

@@ -20,6 +20,7 @@ if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
+from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
 from horde_model_reference.model_reference_manager import ModelReferenceManager
 
 from horde_sdk.ai_horde_api.apimodels import (
@@ -53,6 +54,7 @@ from horde_sdk.generation_parameters.image.object_models import (
     ImageGenerationParameters,
 )
 from horde_sdk.generation_parameters.text.object_models import BasicTextGenerationParameters, TextGenerationParameters
+from horde_sdk.worker.dispatch.ai_horde.image.convert import convert_image_job_pop_response_to_parameters
 from horde_sdk.worker.model_meta import ImageModelLoadResolver
 
 
@@ -274,6 +276,7 @@ def simple_image_generation_parameters(
         source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         base_params=BasicImageGenerationParameters(
             model="Deliberate",
+            model_baseline=KNOWN_IMAGE_GENERATION_BASELINE.stable_diffusion_1,
             prompt="a cat in a hat",
             seed="42",
             width=512,
@@ -312,6 +315,7 @@ def simple_image_generation_parameters_n_iter(
         source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         base_params=BasicImageGenerationParameters(
             model="Deliberate",
+            model_baseline=KNOWN_IMAGE_GENERATION_BASELINE.stable_diffusion_1,
             prompt="a cat in a hat",
             seed="42",
             width=512,
@@ -340,7 +344,7 @@ def simple_image_generation_parameters_n_iter_and_upload_map(
 @pytest.fixture(scope="function")
 def simple_alchemy_generation_parameters(
     single_id_str: str,
-    default_testing_image_PIL: PIL.Image.Image,
+    default_testing_image_bytes: bytes,
 ) -> AlchemyParameters:
     """Return a simple `AlchemyParameters` object."""
     return AlchemyParameters(
@@ -348,7 +352,7 @@ def simple_alchemy_generation_parameters(
             UpscaleAlchemyParameters(
                 generation_id=single_id_str,
                 form=KNOWN_ALCHEMY_FORMS.post_process,
-                source_image=default_testing_image_PIL,
+                source_image=default_testing_image_bytes,
                 upscaler=KNOWN_UPSCALERS.RealESRGAN_x2plus,
             ),
         ],
@@ -373,7 +377,7 @@ def simple_alchemy_generation_parameters_and_upload_map(
 @pytest.fixture(scope="function")
 def simple_alchemy_generation_parameters_nsfw_detect(
     single_id_str: str,
-    default_testing_image_PIL: PIL.Image.Image,
+    default_testing_image_bytes: bytes,
 ) -> AlchemyParameters:
     """Return a simple `AlchemyParameters` object."""
     return AlchemyParameters(
@@ -381,7 +385,7 @@ def simple_alchemy_generation_parameters_nsfw_detect(
             NSFWAlchemyParameters(
                 generation_id=single_id_str,
                 form=KNOWN_ALCHEMY_FORMS.post_process,
-                source_image=default_testing_image_PIL,
+                source_image=default_testing_image_bytes,
                 nsfw_detector=KNOWN_NSFW_DETECTOR.BACKEND_DEFAULT,
             ),
         ],
@@ -414,6 +418,7 @@ def simple_image_generation_parameters_post_processing(
         source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         base_params=BasicImageGenerationParameters(
             model="Deliberate",
+            model_baseline=KNOWN_IMAGE_GENERATION_BASELINE.stable_diffusion_1,
             prompt="a cat in a hat",
             seed="42",
             width=512,
@@ -462,6 +467,7 @@ def simple_image_generation_parameters_n_iter_post_processing(
         source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         base_params=BasicImageGenerationParameters(
             model="Deliberate",
+            model_baseline=KNOWN_IMAGE_GENERATION_BASELINE.stable_diffusion_1,
             prompt="a cat in a hat",
             seed="42",
             width=512,
@@ -679,6 +685,19 @@ def simple_image_gen_job_pop_response_hires_fix(
         model="Deliberate",
         r2_uploads=[f"https://not.a.real.url.internal/upload/{single_id}"],
     )
+
+
+@pytest.fixture(scope="function")
+def simple_image_generation_parameters_hires_fix(
+    simple_image_gen_job_pop_response_hires_fix: ImageGenerateJobPopResponse,
+    model_reference_manager: ModelReferenceManager,
+) -> ImageGenerationParameters:
+    """Return a simple `ImageGenerationParameters` object."""
+    parameters, _ = convert_image_job_pop_response_to_parameters(
+        simple_image_gen_job_pop_response_hires_fix,
+        model_reference_manager,
+    )
+    return parameters
 
 
 @pytest.fixture(scope="function")

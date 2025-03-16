@@ -1,8 +1,8 @@
-import PIL.Image
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, Field
 
 from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_ALCHEMY_FORMS,
+    KNOWN_ALCHEMY_TYPES,
     KNOWN_CAPTION_MODELS,
     KNOWN_FACEFIXERS,
     KNOWN_INTERROGATORS,
@@ -12,10 +12,15 @@ from horde_sdk.generation_parameters.alchemy.consts import (
 from horde_sdk.generation_parameters.generic import ComposedParameterSetBase
 
 
+class AlchemyFeatureFlags(BaseModel):
+    """Feature flags for an alchemy worker."""
+
+    alchemy_types: list[KNOWN_ALCHEMY_TYPES] = Field(default_factory=list)
+    """The alchemy types supported by the worker."""
+
+
 class SingleAlchemyParameters(BaseModel):
     """Represents the common bare minimum parameters for any alchemy generation."""
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     generation_id: str
     """The generation ID to use for the generation."""
@@ -23,8 +28,8 @@ class SingleAlchemyParameters(BaseModel):
     form: KNOWN_ALCHEMY_FORMS | str
     """The form to use for the generation."""
 
-    source_image: PIL.Image.Image
-    """The source image to u`se for the generation."""
+    source_image: bytes | str | None
+    """The source image to use for the generation."""
 
 
 class UpscaleAlchemyParameters(SingleAlchemyParameters):

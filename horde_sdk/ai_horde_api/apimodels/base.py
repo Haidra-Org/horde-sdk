@@ -240,7 +240,7 @@ class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
     width: int = Field(default=512, ge=64, le=3072, multiple_of=64)
     """The desired output image width."""
 
-    sampler_name: KNOWN_IMAGE_SAMPLERS | str = KNOWN_IMAGE_SAMPLERS.k_lms
+    sampler_name: KNOWN_IMAGE_SAMPLERS | str = KNOWN_IMAGE_SAMPLERS.k_euler
     """The sampler to use for this generation. Defaults to `KNOWN_IMAGE_SAMPLERS.k_lms`."""
     karras: bool = True
     """Set to True if you want to use the Karras scheduling."""

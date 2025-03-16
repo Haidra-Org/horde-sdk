@@ -107,3 +107,19 @@ class KNOWN_IMAGE_WORKFLOWS(StrEnum):
     """The controlnets that are known to the API."""
 
     qr_code = auto()
+
+
+class CLIP_SKIP_REPRESENTATION(StrEnum):
+    """The CLIP skip representations that are known."""
+
+    NEGATIVE_OFFSET = auto()
+    """CLIP skip is used with a negative offset.
+
+    For example, -1 means "no skipped layers" and -2 means "skip the last layer". This is the case for comfyui.
+    """
+
+    POSITIVE_OFFSET = auto()
+    """CLIP skip is used with a positive offset.
+
+    For example, 1 means "skip no layers" and 2 means "skip the first layer". This is the case for many frontends.
+    """

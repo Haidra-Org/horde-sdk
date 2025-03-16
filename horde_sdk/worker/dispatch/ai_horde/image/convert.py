@@ -1,8 +1,7 @@
 """Contains functions to convert API responses to image generation parameters."""
 
-import PIL.Image
 from horde_model_reference.meta_consts import (
-    STABLE_DIFFUSION_BASELINE_CATEGORY,
+    KNOWN_IMAGE_GENERATION_BASELINE,
     get_baseline_native_resolution,
 )
 from horde_model_reference.model_reference_manager import ModelReferenceManager
@@ -32,7 +31,7 @@ from horde_sdk.generation_parameters.image.consts import (
     TI_TRIGGER_INJECT_CHOICE,
 )
 from horde_sdk.utils.image_utils import (
-    base64_str_to_pil_image,
+    base64_str_to_bytes,
     calc_upscale_sampler_steps,
     get_first_pass_image_resolution_by_baseline,
 )
@@ -52,13 +51,13 @@ def _get_img2img_params(api_response: ImageGenerateJobPopResponse) -> Image2Imag
         KNOWN_IMAGE_SOURCE_PROCESSING.inpainting,
         KNOWN_IMAGE_SOURCE_PROCESSING.outpainting,
     ]:
-        source_image: PIL.Image.Image | None = None
+        source_image: bytes | None = None
         if isinstance(api_response.source_image, str):
-            source_image = base64_str_to_pil_image(api_response.source_image)
+            source_image = base64_str_to_bytes(api_response.source_image)
 
-        source_mask: PIL.Image.Image | None = None
+        source_mask: bytes | None = None
         if isinstance(api_response.source_mask, str):
-            source_mask = base64_str_to_pil_image(api_response.source_mask)
+            source_mask = base64_str_to_bytes(api_response.source_mask)
 
         if source_image is None:
             logger.warning("No source image found for img2img generation. Avoiding img2img if possible.")
@@ -75,16 +74,16 @@ def _get_img2img_params(api_response: ImageGenerateJobPopResponse) -> Image2Imag
 def _get_remix_params(api_response: ImageGenerateJobPopResponse) -> RemixGenerationParameters | None:
     """Get the remix parameters from the API response, if applicable."""
     if api_response.source_processing == KNOWN_IMAGE_SOURCE_PROCESSING.remix:
-        source_image: PIL.Image.Image | None = None
+        source_image: bytes | None = None
         if isinstance(api_response.source_image, str):
-            source_image = base64_str_to_pil_image(api_response.source_image)
+            source_image = base64_str_to_bytes(api_response.source_image)
 
         remix_images: list[RemixImageEntry] = []
         if api_response.extra_source_images is not None:
             for remix_image in api_response.extra_source_images:
                 remix_images.append(
                     RemixImageEntry(
-                        image=base64_str_to_pil_image(remix_image.image),
+                        image=base64_str_to_bytes(remix_image.image),
                         strength=remix_image.strength,
                     ),
                 )
@@ -100,10 +99,10 @@ def _get_remix_params(api_response: ImageGenerateJobPopResponse) -> RemixGenerat
 def _get_controlnet_params(api_response: ImageGenerateJobPopResponse) -> ControlnetGenerationParameters | None:
     """Get the controlnet parameters from the API response, if applicable."""
     if api_response.payload.control_type is not None:
-        source_image: PIL.Image.Image | None = None
+        source_image: bytes | None = None
 
         if isinstance(api_response.source_image, str):
-            source_image = base64_str_to_pil_image(api_response.source_image)
+            source_image = base64_str_to_bytes(api_response.source_image)
 
         if api_response.payload.image_is_control:
             controlnet_params = ControlnetGenerationParameters(
@@ -125,7 +124,7 @@ def _get_controlnet_params(api_response: ImageGenerateJobPopResponse) -> Control
 
 def _get_hires_fix_params(
     api_response: ImageGenerateJobPopResponse,
-    model_baseline: STABLE_DIFFUSION_BASELINE_CATEGORY | None = None,
+    model_baseline: KNOWN_IMAGE_GENERATION_BASELINE | None = None,
 ) -> HiresFixGenerationParameters | None:
     """Get the high-resolution fix parameters from the API response, if applicable."""
     first_pass_width, first_pass_height = get_first_pass_image_resolution_by_baseline(
@@ -284,11 +283,11 @@ def convert_image_job_pop_response_to_parameters(
         raise ValueError("Model is required for generation.")
 
     model_record = model_reference_manager.stable_diffusion.root.get(api_response.model)
-    model_baseline: STABLE_DIFFUSION_BASELINE_CATEGORY | None = None
+    model_baseline: KNOWN_IMAGE_GENERATION_BASELINE | None = None
 
     if model_record is not None:
         try:
-            model_baseline = STABLE_DIFFUSION_BASELINE_CATEGORY(model_record.baseline)
+            model_baseline = KNOWN_IMAGE_GENERATION_BASELINE(model_record.baseline)
         except ValueError:
             logger.debug(
                 f"Invalid baseline {model_record.baseline} for model {api_response.model}. Using None instead.",

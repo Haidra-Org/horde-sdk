@@ -2,14 +2,17 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import PIL.Image
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-from horde_sdk.consts import GENERATION_ID_TYPES
+from horde_sdk.consts import GENERATION_ID_TYPES, get_default_frozen_model_config_dict
 from horde_sdk.generation_parameters.alchemy import AlchemyParameters
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.generation_parameters.generic import BasicModelGenerationParameters, ComposedParameterSetBase
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
+from horde_sdk.generation_parameters.generic.object_models import GenerationFeatureFlags
 from horde_sdk.generation_parameters.image.consts import (
+    CLIP_SKIP_REPRESENTATION,
     KNOWN_IMAGE_CONTROLNETS,
     KNOWN_IMAGE_SAMPLERS,
     KNOWN_IMAGE_SCHEDULERS,
@@ -23,6 +26,76 @@ DEFAULT_BASELINE_RESOLUTION: int = 512
 """The default assumed (single side) trained resolution for image generation models if unspecified."""
 HIRES_FIX_DENOISE_STRENGTH_DEFAULT: float = 0.65
 """The default second-pass denoise strength for hires-fix generations."""
+
+
+class ControlnetFeatureFlags(BaseModel):
+    """Feature flags for controlnet."""
+
+    model_config = get_default_frozen_model_config_dict()
+
+    controlnets: list[KNOWN_IMAGE_CONTROLNETS | str] = Field(default_factory=list)
+    """The controlnets supported by the worker."""
+
+    image_is_control: bool = Field(default=False)
+    """Whether there is support for passing a pre-parsed control image."""
+
+    return_control_map: bool = Field(default=False)
+    """Whether there is support returning the control map."""
+
+
+class ImageGenerationFeatureFlags(GenerationFeatureFlags):
+    """Feature flags for an image worker."""
+
+    baselines: list[KNOWN_IMAGE_GENERATION_BASELINE | str]
+    """The baselines supported for standard image generation.
+
+    If `None`, it is understood that the baselines will either default to the worker's baseline and/or
+    will be inferred from the model name.
+    """
+
+    clip_skip: bool = Field(default=False)
+    """Whether there is support for clip skipping."""
+
+    hires_fix: bool = Field(default=False)
+    """Whether there is support for hires fix."""
+
+    tiling: bool = Field(default=False)
+    """Whether there is support for seamless tiling."""
+
+    schedulers: list[KNOWN_IMAGE_SCHEDULERS | str] = Field(default_factory=list)
+    """The schedulers supported."""
+
+    samplers: list[KNOWN_IMAGE_SAMPLERS | str] = Field(default_factory=list)
+    """The samplers supported."""
+
+    controlnets_feature_flags: ControlnetFeatureFlags | None = None
+    """The controlnet feature flags for the worker."""
+
+    post_processing: list[KNOWN_ALCHEMY_TYPES | str] | None = None
+    """The post processing methods."""
+
+    source_processing: list[KNOWN_IMAGE_SOURCE_PROCESSING | str] = Field(default_factory=list)
+    """The source processing methods."""
+
+    workflows: list[KNOWN_IMAGE_WORKFLOWS | str] | None = None
+    """The workflows supported."""
+
+    tis: list[KNOWN_AUX_MODEL_SOURCE | str] | None = None
+    """If textual inversions are supported, the sources of the textual inversions supported."""
+
+    loras: list[KNOWN_AUX_MODEL_SOURCE | str] | None = None
+    """If loras are supported, the sources of the loras supported."""
+
+    @field_validator("baselines")
+    @classmethod
+    def ensure_baseline_non_empty(
+        cls,
+        v: list[KNOWN_IMAGE_GENERATION_BASELINE | str],
+    ) -> list[KNOWN_IMAGE_GENERATION_BASELINE | str]:
+        """Ensure that the baselines are not empty."""
+        if not v:
+            raise ValueError("Baselines cannot be empty.")
+        return v
 
 
 class BasicImageGenerationParameters(BasicModelGenerationParameters):
@@ -48,28 +121,44 @@ class BasicImageGenerationParameters(BasicModelGenerationParameters):
     """The scheduler to use for the generation."""
     clip_skip: int
     """The offset of layer numbers to skip. 1 means no layers are skipped."""
+    clip_skip_representation: CLIP_SKIP_REPRESENTATION = CLIP_SKIP_REPRESENTATION.POSITIVE_OFFSET
+    """The representation of the clip skip. See `CLIP_SKIP_REPRESENTATION` for more information.
+
+    Typically front-ends use positive values, while comfyui used the same value but negative.
+    """
 
     denoising_strength: float
     """The denoising strength to use for the generation."""
 
 
+default_basic_image_generation_parameters = BasicImageGenerationParameters(
+    prompt="EXAMPLE_PROMPT",
+    model="EXAMPLE_MODEL",
+    seed="1",
+    height=DEFAULT_BASELINE_RESOLUTION,
+    width=DEFAULT_BASELINE_RESOLUTION,
+    steps=20,
+    cfg_scale=7.0,
+    sampler_name=KNOWN_IMAGE_SAMPLERS.k_lms,
+    scheduler=KNOWN_IMAGE_SCHEDULERS.normal,
+    clip_skip=1,
+    denoising_strength=0.75,
+)
+
+
 class Image2ImageGenerationParameters(BaseModel):
     """Represents the parameters for an image-to-image generation."""
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    source_image: PIL.Image.Image
+    source_image: bytes | str | None
     """The source image to use for the generation."""
-    source_mask: PIL.Image.Image | None
+    source_mask: bytes | str | None
     """The source mask to use for the generation."""
 
 
 class RemixImageEntry(BaseModel):
     """Represents a special image entry for a generation."""
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    image: PIL.Image.Image
+    image: bytes | str
     """The image data."""
 
     strength: float = 1.0
@@ -79,9 +168,7 @@ class RemixImageEntry(BaseModel):
 class RemixGenerationParameters(BaseModel):
     """Represents the parameters for a stable cascade remix generation."""
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    source_image: PIL.Image.Image
+    source_image: bytes | str
     """The source image to use for the generation."""
 
     remix_images: list[RemixImageEntry]
@@ -91,14 +178,12 @@ class RemixGenerationParameters(BaseModel):
 class ControlnetGenerationParameters(BaseModel):
     """Represents the parameters for a controlnet generation."""
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
     controlnet_type: KNOWN_IMAGE_CONTROLNETS | str
     """The type of controlnet to use for the generation."""
 
-    source_image: PIL.Image.Image | None
+    source_image: bytes | str | None
     """The source image to use for the generation, if img2img."""
-    control_map: PIL.Image.Image | None
+    control_map: bytes | str | None
     """The control map to use for the generation, if img2img."""
 
     return_control_map: bool = False
@@ -242,3 +327,65 @@ class ImageGenerationParameters(ComposedParameterSetBase):
             raise ValueError("The number of generation IDs must match the batch size.")
 
         return self
+
+
+def image_parameters_to_feature_flags(
+    parameters: ImageGenerationParameters,
+) -> ImageGenerationFeatureFlags:
+    """Create a feature flag object representing the features used in the parameters."""
+    all_alchemy_forms = None
+    if parameters.alchemy_params is not None and parameters.alchemy_params._all_alchemy_operations is not None:
+        all_alchemy_forms = [x.form for x in parameters.alchemy_params._all_alchemy_operations if x.form is not None]
+
+    baselines = (
+        [parameters.base_params.model_baseline]
+        if parameters.base_params.model_baseline
+        else [KNOWN_IMAGE_GENERATION_BASELINE.infer]
+    )
+
+    clip_skip_representation = parameters.base_params.clip_skip_representation
+
+    hires_fix = parameters.hires_fix_params is not None
+
+    tiling = parameters.tiling
+
+    schedulers = [parameters.base_params.scheduler]
+    samplers = [parameters.base_params.sampler_name]
+
+    controlnets_feature_flags = (
+        ControlnetFeatureFlags(
+            controlnets=[parameters.controlnet_params.controlnet_type],
+            image_is_control=parameters.controlnet_params.source_image is not None,
+            return_control_map=parameters.controlnet_params.return_control_map,
+        )
+        if parameters.controlnet_params is not None
+        else None
+    )
+
+    post_processing = all_alchemy_forms
+
+    source_processing = [parameters.source_processing]
+
+    workflows = (
+        [parameters.custom_workflow_params.custom_workflow_name]
+        if parameters.custom_workflow_params is not None
+        else None
+    )
+
+    tis = [ti.source for ti in parameters.tis] if parameters.tis is not None else None
+    loras = [lora.source for lora in parameters.loras] if parameters.loras is not None else None
+
+    return ImageGenerationFeatureFlags(
+        baselines=baselines,
+        clip_skip_representation=clip_skip_representation,
+        hires_fix=hires_fix,
+        tiling=tiling,
+        schedulers=schedulers,
+        samplers=samplers,
+        controlnets_feature_flags=controlnets_feature_flags,
+        post_processing=post_processing,
+        source_processing=source_processing,
+        workflows=workflows,
+        tis=tis,
+        loras=loras,
+    )

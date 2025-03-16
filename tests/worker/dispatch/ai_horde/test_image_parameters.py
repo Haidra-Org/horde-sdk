@@ -1,4 +1,3 @@
-import PIL.Image
 from horde_model_reference.model_reference_manager import ModelReferenceManager
 
 from horde_sdk.ai_horde_api.apimodels import (
@@ -135,7 +134,7 @@ def test_convert_image_job_pop_response_to_parameters_img2img(
     assert_features_selected(generation_parameters, img2img=True)
 
     assert isinstance(generation_parameters.img2img_params, Image2ImageGenerationParameters)
-    assert isinstance(generation_parameters.img2img_params.source_image, PIL.Image.Image)
+    assert isinstance(generation_parameters.img2img_params.source_image, bytes)
     assert generation_parameters.img2img_params.source_mask is None
 
 
@@ -157,8 +156,8 @@ def test_convert_image_job_pop_response_to_parameters_img2img_masked(
     assert_features_selected(generation_parameters, img2img=True)
 
     assert isinstance(generation_parameters.img2img_params, Image2ImageGenerationParameters)
-    assert isinstance(generation_parameters.img2img_params.source_image, PIL.Image.Image)
-    assert isinstance(generation_parameters.img2img_params.source_mask, PIL.Image.Image)
+    assert isinstance(generation_parameters.img2img_params.source_image, bytes)
+    assert isinstance(generation_parameters.img2img_params.source_mask, bytes)
 
 
 def test_convert_image_job_pop_response_to_parameters_inpainting(
@@ -180,8 +179,8 @@ def test_convert_image_job_pop_response_to_parameters_inpainting(
     assert_features_selected(generation_parameters, img2img=True)
 
     assert isinstance(generation_parameters.img2img_params, Image2ImageGenerationParameters)
-    assert isinstance(generation_parameters.img2img_params.source_image, PIL.Image.Image)
-    assert isinstance(generation_parameters.img2img_params.source_mask, PIL.Image.Image)
+    assert isinstance(generation_parameters.img2img_params.source_image, bytes)
+    assert isinstance(generation_parameters.img2img_params.source_mask, bytes)
 
 
 def test_convert_image_job_pop_response_to_parameters_outpainting_alpha(
@@ -205,7 +204,7 @@ def test_convert_image_job_pop_response_to_parameters_outpainting_alpha(
     assert_features_selected(generation_parameters, img2img=True)
 
     assert isinstance(generation_parameters.img2img_params, Image2ImageGenerationParameters)
-    assert isinstance(generation_parameters.img2img_params.source_image, PIL.Image.Image)
+    assert isinstance(generation_parameters.img2img_params.source_image, bytes)
 
 
 def test_convert_image_job_pop_response_to_parameters_controlnet_openpose(
@@ -228,7 +227,7 @@ def test_convert_image_job_pop_response_to_parameters_controlnet_openpose(
 
     assert isinstance(generation_parameters.controlnet_params, ControlnetGenerationParameters)
     assert generation_parameters.controlnet_params.control_map is not None
-    assert isinstance(generation_parameters.controlnet_params.control_map, PIL.Image.Image)
+    assert isinstance(generation_parameters.controlnet_params.control_map, bytes)
     assert generation_parameters.controlnet_params.source_image is None
 
 
