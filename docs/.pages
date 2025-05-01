@@ -11,6 +11,7 @@ nav:
         - Motivations: haidra-assets/docs/why
         - Definitions: haidra-assets/docs/definitions
     - horde_sdk
+    - developers.md
     - GitHub Repo: 'https://github.com/Haidra-Org/horde-sdk'
 
 order: desc
