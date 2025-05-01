@@ -393,40 +393,15 @@ class GenericHordeAPIManualClient(BaseHordeAPIClient):
                     params=parsed_request.request_queries,
                     allow_redirects=True,
                 )
-            elif http_method_name == HTTPMethod.POST:
-                raw_response = requests.post(
-                    parsed_request.endpoint_no_query,
-                    headers=parsed_request.request_headers,
-                    params=parsed_request.request_queries,
-                    json=parsed_request.request_body,
-                    allow_redirects=True,
-                )
-            elif http_method_name == HTTPMethod.PUT:
-                raw_response = requests.put(
-                    parsed_request.endpoint_no_query,
-                    headers=parsed_request.request_headers,
-                    params=parsed_request.request_queries,
-                    json=parsed_request.request_body,
-                    allow_redirects=True,
-                )
-            elif http_method_name == HTTPMethod.PATCH:
-                raw_response = requests.patch(
-                    parsed_request.endpoint_no_query,
-                    headers=parsed_request.request_headers,
-                    params=parsed_request.request_queries,
-                    json=parsed_request.request_body,
-                    allow_redirects=True,
-                )
-            elif http_method_name == HTTPMethod.DELETE:
-                raw_response = requests.delete(
-                    parsed_request.endpoint_no_query,
-                    headers=parsed_request.request_headers,
-                    params=parsed_request.request_queries,
-                    json=parsed_request.request_body,
-                    allow_redirects=True,
-                )
             else:
-                raise RuntimeError(f"Unknown HTTP method: {http_method_name}")
+                raw_response = requests.request(
+                    method=http_method_name,
+                    url=parsed_request.endpoint_no_query,
+                    headers=parsed_request.request_headers,
+                    params=parsed_request.request_queries,
+                    json=parsed_request.request_body,
+                    allow_redirects=True,
+                )
 
             return self._after_request_handling(
                 raw_response_json=raw_response.json(),
