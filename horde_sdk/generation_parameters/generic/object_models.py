@@ -2,8 +2,14 @@ from pydantic import BaseModel, Field
 
 
 class GenerationFeatureFlags(BaseModel):
+
+    model_config = ConfigDict(
+        use_attribute_docstrings=True,
+    )
+
     extra_texts: bool = Field(default=False)
-    """Whether the worker supports extra texts."""
+    """Whether there is support for extra texts."""
 
     extra_source_images: bool = Field(default=False)
-    """Whether the worker supports extra source images."""
+    """Whether there is  support for extra source images."""
+
