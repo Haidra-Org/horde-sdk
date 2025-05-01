@@ -251,7 +251,7 @@ class AllWorkersDetailsRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     Represents a GET request to the /v2/workers endpoint.
     """
 
-    type_: AI_HORDE_WORKER_TYPES = Field(AI_HORDE_WORKER_TYPES.all, alias="type")
+    type_: AI_HORDE_WORKER_TYPES = Field(default=AI_HORDE_WORKER_TYPES.all, alias="type")
     """Filter workers by type. Default is 'all' which returns all workers."""
     name: str | None = Field(default=None)
     """Returns a worker matching the exact name provided. Case insensitive."""
