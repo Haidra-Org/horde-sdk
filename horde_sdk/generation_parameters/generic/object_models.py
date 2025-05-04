@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class GenerationFeatureFlags(BaseModel):
@@ -12,4 +12,3 @@ class GenerationFeatureFlags(BaseModel):
 
     extra_source_images: bool = Field(default=False)
     """Whether there is  support for extra source images."""
-

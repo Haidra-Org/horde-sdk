@@ -27,6 +27,7 @@ from horde_sdk.generation_parameters.alchemy.consts import (
 from horde_sdk.generation_parameters.generic import BasicModelGenerationParameters, ComposedParameterSetBase
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.image.consts import (
+    CLIP_SKIP_REPRESENTATION,
     KNOWN_IMAGE_CONTROLNETS,
     KNOWN_IMAGE_SAMPLERS,
     KNOWN_IMAGE_SCHEDULERS,
@@ -35,8 +36,18 @@ from horde_sdk.generation_parameters.image.consts import (
     LORA_TRIGGER_INJECT_CHOICE,
     TI_TRIGGER_INJECT_CHOICE,
 )
-from horde_sdk.generation_parameters.image.object_models import ImageGenerationParameters
-from horde_sdk.generation_parameters.text.object_models import TextGenerationParameters
+from horde_sdk.generation_parameters.image.object_models import (
+    BasicImageGenerationParameters,
+    BasicImageGenerationParametersTemplate,
+    ImageGenerationParameters,
+    ImageGenerationParametersTemplate,
+)
+from horde_sdk.generation_parameters.text.object_models import (
+    BasicTextGenerationFormatParameters,
+    BasicTextGenerationParameters,
+    KoboldAITextGenerationParameters,
+    TextGenerationParameters,
+)
 
 __all__ = [
     "AlchemyParameters",
@@ -65,6 +76,13 @@ __all__ = [
     "KNOWN_IMAGE_WORKFLOWS",
     "LORA_TRIGGER_INJECT_CHOICE",
     "TI_TRIGGER_INJECT_CHOICE",
+    "CLIP_SKIP_REPRESENTATION",
     "ImageGenerationParameters",
+    "BasicImageGenerationParameters",
+    "ImageGenerationParametersTemplate",
+    "BasicImageGenerationParametersTemplate",
     "TextGenerationParameters",
+    "BasicTextGenerationFormatParameters",
+    "BasicTextGenerationParameters",
+    "KoboldAITextGenerationParameters",
 ]

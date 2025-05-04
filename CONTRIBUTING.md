@@ -51,7 +51,7 @@
   - See all rules (but not necessarily used in the project) availible in rust [here](https://beta.ruff.rs/docs/rules/).
   - Run with `ruff check .`
     - Note: When using autofixing (`ruff check . --fix`), changes may be made that require running black, which can then result in needing to run `ruff check . --fix` again.
-    - Consider running `black . && ruff check . --fix && black . && ruff check . --fix` to avoid this. 
+    - Consider running `black . && ruff check . --fix && black . && ruff check . --fix` to avoid this.
 - [**mypy**](https://mypy-lang.org/)
   - Static type safety
   - I recommending using the [mypy daemon](https://mypy.readthedocs.io/en/stable/mypy_daemon.html) instead of periodically running `pre-commit` (or `mypy` directly.).
@@ -65,7 +65,7 @@
     - `"python.analysis.languageServerMode": "full"`
     - `"python.testing.pytestEnabled": true`
 - [**tach**](https://github.com/gauge-sh/tach)
-  - Enforces internal namespace dependency constraints. This helps avoid circular dependencies and helps ensure implementations are in a logical place.  
+  - Enforces internal namespace dependency constraints. This helps avoid circular dependencies and helps ensure implementations are in a logical place.
 
 ## Code Style and System Design
 
@@ -120,7 +120,7 @@ The Horde ecosystem is a collaborative effort made possible through volunteer ef
 - Update documentation for new features or changes to existing functionality
 - Use descriptive commit messages consistent with the project commit history, especially for medium-to-large changesets.
   - While it is possible we will squash commits before merging, it is still helpful to have descriptive commit messages for review and opens the possibility of rebasing instead.
-  
+
 #### Don't
 
 - Make large sweeping changes unrelated to your primary goal

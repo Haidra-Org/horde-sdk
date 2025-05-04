@@ -18,7 +18,7 @@ API support packages do the following:
 - Constants for API endpoints and other configurations
   - Some examples include the valid values for parameters which accept only certain strings.
   - This also includes consts for default timeout values, default anonymous API keys, etc.
-  
+
 ```bash
 ai_horde_api/
 ├── apimodels/

@@ -5,7 +5,6 @@ from horde_sdk.generation_parameters.text import (
     BasicTextGenerationFormatParameters,
     BasicTextGenerationParameters,
     KoboldAITextGenerationParameters,
-    TextGenerationParameters,
 )
 from horde_sdk.worker.consts import (
     KNOWN_DISPATCH_SOURCE,
@@ -17,7 +16,7 @@ from horde_sdk.worker.dispatch.ai_horde_parameters import AIHordeDispatchParamet
 
 def convert_text_job_pop_response_to_parameters(
     api_response: TextGenerateJobPopResponse,
-) -> tuple[TextGenerationParameters, AIHordeDispatchParameters]:
+) -> tuple[KoboldAITextGenerationParameters, AIHordeDispatchParameters]:
     """Convert a text API response to the parameters for a generation."""
     dispatch_parameters = AIHordeDispatchParameters(
         generation_ids=[str(id_) for id_ in api_response.ids],
@@ -28,7 +27,7 @@ def convert_text_job_pop_response_to_parameters(
         no_valid_request_found_reasons=api_response.skipped,
     )
 
-    generation_parameters = TextGenerationParameters(
+    generation_parameters = KoboldAITextGenerationParameters(
         generation_ids=[str(id_) for id_ in api_response.ids],
         base_params=BasicTextGenerationParameters(
             model=api_response.model,
@@ -59,9 +58,7 @@ def convert_text_job_pop_response_to_parameters(
             frmttriminc=api_response.payload.frmttriminc,
             singleline=api_response.payload.singleline,
         ),
-        koboldai_params=KoboldAITextGenerationParameters(
-            use_default_bad_words_ids=api_response.payload.use_default_badwordsids,
-        ),
+        use_default_bad_words_ids=api_response.payload.use_default_badwordsids,
     )
 
     return generation_parameters, dispatch_parameters

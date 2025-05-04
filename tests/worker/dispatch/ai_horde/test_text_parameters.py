@@ -70,10 +70,8 @@ def test_convert_text_job_pop_response_to_parameters(
     assert format_params.frmttriminc == simple_text_gen_job_pop_response.payload.frmttriminc
     assert format_params.singleline == simple_text_gen_job_pop_response.payload.singleline
 
-    # KoboldAI parameters.
-    koboldai_params = generation_parameters.koboldai_params
-
-    assert koboldai_params is not None
+    # KoboldAI-specific parameters.
     assert (
-        koboldai_params.use_default_bad_words_ids == simple_text_gen_job_pop_response.payload.use_default_badwordsids
+        generation_parameters.use_default_bad_words_ids
+        == simple_text_gen_job_pop_response.payload.use_default_badwordsids
     )

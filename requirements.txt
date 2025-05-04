@@ -13,7 +13,7 @@ cffi==1.17.1
 charset-normalizer==3.4.1
 colorama==0.4.6 ; sys_platform == 'win32'
 frozenlist==1.5.0
-horde-model-reference==0.9.2
+horde-model-reference==0.10.0
 idna==3.10
 loguru==0.7.3
 multidict==6.1.0

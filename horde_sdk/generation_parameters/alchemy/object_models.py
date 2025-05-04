@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import Field
+from typing_extensions import override
 
 from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_ALCHEMY_FORMS,
@@ -10,16 +11,17 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_UPSCALERS,
 )
 from horde_sdk.generation_parameters.generic import ComposedParameterSetBase
+from horde_sdk.generation_parameters.generic.object_models import GenerationFeatureFlags
 
 
-class AlchemyFeatureFlags(BaseModel):
+class AlchemyFeatureFlags(GenerationFeatureFlags):
     """Feature flags for an alchemy worker."""
 
     alchemy_types: list[KNOWN_ALCHEMY_TYPES] = Field(default_factory=list)
     """The alchemy types supported by the worker."""
 
 
-class SingleAlchemyParameters(BaseModel):
+class SingleAlchemyParameters(ComposedParameterSetBase):
     """Represents the common bare minimum parameters for any alchemy generation."""
 
     generation_id: str
@@ -30,6 +32,11 @@ class SingleAlchemyParameters(BaseModel):
 
     source_image: bytes | str | None
     """The source image to use for the generation."""
+
+    @override
+    def get_number_expected_results(self) -> int:
+        """Get the number of expected results."""
+        return 1
 
 
 class UpscaleAlchemyParameters(SingleAlchemyParameters):
@@ -86,7 +93,7 @@ class AlchemyParameters(ComposedParameterSetBase):
     def all_alchemy_operations(self) -> list[SingleAlchemyParameters]:
         """Get all operations."""
         if self._all_alchemy_operations is not None:
-            return self._all_alchemy_operations
+            return self._all_alchemy_operations.copy()
 
         all_operations: list[SingleAlchemyParameters] = []
         if self.upscalers:
@@ -104,4 +111,9 @@ class AlchemyParameters(ComposedParameterSetBase):
 
         self._all_alchemy_operations = all_operations
 
-        return all_operations
+        return all_operations.copy()
+
+    @override
+    def get_number_expected_results(self) -> int:
+        """Get the number of expected results."""
+        return len(self.all_alchemy_operations)
