@@ -5,10 +5,9 @@ base model for generation parameters.
 """
 
 from abc import ABC, abstractmethod
-from typing import Self, Union
 
 from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
-from pydantic import BaseModel, ConfigDict, Field, create_model
+from pydantic import BaseModel, ConfigDict
 
 
 class ComposedParameterSetBase(ABC, BaseModel):
