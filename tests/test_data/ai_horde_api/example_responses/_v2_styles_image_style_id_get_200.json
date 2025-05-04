@@ -3,12 +3,12 @@
     "info": "photorealism excellence.",
     "prompt": "{p}{np}",
     "params": {
-        "sampler_name": "k_euler",
-        "cfg_scale": 7.5,
+        "sampler_name": "k_dpmpp_2m",
+        "cfg_scale": 0.0,
         "denoising_strength": 0.75,
         "hires_fix_denoising_strength": 0.75,
-        "height": 512,
-        "width": 512,
+        "height": 64.0,
+        "width": 64.0,
         "post_processing": [
             "GFPGAN"
         ],
@@ -40,7 +40,7 @@
         },
         "workflow": "qr_code",
         "transparent": false,
-        "steps": 30
+        "steps": 1.0
     },
     "public": true,
     "nsfw": false,
@@ -50,6 +50,7 @@
     "models": [
         "stable_diffusion"
     ],
+    "sharedkey": "00000000-0000-0000-0000-000000000000",
     "id": "00000000-0000-0000-0000-000000000000",
     "use_count": 0,
     "creator": "db0#1",
@@ -59,5 +60,16 @@
             "primary": false,
             "id": "00000000-0000-0000-0000-000000000000"
         }
-    ]
+    ],
+    "shared_key": {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "username": "",
+        "name": "",
+        "kudos": 0,
+        "expiry": "2021-01-01T00:00:00Z",
+        "utilized": 0,
+        "max_image_pixels": 0,
+        "max_image_steps": 0,
+        "max_text_tokens": 0
+    }
 }

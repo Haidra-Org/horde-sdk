@@ -1,6 +1,65 @@
 """All requests, responses and API models defined for the AI Horde API."""
 
-from horde_sdk.ai_horde_api.apimodels._documents import (
+from typing import TypeVar
+
+from horde_sdk.ai_horde_api.apimodels.alchemy.async_ import (
+    AlchemyAsyncRequest,
+    AlchemyAsyncRequestFormItem,
+    AlchemyAsyncResponse,
+)
+from horde_sdk.ai_horde_api.apimodels.alchemy.pop import (
+    AlchemyFormPayloadStable,
+    AlchemyJobPopResponse,
+    AlchemyPopFormPayload,
+    AlchemyPopRequest,
+    NoValidAlchemyFound,
+)
+from horde_sdk.ai_horde_api.apimodels.alchemy.status import (
+    AlchemyCaptionResult,
+    AlchemyDeleteRequest,
+    AlchemyFormStatus,
+    AlchemyInterrogationDetails,
+    AlchemyInterrogationResult,
+    AlchemyInterrogationResultItem,
+    AlchemyNSFWResult,
+    AlchemyStatusRequest,
+    AlchemyStatusResponse,
+    AlchemyUpscaleResult,
+)
+from horde_sdk.ai_horde_api.apimodels.alchemy.submit import AlchemyJobSubmitRequest, AlchemyJobSubmitResponse
+from horde_sdk.ai_horde_api.apimodels.base import (
+    ActiveModel,
+    ActiveModelLite,
+    ExtraSourceImageEntry,
+    ExtraTextEntry,
+    GenMetadataEntry,
+    ImageGenerateParamMixin,
+    JobRequestMixin,
+    JobResponseMixin,
+    JobSubmitResponse,
+    LorasPayloadEntry,
+    MessageSpecifiesSharedKeyMixin,
+    SingleWarningEntry,
+    TIPayloadEntry,
+    WorkerRequestMixin,
+    WorkerRequestNameMixin,
+)
+from horde_sdk.ai_horde_api.apimodels.collections import (
+    AllCollectionsRequest,
+    AllCollectionsResponse,
+    CollectionByIDRequest,
+    CollectionByNameRequest,
+    CreateCollectionRequest,
+    CreateCollectionResponse,
+    DeleteCollectionRequest,
+    DeleteCollectionResponse,
+    ResponseModelCollection,
+    ResponseModelStylesShort,
+    UpdateCollectionRequest,
+    UpdateCollectionResponse,
+    _InputModelCollectionMixin,
+)
+from horde_sdk.ai_horde_api.apimodels.documents import (
     AIHordeDocumentRequestMixin,
     AIHordeGetPrivacyPolicyRequest,
     AIHordeGetSponsorsRequest,
@@ -8,14 +67,115 @@ from horde_sdk.ai_horde_api.apimodels._documents import (
     DocumentFormat,
     HordeDocument,
 )
-from horde_sdk.ai_horde_api.apimodels._find_user import (
+from horde_sdk.ai_horde_api.apimodels.filters import (
+    DeleteFilterRequest,
+    DeleteFilterResponse,
+    FilterDetails,
+    FilterPromptSuspicionRequest,
+    FilterPromptSuspicionResponse,
+    FilterRegex,
+    FilterRegexRequest,
+    FilterRegexResponse,
+    FiltersListRequest,
+    FiltersListResponse,
+    PatchExistingFilter,
+    PutNewFilterRequest,
+    SingleFilterRequest,
+)
+from horde_sdk.ai_horde_api.apimodels.find_user import (
     FindUserRequest,
 )
-from horde_sdk.ai_horde_api.apimodels._kudos import (
+from horde_sdk.ai_horde_api.apimodels.generate.async_ import (
+    ImageGenerateAsyncDryRunResponse,
+    ImageGenerateAsyncRequest,
+    ImageGenerateAsyncResponse,
+    ImageGenerationInputPayload,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.check import ImageGenerateCheckRequest, ImageGenerateCheckResponse
+from horde_sdk.ai_horde_api.apimodels.generate.pop import (
+    ImageGenerateJobPopPayload,
+    ImageGenerateJobPopRequest,
+    ImageGenerateJobPopResponse,
+    ImageGenerateJobPopSkippedStatus,
+    NoValidRequestFound,
+    PopInput,
+    PopResponseModelMessage,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.progress import (
+    ResponseGenerationProgressCombinedMixin,
+    ResponseGenerationProgressInfoMixin,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.rate import (
+    AestheticRating,
+    AestheticsPayload,
+    RateRequest,
+    RateResponse,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.status import (
+    DeleteImageGenerateRequest,
+    Generation,
+    ImageGenerateStatusRequest,
+    ImageGenerateStatusResponse,
+    ImageGeneration,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.submit import (
+    ImageGenerationJobSubmitRequest,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.text.async_ import (
+    ModelGenerationInputKobold,
+    ModelPayloadRootKobold,
+    TextGenerateAsyncDryRunResponse,
+    TextGenerateAsyncRequest,
+    TextGenerateAsyncResponse,
+    _BasePayloadKoboldMixin,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.text.pop import (
+    ModelPayloadKobold,
+    NoValidRequestFoundKobold,
+    TextGenerateJobPopRequest,
+    TextGenerateJobPopResponse,
+    _PopInputKobold,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.text.status import (
+    DeleteTextGenerateRequest,
+    GenerationKobold,
+    TextGenerateStatusRequest,
+    TextGenerateStatusResponse,
+)
+from horde_sdk.ai_horde_api.apimodels.generate.text.submit import (
+    TextGenerationJobSubmitRequest,
+)
+from horde_sdk.ai_horde_api.apimodels.kudos import (
+    KudosAwardRequest,
+    KudosAwardResponse,
     KudosTransferRequest,
     KudosTransferResponse,
 )
-from horde_sdk.ai_horde_api.apimodels._stats import (
+from horde_sdk.ai_horde_api.apimodels.operations import (
+    AllIPTimeoutsRequest,
+    BlockIPAddressRequest,
+    BlockIPAddressResponse,
+    BlockWorkerIPAddressRequest,
+    BlockWorkerIPAddressResponse,
+    DeleteIPAddressRequest,
+    DeleteIPAddressResponse,
+    DeleteWorkerIPAddressRequest,
+    DeleteWorkerIPAddressResponse,
+    IPTimeout,
+    IPTimeoutListResponse,
+    SingleIPTimeoutsRequest,
+)
+from horde_sdk.ai_horde_api.apimodels.sharedkeys import (
+    ExpiryStrSharedKeyDetailsResponse,
+    SharedKeyCreateRequest,
+    SharedKeyDeleteRequest,
+    SharedKeyDeleteResponse,
+    SharedKeyDetailsRequest,
+    SharedKeyDetailsResponse,
+    SharedKeyModifyRequest,
+    SharedKeySettings,
+)
+from horde_sdk.ai_horde_api.apimodels.stats import (
     ImageStatsModelsRequest,
     ImageStatsModelsResponse,
     ImageStatsModelsTotalRequest,
@@ -28,9 +188,7 @@ from horde_sdk.ai_horde_api.apimodels._stats import (
     TextStatsModelsTotalRequest,
     TextStatsModelsTotalResponse,
 )
-from horde_sdk.ai_horde_api.apimodels._status import (
-    ActiveModel,
-    ActiveModelLite,
+from horde_sdk.ai_horde_api.apimodels.status import (
     AIHordeHeartbeatRequest,
     AIHordeHeartbeatResponse,
     HordeModes,
@@ -44,8 +202,51 @@ from horde_sdk.ai_horde_api.apimodels._status import (
     NewsRequest,
     NewsResponse,
 )
-from horde_sdk.ai_horde_api.apimodels._styles import ResponseModelStylesUser
-from horde_sdk.ai_horde_api.apimodels._users import (
+from horde_sdk.ai_horde_api.apimodels.styles import (
+    AllStylesImageRequest,
+    AllStylesImageResponse,
+    AllStylesTextRequest,
+    AllStylesTextResponse,
+    CreateStyleImageRequest,
+    CreateStyleTextRequest,
+    DeleteStyleImageRequest,
+    DeleteStyleImageResponse,
+    DeleteStyleTextRequest,
+    DeleteStyleTextResponse,
+    ModelStyleInputParamsKobold,
+    ModelStyleInputParamsStable,
+    ModifyStyleImageRequest,
+    ModifyStyleImageResponse,
+    ModifyStyleTextRequest,
+    ModifyStyleTextResponse,
+    ResponseModelStylesUser,
+    SingleStyleImageByIDRequest,
+    SingleStyleImageByNameRequest,
+    SingleStyleTextByIDRequest,
+    SingleStyleTextByNameRequest,
+    StyleExample,
+    StyleImageExampleAddRequest,
+    StyleImageExampleDeleteRequest,
+    StyleImageExampleDeleteResponse,
+    StyleImageExampleModifyRequest,
+    StyleImageExampleModifyResponse,
+    StyleKobold,
+    StyleStable,
+    StyleType,
+)
+from horde_sdk.ai_horde_api.apimodels.teams import (
+    AllTeamDetailsRequest,
+    AllTeamDetailsResponse,
+    CreateTeamRequest,
+    DeleteTeamRequest,
+    DeleteTeamResponse,
+    ModifyTeam,
+    ModifyTeamInput,
+    ModifyTeamRequest,
+    SingleTeamDetailsRequest,
+    TeamDetails,
+)
+from horde_sdk.ai_horde_api.apimodels.users import (
     ActiveGenerations,
     ContributionsDetails,
     ListUsersDetailsRequest,
@@ -64,96 +265,16 @@ from horde_sdk.ai_horde_api.apimodels._users import (
     UserThingRecords,
     _ModifyUserBase,
 )
-from horde_sdk.ai_horde_api.apimodels.alchemy._async import (
-    AlchemyAsyncRequest,
-    AlchemyAsyncRequestFormItem,
-    AlchemyAsyncResponse,
+from horde_sdk.ai_horde_api.apimodels.workers.messages import (
+    AllWorkerMessagesRequest,
+    CreateWorkerMessageRequest,
+    DeleteWorkerMessageRequest,
+    DeleteWorkerMessageResponse,
+    ResponseModelMessage,
+    ResponseModelMessages,
+    SingleWorkerMessageRequest,
 )
-from horde_sdk.ai_horde_api.apimodels.alchemy._pop import (
-    AlchemyFormPayloadStable,
-    AlchemyPopFormPayload,
-    AlchemyPopRequest,
-    AlchemyPopResponse,
-    NoValidAlchemyFound,
-)
-from horde_sdk.ai_horde_api.apimodels.alchemy._status import (
-    AlchemyCaptionResult,
-    AlchemyDeleteRequest,
-    AlchemyFormStatus,
-    AlchemyInterrogationDetails,
-    AlchemyInterrogationResult,
-    AlchemyInterrogationResultItem,
-    AlchemyNSFWResult,
-    AlchemyStatusRequest,
-    AlchemyStatusResponse,
-    AlchemyUpscaleResult,
-)
-from horde_sdk.ai_horde_api.apimodels.alchemy._submit import AlchemyJobSubmitRequest, AlchemyJobSubmitResponse
-from horde_sdk.ai_horde_api.apimodels.base import (
-    ExtraSourceImageEntry,
-    ExtraTextEntry,
-    GenMetadataEntry,
-    ImageGenerateParamMixin,
-    JobRequestMixin,
-    JobResponseMixin,
-    JobSubmitResponse,
-    LorasPayloadEntry,
-    SingleWarningEntry,
-    TIPayloadEntry,
-    WorkerRequestMixin,
-    WorkerRequestNameMixin,
-)
-from horde_sdk.ai_horde_api.apimodels.generate._async import (
-    ImageGenerateAsyncDryRunResponse,
-    ImageGenerateAsyncRequest,
-    ImageGenerateAsyncResponse,
-    ImageGenerationInputPayload,
-)
-from horde_sdk.ai_horde_api.apimodels.generate._check import ImageGenerateCheckRequest, ImageGenerateCheckResponse
-from horde_sdk.ai_horde_api.apimodels.generate._pop import (
-    ImageGenerateJobPopPayload,
-    ImageGenerateJobPopRequest,
-    ImageGenerateJobPopResponse,
-    ImageGenerateJobPopSkippedStatus,
-    PopInput,
-)
-from horde_sdk.ai_horde_api.apimodels.generate._progress import (
-    ResponseGenerationProgressCombinedMixin,
-    ResponseGenerationProgressInfoMixin,
-)
-from horde_sdk.ai_horde_api.apimodels.generate._status import (
-    DeleteImageGenerateRequest,
-    ImageGenerateStatusRequest,
-    ImageGenerateStatusResponse,
-    ImageGeneration,
-)
-from horde_sdk.ai_horde_api.apimodels.generate._submit import (
-    ImageGenerationJobSubmitRequest,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.text._async import (
-    ModelGenerationInputKobold,
-    ModelPayloadRootKobold,
-    TextGenerateAsyncDryRunResponse,
-    TextGenerateAsyncRequest,
-    TextGenerateAsyncResponse,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.text._pop import (
-    ModelPayloadKobold,
-    NoValidRequestFoundKobold,
-    TextGenerateJobPopRequest,
-    TextGenerateJobPopResponse,
-    _PopInputKobold,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.text._status import (
-    DeleteTextGenerateRequest,
-    GenerationKobold,
-    TextGenerateStatusRequest,
-    TextGenerateStatusResponse,
-)
-from horde_sdk.ai_horde_api.apimodels.generate.text._submit import (
-    TextGenerationJobSubmitRequest,
-)
-from horde_sdk.ai_horde_api.apimodels.workers._workers import (
+from horde_sdk.ai_horde_api.apimodels.workers.workers import (
     AllWorkersDetailsRequest,
     AllWorkersDetailsResponse,
     DeleteWorkerRequest,
@@ -165,31 +286,86 @@ from horde_sdk.ai_horde_api.apimodels.workers._workers import (
     SingleWorkerNameDetailsRequest,
     TeamDetailsLite,
     WorkerDetailItem,
+    WorkerDetailLite,
     WorkerKudosDetails,
 )
-from horde_sdk.ai_horde_api.consts import KNOWN_ALCHEMY_TYPES
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
-    RequestSpecifiesUserIDMixin,
+    ContainsWarningsResponseMixin,
+    MessageSpecifiesUserIDMixin,
     RequestUsesWorkerMixin,
     ResponseRequiringDownloadMixin,
     ResponseRequiringFollowUpMixin,
     ResponseWithProgressMixin,
 )
 
+JobPopResponseTypeVar = TypeVar(
+    "JobPopResponseTypeVar",
+    bound=ImageGenerateJobPopResponse | TextGenerateJobPopResponse | AlchemyJobPopResponse,
+)
+
 __all__ = [
+    "AllCollectionsRequest",
+    "AllCollectionsResponse",
+    "CollectionByIDRequest",
+    "CollectionByNameRequest",
+    "CreateCollectionRequest",
+    "CreateCollectionResponse",
+    "DeleteCollectionRequest",
+    "DeleteCollectionResponse",
+    "ResponseModelCollection",
+    "ResponseModelStylesShort",
+    "UpdateCollectionRequest",
+    "UpdateCollectionResponse",
+    "_InputModelCollectionMixin",
     "AIHordeDocumentRequestMixin",
     "AIHordeGetPrivacyPolicyRequest",
     "AIHordeGetSponsorsRequest",
     "AIHordeGetTermsRequest",
     "DocumentFormat",
     "HordeDocument",
+    "DeleteFilterRequest",
+    "DeleteFilterResponse",
+    "FilterDetails",
+    "FilterPromptSuspicionRequest",
+    "FilterPromptSuspicionResponse",
+    "FilterRegex",
+    "FilterRegexRequest",
+    "FilterRegexResponse",
+    "FiltersListRequest",
+    "FiltersListResponse",
+    "PatchExistingFilter",
+    "PutNewFilterRequest",
+    "SingleFilterRequest",
     "ActiveGenerations",
     "ContributionsDetails",
     "FindUserRequest",
+    "KudosAwardRequest",
+    "KudosAwardResponse",
     "KudosTransferRequest",
     "KudosTransferResponse",
+    "AllIPTimeoutsRequest",
+    "BlockIPAddressRequest",
+    "BlockIPAddressResponse",
+    "BlockWorkerIPAddressRequest",
+    "BlockWorkerIPAddressResponse",
+    "DeleteIPAddressRequest",
+    "DeleteIPAddressResponse",
+    "DeleteWorkerIPAddressRequest",
+    "DeleteWorkerIPAddressResponse",
+    "IPTimeout",
+    "IPTimeoutListResponse",
+    "SingleIPTimeoutsRequest",
+    "ExpiryStrSharedKeyDetailsResponse",
+    "SharedKeyCreateRequest",
+    "SharedKeyDeleteRequest",
+    "SharedKeyDeleteResponse",
+    "SharedKeyDetailsRequest",
+    "SharedKeyDetailsResponse",
+    "SharedKeyModifyRequest",
+    "SharedKeySettings",
     "UserDetailsResponse",
     "MonthlyKudos",
     "UsageDetails",
@@ -211,7 +387,46 @@ __all__ = [
     "Newspiece",
     "NewsRequest",
     "NewsResponse",
+    "StyleExample",
+    "StyleImageExampleAddRequest",
+    "StyleImageExampleModifyResponse",
+    "StyleImageExampleDeleteRequest",
+    "StyleImageExampleDeleteResponse",
+    "StyleImageExampleModifyRequest",
+    "StyleKobold",
+    "StyleStable",
+    "StyleType",
+    "AllTeamDetailsRequest",
+    "AllTeamDetailsResponse",
+    "CreateTeamRequest",
+    "DeleteTeamRequest",
+    "DeleteTeamResponse",
+    "ModifyTeam",
+    "ModifyTeamInput",
+    "ModifyTeamRequest",
+    "SingleTeamDetailsRequest",
+    "TeamDetails",
+    "AllStylesImageRequest",
+    "AllStylesImageResponse",
+    "AllStylesTextRequest",
+    "AllStylesTextResponse",
+    "CreateStyleImageRequest",
+    "CreateStyleTextRequest",
+    "DeleteStyleImageRequest",
+    "DeleteStyleImageResponse",
+    "DeleteStyleTextRequest",
+    "DeleteStyleTextResponse",
+    "ModelStyleInputParamsKobold",
+    "ModelStyleInputParamsStable",
+    "ModifyStyleImageRequest",
+    "ModifyStyleImageResponse",
+    "ModifyStyleTextRequest",
+    "ModifyStyleTextResponse",
     "ResponseModelStylesUser",
+    "SingleStyleImageByIDRequest",
+    "SingleStyleImageByNameRequest",
+    "SingleStyleTextByIDRequest",
+    "SingleStyleTextByNameRequest",
     "ListUsersDetailsRequest",
     "ListUsersDetailsResponse",
     "ModifyUser",
@@ -238,7 +453,7 @@ __all__ = [
     "AlchemyFormPayloadStable",
     "AlchemyPopFormPayload",
     "AlchemyPopRequest",
-    "AlchemyPopResponse",
+    "AlchemyJobPopResponse",
     "NoValidAlchemyFound",
     "AlchemyCaptionResult",
     "AlchemyDeleteRequest",
@@ -259,6 +474,7 @@ __all__ = [
     "JobRequestMixin",
     "JobResponseMixin",
     "LorasPayloadEntry",
+    "MessageSpecifiesSharedKeyMixin",
     "SingleWarningEntry",
     "TIPayloadEntry",
     "WorkerRequestMixin",
@@ -274,9 +490,16 @@ __all__ = [
     "ImageGenerateJobPopResponse",
     "ImageGenerateJobPopSkippedStatus",
     "PopInput",
+    "PopResponseModelMessage",
+    "NoValidRequestFound",
     "ResponseGenerationProgressCombinedMixin",
     "ResponseGenerationProgressInfoMixin",
+    "AestheticRating",
+    "AestheticsPayload",
+    "RateRequest",
+    "RateResponse",
     "DeleteImageGenerateRequest",
+    "Generation",
     "ImageGenerateStatusRequest",
     "ImageGenerateStatusResponse",
     "ImageGeneration",
@@ -286,6 +509,7 @@ __all__ = [
     "ModelPayloadRootKobold",
     "TextGenerateAsyncRequest",
     "TextGenerateAsyncResponse",
+    "_BasePayloadKoboldMixin",
     "ModelPayloadKobold",
     "NoValidRequestFoundKobold",
     "TextGenerateJobPopRequest",
@@ -308,12 +532,22 @@ __all__ = [
     "SingleWorkerDetailsResponse",
     "TeamDetailsLite",
     "WorkerDetailItem",
+    "WorkerDetailLite",
     "WorkerKudosDetails",
+    "AllWorkerMessagesRequest",
+    "CreateWorkerMessageRequest",
+    "DeleteWorkerMessageRequest",
+    "DeleteWorkerMessageResponse",
+    "ResponseModelMessage",
+    "ResponseModelMessages",
+    "SingleWorkerMessageRequest",
     "APIKeyAllowedInRequestMixin",
     "ContainsMessageResponseMixin",
-    "RequestSpecifiesUserIDMixin",
+    "ContainsWarningsResponseMixin",
+    "MessageSpecifiesUserIDMixin",
     "RequestUsesWorkerMixin",
     "ResponseRequiringDownloadMixin",
     "ResponseRequiringFollowUpMixin",
     "ResponseWithProgressMixin",
+    "JobPopResponseTypeVar",
 ]

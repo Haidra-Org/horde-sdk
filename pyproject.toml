@@ -38,7 +38,7 @@ tests = ["*.json"]
 
 [tool.ruff]
 line-length = 119
-exclude = ["codegen"]
+exclude = ["codegen", ".venv*"]
 
 [tool.ruff.lint]
 select = [
@@ -96,7 +96,7 @@ exclude = '''
  | \.hg
  | \.mypy_cache
  | \.tox
- | \.venv
+ | \.venv.*
  | _build
  | buck-out
  | build
@@ -117,7 +117,7 @@ exclude = [
   '\.hg',
   '\.mypy_cache',
   '\.tox',
-  '\.venv',
+  '\.venv.*',
   '_build',
   'buck-out',
   'build',

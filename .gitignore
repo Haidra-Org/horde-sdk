@@ -155,3 +155,9 @@ tests/testing_result_images/*
 workers.txt
 
 ai_horde_codegen.py
+
+.codiumai.toml
+
+.venv-*
+non_conforming_docstrings.json
+missing_original_docstrings.json

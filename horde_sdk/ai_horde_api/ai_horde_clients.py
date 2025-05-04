@@ -14,6 +14,7 @@ from ssl import SSLContext
 from typing import cast
 
 import aiohttp
+import logfire
 import PIL.Image
 import requests
 from loguru import logger
@@ -64,7 +65,7 @@ from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequest
 from horde_sdk.ai_horde_api.consts import GENERATION_MAX_LIFE, MODEL_STATE, PROGRESS_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_BASE_URL
 from horde_sdk.ai_horde_api.exceptions import AIHordeImageValidationError, AIHordeRequestError
-from horde_sdk.ai_horde_api.fields import JobID, WorkerID
+from horde_sdk.ai_horde_api.fields import GenerationID, WorkerID
 from horde_sdk.ai_horde_api.metadata import AIHordePathData, AIHordeQueryData
 from horde_sdk.generic_api.apimodels import (
     ContainsMessageResponseMixin,
@@ -80,32 +81,6 @@ from horde_sdk.generic_api.generic_clients import (
     GenericHordeAPIManualClient,
     GenericHordeAPISession,
 )
-
-
-def parse_image_from_base64(image_base64: str) -> PIL.Image.Image:
-    """Parse an image from base 64.
-
-    Args:
-        image_base64 (str): The base 64 encoded image.
-
-    Returns:
-        PIL.Image.Image: The parsed image.
-
-    Raises:
-        binascii.Error: If the image couldn't be parsed from base 64.
-        RuntimeError: If the image couldn't be parsed for any other reason.
-
-    """
-    try:
-        image_bytes = base64.b64decode(image_base64)
-    except Exception as e:
-        logger.error(f"Error parsing image: {e}")
-        raise e
-
-    if image_bytes is None:
-        raise RuntimeError("Error parsing image")
-
-    return PIL.Image.open(io.BytesIO(image_bytes))
 
 
 def download_image_bytes(url: str) -> io.BytesIO:
@@ -222,19 +197,19 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient, BaseAIHordeClient):
 
     def get_generate_check(
         self,
-        job_id: JobID,
+        gen_id: GenerationID,
     ) -> ImageGenerateCheckResponse:
         """Check if a pending image request has finished generating from the AI-Horde API.
 
         Not to be confused with `get_generate_status` which returns the images too.
 
         Args:
-            job_id (JobID | str): The ID of the request to check.
+            gen_id (GenerationID | str): The ID of the request to check.
 
         Returns:
             ImageGenerateCheckResponse: The response from the API.
         """
-        api_request = ImageGenerateCheckRequest(id=job_id)
+        api_request = ImageGenerateCheckRequest(id=gen_id)
 
         api_response = self.submit_request(api_request, api_request.get_default_success_response_type())
         if isinstance(api_response, RequestErrorResponse):  # pragma: no cover
@@ -245,7 +220,7 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient, BaseAIHordeClient):
 
     def get_generate_status(
         self,
-        job_id: JobID,
+        gen_id: GenerationID,
     ) -> ImageGenerateStatusResponse:
         """Get the status and any generated images for a pending image request from the AI-Horde API.
 
@@ -253,12 +228,12 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient, BaseAIHordeClient):
         Use `get_generate_check` instead to check the status of a pending image request.
 
         Args:
-            job_id (JobID): The ID of the request to check.
+            gen_id (GenerationID): The ID of the request to check.
 
         Returns:
-            tuple[ImageGenerateStatusResponse, JobID]: The final status response and the corresponding job ID.
+            tuple[ImageGenerateStatusResponse, GenerationID]: The final status response and the corresponding job ID.
         """
-        api_request = ImageGenerateStatusRequest(id=job_id)
+        api_request = ImageGenerateStatusRequest(id=gen_id)
 
         api_response = self.submit_request(api_request, api_request.get_default_success_response_type())
         if isinstance(api_response, RequestErrorResponse):  # pragma: no cover
@@ -269,17 +244,17 @@ class AIHordeAPIManualClient(GenericHordeAPIManualClient, BaseAIHordeClient):
 
     def delete_pending_image(
         self,
-        job_id: JobID,
+        gen_id: GenerationID,
     ) -> ImageGenerateStatusResponse:
         """Delete a pending image request from the AI-Horde API.
 
         Args:
-            job_id (JobID): The ID of the request to delete.
+            gen_id (GenerationID): The ID of the request to delete.
 
         Returns:
             ImageGenerateStatusResponse: The response from the API.
         """
-        api_request = DeleteImageGenerateRequest(id=job_id)
+        api_request = DeleteImageGenerateRequest(id=gen_id)
 
         api_response = self.submit_request(api_request, api_request.get_default_success_response_type())
         if isinstance(api_response, RequestErrorResponse):  # pragma: no cover
@@ -308,19 +283,19 @@ class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeC
 
     async def get_generate_check(
         self,
-        job_id: JobID,
+        gen_id: GenerationID,
     ) -> ImageGenerateCheckResponse:
         """Asynchronously check if a pending image request has finished generating and return the status of it.
 
         Not to be confused with `get_generate_status` which returns the images too.
 
         Args:
-            job_id (JobID | str): The ID of the request to check.
+            gen_id (GenerationID | str): The ID of the request to check.
 
         Returns:
             ImageGenerateCheckResponse: The response from the API.
         """
-        api_request = ImageGenerateCheckRequest(id=job_id)
+        api_request = ImageGenerateCheckRequest(id=gen_id)
 
         api_response = await self.submit_request(api_request, api_request.get_default_success_response_type())
         if isinstance(api_response, RequestErrorResponse):  # pragma: no cover
@@ -331,7 +306,7 @@ class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeC
 
     async def get_generate_status(
         self,
-        job_id: JobID,
+        gen_id: GenerationID,
     ) -> ImageGenerateStatusResponse:
         """Asynchronously get the status and any generated images for a pending image request from the AI-Horde API.
 
@@ -339,12 +314,12 @@ class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeC
         Use `get_generate_check` instead to check the status of a pending image request.
 
         Args:
-            job_id (JobID): The ID of the request to check.
+            gen_id (GenerationID): The ID of the request to check.
 
         Returns:
             ImageGenerateStatusResponse: The response from the API.
         """
-        api_request = ImageGenerateStatusRequest(id=job_id)
+        api_request = ImageGenerateStatusRequest(id=gen_id)
 
         api_response = await self.submit_request(api_request, api_request.get_default_success_response_type())
         if isinstance(api_response, RequestErrorResponse):  # pragma: no cover
@@ -355,17 +330,17 @@ class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeC
 
     async def delete_pending_image(
         self,
-        job_id: JobID,
+        gen_id: GenerationID,
     ) -> ImageGenerateStatusResponse:
         """Asynchronously delete a pending image request from the AI-Horde API.
 
         Args:
-            job_id (JobID | str): The ID of the request to delete.
+            gen_id (GenerationID | str): The ID of the request to delete.
 
         Returns:
             ImageGenerateStatusResponse: The response from the API.
         """
-        api_request = DeleteImageGenerateRequest(id=job_id)
+        api_request = DeleteImageGenerateRequest(id=gen_id)
 
         api_response = await self.submit_request(api_request, api_request.get_default_success_response_type())
         if isinstance(api_response, RequestErrorResponse):  # pragma: no cover
@@ -418,6 +393,8 @@ class AIHordeAPIAsyncClientSession(GenericAsyncHordeAPISession):
 class BaseAIHordeSimpleClient(ABC):
     """The base class for the most straightforward clients which interact with the AI-Horde API."""
 
+    _msg_format_sleep = "sleeping for {seconds} seconds"
+
     reasonable_minimum_timeout = 20
 
     def validate_timeout(
@@ -457,7 +434,7 @@ class BaseAIHordeSimpleClient(ABC):
     def download_image_from_generation(
         self,
         generation: ImageGeneration,
-    ) -> PIL.Image.Image | Coroutine[None, None, tuple[PIL.Image.Image, JobID]]:
+    ) -> PIL.Image.Image | Coroutine[None, None, tuple[PIL.Image.Image, GenerationID]]:
         """Convert from base64 or download an image from a response."""
 
     @abstractmethod
@@ -467,27 +444,10 @@ class BaseAIHordeSimpleClient(ABC):
     ) -> PIL.Image.Image | Coroutine[None, None, PIL.Image.Image]:
         """Download an image from a URL."""
 
-    @staticmethod
-    def parse_image_from_base64(image_base64: str) -> PIL.Image.Image:
-        """Parse an image from base 64.
-
-        Args:
-            image_base64 (str): The base 64 encoded image.
-
-        Returns:
-            PIL.Image.Image: The parsed image.
-
-        Raises:
-            binascii.Error: If the image couldn't be parsed from base 64.
-            RuntimeError: If the image couldn't be parsed for any other reason.
-
-        """
-        return parse_image_from_base64(image_base64)
-
     def _handle_initial_response(
         self,
         initial_response: HordeResponse | RequestErrorResponse,
-    ) -> tuple[HordeRequest, JobID, list[dict[str, object]]]:
+    ) -> tuple[HordeRequest, GenerationID, list[dict[str, object]]]:
         # Check for error responses
         if isinstance(initial_response, RequestErrorResponse):  # pragma: no cover
             if "Image validation failed" in initial_response.message:  # TODO: No magic strings!
@@ -517,22 +477,22 @@ class BaseAIHordeSimpleClient(ABC):
                 f"Check request type is not a JobRequestMixin: {check_request.log_safe_model_dump()}",
             )
 
-        job_id: JobID = check_request.id_
+        gen_id: GenerationID = check_request.id_
 
         logger.log(PROGRESS_LOGGER_LABEL, f"Response received: {initial_response}")
         if isinstance(initial_response, ContainsMessageResponseMixin) and initial_response.message:
             if "warning" in initial_response.message.lower():
-                logger.warning(f"{job_id}: {initial_response.message}")
+                logger.warning(f"{gen_id}: {initial_response.message}")
             else:
-                logger.info(f"{job_id}: {initial_response.message}")
+                logger.info(f"{gen_id}: {initial_response.message}")
 
-        return check_request, job_id, follow_up_data
+        return check_request, gen_id, follow_up_data
 
     def _handle_progress_response(
         self,
         check_request: HordeRequest,
         check_response: HordeResponse | RequestErrorResponse,
-        job_id: JobID,
+        gen_id: GenerationID,
         *,
         check_count: int,
         number_of_responses: int,
@@ -563,27 +523,28 @@ class BaseAIHordeSimpleClient(ABC):
             check_callback(check_response)
 
         # Log a message indicating that the request has been checked
-        log_message = f"Checked request: {job_id}, is_possible: {check_response.is_job_possible()}"
+        log_message = f"Checked request: {gen_id}, is_possible: {check_response.is_job_possible()}"
 
         # Log the request if it's the first check or every 5th check
         if check_count == 1 or check_count % 5 == 0:
             logger.log(PROGRESS_LOGGER_LABEL, log_message)
-            logger.log(PROGRESS_LOGGER_LABEL, f"{job_id}: {check_response.log_safe_model_dump()}")
+            logger.log(PROGRESS_LOGGER_LABEL, f"{gen_id}: {check_response.log_safe_model_dump()}")
             if not check_response.is_job_possible():
-                logger.warning(f"Job not possible: {job_id}")
+                logger.warning(f"Job not possible: {gen_id}")
         # Otherwise, just log the message at the debug level
         else:
             logger.debug(log_message)
 
         # If the number of finished images is equal to the number of images requested, we're done
         if check_response.is_job_complete(number_of_responses):
-            logger.log(PROGRESS_LOGGER_LABEL, f"Job finished and available on the server: {job_id}")
+            logger.log(PROGRESS_LOGGER_LABEL, f"Job finished and available on the server: {gen_id}")
             return PROGRESS_STATE.finished
 
         # If we've timed out, stop waiting, log a warning, and break out of the loop
         if timeout and timeout > 0 and time.time() - start_time > timeout:
             logger.warning(
-                f"Timeout reached, cancelling generations still outstanding: {job_id}: {check_response}:",
+                f"Timeout reached, cancelling generations still outstanding: {gen_id}: "
+                f"{check_response.log_safe_model_dump()}:",
             )
             return PROGRESS_STATE.timed_out
 
@@ -628,6 +589,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         """
         return download_image_from_url(url)
 
+    @logfire.instrument()
     def _do_request_with_check(
         self,
         api_request: BaseAIHordeRequest,
@@ -636,7 +598,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         timeout: int = GENERATION_MAX_LIFE,
         check_callback: Callable[[HordeResponse], None] | None = None,
         check_callback_type: type[ResponseWithProgressMixin | ResponseGenerationProgressCombinedMixin] | None = None,
-    ) -> tuple[HordeResponse, JobID]:
+    ) -> tuple[HordeResponse, GenerationID]:
         """Submit a request which requires check/status polling to the AI-Horde API, and wait for it to complete.
 
         Args:
@@ -649,14 +611,15 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                 The type of response expected by the callback.
 
         Returns:
-            tuple[HordeResponse, JobID]: The final response and the corresponding job ID.
+            tuple[HordeResponse, GenerationID]: The final response and the corresponding job ID.
         """
         if check_callback is not None and len(inspect.getfullargspec(check_callback).args) == 0:
             raise ValueError("Callback must take at least one argument")
 
+        logger.debug("Starting request with check")
+
         # This session class will cleanup incomplete requests in the event of an exception
         with AIHordeAPIClientSession() as horde_session:
-            # Submit the initial request
             logger.debug(
                 f"Submitting request: {api_request.log_safe_model_dump()} with timeout {timeout}",
             )
@@ -666,7 +629,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
             )
 
             # Handle the initial response to get the check request, job ID, and follow-up data
-            check_request, job_id, follow_up_data = self._handle_initial_response(initial_response)
+            check_request, gen_id, follow_up_data = self._handle_initial_response(initial_response)
 
             # There is a rate limit, so we start a clock to keep track of how long we've been waiting
             start_time = time.time()
@@ -687,7 +650,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                 progress_state = self._handle_progress_response(
                     check_request,
                     check_response,
-                    job_id,
+                    gen_id,
                     check_count=check_count,
                     number_of_responses=number_of_responses,
                     start_time=start_time,
@@ -700,7 +663,9 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                     break
 
                 # Wait for 4 seconds before checking again
-                time.sleep(4)
+                sleep_time = 4
+                with logfire.span(self._msg_format_sleep.format(seconds=sleep_time), sleep_time=sleep_time):
+                    time.sleep(sleep_time)
 
             # Check if the check response has progress
             if not isinstance(check_response, ResponseWithProgressMixin):
@@ -729,10 +694,10 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                     raise AIHordeRequestError(final_response)
 
             # Log a message indicating that the request is complete
-            logger.log(COMPLETE_LOGGER_LABEL, f"Request complete: {job_id}")
+            logger.log(COMPLETE_LOGGER_LABEL, f"Request complete: {gen_id}")
 
             # Return the final response and job ID
-            return (final_response, job_id)
+            return (final_response, gen_id)
 
         # If there is an exception, log an error and raise a RuntimeError
         logger.error("Something went wrong with the request:")
@@ -764,7 +729,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         image_gen_request: ImageGenerateAsyncRequest,
         timeout: int = GENERATION_MAX_LIFE,
         check_callback: Callable[[ImageGenerateCheckResponse], None] | None = None,
-    ) -> tuple[ImageGenerateStatusResponse, JobID]:
+    ) -> tuple[ImageGenerateStatusResponse, GenerationID]:
         """Submit an image generation request to the AI-Horde API, and wait for it to complete.
 
         Args:
@@ -791,7 +756,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
 
         n = image_gen_request.params.n if image_gen_request.params and image_gen_request.params.n else 1
         logger.log(PROGRESS_LOGGER_LABEL, f"Requesting {n} images.")
-        final_response, JobID = self._do_request_with_check(
+        final_response, GenerationID = self._do_request_with_check(
             image_gen_request,
             number_of_responses=n,
             timeout=timeout,
@@ -806,7 +771,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         if not isinstance(final_response, ImageGenerateStatusResponse):  # pragma: no cover
             raise RuntimeError("Response was not an ImageGenerateStatusResponse")
 
-        return (final_response, JobID)
+        return (final_response, GenerationID)
 
     def image_generate_request_dry_run(
         self,
@@ -842,7 +807,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         alchemy_request: AlchemyAsyncRequest,
         timeout: int = GENERATION_MAX_LIFE,
         check_callback: Callable[[AlchemyStatusResponse], None] | None = None,
-    ) -> tuple[AlchemyStatusResponse, JobID]:
+    ) -> tuple[AlchemyStatusResponse, GenerationID]:
         """Submit an alchemy request to the AI-Horde API, and wait for it to complete.
 
         Args:
@@ -869,7 +834,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         for form in alchemy_request.forms:
             logger.debug(f"Request: {form}")
 
-        response, job_id = self._do_request_with_check(
+        response, gen_id = self._do_request_with_check(
             alchemy_request,
             number_of_responses=len(alchemy_request.forms),
             timeout=timeout,
@@ -882,14 +847,14 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         if not isinstance(response, AlchemyStatusResponse):  # pragma: no cover
             raise RuntimeError("Response was not an AlchemyAsyncResponse")
 
-        return (response, job_id)
+        return (response, gen_id)
 
     def text_generate_request(
         self,
         text_gen_request: TextGenerateAsyncRequest,
         timeout: int = GENERATION_MAX_LIFE,
         check_callback: Callable[[TextGenerateStatusResponse], None] | None = None,
-    ) -> tuple[TextGenerateStatusResponse, JobID]:
+    ) -> tuple[TextGenerateStatusResponse, GenerationID]:
         """Submit a text generation request to the AI-Horde API, and wait for it to complete.
 
         Args:
@@ -920,7 +885,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         logger.log(PROGRESS_LOGGER_LABEL, f"Requesting {num_gens_requested} text generation.")
         logger.debug(f"Request: {text_gen_request}")
 
-        response, job_id = self._do_request_with_check(
+        response, gen_id = self._do_request_with_check(
             text_gen_request,
             number_of_responses=1,
             timeout=timeout,
@@ -934,7 +899,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         if not isinstance(response, TextGenerateStatusResponse):  # pragma: no cover
             raise RuntimeError("Response was not a TextGenerateStatusResponse")
 
-        return (response, job_id)
+        return (response, gen_id)
 
     def text_generate_request_dry_run(
         self,
@@ -1056,7 +1021,6 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
         """Update a worker.
 
         Args:
-            worker_id (WorkerID): The ID of the worker to update.
             modify_worker_request (ModifyWorkerRequest): The request to update the worker.
 
         Returns:
@@ -1275,7 +1239,10 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             self._horde_client_session = horde_client_session
             self._aiohttp_session = horde_client_session._aiohttp_session
 
-    async def download_image_from_generation(self, generation: ImageGeneration) -> tuple[PIL.Image.Image, JobID]:
+    async def download_image_from_generation(
+        self,
+        generation: ImageGeneration,
+    ) -> tuple[PIL.Image.Image, GenerationID]:
         """Asynchronously convert from base64 or download an image from a response.
 
         Args:
@@ -1346,6 +1313,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
 
         return PIL.Image.open(io.BytesIO(image_bytes))
 
+    @logfire.instrument()
     async def _do_request_with_check(
         self,
         api_request: BaseAIHordeRequest,
@@ -1354,7 +1322,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         timeout: int = GENERATION_MAX_LIFE,
         check_callback: Callable[[HordeResponse], None] | None = None,
         check_callback_type: type[ResponseWithProgressMixin | ResponseGenerationProgressCombinedMixin] | None = None,
-    ) -> tuple[HordeResponse, JobID]:
+    ) -> tuple[HordeResponse, GenerationID]:
         """Submit a request which requires check/status polling to the AI-Horde API, and wait for it to complete.
 
         Args:
@@ -1367,7 +1335,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
                 The type of response expected by the callback.
 
         Returns:
-            tuple[HordeResponse, JobID]: The final response and the corresponding job ID.
+            tuple[HordeResponse, GenerationID]: The final response and the corresponding job ID.
 
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
@@ -1375,7 +1343,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         if check_callback is not None and len(inspect.getfullargspec(check_callback).args) == 0:
             raise ValueError("Callback must take at least one argument")
 
-        # This session class will cleanup incomplete requests in the event of an exception
+        logger.debug("Starting async request with check.")
 
         # Submit the initial request
         logger.debug(
@@ -1387,7 +1355,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         )
 
         # Handle the initial response to get the check request, job ID, and follow-up data
-        check_request, job_id, follow_up_data = self._handle_initial_response(initial_response)
+        check_request, gen_id, follow_up_data = self._handle_initial_response(initial_response)
 
         # There is a rate limit, so we start a clock to keep track of how long we've been waiting
         start_time = time.time()
@@ -1408,7 +1376,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             progress_state = self._handle_progress_response(
                 check_request,
                 check_response,
-                job_id,
+                gen_id,
                 check_count=check_count,
                 number_of_responses=number_of_responses,
                 start_time=start_time,
@@ -1421,7 +1389,9 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
                 break
 
             # Wait for 4 seconds before checking again
-            await asyncio.sleep(4)
+            sleep_time = 4
+            with logfire.span(self._msg_format_sleep.format(seconds=sleep_time), sleep_time=sleep_time):
+                await asyncio.sleep(sleep_time)
 
         # This is for type safety, but should never happen in production
         if not isinstance(check_response, ResponseWithProgressMixin):  # pragma: no cover
@@ -1455,10 +1425,10 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
                 raise AIHordeRequestError(final_response)
 
         # Log a message indicating that the request is complete
-        logger.log(COMPLETE_LOGGER_LABEL, f"Request complete: {job_id}")
+        logger.log(COMPLETE_LOGGER_LABEL, f"Request complete: {gen_id}")
 
         # Return the final response and job ID
-        return (final_response, job_id)
+        return (final_response, gen_id)
 
     async def heartbeat_request(
         self,
@@ -1489,7 +1459,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         timeout: int = GENERATION_MAX_LIFE,
         check_callback: Callable[[ImageGenerateCheckResponse], None] | None = None,
         delay: float = 0.0,
-    ) -> tuple[ImageGenerateStatusResponse, JobID]:
+    ) -> tuple[ImageGenerateStatusResponse, GenerationID]:
         """Submit an image generation request to the AI-Horde API, and wait for it to complete.
 
         *Be warned* that using this method too frequently could trigger a rate limit from the AI-Horde API.
@@ -1506,7 +1476,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
 
 
         Returns:
-            tuple[ImageGenerateStatusResponse, JobID]: The final status response and the corresponding job ID.
+            tuple[ImageGenerateStatusResponse, GenerationID]: The final status response and the corresponding job ID.
 
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
@@ -1521,7 +1491,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         timeout = self.validate_timeout(timeout, log_message=True)
 
         n = image_gen_request.params.n if image_gen_request.params and image_gen_request.params.n else 1
-        final_response, job_id = await self._do_request_with_check(
+        final_response, gen_id = await self._do_request_with_check(
             image_gen_request,
             number_of_responses=n,
             timeout=timeout,
@@ -1535,7 +1505,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         if not isinstance(final_response, ImageGenerateStatusResponse):  # pragma: no cover
             raise RuntimeError("Response was not an ImageGenerateStatusResponse")
 
-        return (final_response, job_id)
+        return (final_response, gen_id)
 
     async def image_generate_request_dry_run(
         self,
@@ -1574,7 +1544,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         alchemy_request: AlchemyAsyncRequest,
         timeout: int = GENERATION_MAX_LIFE,
         check_callback: Callable[[AlchemyStatusResponse], None] | None = None,
-    ) -> tuple[AlchemyStatusResponse, JobID]:
+    ) -> tuple[AlchemyStatusResponse, GenerationID]:
         """Submit an alchemy request to the AI-Horde API, and wait for it to complete.
 
         *Be warned* that using this method too frequently could trigger a rate limit from the AI-Horde API.
@@ -1588,7 +1558,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
                 response.
 
         Returns:
-            tuple[ImageGenerateStatusResponse, JobID]: The final status response and the corresponding job ID.
+            tuple[ImageGenerateStatusResponse, GenerationID]: The final status response and the corresponding job ID.
 
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
@@ -1600,7 +1570,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
 
         timeout = self.validate_timeout(timeout, log_message=True)
 
-        response, job_id = await self._do_request_with_check(
+        response, gen_id = await self._do_request_with_check(
             alchemy_request,
             number_of_responses=len(alchemy_request.forms),
             timeout=timeout,
@@ -1613,7 +1583,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         if not isinstance(response, AlchemyStatusResponse):  # pragma: no cover
             raise RuntimeError("Response was not an AlchemyAsyncResponse")
 
-        return (response, job_id)
+        return (response, gen_id)
 
     async def text_generate_request(
         self,
@@ -1621,7 +1591,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         timeout: int = GENERATION_MAX_LIFE,
         check_callback: Callable[[TextGenerateStatusResponse], None] | None = None,
         delay: float = 0.0,
-    ) -> tuple[TextGenerateStatusResponse, JobID]:
+    ) -> tuple[TextGenerateStatusResponse, GenerationID]:
         """Submit a text generation request to the AI-Horde API, and wait for it to complete.
 
         *Be warned* that using this method too frequently could trigger a rate limit from the AI-Horde API.
@@ -1637,7 +1607,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             delay (float, optional): The number of seconds to wait before checking the status. Defaults to 0.0.
 
         Returns:
-            tuple[TextGenerateStatusResponse, JobID]: The final status response and the corresponding job ID.
+            tuple[TextGenerateStatusResponse, GenerationID]: The final status response and the corresponding job ID.
 
         Raises:
             AIHordeRequestError: If the request failed. The error response is included in the exception.
@@ -1659,7 +1629,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         logger.log(PROGRESS_LOGGER_LABEL, f"Requesting {num_gens_requested} text generation.")
         logger.debug(f"Request: {text_gen_request}")
 
-        response, job_id = await self._do_request_with_check(
+        response, gen_id = await self._do_request_with_check(
             text_gen_request,
             number_of_responses=1,
             timeout=timeout,
@@ -1673,7 +1643,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         if not isinstance(response, TextGenerateStatusResponse):  # pragma: no cover
             raise RuntimeError("Response was not a TextGenerateStatusResponse")
 
-        return (response, job_id)
+        return (response, gen_id)
 
     async def text_generate_request_dry_run(
         self,
@@ -1766,7 +1736,6 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         """Update a worker.
 
         Args:
-            worker_id (WorkerID): The ID of the worker to update.
             modify_worker_request (ModifyWorkerRequest): The request to update the worker.
 
         Returns:

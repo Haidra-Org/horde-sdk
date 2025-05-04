@@ -1,0 +1,200 @@
+{
+    "/v2/documents/privacy": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.documents.AIHordeGetPrivacyPolicyRequest"
+    },
+    "/v2/documents/sponsors": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.documents.AIHordeGetSponsorsRequest"
+    },
+    "/v2/documents/terms": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.documents.AIHordeGetTermsRequest"
+    },
+    "/v2/status/heartbeat": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.status.AIHordeHeartbeatRequest"
+    },
+    "/v2/interrogate/async": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.alchemy.async_.AlchemyAsyncRequest"
+    },
+    "/v2/interrogate/status/{id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.alchemy.status.AlchemyDeleteRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.alchemy.status.AlchemyStatusRequest"
+    },
+    "/v2/interrogate/submit": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.alchemy.submit.AlchemyJobSubmitRequest"
+    },
+    "/v2/interrogate/pop": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.alchemy.pop.AlchemyPopRequest"
+    },
+    "/v2/collections": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.collections.AllCollectionsRequest",
+        "POST": "horde_sdk.ai_horde_api.apimodels.collections.CreateCollectionRequest"
+    },
+    "/v2/operations/ipaddr": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.operations.SingleIPTimeoutsRequest",
+        "POST": "horde_sdk.ai_horde_api.apimodels.operations.BlockIPAddressRequest",
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.operations.DeleteIPAddressRequest"
+    },
+    "/v2/styles/image": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.styles.AllStylesImageRequest",
+        "POST": "horde_sdk.ai_horde_api.apimodels.styles.CreateStyleImageRequest"
+    },
+    "/v2/styles/text": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.styles.AllStylesTextRequest",
+        "POST": "horde_sdk.ai_horde_api.apimodels.styles.CreateStyleTextRequest"
+    },
+    "/v2/teams": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.teams.AllTeamDetailsRequest",
+        "POST": "horde_sdk.ai_horde_api.apimodels.teams.CreateTeamRequest"
+    },
+    "/v2/workers/messages": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.workers.messages.AllWorkerMessagesRequest",
+        "POST": "horde_sdk.ai_horde_api.apimodels.workers.messages.CreateWorkerMessageRequest"
+    },
+    "/v2/workers": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.workers.workers.AllWorkersDetailsRequest"
+    },
+    "/v2/operations/block_worker_ipaddr/{worker_id}": {
+        "PUT": "horde_sdk.ai_horde_api.apimodels.operations.BlockWorkerIPAddressRequest",
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.operations.DeleteWorkerIPAddressRequest"
+    },
+    "/v2/collections/{collection_id}": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.collections.CollectionByIDRequest",
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.collections.DeleteCollectionRequest",
+        "PATCH": "horde_sdk.ai_horde_api.apimodels.collections.UpdateCollectionRequest"
+    },
+    "/v2/collection_by_name/{collection_name}": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.collections.CollectionByNameRequest"
+    },
+    "/v2/filters/{filter_id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.filters.DeleteFilterRequest",
+        "PATCH": "horde_sdk.ai_horde_api.apimodels.filters.PatchExistingFilter",
+        "GET": "horde_sdk.ai_horde_api.apimodels.filters.SingleFilterRequest"
+    },
+    "/v2/generate/status/{id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.generate.status.DeleteImageGenerateRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.generate.status.ImageGenerateStatusRequest"
+    },
+    "/v2/styles/image/{style_id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.styles.DeleteStyleImageRequest",
+        "PATCH": "horde_sdk.ai_horde_api.apimodels.styles.ModifyStyleImageRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.styles.SingleStyleImageByIDRequest"
+    },
+    "/v2/styles/text/{style_id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.styles.DeleteStyleTextRequest",
+        "PATCH": "horde_sdk.ai_horde_api.apimodels.styles.ModifyStyleTextRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.styles.SingleStyleTextByIDRequest"
+    },
+    "/v2/teams/{team_id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.teams.DeleteTeamRequest",
+        "PATCH": "horde_sdk.ai_horde_api.apimodels.teams.ModifyTeamRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.teams.SingleTeamDetailsRequest"
+    },
+    "/v2/generate/text/status/{id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.generate.text.status.DeleteTextGenerateRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.generate.text.status.TextGenerateStatusRequest"
+    },
+    "/v2/workers/messages/{message_id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.workers.messages.DeleteWorkerMessageRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.workers.messages.SingleWorkerMessageRequest"
+    },
+    "/v2/workers/{worker_id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.workers.workers.DeleteWorkerRequest",
+        "PUT": "horde_sdk.ai_horde_api.apimodels.workers.workers.ModifyWorkerRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.workers.workers.SingleWorkerDetailsRequest"
+    },
+    "/v2/filters": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.filters.FilterPromptSuspicionRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.filters.FiltersListRequest",
+        "PUT": "horde_sdk.ai_horde_api.apimodels.filters.PutNewFilterRequest"
+    },
+    "/v2/filters/regex": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.filters.FilterRegexRequest"
+    },
+    "/v2/find_user": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.find_user.FindUserRequest"
+    },
+    "/v2/status/performance": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.status.HordePerformanceRequest"
+    },
+    "/v2/status/models": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.status.HordeStatusModelsAllRequest"
+    },
+    "/v2/status/models/{model_name}": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.status.HordeStatusModelsSingleRequest"
+    },
+    "/v2/generate/async": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate.async_.ImageGenerateAsyncRequest"
+    },
+    "/v2/generate/check/{id}": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.generate.check.ImageGenerateCheckRequest"
+    },
+    "/v2/generate/pop": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate.pop.ImageGenerateJobPopRequest"
+    },
+    "/v2/generate/submit": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate.submit.ImageGenerationJobSubmitRequest"
+    },
+    "/v2/stats/img/models": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.stats.ImageStatsModelsRequest"
+    },
+    "/v2/stats/img/totals": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.stats.ImageStatsModelsTotalRequest"
+    },
+    "/v2/kudos/award": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.kudos.KudosAwardRequest"
+    },
+    "/v2/kudos/transfer": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.kudos.KudosTransferRequest"
+    },
+    "/v2/users": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.users.ListUsersDetailsRequest"
+    },
+    "/v2/users/{user_id}": {
+        "PUT": "horde_sdk.ai_horde_api.apimodels.users.ModifyUserRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.users.SingleUserDetailsRequest"
+    },
+    "/v2/status/news": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.status.NewsRequest"
+    },
+    "/v2/generate/rate/{id}": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate.rate.RateRequest"
+    },
+    "/v2/sharedkeys": {
+        "PUT": "horde_sdk.ai_horde_api.apimodels.sharedkeys.SharedKeyCreateRequest"
+    },
+    "/v2/sharedkeys/{sharedkey_id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.sharedkeys.SharedKeyDeleteRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.sharedkeys.SharedKeyDetailsRequest",
+        "PATCH": "horde_sdk.ai_horde_api.apimodels.sharedkeys.SharedKeyModifyRequest"
+    },
+    "/v2/styles/image_by_name/{style_name}": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.styles.SingleStyleImageByNameRequest"
+    },
+    "/v2/styles/text_by_name/{style_name}": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.styles.SingleStyleTextByNameRequest"
+    },
+    "/v2/workers/name/{worker_name}": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.workers.workers.SingleWorkerNameDetailsRequest"
+    },
+    "/v2/styles/image/{style_id}/example": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.styles.StyleImageExampleAddRequest"
+    },
+    "/v2/styles/image/{style_id}/example/{example_id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.styles.StyleImageExampleDeleteRequest",
+        "PATCH": "horde_sdk.ai_horde_api.apimodels.styles.StyleImageExampleModifyRequest"
+    },
+    "/v2/generate/text/async": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate.text.async_.TextGenerateAsyncRequest"
+    },
+    "/v2/generate/text/pop": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate.text.pop.TextGenerateJobPopRequest"
+    },
+    "/v2/generate/text/submit": {
+        "POST": "horde_sdk.ai_horde_api.apimodels.generate.text.submit.TextGenerationJobSubmitRequest"
+    },
+    "/v2/stats/text/models": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.stats.TextStatsModelsRequest"
+    },
+    "/v2/stats/text/totals": {
+        "GET": "horde_sdk.ai_horde_api.apimodels.stats.TextStatsModelsTotalRequest"
+    }
+}

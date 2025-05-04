@@ -23,7 +23,7 @@ pip install horde_sdk
 
 2. Find the `*Request` object type appropriate to what you want to do. (see also: [naming](getting_started.md#naming))
     - These objects types are always found in the `apimodels` namespace of the `*_api` sub package.
-    - e.g., [ImageGenerateAsyncRequest][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest]
+    - e.g., [ImageGenerateAsyncRequest][horde_sdk.ai_horde_api.apimodels.generate.async.ImageGenerateAsyncRequest]
     - **Note** that there is always one or more response types mapped to a request. You can get the default success response `type` like so:
 
 
@@ -36,7 +36,7 @@ pip install horde_sdk
     >>> image_gen_request.get_success_response_type()
     <class 'horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse'>
     ```
-    Accordingly, the [ImageGenerateAsyncResponse][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncResponse] type is expected to be the return type from the API.
+    Accordingly, the [ImageGenerateAsyncResponse][horde_sdk.ai_horde_api.apimodels.generate.async.ImageGenerateAsyncResponse] type is expected to be the return type from the API.
 
     <div class="warning" markdown="1">
         <div class="title" markdown="1">
@@ -54,7 +54,7 @@ image_generate_async_request = ImageGenerateAsyncRequest(
     params=ImageGenerationInputPayload(
         width=512,
         height=768,
-        sampler_name=KNOWN_SAMPLERS.k_euler_a,
+        sampler_name=KNOWN_IMAGE_SAMPLERS.k_euler_a,
         clip_skip=1,
         n=2,
     ),
@@ -66,7 +66,7 @@ image_generate_async_request = ImageGenerateAsyncRequest(
     Simple Client:
     ``` python
     simple_client = AIHordeAPISimpleClient()
-    status_response, job_id = simple_client.image_generate_request(
+    status_response, gen_id = simple_client.image_generate_request(
         ImageGenerateAsyncRequest(
             apikey=ANON_API_KEY,
             prompt="A cat in a hat",
@@ -100,7 +100,7 @@ image_generate_async_request = ImageGenerateAsyncRequest(
 
 ### API Expectations
 #### Important note about manual clients
-A few endpoints, such as `/v2/generate/async` ([ImageGenerateAsyncRequest][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest]), will have their operations live on the API server until they are retrieved or cancelled (in this case, with either a [ImageGenerateStatusRequest][horde_sdk.ai_horde_api.apimodels.generate._status.ImageGenerateStatusRequest] or [DeleteImageGenerateRequest][horde_sdk.ai_horde_api.apimodels.generate._status.DeleteImageGenerateRequest]). If you use a manual client, you are assuming responsibility for making a best-effort for cleaning up errant requests, especially if your implementation crashes. If you use a simple client, you do not have to worry about this, as [context handlers][horde_sdk.generic_api.generic_clients.GenericHordeAPISession] take care of this.
+A few endpoints, such as `/v2/generate/async` ([ImageGenerateAsyncRequest][horde_sdk.ai_horde_api.apimodels.generate._async.ImageGenerateAsyncRequest]), will have their operations live on the API server until they are retrieved or cancelled (in this case, with either a [ImageGenerateStatusRequest][horde_sdk.ai_horde_api.apimodels.generate.status.ImageGenerateStatusRequest] or [DeleteImageGenerateRequest][horde_sdk.ai_horde_api.apimodels.generate.status.DeleteImageGenerateRequest]). If you use a manual client, you are assuming responsibility for making a best-effort for cleaning up errant requests, especially if your implementation crashes. If you use a simple client, you do not have to worry about this, as [context handlers][horde_sdk.generic_api.generic_clients.GenericHordeAPISession] take care of this.
 
 ### Typing
 

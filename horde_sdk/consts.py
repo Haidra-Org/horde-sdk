@@ -1,11 +1,42 @@
 """Constants used by the SDK."""
 
+import os
 from enum import IntEnum
+from uuid import UUID
 
+from pydantic import ConfigDict
 from strenum import StrEnum
 
 _ANONYMOUS_MODEL = "_ANONYMOUS_MODEL"
 """This model is on the API but does not have a name."""
+
+_OVERLOADED_MODEL = "_MODEL_OVERLOADED"
+"""The model is used incorrectly on the API."""
+
+GENERATION_ID_TYPES = str | UUID
+"""The types that can be used as generation IDs."""
+
+
+def get_default_frozen_model_config_dict() -> ConfigDict:
+    """Return the default horde-sdk frozen model config dict for a pydantic `BaseModel`.
+
+    Critically, models configured this way will behave differently when used in tests, preventing
+    the use of extra fields being passed to constructors. However, this is not the case in production,
+    where pass-through is allowed and up to implementors to choose to handle.
+    """
+    return (
+        ConfigDict(
+            frozen=True,
+            use_attribute_docstrings=True,
+            extra="allow",
+        )
+        if not os.getenv("TESTS_ONGOING")
+        else ConfigDict(
+            frozen=True,
+            use_attribute_docstrings=True,
+            extra="forbid",
+        )
+    )
 
 
 class HTTPMethod(StrEnum):

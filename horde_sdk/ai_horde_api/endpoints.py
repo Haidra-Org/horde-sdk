@@ -73,7 +73,7 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
     v2_status_performance = "/v2/status/performance"
 
     v2_teams_all = "/v2/teams"
-    v2_teams = "/v2/teams/{team_id}"
+    v2_teams_single = "/v2/teams/{team_id}"
 
     v2_find_user = "/v2/find_user"
     """Note that this is an API key lookup, not a user ID lookup."""
@@ -97,17 +97,23 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
     v2_documents_sponsors = "/v2/documents/sponsors"
     v2_documents_terms = "/v2/documents/terms"
 
-    v2_styles_image_by_name = "/v2/styles/image_by_name/{style_name}"
-    v2_styles_image_by_id = "/v2/styles/image/{style_id}"
-    v2_collections_by_name = "/v2/collection_by_name/{collection_name}"
-    v2_styles_image_example_by_id = "/v2/styles/image/{style_id}/example"
-    v2_styles_text_by_id = "/v2/styles/text/{style_id}"
-    v2_styles_image = "/v2/styles/image"
-    v2_collections_by_id = "/v2/collections/{collection_id}"
-    v2_styles_image_example_by_id_example = "/v2/styles/image/{style_id}/example/{example_id}"
-    v2_styles_text = "/v2/styles/text"
-    v2_styles_text_by_name = "/v2/styles/text_by_name/{style_name}"
     v2_collections = "/v2/collections"
+    v2_collections_by_name = "/v2/collection_by_name/{collection_name}"
+    v2_collections_by_id = "/v2/collections/{collection_id}"
+
+    v2_styles_image = "/v2/styles/image"
+    v2_styles_image_by_id = "/v2/styles/image/{style_id}"
+    v2_styles_image_by_name = "/v2/styles/image_by_name/{style_name}"
+
+    v2_styles_image_example_by_style_id = "/v2/styles/image/{style_id}/example"
+    v2_styles_image_example_by_style_id_example_id = "/v2/styles/image/{style_id}/example/{example_id}"
+
+    v2_styles_text = "/v2/styles/text"
+    v2_styles_text_by_id = "/v2/styles/text/{style_id}"
+    v2_styles_text_by_name = "/v2/styles/text_by_name/{style_name}"
+
+    v2_workers_messages = "/v2/workers/messages"
+    v2_workers_messages_single = "/v2/workers/messages/{message_id}"
 
 
 def get_ai_horde_swagger_url() -> str:

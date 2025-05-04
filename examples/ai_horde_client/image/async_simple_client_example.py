@@ -17,7 +17,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerationInputPayload,
     TIPayloadEntry,
 )
-from horde_sdk.ai_horde_api.fields import JobID
+from horde_sdk.ai_horde_api.fields import GenerationID
 
 
 def save_image_and_json(
@@ -40,9 +40,9 @@ async def async_one_image_generate_example(
     apikey: str = ANON_API_KEY,
 ) -> None:
     single_generation_response: ImageGenerateStatusResponse
-    job_id: JobID
+    gen_id: GenerationID
 
-    single_generation_response, job_id = await simple_client.image_generate_request(
+    single_generation_response, gen_id = await simple_client.image_generate_request(
         ImageGenerateAsyncRequest(
             apikey=apikey,
             prompt="A cat in a hat",
@@ -68,15 +68,15 @@ async def async_one_image_generate_example(
         example_path = Path("requested_images")
         example_path.mkdir(exist_ok=True, parents=True)
 
-        download_image_tasks: list[asyncio.Task[tuple[Image, JobID]]] = []
+        download_image_tasks: list[asyncio.Task[tuple[Image, GenerationID]]] = []
 
         for generation in single_generation_response.generations:
             download_image_tasks.append(asyncio.create_task(simple_client.download_image_from_generation(generation)))
 
-        downloaded_images: list[tuple[Image, JobID]] = await asyncio.gather(*download_image_tasks)
+        downloaded_images: list[tuple[Image, GenerationID]] = await asyncio.gather(*download_image_tasks)
 
-        for image, job_id in downloaded_images:
-            filename_base = f"{job_id}_simple_async_example"
+        for image, gen_id in downloaded_images:
+            filename_base = f"{gen_id}_simple_async_example"
             save_image_and_json(image, generation, example_path, filename_base)
 
 
@@ -85,8 +85,8 @@ async def async_multi_image_generate_example(
     apikey: str = ANON_API_KEY,
 ) -> None:
     multi_generation_responses: tuple[
-        tuple[ImageGenerateStatusResponse, JobID],
-        tuple[ImageGenerateStatusResponse, JobID],
+        tuple[ImageGenerateStatusResponse, GenerationID],
+        tuple[ImageGenerateStatusResponse, GenerationID],
     ]
     multi_generation_responses = await asyncio.gather(
         simple_client.image_generate_request(
@@ -115,9 +115,9 @@ async def async_multi_image_generate_example(
         ),
     )
 
-    download_image_tasks: list[asyncio.Task[tuple[Image, JobID]]] = []
+    download_image_tasks: list[asyncio.Task[tuple[Image, GenerationID]]] = []
 
-    for generation_response, _job_id in multi_generation_responses:
+    for generation_response, _gen_id in multi_generation_responses:
         if isinstance(generation_response, RequestErrorResponse):
             logger.error(f"Error: {generation_response.message}")
         else:
@@ -129,10 +129,10 @@ async def async_multi_image_generate_example(
                     asyncio.create_task(simple_client.download_image_from_generation(generation)),
                 )
 
-    downloaded_images: list[tuple[Image, JobID]] = await asyncio.gather(*download_image_tasks)
+    downloaded_images: list[tuple[Image, GenerationID]] = await asyncio.gather(*download_image_tasks)
 
-    for image, job_id in downloaded_images:
-        filename_base = f"{job_id}_simple_async_example"
+    for image, gen_id in downloaded_images:
+        filename_base = f"{gen_id}_simple_async_example"
         save_image_and_json(image, generation, example_path, filename_base)
 
 
@@ -155,6 +155,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--apikey",
         "--api-key",
+        "--api_key",
         "-k",
         type=str,
         default=ANON_API_KEY,

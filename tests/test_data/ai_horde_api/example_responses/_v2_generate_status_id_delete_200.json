@@ -11,7 +11,7 @@
     "is_possible": true,
     "generations": [
         {
-            "worker_id": "",
+            "worker_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "worker_name": "",
             "model": "",
             "state": "ok",

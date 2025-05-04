@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 import pytest
 from loguru import logger
@@ -14,6 +15,7 @@ from horde_sdk.consts import HTTPMethod
 from horde_sdk.generic_api._reflection import get_all_request_types
 from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponse
 from horde_sdk.generic_api.decoration import is_unhashable
+from horde_sdk.generic_api.metadata import GenericPathFields
 from horde_sdk.generic_api.utils.swagger import SwaggerDoc
 
 EXAMPLE_PAYLOADS: dict[ModuleType, Path] = {
@@ -73,13 +75,18 @@ class Test_reflection_and_dynamic:
                 ), f"Response type is not a subclass of `HordeResponse`: {request_type}"
 
     @staticmethod
-    def dynamic_json_load(module: ModuleType) -> None:
+    def dynamic_json_load(
+        module: ModuleType,
+        path_data_type: type[GenericPathFields],
+        path_data_defaults: dict[GenericPathFields, str],
+    ) -> None:
         """Attempts to create instances of all non-abstract children of `RequestBase`."""
         # Get the name of the module being tested.
         module_name = module.__name__
 
         # Get a list of all non-abstract request types in the module.
         all_request_types: list[type[HordeRequest]] = get_all_request_types(module_name)
+        all_request_exceptions: list[Exception] = []
 
         # Loop through each request type and test it.
         for request_type in all_request_types:
@@ -108,6 +115,47 @@ class Test_reflection_and_dynamic:
                 assert os.path.exists(
                     target_payload_file_path,
                 ), f"Missing example payload file: {target_payload_file_path}"
+
+                sample_data_json: dict[str, Any] = {}
+
+                with open(target_payload_file_path, encoding="utf-8") as sample_file_handle:
+                    sample_data_json = json.loads(sample_file_handle.read())
+
+                for field_name, field_info in request_type.model_fields.items():
+                    if field_name in path_data_type.__members__:
+                        parsed_path_data = path_data_type(field_info.alias or field_name)
+                        if parsed_path_data in path_data_defaults:
+                            sample_data_json[field_info.alias or field_name] = path_data_defaults[parsed_path_data]
+
+                try:
+                    parsed_request_model = request_type.model_validate(sample_data_json)
+                    try:
+                        if is_unhashable(parsed_request_model):
+                            logger.debug(f"Unhashable model for {target_payload_file_path}")
+                        else:
+                            try:
+                                hash(parsed_request_model)
+                            except Exception as e:
+                                print(f"Failed to hash {target_payload_file_path}")
+                                print(f"Error: {e}")
+                                all_request_exceptions.append(
+                                    Exception(
+                                        f"Failed to hash {request_type} {target_payload_file_path}: {e}",
+                                    ),
+                                )
+
+                    except NotImplementedError:
+                        logger.debug(f"Hashing not implemented for {target_payload_file_path}")
+                    except Exception as e:
+                        print(f"Failed to hash {target_payload_file_path}")
+                        print(f"Error: {e}")
+                        all_request_exceptions.append(e)
+                except Exception as e:
+                    print(f"Failed to validate {target_payload_file_path}")
+                    print(f"Request type: {request_type}")
+                    print(f"Error: {e}")
+                    print(f"Sample data: {sample_data_json}")
+                    all_request_exceptions.append(e)
 
             # Loop through each success status code and test the corresponding success response type.
             success_status_codes = request_type.get_success_status_response_pairs()
@@ -141,6 +189,8 @@ class Test_reflection_and_dynamic:
                             raise e
                     except Exception as e:
                         print(f"Failed to validate {example_response_file_path}")
+                        print(f"Request type: {request_type}")
+                        print(f"Response type: {success_response_type}")
                         print(f"Error: {e}")
                         print(f"Sample data: {sample_data_json}")
                         raise e
@@ -166,6 +216,8 @@ class Test_reflection_and_dynamic:
                                 raise e
                         except Exception as e:
                             print(f"Failed to validate {production_response_file_path}")
+                            print(f"Request type: {request_type}")
+                            print(f"Response type: {success_response_type}")
                             print(f"Error: {e}")
                             print(f"Sample data: {sample_data_json}")
                             raise e
@@ -188,13 +240,24 @@ class Test_reflection_and_dynamic:
                             logger.debug(f"Hashing not implemented for {example_response_file_path}")
                         except Exception as e:
                             print(f"Failed to hash {example_response_file_path}")
+                            print(f"Request type: {request_type}")
+                            print(f"Response type: {success_response_type}")
                             print(f"Error: {e}")
                             raise e
+
+        if all_request_exceptions:
+            print("*" * 80)
+            for exception in all_request_exceptions:
+                print(f"Error: {exception}")
+                print("-" * 80)
+            raise Exception("Failed to validate all request types")
 
     @pytest.mark.object_verify
     def test_horde_api(self) -> None:
         """Test all models in the `horde_sdk.ai_horde_api.apimodels` module can be instantiated from example JSON."""
-        self.dynamic_json_load(horde_sdk.ai_horde_api.apimodels)
+        from horde_sdk.ai_horde_api.metadata import AIHordePathData, _default_path_values
+
+        self.dynamic_json_load(horde_sdk.ai_horde_api.apimodels, AIHordePathData, _default_path_values)
 
     # def test_ratings_api(self) -> None:
     #     self.dynamic_json_load(horde_sdk.ratings_api.apimodels)

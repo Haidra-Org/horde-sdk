@@ -1,6 +1,6 @@
 {
     "payload": {
-        "sampler_name": "k_euler",
+        "sampler_name": "k_dpmpp_2m",
         "cfg_scale": 7.5,
         "denoising_strength": 0.75,
         "hires_fix_denoising_strength": 0.75,
@@ -53,9 +53,17 @@
         "n_iter": 1,
         "use_nsfw_censor": false
     },
-    "id": "",
+    "id": "00000000-0000-0000-0000-000000000000",
     "ids": [
         "00000000-0000-0000-0000-000000000000"
+    ],
+    "messages": [
+        {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "message": "Hello Worker!",
+            "origin": "moderator",
+            "expiry": "2021-01-01T00:00:00Z"
+        }
     ],
     "ttl": 0,
     "skipped": {

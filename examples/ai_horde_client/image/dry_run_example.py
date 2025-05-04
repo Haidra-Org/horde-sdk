@@ -1,7 +1,7 @@
 from horde_sdk import ANON_API_KEY
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPISimpleClient
 from horde_sdk.ai_horde_api.apimodels import ImageGenerateAsyncRequest, ImageGenerationInputPayload
-from horde_sdk.ai_horde_api.consts import KNOWN_SAMPLERS
+from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SAMPLERS
 
 
 def simple_generate_example() -> None:
@@ -12,7 +12,7 @@ def simple_generate_example() -> None:
             apikey=ANON_API_KEY,
             prompt="A cat in a hat",
             params=ImageGenerationInputPayload(
-                sampler_name=KNOWN_SAMPLERS.k_heun,
+                sampler_name=KNOWN_IMAGE_SAMPLERS.k_heun,
                 denoising_strength=0.4,
                 seed="42",
                 height=832,

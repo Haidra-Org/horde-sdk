@@ -5,17 +5,19 @@ from __future__ import annotations
 import abc
 import base64
 import os
+import time
 import uuid
 from typing import Any, TypeVar
 
 import aiohttp
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, Field, RootModel, field_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, RootModel, field_validator
 from typing_extensions import override
 
 from horde_sdk import _default_sslcontext
-from horde_sdk.consts import HTTPMethod, HTTPStatusCode
+from horde_sdk.consts import HTTPMethod, HTTPStatusCode, get_default_frozen_model_config_dict
 from horde_sdk.generic_api.consts import ANON_API_KEY
+from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
 
@@ -84,19 +86,7 @@ class HordeAPIObject(abc.ABC):
 class HordeAPIObjectBaseModel(HordeAPIObject, BaseModel):
     """Base class for all Horde API data models (leveraging pydantic)."""
 
-    model_config = (
-        ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="allow",
-        )
-        if not os.getenv("TESTS_ONGOING")
-        else ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="forbid",
-        )
-    )
+    model_config = get_default_frozen_model_config_dict()
 
 
 class HordeAPIData(BaseModel):
@@ -107,19 +97,7 @@ class HordeAPIData(BaseModel):
     models.
     """
 
-    model_config = (
-        ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="allow",
-        )
-        if not os.getenv("TESTS_ONGOING")
-        else ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="forbid",
-        )
-    )
+    model_config = get_default_frozen_model_config_dict()
 
 
 class HordeAPIMessage(HordeAPIObject):
@@ -128,6 +106,13 @@ class HordeAPIMessage(HordeAPIObject):
 
 class HordeResponse(HordeAPIMessage):
     """Represents any response from any Horde API."""
+
+    _time_constructed: float = PrivateAttr(default_factory=lambda: time.time())
+
+    @property
+    def time_constructed(self) -> float:
+        """The time the model was constructed (in epoch time)."""
+        return self._time_constructed
 
 
 T = TypeVar("T")
@@ -151,11 +136,13 @@ class HordeResponseRootModel(RootModel[T], HordeResponse):
         ConfigDict(
             frozen=True,
             use_attribute_docstrings=True,
+            # `extra` is not allowed with RootModel
         )
         if not os.getenv("TESTS_ONGOING")
         else ConfigDict(
             frozen=True,
             use_attribute_docstrings=True,
+            # `extra` is not allowed with RootModel
         )
     )
 
@@ -163,19 +150,7 @@ class HordeResponseRootModel(RootModel[T], HordeResponse):
 class HordeResponseBaseModel(HordeResponse, BaseModel):
     """Base class for all Horde API response data models (leveraging pydantic)."""
 
-    model_config = (
-        ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="allow",
-        )
-        if not os.getenv("TESTS_ONGOING")
-        else ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="forbid",
-        )
-    )
+    model_config = get_default_frozen_model_config_dict()
 
 
 HordeResponseTypes = HordeResponseRootModel[Any] | HordeResponseBaseModel
@@ -186,11 +161,11 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
     """Represents any response from any Horde API which requires a follow up request of some kind."""
 
     @abc.abstractmethod
-    def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
+    def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, Any]]:
         """Return the information required from this response to submit a follow up request.
 
         Note that this dict uses the alias field names (as seen on the API), not the python field names.
-        JobIDs will be returned as `{"id": "00000000-0000-0000-0000-000000000000"}` instead of
+        GenerationIDs will be returned as `{"id": "00000000-0000-0000-0000-000000000000"}` instead of
         `{"id_": "00000000-0000-0000-0000-000000000000"}`.
 
         Returns:
@@ -374,6 +349,31 @@ class ContainsMessageResponseMixin(HordeAPIData):
     """A message from the API. This is typically an error or warning message, but may also be informational."""
 
 
+class RequestSingleWarning(HordeAPIObjectBaseModel):
+    """Represents a single warning from the API."""
+
+    message: str | None = None
+    """A message from the API. This is typically an error or warning message, but may also be informational."""
+
+    code: str | None = None
+    """The code associated with this warning."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "RequestSingleWarning"
+
+
+@Unhashable
+@Unequatable
+class ContainsWarningsResponseMixin(HordeAPIData):
+    """Represents any response from any Horde API which contains warnings."""
+
+    warnings: list[RequestSingleWarning] | None = None
+    """A list of warnings from the API. This is typically an error or warning message,
+    but may also be informational."""
+
+
 class RequestErrorResponse(HordeResponseBaseModel, ContainsMessageResponseMixin):
     """The catch all error response for any request to any Horde API.
 
@@ -395,19 +395,7 @@ class RequestErrorResponse(HordeResponseBaseModel, ContainsMessageResponseMixin)
 class HordeRequest(HordeAPIMessage, BaseModel):
     """Represents any request to any Horde API."""
 
-    model_config = (
-        ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="allow",
-        )
-        if not os.getenv("TESTS_ONGOING")
-        else ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            extra="forbid",
-        )
-    )
+    model_config = get_default_frozen_model_config_dict()
 
     @classmethod
     @abc.abstractmethod
@@ -531,7 +519,7 @@ class APIKeyAllowedInRequestMixin(HordeAPIObjectBaseModel):
         return v
 
 
-class RequestSpecifiesUserIDMixin(HordeAPIData):
+class MessageSpecifiesUserIDMixin(HordeAPIData):
     """Mix-in class to describe an endpoint for which you can specify a user."""
 
     user_id: str
@@ -561,27 +549,49 @@ class RequestUsesWorkerMixin(HordeAPIData):
     workers: list[str] = Field(default_factory=list)
     """A list of worker IDs to use for this request. If empty, any worker can pick up the request. Using this incurs
     and extra kudos cost."""
-    worker_blacklist: list[str] = Field(default_factory=list)
+    worker_blacklist: bool = False
     """If true, the worker list will be treated as a blacklist instead of a whitelist."""
     models: list[str]
     """The generative models to use for this request."""
 
+    validated_backends: bool | None = Field(default=None)
+    """When true, only inference backends that are validated by the AI Horde devs will serve this request. When False,
+    non-validated backends will also be used which can increase speed but you may end up with unexpected results."""
+    style: str | None = Field(default=None, examples=["00000000-0000-0000-0000-000000000000"])
+    """The style ID to use for the generation."""
+
     dry_run: bool = False
     """If true, the request will not be processed, but will return a response with the estimated kudos cost."""
+    webhook: str | None = Field(default=None)
+    """Provide a URL where the AI Horde will send a POST call after each delivered generation.
+    The request will include the details of the job as well as the request ID."""
+    allow_downgrade: bool = False
+    """If true, the request can be modified to lesser parameters if the original request is too expensive."""
+    proxied_account: str | None = Field(default=None)
+    """The account this request is being proxied for. This requires the sending API to be a service account."""
+    disable_batching: bool | None = Field(False)
+    """When true, This request will not use batching. This will allow you to retrieve accurate seeds.
+    Feature is restricted to Trusted users and Patreons."""
 
 
 __all__ = [
-    "APIKeyAllowedInRequestMixin",
-    "HordeRequest",
-    "HordeResponse",
-    "HordeResponseBaseModel",
-    "HordeResponseRootModel",
-    "ContainsMessageResponseMixin",
     "HordeAPIObject",
+    "HordeAPIObjectBaseModel",
+    "HordeAPIData",
     "HordeAPIMessage",
-    "RequestErrorResponse",
-    "RequestSpecifiesUserIDMixin",
-    "RequestUsesWorkerMixin",
+    "HordeResponse",
+    "HordeResponseRootModel",
+    "HordeResponseBaseModel",
+    "HordeResponseTypes",
     "ResponseRequiringFollowUpMixin",
     "ResponseWithProgressMixin",
+    "ResponseRequiringDownloadMixin",
+    "ContainsMessageResponseMixin",
+    "RequestSingleWarning",
+    "ContainsWarningsResponseMixin",
+    "RequestErrorResponse",
+    "HordeRequest",
+    "APIKeyAllowedInRequestMixin",
+    "MessageSpecifiesUserIDMixin",
+    "RequestUsesWorkerMixin",
 ]

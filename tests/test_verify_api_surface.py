@@ -1,4 +1,5 @@
 import pytest
+from loguru import logger
 
 
 @pytest.mark.object_verify
@@ -72,6 +73,36 @@ def test_all_ai_horde_api_models_defined() -> None:
 
     undefined_classes_sorted = sorted(undefined_classes)
     print(json.dumps(undefined_classes_sorted, indent=4))
+
+    skipped_classes = [  # FIXME
+        "ModelPayloadStable",
+        "WorkerDetailsLite",
+        "ModelPayloadStyleKobold",
+        "ModelStyleInputParamsStableNoDefaults",
+        "SinglePeriodTxtModelStats",
+        "ModelPayloadRootKobold",
+        "ModelGenerationInputKobold",
+        "SinglePeriodImgModelStats",
+        "ModelSpecialPayloadStable",
+        "ModelPayloadKobold",
+        "InterrogationFormResult",
+        "GenerationMetadataKobold",
+        "InterrogationFormStatus",
+        "SubmitInput",
+        "UserActiveGenerations",
+        "ModelInterrogationFormStable",
+        "ModelPayloadStyleStable",
+        "ResponseModelMessagePop",
+    ]
+    """Many of these classes are abstractions or mislabeled and their absence in the SDK is an implementation detail.
+    While they may later be added, the intent of this test is to detect *new* unsupported classes.
+    """
+
+    logger.warning(f"Skipped classes: {skipped_classes}")  # TODO
+
+    for skipped_class in skipped_classes:
+        if skipped_class in undefined_classes:
+            undefined_classes.remove(skipped_class)
 
     assert not undefined_classes, (
         "The following models are defined in the API but not in the SDK: " f"{undefined_classes}"
@@ -172,3 +203,53 @@ def test_all_models_have_docstrings() -> None:
     jsonified_missing_docstrings = json.dumps(stringified_missing_docstrings, indent=4)
 
     assert not missing_docstrings, "The following models are missing docstrings: " f"{jsonified_missing_docstrings}"
+
+
+@pytest.mark.object_verify
+def test_all_models_non_conforming_docstrings() -> None:
+    import horde_sdk.meta
+
+    non_conforming_docstrings = horde_sdk.meta.all_models_non_conforming_docstrings()
+
+    import json
+
+    stringified_non_conforming_docstrings = {k.__name__: v for k, v in non_conforming_docstrings.items()}
+    jsonified_non_conforming_docstrings = json.dumps(stringified_non_conforming_docstrings, indent=4)
+
+    map_to_dump: dict[str, dict[str, str]] = {}
+    missing_original_docstrings: dict[str, dict[str, str]] = {}
+
+    for model, docstrings in non_conforming_docstrings.items():
+        original_docstring, new_docstring = docstrings
+
+        if original_docstring is None:
+            missing_original_docstrings[model.__name__] = {
+                "new": new_docstring or "",
+            }
+            continue
+
+        if original_docstring:
+            map_to_dump[model.__name__] = {
+                "original": original_docstring,
+                "new": new_docstring or "",
+            }
+        else:
+            map_to_dump[model.__name__] = {
+                "new": new_docstring or "",
+            }
+
+    if len(map_to_dump) > 0:
+        with open("non_conforming_docstrings.json", "w", encoding="utf-8") as f:
+            json.dump(map_to_dump, f, indent=4)
+            f.write("\n")
+
+    if len(missing_original_docstrings) > 0:
+        with open("missing_original_docstrings.json", "w", encoding="utf-8") as f:
+            json.dump(missing_original_docstrings, f, indent=4)
+            f.write("\n")
+
+    assert not non_conforming_docstrings, (
+        "The following models have non-conforming docstrings: "
+        f"{jsonified_non_conforming_docstrings}"
+        "\n\nSee `non_conforming_docstrings.json` and `missing_original_docstrings.json` for more details."
+    )

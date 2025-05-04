@@ -11,7 +11,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     TextGenerateAsyncRequest,
     TextGenerateStatusResponse,
 )
-from horde_sdk.ai_horde_api.fields import JobID
+from horde_sdk.ai_horde_api.fields import GenerationID
 
 
 class TestAIHordeTextGenerate:
@@ -24,11 +24,11 @@ class TestAIHordeTextGenerate:
             ],
         )
 
-        response, job_id = simple_client.text_generate_request(request)
+        response, gen_id = simple_client.text_generate_request(request)
 
-        logger.debug(f"{job_id}: {response}")
+        logger.debug(f"{gen_id}: {response}")
 
-        assert isinstance(job_id, JobID)
+        assert isinstance(gen_id, GenerationID)
         assert isinstance(response, TextGenerateStatusResponse)
 
         assert len(response.generations) == 1
@@ -54,14 +54,14 @@ class TestAIHordeTextGenerateAsync:
                 ],
             )
 
-            response, job_id = await simple_client.text_generate_request(
+            response, gen_id = await simple_client.text_generate_request(
                 request,
                 check_callback=lambda response: logger.debug(f"Response: {response}"),
             )
 
-            logger.debug(f"{job_id}: {response}")
+            logger.debug(f"{gen_id}: {response}")
 
-            assert isinstance(job_id, JobID)
+            assert isinstance(gen_id, GenerationID)
             assert isinstance(response, TextGenerateStatusResponse)
 
             assert len(response.generations) == 1
