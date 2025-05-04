@@ -1,7 +1,9 @@
-import PIL.Image
-
 from horde_sdk.consts import GENERATION_ID_TYPES
-from horde_sdk.generation_parameters import AlchemyParameters, ImageGenerationParameters, TextGenerationParameters
+from horde_sdk.generation_parameters import (
+    AlchemyParameters,
+    ImageGenerationParameters,
+    TextGenerationParameters,
+)
 from horde_sdk.worker.generations import AlchemySingleGeneration, ImageSingleGeneration, TextSingleGeneration
 from horde_sdk.worker.job_base import (
     ComposedParameterSetTypeVar,
@@ -80,7 +82,7 @@ def test_init_image_worker_job_end_to_end_happy_path(
         ImageGenerationParameters,
         dict[GENERATION_ID_TYPES, str | None],
     ],
-    default_testing_image_PIL: PIL.Image.Image,
+    default_testing_image_bytes: bytes,
 ) -> None:
     from .test_horde_single_generations import TestHordeSingleGeneration
 
@@ -98,7 +100,7 @@ def test_init_image_worker_job_end_to_end_happy_path(
 
         TestHordeSingleGeneration.run_generation_process(
             generation=generation,
-            result=default_testing_image_PIL,
+            result=default_testing_image_bytes,
             include_preloading=True,
             include_generation=True,
             include_post_processing=False,
@@ -134,7 +136,7 @@ def test_init_alchemy_worker_job_end_to_end_happy_path(
         AlchemyParameters,
         dict[GENERATION_ID_TYPES, str | None],
     ],
-    default_testing_image_PIL: PIL.Image.Image,
+    default_testing_image_bytes: bytes,
 ) -> None:
     from .test_horde_single_generations import TestHordeSingleGeneration
 
@@ -152,7 +154,7 @@ def test_init_alchemy_worker_job_end_to_end_happy_path(
 
         TestHordeSingleGeneration.run_generation_process(
             generation=generation,
-            result=default_testing_image_PIL,
+            result=default_testing_image_bytes,
             include_preloading=True,
             include_generation=False,
             include_post_processing=True,

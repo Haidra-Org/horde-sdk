@@ -1,6 +1,5 @@
 """Constants used by the SDK."""
 
-import sys
 import os
 from enum import IntEnum
 from uuid import UUID
@@ -14,12 +13,8 @@ _ANONYMOUS_MODEL = "_ANONYMOUS_MODEL"
 _OVERLOADED_MODEL = "_MODEL_OVERLOADED"
 """The model is used incorrectly on the API."""
 
-if sys.version_info <= (3, 12):
-    GENERATION_ID_TYPES = str | UUID
-    """The types that can be used as generation IDs."""
-else:
-    type GENERATION_ID_TYPES = str | UUID
-    """The types that can be used as generation IDs."""
+GENERATION_ID_TYPES = str | UUID
+"""The types that can be used as generation IDs."""
 
 
 def get_default_frozen_model_config_dict() -> ConfigDict:

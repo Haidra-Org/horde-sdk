@@ -9,6 +9,7 @@ from loguru import logger
 
 from horde_sdk.ai_horde_api.apimodels.generate.pop import ImageGenerateJobPopResponse
 from horde_sdk.ai_horde_api.consts import DEFAULT_HIRES_DENOISE_STRENGTH
+from horde_sdk.generation_parameters.generic import GenerationParameterComponentBase
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.image import (
     DEFAULT_BASELINE_RESOLUTION,
@@ -325,17 +326,26 @@ def convert_image_job_pop_response_to_parameters(
 
     raw_uuids = [id_.root for id_ in api_response.ids]
 
+    additional_params: list[GenerationParameterComponentBase] = []
+
+    if img2img_params is not None:
+        additional_params.append(img2img_params)
+    if remix_params is not None:
+        additional_params.append(remix_params)
+    if controlnet_params is not None:
+        additional_params.append(controlnet_params)
+    if hires_fix_params is not None:
+        additional_params.append(hires_fix_params)
+    if custom_workflow_params is not None:
+        additional_params.append(custom_workflow_params)
+
     image_generation_parameters = ImageGenerationParameters(
         generation_ids=raw_uuids,
         batch_size=api_response.payload.n_iter,
         tiling=api_response.payload.tiling,
         source_processing=api_response.source_processing,
         base_params=base_params,
-        img2img_params=img2img_params,
-        remix_params=remix_params,
-        controlnet_params=controlnet_params,
-        hires_fix_params=hires_fix_params,
-        custom_workflow_params=custom_workflow_params,
+        additional_params=additional_params,
         loras=loras,
         tis=tis,
     )

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import threading
 import time
+import uuid
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from typing import Any, Generic, TypeVar
@@ -15,7 +17,6 @@ from horde_sdk.worker.consts import (
     WORKER_ERRORS,
     WORKER_TYPE,
     HordeWorkerConfigDefaults,
-    is_generation_state_failing,
 )
 from horde_sdk.worker.generations_base import HordeSingleGeneration
 
@@ -29,12 +30,12 @@ class HordeWorkerJobConfig(BaseModel):
     max_consecutive_failed_job_submits: int = Field(
         default=HordeWorkerConfigDefaults.DEFAULT_MAX_CONSECUTIVE_FAILED_JOB_SUBMITS,
         ge=1,
-        le=HordeWorkerConfigDefaults._UNREASONABLE_MAX_CONSECUTIVE_FAILED_JOB_SUBMITS,
+        le=HordeWorkerConfigDefaults.UNREASONABLE_MAX_CONSECUTIVE_FAILED_JOB_SUBMITS,
     )
     max_generation_failures: int = Field(
         default=HordeWorkerConfigDefaults.DEFAULT_MAX_GENERATION_FAILURES,
         ge=0,
-        le=HordeWorkerConfigDefaults._UNREASONABLE_MAX_GENERATION_FAILURES,
+        le=HordeWorkerConfigDefaults.UNREASONABLE_MAX_GENERATION_FAILURES,
     )
 
     job_submit_retry_delay: float = Field(
@@ -44,6 +45,10 @@ class HordeWorkerJobConfig(BaseModel):
 
     state_error_limits: dict[GENERATION_PROGRESS, int] = Field(
         default_factory=lambda: HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS.copy(),
+    )
+
+    generation_strict_transition_mode: bool = Field(
+        default=HordeWorkerConfigDefaults.DEFAULT_GENERATION_STRICT_TRANSITION_MODE,
     )
 
     upload_timeout: float = Field(
@@ -83,10 +88,15 @@ class HordeWorkerJob(
 ):
     """Base class for all worker jobs.
 
-    Jobs are the primary unit of work in the AI Horde Worker. They result in one or more `HordeSingleGeneration`
-    objects. Jobs may originate from a remote API or come from local sources. They follow a lifecycle of preparation,
-    generation, optional post-processing, and submission. Jobs can be reported as successful or failed. If the server
-    cannot be notified of a failure, the job is marked as faulted and abandoned.
+    Jobs wrap an underlying generation parameter set with meta-information about the job, including
+    information sent along from the dispatch source. This includes the remote job ID, the time the job
+    was received, and any other higher-level information that is useful for the worker to know in order
+    to process the job.
+
+    Consumers of this class should start by iterating over the job's `generation` field. See also
+    :class:`horde_sdk.worker.generations_base.HordeSingleGeneration` for more information on
+    generation objects and :class:`horde_sdk.generation_parameters.ComposedParameterSetBase` for more
+    information on generation parameters.
     """
 
     _job_config: HordeWorkerJobConfig
@@ -94,11 +104,10 @@ class HordeWorkerJob(
     _consecutive_failed_job_submits: int = 0
     """The number of consecutive times the job has failed to submit to the API."""
 
-    @abstractmethod
     def _init_generations(
         self,
         generation_parameters: ComposedParameterSetTypeVar,
-        generation_ids: Iterable[GENERATION_ID_TYPES],
+        generation_ids: Iterable[GENERATION_ID_TYPES] | None = None,
     ) -> None:
         """Initialize the generations for the job.
 
@@ -107,13 +116,30 @@ class HordeWorkerJob(
                 from.
             generation_ids (Iterable[str]): The unique identifiers for the generations in the job.
         """
+        if generation_ids is None:
+            generation_ids = []
+            for _ in range(generation_parameters.get_number_expected_results()):
+                generation_ids.append(uuid.uuid4())
+
+        generations: dict[GENERATION_ID_TYPES, SingleGenerationTypeVar] = {}
+
+        for generation_id in generation_ids:
+            generations[generation_id] = self._generation_cls(
+                generation_id=generation_id,
+                generation_parameters=generation_parameters,
+                strict_transition_mode=self._job_config.generation_strict_transition_mode,
+            )
+
+        self._generations = generations
+
+    _lock: threading.RLock = threading.RLock()
 
     def __init__(
         self,
         generation_parameters: ComposedParameterSetTypeVar,
         generation_cls: type[SingleGenerationTypeVar],
         *,
-        generation_ids: Iterable[GENERATION_ID_TYPES],
+        generation_ids: Iterable[GENERATION_ID_TYPES] | None = None,
         job_config: HordeWorkerJobConfig | None = None,
         time_received: float | None = None,
     ) -> None:
@@ -124,43 +150,53 @@ class HordeWorkerJob(
                 from.
             generation_cls (type[SingleGenerationType]): The class to use for the generations in the job.
             generation_ids (Iterable[str]): The unique identifiers for the generations in the job.
+            should_censor_nsfw (bool): Whether or not the user has requested that NSFW content be censored. \
+                Defaults to False.
             job_config (HordeWorkerJobConfig, optional): The configuration for the job. If `None`, the default \
                 configuration will be used. Defaults to None.
             time_received (float | None): The time the job was received. If `None`, the time the response model was \
                 constructed will be used. Defaults to None.
         """
-        self._generation_parameters = generation_parameters
-
-        self._generation_cls = generation_cls
-
-        self._init_generations(generation_parameters, generation_ids)
-
         if job_config is None:
             job_config = HordeWorkerJobConfig()
-
         self._job_config = job_config
+
+        self._generation_parameters = generation_parameters
+        self._generation_cls = generation_cls
+        self._init_generations(generation_parameters, generation_ids)
 
         if time_received is not None:
             self._time_received = time_received
+
+        self._lock = threading.RLock()
 
     _generation_cls: type[SingleGenerationTypeVar]
 
     @property
     def generation_cls(self) -> type[SingleGenerationTypeVar]:
-        """The class to use for the generations in the job."""
+        """The (python) type created by the job."""
         return self._generation_cls
 
     _generations: dict[GENERATION_ID_TYPES, SingleGenerationTypeVar]
 
+    _generation_parameters_cls: type[ComposedParameterSetTypeVar]
+
+    @property
+    def generation_parameters_cls(self) -> type[ComposedParameterSetTypeVar]:
+        """The (python) type of the generation parameters."""
+        return self._generation_parameters_cls
+
     @property
     def generations(self) -> dict[GENERATION_ID_TYPES, SingleGenerationTypeVar]:
         """The individual generations in this job."""
-        return self._generations.copy()
+        with self._lock:
+            return self._generations.copy()
 
     @property
     def ids(self) -> Iterable[GENERATION_ID_TYPES]:
         """The unique identifiers for the generations in this job."""
-        return self.generations.keys()
+        with self._lock:
+            return self.generations.keys()
 
     _generation_parameters: ComposedParameterSetTypeVar
 
@@ -224,6 +260,24 @@ class HordeWorkerJob(
     _faulted_at: float | None = None
     _faulted: bool = False
 
+    @property
+    def faulted_reason(self) -> WORKER_ERRORS | None:
+        """The reason the job was faulted or None if not faulted."""
+        with self._lock:
+            return self._fault_reason
+
+    @property
+    def faulted_at(self) -> float | None:
+        """The time the job was faulted in epoch time or None if not faulted."""
+        with self._lock:
+            return self._faulted_at
+
+    @property
+    def is_faulted(self) -> bool:
+        """Whether or not the job has been marked as faulted."""
+        with self._lock:
+            return self._faulted
+
     # TODO
     # FIXME
     # @property
@@ -242,59 +296,85 @@ class HordeWorkerJob(
     @property
     def any_generation_censored(self) -> bool | None:
         """Whether or not any generations in the job are censored."""
-        return any(gen._is_nsfw or gen._is_csam for gen in self.generations.values())
+        with self._lock:
+            if not self.generations:
+                return None
+
+            return any(gen.is_nsfw or gen.is_csam for gen in self.generations.values())
 
     def get_generation(self, generation_id: str) -> SingleGenerationTypeVar:
         """Get a generation by its ID."""
-        if generation_id not in self.generations:
-            raise ValueError(f"Generation {generation_id} not found in job {self.job_identifier_string}")
+        with self._lock:
+            if generation_id not in self.generations:
+                raise ValueError(f"Generation {generation_id} not found in job {self.job_identifier_string}")
 
-        return self.generations[generation_id]
+            return self.generations[generation_id]
 
     @property
     def any_generation_failing(self) -> bool:
         """Return true if any generation is in a failing, aborting, or ending state."""
-        return any(is_generation_state_failing(gen.get_generation_progress()) for gen in self.generations.values())
+        with self._lock:
+            if not self.generations:
+                return False
+
+            return any(
+                GENERATION_PROGRESS.is_state_failing(gen.get_generation_progress())
+                for gen in self.generations.values()
+            )
 
     def set_job_faulted(self, faulted_reason: WORKER_ERRORS) -> None:
         """Mark the entire job as faulted.
 
         Note: This will mark all generations in the job as faulted.
         """
-        if self._faulted:
-            logger.warning(
-                f"Job {self.job_identifier_string} is already marked faulted with "
-                f"reason {self._fault_reason} at {self._faulted_at}",
-            )
+        with self._lock:
+            if self._faulted:
+                logger.warning(
+                    f"Job {self.job_identifier_string} is already marked faulted with "
+                    f"reason {self._fault_reason} at {self._faulted_at}",
+                )
 
-        self._faulted = True
-        self._fault_reason = faulted_reason
-        self._faulted_at = time.time()
+            self._faulted = True
+            self._fault_reason = faulted_reason
+            self._faulted_at = time.time()
 
-        for generation in self.generations.values():
-            generation.on_abort(failed_message=faulted_reason, failure_exception=None)
+            for generation in self.generations.values():
+                generation.on_abort(failed_message=faulted_reason, failure_exception=None)
 
     @property
-    def job_finalized(self) -> bool:
+    def is_job_finalized(self) -> bool:
         """Return true if all generations in the job are finalized.
 
         Note: This means that all generations have been submitted as either successful or failed, or have been
         abandoned. Accordingly, there is nothing more to do with the job.
         """
-        for generation in self.generations.values():
-            if generation.get_generation_progress() not in (
-                GENERATION_PROGRESS.SUBMIT_COMPLETE,
-                GENERATION_PROGRESS.REPORTED_FAILED,
-            ):
-                return False
+        with self._lock:
+            for generation in self.generations.values():
+                if generation.get_generation_progress() not in (
+                    GENERATION_PROGRESS.SUBMIT_COMPLETE,
+                    GENERATION_PROGRESS.REPORTED_FAILED,
+                ):
+                    return False
 
-        return True
+            return True
 
     @property
     def job_completed_successfully(self) -> bool:
         """Return true if all generations in the job are completed successfully."""
-        for generation in self.generations.values():
-            if generation.get_generation_progress() != GENERATION_PROGRESS.SUBMIT_COMPLETE:
-                return False
+        with self._lock:
+            for generation in self.generations.values():
+                if generation.get_generation_progress() != GENERATION_PROGRESS.SUBMIT_COMPLETE:
+                    return False
 
-        return True
+            return True
+
+    def __eq__(self, value: Any) -> bool:  # noqa: ANN401 - this method is an exception to the rule
+        """Check if two jobs are equal."""
+        if not isinstance(value, HordeWorkerJob):
+            return False
+
+        with self._lock:
+            all_ids_in_self = all(generation_id in value.ids for generation_id in self.ids)
+            all_ids_in_value = all(generation_id in self.ids for generation_id in value.ids)
+
+            return all_ids_in_self and all_ids_in_value

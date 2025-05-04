@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import time
+import uuid
 from collections.abc import Iterable
-from io import BytesIO
 
 import aiohttp
 import requests
@@ -79,8 +79,8 @@ class _UploadJob(HordeWorkerJob[SingleGenerationTypeVar, ComposedParameterSetTyp
         if generation.generation_result is None:
             raise ValueError(f"Generation {generation_id} has no result to upload.")
 
-        image_buffer = BytesIO()
-        generation.result_to_bytesio(generation.generation_result, image_buffer)
+        if not isinstance(generation.generation_result, bytes):
+            logger.debug(f"Generation {generation_id} result is not bytes: {type(generation.generation_result)}")
 
         attempts = 0
 
@@ -91,13 +91,13 @@ class _UploadJob(HordeWorkerJob[SingleGenerationTypeVar, ComposedParameterSetTyp
                 if self._upload_method == HTTPMethod.PUT:
                     response = requests.put(
                         upload_url,
-                        data=image_buffer.getvalue(),
+                        data=generation.generation_result,
                         timeout=self._job_config.upload_timeout,
                     )
                 elif self._upload_method == HTTPMethod.POST:
                     response = requests.post(
                         upload_url,
-                        data=image_buffer.getvalue(),
+                        data=generation.generation_result,
                         timeout=self._job_config.upload_timeout,
                     )
                 else:
@@ -150,8 +150,8 @@ class _UploadJob(HordeWorkerJob[SingleGenerationTypeVar, ComposedParameterSetTyp
         if generation.generation_result is None:
             raise ValueError(f"Generation {generation_id} has no result to upload.")
 
-        image_buffer = BytesIO()
-        generation.result_to_bytesio(generation.generation_result, image_buffer)
+        if not isinstance(generation.generation_result, bytes):
+            logger.debug(f"Generation {generation_id} result is not bytes: {type(generation.generation_result)}")
 
         attempts = 0
 
@@ -161,7 +161,7 @@ class _UploadJob(HordeWorkerJob[SingleGenerationTypeVar, ComposedParameterSetTyp
                 if self._upload_method == HTTPMethod.PUT:
                     async with client_session.put(
                         yarl.URL(upload_url, encoded=True),
-                        data=image_buffer.getvalue(),
+                        data=generation.generation_result,
                         skip_auto_headers={"content-type"},
                         timeout=aiohttp.ClientTimeout(total=self._job_config.upload_timeout),
                         ssl=_default_sslcontext,
@@ -179,7 +179,7 @@ class _UploadJob(HordeWorkerJob[SingleGenerationTypeVar, ComposedParameterSetTyp
                 elif self._upload_method == HTTPMethod.POST:
                     async with client_session.post(
                         yarl.URL(upload_url, encoded=True),
-                        data=image_buffer.getvalue(),
+                        data=generation.generation_result,
                         skip_auto_headers={"content-type"},
                         timeout=aiohttp.ClientTimeout(total=self._job_config.upload_timeout),
                         ssl=_default_sslcontext,
@@ -235,22 +235,6 @@ class _UploadJob(HordeWorkerJob[SingleGenerationTypeVar, ComposedParameterSetTyp
 class ImageWorkerJob(_UploadJob[ImageSingleGeneration, ImageGenerationParameters]):
     """A job containing only image generations."""
 
-    @override
-    def _init_generations(
-        self,
-        generation_parameters: ImageGenerationParameters,
-        ids: Iterable[GENERATION_ID_TYPES],
-    ) -> None:
-        generations = {}
-
-        for generation_id in ids:
-            generations[generation_id] = ImageSingleGeneration(
-                generation_id=generation_id,
-                generation_parameters=generation_parameters,
-            )
-
-        self._generations = generations
-
     def __init__(
         self,
         *,
@@ -280,52 +264,26 @@ class ImageWorkerJob(_UploadJob[ImageSingleGeneration, ImageGenerationParameters
         return WORKER_TYPE.image
 
 
-class ImageWorkerJobLocal(HordeWorkerJob[ImageSingleGeneration, ImageGenerationParameters]):
-    """A job containing only image generations that are sourced from a local request."""
-
-    def __init__(
-        self,
-        *,
-        generation_parameters: ImageGenerationParameters,
-        generation_ids: Iterable[str],
-        job_config: HordeWorkerJobConfig | None = None,
-    ) -> None:
-        """Initialize the image worker job.
-
-        Args:
-            generation_parameters (ImageGenerationParameters): The response from the API.
-            generation_ids (Iterable[str]): The IDs of the generations.
-            job_config (HordeWorkerJobConfig | None, optional): The configuration for the job. If `None`, the default \
-                configuration will be used. Defaults to None.
-        """
-        super().__init__(
-            generation_parameters=generation_parameters,
-            generation_cls=ImageSingleGeneration,
-            generation_ids=generation_ids,
-            job_config=job_config,
-        )
-
-    @override
-    @classmethod
-    def job_worker_type(cls) -> WORKER_TYPE:
-        return WORKER_TYPE.image
-
-
 class AlchemyWorkerJob(_UploadJob[AlchemySingleGeneration, AlchemyParameters]):
     """A job containing only alchemy generations."""
 
     @override
     def _init_generations(
         self,
-        alchemy_parameters: AlchemyParameters,
-        ids: Iterable[GENERATION_ID_TYPES],
+        generation_parameters: AlchemyParameters,
+        generation_ids: Iterable[GENERATION_ID_TYPES] | None = None,
     ) -> None:
-        generations: dict[GENERATION_ID_TYPES, AlchemySingleGeneration] = {}
+        if generation_ids is None:
+            generation_ids = []
+            for _ in range(generation_parameters.get_number_expected_results()):
+                generation_ids.append(uuid.uuid4())
 
-        for alchemy_operation in alchemy_parameters.all_alchemy_operations:
+        generations: dict[GENERATION_ID_TYPES, AlchemySingleGeneration] = {}
+        # FIXME: Some alchemy may result in multiple generations. This is not handled yet.
+        for alchemy_operation in generation_parameters.all_alchemy_operations:
             generations[alchemy_operation.generation_id] = AlchemySingleGeneration(
                 generation_id=alchemy_operation.generation_id,
-                single_alchemy_parameters=alchemy_operation,
+                generation_parameters=alchemy_operation,
             )
 
         self._generations = generations
@@ -361,22 +319,6 @@ class AlchemyWorkerJob(_UploadJob[AlchemySingleGeneration, AlchemyParameters]):
 
 class TextWorkerJob(HordeWorkerJob[TextSingleGeneration, TextGenerationParameters]):
     """A job containing only text generations."""
-
-    @override
-    def _init_generations(
-        self,
-        generation_parameters: TextGenerationParameters,
-        ids: Iterable[GENERATION_ID_TYPES],
-    ) -> None:
-        generations: dict[GENERATION_ID_TYPES, TextSingleGeneration] = {}
-
-        for generation_id in ids:
-            generations[generation_id] = TextSingleGeneration(
-                generation_id=generation_id,
-                generation_parameters=generation_parameters,
-            )
-
-        self._generations = generations
 
     def __init__(
         self,

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from copy import deepcopy
 from enum import auto
 from typing import ClassVar
@@ -49,6 +51,8 @@ class GENERATION_PROGRESS(StrEnum):
     """The generation is pending submission."""
     SUBMIT_COMPLETE = auto()
     """The generation has been successfully submitted."""
+    COMPLETE = auto()
+    """The generation is completely finished and no further steps are required."""
     ABORTED = auto()
     """The generation has failed because one or more steps failed too many times. An attempt to notify the API will
     be made."""
@@ -65,28 +69,54 @@ class GENERATION_PROGRESS(StrEnum):
     within a certain time frame.
     """
 
+    @staticmethod
+    def is_state_complete(progress: GENERATION_PROGRESS) -> bool:
+        """Check if the generation is complete."""
+        return progress in {
+            GENERATION_PROGRESS.COMPLETE,
+            GENERATION_PROGRESS.ABORTED,
+            GENERATION_PROGRESS.REPORTED_FAILED,
+            GENERATION_PROGRESS.USER_ABORT_COMPLETE,
+            GENERATION_PROGRESS.ABANDONED,
+        }
 
-def is_generation_state_failing(progress: GENERATION_PROGRESS) -> bool:
-    """Check if the generation is failing."""
-    return progress in {
-        GENERATION_PROGRESS.ERROR,
-        GENERATION_PROGRESS.ABORTED,
-        GENERATION_PROGRESS.REPORTED_FAILED,
-        GENERATION_PROGRESS.USER_REQUESTED_ABORT,
-        GENERATION_PROGRESS.ABANDONED,
-    }
+    @staticmethod
+    def is_state_failing(progress: GENERATION_PROGRESS) -> bool:
+        """Check if the generation is failing."""
+        return progress in {
+            GENERATION_PROGRESS.ERROR,
+            GENERATION_PROGRESS.ABORTED,
+            GENERATION_PROGRESS.REPORTED_FAILED,
+            GENERATION_PROGRESS.USER_REQUESTED_ABORT,
+            GENERATION_PROGRESS.ABANDONED,
+        }
+
+    @staticmethod
+    def is_state_pending(progress: GENERATION_PROGRESS) -> bool:
+        """Check if the generation is pending."""
+        return progress in {
+            GENERATION_PROGRESS.NOT_STARTED,
+            GENERATION_PROGRESS.PRELOADING_COMPLETE,
+            GENERATION_PROGRESS.PENDING_POST_PROCESSING,
+            GENERATION_PROGRESS.PENDING_SAFETY_CHECK,
+            GENERATION_PROGRESS.PENDING_SUBMIT,
+        }
 
 
 initial_generation_state = GENERATION_PROGRESS.NOT_STARTED
-# Base transitions dictionary
+
 base_generate_progress_transitions: dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]] = {
     GENERATION_PROGRESS.NOT_STARTED: [
         GENERATION_PROGRESS.PRELOADING,
         GENERATION_PROGRESS.GENERATING,
         GENERATION_PROGRESS.PENDING_POST_PROCESSING,
         GENERATION_PROGRESS.POST_PROCESSING,
+        GENERATION_PROGRESS.ERROR,
     ],
-    GENERATION_PROGRESS.PRELOADING: [GENERATION_PROGRESS.PRELOADING_COMPLETE, GENERATION_PROGRESS.ERROR],
+    GENERATION_PROGRESS.PRELOADING: [
+        GENERATION_PROGRESS.PRELOADING_COMPLETE,
+        GENERATION_PROGRESS.ERROR,
+    ],
     GENERATION_PROGRESS.PRELOADING_COMPLETE: [
         GENERATION_PROGRESS.GENERATING,
         GENERATION_PROGRESS.PENDING_POST_PROCESSING,
@@ -100,49 +130,138 @@ base_generate_progress_transitions: dict[GENERATION_PROGRESS, list[GENERATION_PR
         GENERATION_PROGRESS.SAFETY_CHECKING,
         GENERATION_PROGRESS.ERROR,
     ],
-    GENERATION_PROGRESS.PENDING_POST_PROCESSING: [GENERATION_PROGRESS.POST_PROCESSING, GENERATION_PROGRESS.ERROR],
+    GENERATION_PROGRESS.PENDING_POST_PROCESSING: [
+        GENERATION_PROGRESS.POST_PROCESSING,
+        GENERATION_PROGRESS.ERROR,
+    ],
     GENERATION_PROGRESS.POST_PROCESSING: [
         GENERATION_PROGRESS.PENDING_SAFETY_CHECK,
         GENERATION_PROGRESS.SAFETY_CHECKING,
         GENERATION_PROGRESS.ERROR,
     ],
-    GENERATION_PROGRESS.PENDING_SAFETY_CHECK: [GENERATION_PROGRESS.SAFETY_CHECKING, GENERATION_PROGRESS.ERROR],
+    GENERATION_PROGRESS.PENDING_SAFETY_CHECK: [
+        GENERATION_PROGRESS.SAFETY_CHECKING,
+        GENERATION_PROGRESS.ERROR,
+    ],
     GENERATION_PROGRESS.SAFETY_CHECKING: [
         GENERATION_PROGRESS.PENDING_SUBMIT,
         GENERATION_PROGRESS.ERROR,
     ],
-    GENERATION_PROGRESS.PENDING_SUBMIT: [GENERATION_PROGRESS.SUBMITTING, GENERATION_PROGRESS.ERROR],
+    GENERATION_PROGRESS.PENDING_SUBMIT: [
+        GENERATION_PROGRESS.SUBMITTING,
+        GENERATION_PROGRESS.ERROR,
+    ],
     GENERATION_PROGRESS.SUBMITTING: [
         GENERATION_PROGRESS.SUBMIT_COMPLETE,
-        GENERATION_PROGRESS.ERROR,
         GENERATION_PROGRESS.ABANDONED,
+        GENERATION_PROGRESS.ERROR,
     ],
-    GENERATION_PROGRESS.SUBMIT_COMPLETE: [],
-    GENERATION_PROGRESS.ABORTED: [GENERATION_PROGRESS.REPORTED_FAILED, GENERATION_PROGRESS.ERROR],
+    GENERATION_PROGRESS.SUBMIT_COMPLETE: [GENERATION_PROGRESS.COMPLETE],
+    GENERATION_PROGRESS.COMPLETE: [],
+    GENERATION_PROGRESS.ABORTED: [
+        GENERATION_PROGRESS.REPORTED_FAILED,
+        GENERATION_PROGRESS.ERROR,
+    ],
     GENERATION_PROGRESS.REPORTED_FAILED: [],
     GENERATION_PROGRESS.ERROR: [GENERATION_PROGRESS.ABORTED],
-    GENERATION_PROGRESS.USER_REQUESTED_ABORT: [GENERATION_PROGRESS.USER_ABORT_COMPLETE, GENERATION_PROGRESS.ABANDONED],
+    GENERATION_PROGRESS.USER_REQUESTED_ABORT: [
+        GENERATION_PROGRESS.USER_ABORT_COMPLETE,
+        GENERATION_PROGRESS.ABANDONED,
+    ],
     GENERATION_PROGRESS.USER_ABORT_COMPLETE: [],
     GENERATION_PROGRESS.ABANDONED: [],
 }
-"""The default transitions for a generation.
+"""A map of the typical transitions between generation states."""
 
-Note to developers: NOT_STARTED must be the first state and ERROR cannot be a valid second state.
-You can find a visual aid in `docs/ai-horde-worker/worker_states_flow.md`.
-"""
-base_generate_progress_transitions_no_safety = deepcopy(base_generate_progress_transitions)
-base_generate_progress_transitions_no_safety[GENERATION_PROGRESS.GENERATING] = [
-    GENERATION_PROGRESS.PENDING_POST_PROCESSING,
-    GENERATION_PROGRESS.POST_PROCESSING,
-    GENERATION_PROGRESS.PENDING_SUBMIT,
-    GENERATION_PROGRESS.SUBMITTING,
-    GENERATION_PROGRESS.ERROR,
-]
 
-base_generate_progress_transitions_no_safety[GENERATION_PROGRESS.POST_PROCESSING] = [
-    GENERATION_PROGRESS.PENDING_SUBMIT,
-    GENERATION_PROGRESS.ERROR,
-]
+# Factory function to generate transition dictionaries
+def generate_transitions(
+    base_transitions: dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]],
+    skip_submit: bool = False,
+    skip_safety_checks: bool = False,
+) -> dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]]:
+    """Generate transitions with optional modifications."""
+    transitions = deepcopy(base_transitions)
+
+    if skip_safety_checks:
+        for state in [
+            GENERATION_PROGRESS.PENDING_SAFETY_CHECK,
+            GENERATION_PROGRESS.SAFETY_CHECKING,
+        ]:
+            transitions.pop(state, None)
+
+        transitions[GENERATION_PROGRESS.GENERATING] = [
+            GENERATION_PROGRESS.PENDING_POST_PROCESSING,
+            GENERATION_PROGRESS.POST_PROCESSING,
+            GENERATION_PROGRESS.PENDING_SUBMIT,
+            GENERATION_PROGRESS.SUBMITTING,
+            GENERATION_PROGRESS.ERROR,
+        ]
+        transitions[GENERATION_PROGRESS.POST_PROCESSING] = [
+            GENERATION_PROGRESS.PENDING_SUBMIT,
+            GENERATION_PROGRESS.ERROR,
+        ]
+
+    if skip_submit:
+        for state in [
+            GENERATION_PROGRESS.PENDING_SUBMIT,
+            GENERATION_PROGRESS.SUBMITTING,
+            GENERATION_PROGRESS.SUBMIT_COMPLETE,
+        ]:
+            transitions.pop(state, None)
+
+        if skip_safety_checks:
+            transitions[GENERATION_PROGRESS.GENERATING] = [
+                GENERATION_PROGRESS.PENDING_POST_PROCESSING,
+                GENERATION_PROGRESS.POST_PROCESSING,
+                GENERATION_PROGRESS.COMPLETE,
+                GENERATION_PROGRESS.ERROR,
+            ]
+            transitions[GENERATION_PROGRESS.POST_PROCESSING] = [
+                GENERATION_PROGRESS.COMPLETE,
+                GENERATION_PROGRESS.ERROR,
+            ]
+        else:
+            transitions[GENERATION_PROGRESS.SAFETY_CHECKING] = [
+                GENERATION_PROGRESS.COMPLETE,
+                GENERATION_PROGRESS.ERROR,
+            ]
+
+    return transitions
+
+
+base_generate_progress_no_submit_transitions = generate_transitions(
+    base_generate_progress_transitions,
+    skip_submit=True,
+)
+
+default_image_generate_progress_transitions = generate_transitions(
+    base_generate_progress_transitions,
+)
+default_image_generate_progress_no_submit_transitions = generate_transitions(
+    base_generate_progress_transitions,
+    skip_submit=True,
+)
+
+default_alchemy_generate_progress_transitions = generate_transitions(
+    base_generate_progress_transitions,
+    skip_safety_checks=True,
+)
+default_alchemy_generate_progress_no_submit_transitions = generate_transitions(
+    base_generate_progress_transitions,
+    skip_submit=True,
+    skip_safety_checks=True,
+)
+
+default_text_generate_progress_transitions = generate_transitions(
+    base_generate_progress_transitions,
+    skip_safety_checks=True,
+)
+default_text_generate_progress_no_submit_transitions = generate_transitions(
+    base_generate_progress_transitions,
+    skip_submit=True,
+    skip_safety_checks=True,
+)
 
 
 # Finalized generation states
@@ -152,18 +271,6 @@ finalized_generation_states = {
     GENERATION_PROGRESS.USER_ABORT_COMPLETE,
     GENERATION_PROGRESS.ABANDONED,
 }
-
-
-# Specific transitions for image generation
-default_image_generate_progress_transitions = deepcopy(base_generate_progress_transitions)
-
-# Specific transitions for alchemy
-# At the time of writing, alchemy does not perform safety checks
-default_alchemy_generate_progress_transitions = deepcopy(base_generate_progress_transitions_no_safety)
-
-# Specific transitions for text generation
-# At the time of writing, text generation does not perform safety checks
-default_text_generate_progress_transitions = deepcopy(base_generate_progress_transitions_no_safety)
 
 
 class JobState(StrEnum):
@@ -205,7 +312,7 @@ class HordeWorkerConfigDefaults:
     DEFAULT_JOB_SUBMIT_RETRY_DELAY: float = 2.0
     """The default delay in seconds between retries to submit a job to the API after submit issues."""
 
-    _UNREASONABLE_MAX_CONSECUTIVE_FAILED_JOB_SUBMITS: int = 10
+    UNREASONABLE_MAX_CONSECUTIVE_FAILED_JOB_SUBMITS: int = 10
     """The highest number of consecutive failed job submits allowed in any configuration.
 
     This is used internally to the sdk as a final safeguard to prevent mistakes in configuration.
@@ -219,7 +326,7 @@ class HordeWorkerConfigDefaults:
     `max_consecutive_failed_job_submits`, then the job is marked as faulted and is abandoned.
     """
 
-    _UNREASONABLE_MAX_GENERATION_FAILURES: int = 10
+    UNREASONABLE_MAX_GENERATION_FAILURES: int = 10
     """The highest number of generation failures allowed in any configuration.
 
     This is used internally to the sdk as a final safeguard to prevent mistakes in configuration.
@@ -228,6 +335,7 @@ class HordeWorkerConfigDefaults:
     DEFAULT_STATE_ERROR_LIMITS: ClassVar[dict[GENERATION_PROGRESS, int]] = {
         GENERATION_PROGRESS.PRELOADING: 3,
         GENERATION_PROGRESS.GENERATING: 3,
+        GENERATION_PROGRESS.POST_PROCESSING: 3,
         GENERATION_PROGRESS.SAFETY_CHECKING: 3,
         GENERATION_PROGRESS.SUBMITTING: 10,
         GENERATION_PROGRESS.USER_REQUESTED_ABORT: 10,
@@ -240,6 +348,8 @@ class HordeWorkerConfigDefaults:
     DEFAULT_RESULT_IMAGE_FORMAT: str = "WebP"
     DEFAULT_RESULT_IMAGE_QUALITY: int = 95
     DEFAULT_RESULT_IMAGE_PIL_METHOD: int = 6
+
+    DEFAULT_GENERATION_STRICT_TRANSITION_MODE: bool = True
 
 
 class KNOWN_DISPATCH_SOURCE(StrEnum):
@@ -365,3 +475,22 @@ class WORKER_TYPE(StrEnum):
     """Alchemy/Interrogation worker."""
     alchemist = "interrogation"
     """Alchemy/Interrogation worker."""
+
+
+class CHAIN_EDGE_KIND(StrEnum):
+    """The known chain edges."""
+
+    CUSTOM = auto()
+    """A custom chain edge."""
+
+    RESULTING_IMAGE_AS_SOURCE = auto()
+    """The resulting image of the previous generation is used as the source for the next generation."""
+
+    RESULTING_TEXT_AS_PROMPT = auto()
+    """The resulting text of the previous generation is used as the prompt for the next generation."""
+
+    RESULTING_IMAGE_AS_MASK = auto()
+    """The resulting image of the previous generation is used as the mask for the next generation."""
+
+    RESULTING_IMAGE_AS_CONTROL_MAP = auto()
+    """The resulting image of the previous generation is used as the control map for the next generation."""

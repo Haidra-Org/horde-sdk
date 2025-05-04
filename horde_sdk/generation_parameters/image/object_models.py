@@ -1,14 +1,20 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TypeVar
 
 from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
+from typing_extensions import override
 
 from horde_sdk.consts import GENERATION_ID_TYPES, get_default_frozen_model_config_dict
 from horde_sdk.generation_parameters.alchemy import AlchemyParameters
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
-from horde_sdk.generation_parameters.generic import BasicModelGenerationParameters, ComposedParameterSetBase
+from horde_sdk.generation_parameters.generic import (
+    BasicModelGenerationParameters,
+    ComposedParameterSetBase,
+    GenerationParameterComponentBase,
+)
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.generic.object_models import GenerationFeatureFlags
 from horde_sdk.generation_parameters.image.consts import (
@@ -28,12 +34,17 @@ HIRES_FIX_DENOISE_STRENGTH_DEFAULT: float = 0.65
 """The default second-pass denoise strength for hires-fix generations."""
 
 
-class ControlnetFeatureFlags(BaseModel):
+class ControlnetFeatureFlags(GenerationParameterComponentBase):
     """Feature flags for controlnet."""
 
     model_config = get_default_frozen_model_config_dict()
 
-    controlnets: list[KNOWN_IMAGE_CONTROLNETS | str] = Field(default_factory=list)
+    controlnets: list[KNOWN_IMAGE_CONTROLNETS | str] = Field(
+        examples=[
+            [KNOWN_IMAGE_CONTROLNETS.canny],
+            [KNOWN_IMAGE_CONTROLNETS.canny, KNOWN_IMAGE_CONTROLNETS.depth],
+        ],
+    )
     """The controlnets supported by the worker."""
 
     image_is_control: bool = Field(default=False)
@@ -46,11 +57,15 @@ class ControlnetFeatureFlags(BaseModel):
 class ImageGenerationFeatureFlags(GenerationFeatureFlags):
     """Feature flags for an image worker."""
 
-    baselines: list[KNOWN_IMAGE_GENERATION_BASELINE | str]
+    baselines: list[KNOWN_IMAGE_GENERATION_BASELINE | str] = Field(
+        examples=[
+            [KNOWN_IMAGE_GENERATION_BASELINE.infer],
+            [KNOWN_IMAGE_GENERATION_BASELINE.infer, KNOWN_IMAGE_GENERATION_BASELINE.stable_diffusion_1],
+        ],
+    )
     """The baselines supported for standard image generation.
 
-    If `None`, it is understood that the baselines will either default to the worker's baseline and/or
-    will be inferred from the model name.
+    If `infer`, the worker will attempt to infer the model type from the model name.
     """
 
     clip_skip: bool = Field(default=False)
@@ -62,28 +77,86 @@ class ImageGenerationFeatureFlags(GenerationFeatureFlags):
     tiling: bool = Field(default=False)
     """Whether there is support for seamless tiling."""
 
-    schedulers: list[KNOWN_IMAGE_SCHEDULERS | str] = Field(default_factory=list)
+    schedulers: list[KNOWN_IMAGE_SCHEDULERS | str] = Field(
+        examples=[
+            [KNOWN_IMAGE_SCHEDULERS.normal],
+            [KNOWN_IMAGE_SCHEDULERS.normal, KNOWN_IMAGE_SCHEDULERS.simple],
+        ],
+    )
     """The schedulers supported."""
 
-    samplers: list[KNOWN_IMAGE_SAMPLERS | str] = Field(default_factory=list)
+    samplers: list[KNOWN_IMAGE_SAMPLERS | str] = Field(
+        examples=[
+            [KNOWN_IMAGE_SAMPLERS.k_euler],
+            [KNOWN_IMAGE_SAMPLERS.k_lms, KNOWN_IMAGE_SAMPLERS.k_euler],
+        ],
+    )
     """The samplers supported."""
 
-    controlnets_feature_flags: ControlnetFeatureFlags | None = None
+    controlnets_feature_flags: ControlnetFeatureFlags | None = Field(
+        default=None,
+        examples=[
+            ControlnetFeatureFlags(
+                controlnets=[KNOWN_IMAGE_CONTROLNETS.canny],
+                image_is_control=False,
+                return_control_map=False,
+            ),
+            ControlnetFeatureFlags(
+                controlnets=[KNOWN_IMAGE_CONTROLNETS.canny, KNOWN_IMAGE_CONTROLNETS.depth],
+                image_is_control=True,
+                return_control_map=True,
+            ),
+        ],
+    )
     """The controlnet feature flags for the worker."""
 
-    post_processing: list[KNOWN_ALCHEMY_TYPES | str] | None = None
+    post_processing: list[KNOWN_ALCHEMY_TYPES | str] | None = Field(
+        default=None,
+        examples=[
+            [KNOWN_ALCHEMY_TYPES.RealESRGAN_x4plus],
+            [KNOWN_ALCHEMY_TYPES.RealESRGAN_x4plus, KNOWN_ALCHEMY_TYPES.GFPGAN],
+        ],
+    )
     """The post processing methods."""
 
-    source_processing: list[KNOWN_IMAGE_SOURCE_PROCESSING | str] = Field(default_factory=list)
+    source_processing: list[KNOWN_IMAGE_SOURCE_PROCESSING | str] = Field(
+        examples=[
+            [KNOWN_IMAGE_SOURCE_PROCESSING.txt2img],
+            [KNOWN_IMAGE_SOURCE_PROCESSING.txt2img, KNOWN_IMAGE_SOURCE_PROCESSING.img2img],
+            [
+                KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
+                KNOWN_IMAGE_SOURCE_PROCESSING.img2img,
+                KNOWN_IMAGE_SOURCE_PROCESSING.inpainting,
+            ],
+        ],
+    )
     """The source processing methods."""
 
-    workflows: list[KNOWN_IMAGE_WORKFLOWS | str] | None = None
+    workflows: list[KNOWN_IMAGE_WORKFLOWS | str] | None = Field(
+        default=None,
+        examples=[
+            [KNOWN_IMAGE_WORKFLOWS.qr_code],
+        ],
+    )
     """The workflows supported."""
 
-    tis: list[KNOWN_AUX_MODEL_SOURCE | str] | None = None
+    tis: list[KNOWN_AUX_MODEL_SOURCE | str] | None = Field(
+        default=None,
+        examples=[
+            [KNOWN_AUX_MODEL_SOURCE.HORDELING],
+            [KNOWN_AUX_MODEL_SOURCE.LOCAL],
+        ],
+    )
     """If textual inversions are supported, the sources of the textual inversions supported."""
 
-    loras: list[KNOWN_AUX_MODEL_SOURCE | str] | None = None
+    loras: list[KNOWN_AUX_MODEL_SOURCE | str] | None = Field(
+        default=None,
+        examples=[
+            [KNOWN_AUX_MODEL_SOURCE.CIVITAI],
+            [KNOWN_AUX_MODEL_SOURCE.LOCAL],
+        ],
+    )
+
     """If loras are supported, the sources of the loras supported."""
 
     @field_validator("baselines")
@@ -98,37 +171,110 @@ class ImageGenerationFeatureFlags(GenerationFeatureFlags):
         return v
 
 
-class BasicImageGenerationParameters(BasicModelGenerationParameters):
-    """Represents the common bare minimum parameters for an image generation."""
+class BasicImageGenerationParametersTemplate(BasicModelGenerationParameters):
+    """Represents the common parameters for an image generation."""
 
-    prompt: str
+    prompt: str | None
     """The prompt to use for the generation."""
-    seed: str
+    seed: str | None
     """The seed to use for the generation."""
 
-    height: int
+    height: int | None = Field(
+        default=None,
+        multiple_of=64,
+        ge=64,
+        examples=[512, 768],
+    )
     """The height to use for the generation."""
-    width: int
+    width: int | None = Field(
+        default=None,
+        multiple_of=64,
+        ge=64,
+        examples=[512, 768],
+    )
     """The width to use for the generation."""
-    steps: int
+
+    steps: int | None = Field(
+        default=None,
+        ge=1,
+        examples=[4, 20, 50],
+    )
     """The number of steps to use for the generation."""
 
-    cfg_scale: float
+    cfg_scale: float | None = Field(
+        default=None,
+        ge=0,
+        examples=[0.0, 1.0, 7.0],
+    )
     """The scale to use for the generation."""
-    sampler_name: KNOWN_IMAGE_SAMPLERS | str
+
+    sampler_name: KNOWN_IMAGE_SAMPLERS | str | None = Field(
+        default=None,
+        examples=[KNOWN_IMAGE_SAMPLERS.k_lms],
+    )
     """The sampler to use for the generation."""
-    scheduler: KNOWN_IMAGE_SCHEDULERS | str
+
+    scheduler: KNOWN_IMAGE_SCHEDULERS | str | None = Field(
+        default=None,
+        examples=[KNOWN_IMAGE_SCHEDULERS.normal],
+    )
     """The scheduler to use for the generation."""
-    clip_skip: int
-    """The offset of layer numbers to skip. 1 means no layers are skipped."""
-    clip_skip_representation: CLIP_SKIP_REPRESENTATION = CLIP_SKIP_REPRESENTATION.POSITIVE_OFFSET
+
+    clip_skip: int | None = Field(
+        default=None,
+        examples=[-3, -2, -1, 1, 2, 3],
+    )
+    """The offset of layer numbers to skip. Be sure to check `clip_skip_representation` for the representation."""
+
+    clip_skip_representation: CLIP_SKIP_REPRESENTATION | None = Field(
+        default=None,
+    )
     """The representation of the clip skip. See `CLIP_SKIP_REPRESENTATION` for more information.
 
     Typically front-ends use positive values, while comfyui used the same value but negative.
     """
 
-    denoising_strength: float
+    denoising_strength: float | None = Field(
+        default=None,
+        ge=0,
+        le=1,
+        examples=[0.0, 0.5, 1.0],
+    )
     """The denoising strength to use for the generation."""
+
+
+class BasicImageGenerationParameters(BasicImageGenerationParametersTemplate):
+    """Represents the common bare minimum parameters for an image generation."""
+
+    model_config = ConfigDict(
+        frozen=True,
+    )
+
+    prompt: str
+    """The prompt to use for the generation."""
+
+    height: int | None = Field(
+        default=DEFAULT_BASELINE_RESOLUTION,
+        multiple_of=64,
+        ge=64,
+        examples=[512, 768],
+    )
+    """The height to use for the generation."""
+    width: int | None = Field(
+        default=DEFAULT_BASELINE_RESOLUTION,
+        multiple_of=64,
+        ge=64,
+        examples=[512, 768],
+    )
+    """The width to use for the generation."""
+
+    clip_skip_representation: CLIP_SKIP_REPRESENTATION | None = Field(
+        default=CLIP_SKIP_REPRESENTATION.NEGATIVE_OFFSET,
+    )
+    """The representation of the clip skip. See `CLIP_SKIP_REPRESENTATION` for more information.
+
+    Typically front-ends use positive values, while comfyui used the same value but negative.
+    """
 
 
 default_basic_image_generation_parameters = BasicImageGenerationParameters(
@@ -146,7 +292,7 @@ default_basic_image_generation_parameters = BasicImageGenerationParameters(
 )
 
 
-class Image2ImageGenerationParameters(BaseModel):
+class Image2ImageGenerationParameters(GenerationParameterComponentBase):
     """Represents the parameters for an image-to-image generation."""
 
     source_image: bytes | str | None
@@ -155,7 +301,7 @@ class Image2ImageGenerationParameters(BaseModel):
     """The source mask to use for the generation."""
 
 
-class RemixImageEntry(BaseModel):
+class RemixImageEntry(GenerationParameterComponentBase):
     """Represents a special image entry for a generation."""
 
     image: bytes | str
@@ -165,7 +311,7 @@ class RemixImageEntry(BaseModel):
     """The weight to apply this image to the remix generation."""
 
 
-class RemixGenerationParameters(BaseModel):
+class RemixGenerationParameters(GenerationParameterComponentBase):
     """Represents the parameters for a stable cascade remix generation."""
 
     source_image: bytes | str
@@ -175,7 +321,7 @@ class RemixGenerationParameters(BaseModel):
     """The images to remix the source image with."""
 
 
-class ControlnetGenerationParameters(BaseModel):
+class ControlnetGenerationParameters(GenerationParameterComponentBase):
     """Represents the parameters for a controlnet generation."""
 
     controlnet_type: KNOWN_IMAGE_CONTROLNETS | str
@@ -190,14 +336,14 @@ class ControlnetGenerationParameters(BaseModel):
     """If true, return the control map created by the controlnet pre-processor."""
 
 
-class HiresFixGenerationParameters(BaseModel):
+class HiresFixGenerationParameters(GenerationParameterComponentBase):
     """Represents the parameters for a high-resolution fix generation."""
 
     first_pass: BasicImageGenerationParameters
     second_pass: BasicImageGenerationParameters
 
 
-class AuxModelEntry(BaseModel):
+class AuxModelEntry(GenerationParameterComponentBase):
     """Represents a single entry of an aux model, (LoRas, TIs, etc)."""
 
     name: str | None
@@ -253,7 +399,7 @@ class TIEntry(AuxModelEntry):
     """If true and if supported by the backend, inject a trigger term into the prompt."""
 
 
-class CustomWorkflowGenerationParameters(BaseModel):
+class CustomWorkflowGenerationParameters(GenerationParameterComponentBase):
     """Represents the parameters for a custom workflow generation."""
 
     custom_workflow_name: KNOWN_IMAGE_WORKFLOWS | str
@@ -266,33 +412,95 @@ class CustomWorkflowGenerationParameters(BaseModel):
     """The custom parameters to use for the generation. Defaults to None."""
 
 
-class ImageGenerationParameters(ComposedParameterSetBase):
+GenerationParameterComponentBaseTypeVar = TypeVar(
+    "GenerationParameterComponentBaseTypeVar",
+    bound=GenerationParameterComponentBase,
+)
+
+
+class ImageGenerationParametersTemplate(ComposedParameterSetBase):
     """Represents the parameters for an image generation."""
 
-    generation_ids: list[GENERATION_ID_TYPES]
-
-    batch_size: int = Field(default=1, ge=1)
+    batch_size: int | None = Field(default=None, ge=1)
     """The number of images to generated batched (simultaneously). This is the `n_iter` parameter in ComfyUI"""
 
-    tiling: bool = False
+    tiling: bool | None = None
     """If true, the generation will be generated with seamless tiling."""
 
-    source_processing: KNOWN_IMAGE_SOURCE_PROCESSING | str
+    source_processing: KNOWN_IMAGE_SOURCE_PROCESSING | str | None = None
     """txt2img, img2img, etc. See `KNOWN_IMAGE_SOURCE_PROCESSING` for more information."""
 
-    base_params: BasicImageGenerationParameters
+    base_params: BasicImageGenerationParameters | None = None
     """The base parameters for the generation."""
 
-    img2img_params: Image2ImageGenerationParameters | None = None
-    """If this is an img2img generation, the parameters specific to img2img."""
-    remix_params: RemixGenerationParameters | None = None
-    """If this is a remix generation, the parameters specific to remix."""
-    controlnet_params: ControlnetGenerationParameters | None = None
-    """If this is a controlnet generation, the parameters specific to controlnet."""
-    hires_fix_params: HiresFixGenerationParameters | None = None
-    """If this is a high-resolution fix generation, the parameters specific to high-resolution fix."""
-    custom_workflow_params: CustomWorkflowGenerationParameters | None = None
-    """If this is a custom workflow generation, the parameters specific to custom workflow."""
+    _additional_params: dict[type[GenerationParameterComponentBase], GenerationParameterComponentBase] | None = None
+    """Additional parameters for the generation.This can include parameters for img2img, remix, controlnet, hires fix,
+    and custom workflows."""
+
+    additional_params: list[GenerationParameterComponentBase] | None = None
+    """Additional parameters for the generation. This can include parameters for img2img, remix, controlnet, hires fix,
+    and custom workflows. The types of the parameters must be unique - you cannot have two
+    Image2ImageGenerationParameters for example."""
+
+    @model_validator(mode="after")
+    def verify_additional_params(self: ImageGenerationParametersTemplate) -> ImageGenerationParametersTemplate:
+        """Ensure that additional parameters are valid and set up the internal dictionary."""
+        if not self.additional_params:
+            self.additional_params = None
+            self._additional_params = None
+            return self
+
+        if not isinstance(self.additional_params, list):
+            raise TypeError("additional_params must be a list of GenerationParameterComponentBase instances.")
+
+        self._additional_params = {}
+
+        for param in self.additional_params:
+            param_type = type(param)
+
+            if param_type in self._additional_params:
+                raise ValueError(f"Duplicate parameter type found: {param_type.__name__}.")
+
+            self._additional_params[param_type] = param
+
+        return self
+
+    def _get_additional_param(
+        self,
+        param_type: type[GenerationParameterComponentBaseTypeVar],
+    ) -> GenerationParameterComponentBaseTypeVar | None:
+        """Get an additional parameter of the specified type."""
+        if self._additional_params and param_type in self._additional_params:
+            param = self._additional_params[param_type]
+            if not isinstance(param, param_type):
+                raise TypeError(f"{param_type.__name__} must be of type {param_type.__name__}.")
+            return param
+        return None
+
+    @property
+    def img2img_params(self) -> Image2ImageGenerationParameters | None:
+        """If this is an img2img generation, the parameters specific to img2img."""
+        return self._get_additional_param(Image2ImageGenerationParameters)
+
+    @property
+    def remix_params(self) -> RemixGenerationParameters | None:
+        """If this is a remix generation, the parameters specific to remix."""
+        return self._get_additional_param(RemixGenerationParameters)
+
+    @property
+    def controlnet_params(self) -> ControlnetGenerationParameters | None:
+        """If this is a controlnet generation, the parameters specific to controlnet."""
+        return self._get_additional_param(ControlnetGenerationParameters)
+
+    @property
+    def hires_fix_params(self) -> HiresFixGenerationParameters | None:
+        """If this is a high-resolution fix generation, the parameters specific to high-resolution fix."""
+        return self._get_additional_param(HiresFixGenerationParameters)
+
+    @property
+    def custom_workflow_params(self) -> CustomWorkflowGenerationParameters | None:
+        """If this is a custom workflow generation, the parameters specific to custom workflow."""
+        return self._get_additional_param(CustomWorkflowGenerationParameters)
 
     alchemy_params: AlchemyParameters | None = None
     """If alchemy is also requested, the parameters specific to those operations."""
@@ -303,7 +511,7 @@ class ImageGenerationParameters(ComposedParameterSetBase):
     """The TIs to use for the generation."""
 
     @model_validator(mode="after")
-    def verify_source_processing(self: ImageGenerationParameters) -> ImageGenerationParameters:
+    def verify_source_processing(self: ImageGenerationParametersTemplate) -> ImageGenerationParametersTemplate:
         """Ensure that the appropriate parameters are set based on the source processing type."""
         if self.source_processing in [
             KNOWN_IMAGE_SOURCE_PROCESSING.img2img,
@@ -316,6 +524,29 @@ class ImageGenerationParameters(ComposedParameterSetBase):
             raise ValueError("remix_params must be provided for remix source processing.")
 
         return self
+
+    @override
+    def get_number_expected_results(self: ImageGenerationParametersTemplate) -> int:
+        """Return the number of expected results for this parameter set.
+
+        Returns:
+            int: The number of expected results.
+        """
+        return self.batch_size if self.batch_size is not None else 1
+
+
+class ImageGenerationParameters(ImageGenerationParametersTemplate):
+    """Represents the common bare-minimum parameters for an image generation."""
+
+    generation_ids: list[GENERATION_ID_TYPES]
+    """The generation IDs to assign to the resulting images."""
+
+    base_params: BasicImageGenerationParameters
+    """The base parameters for the generation."""
+
+    batch_size: int | None = Field(default=1, ge=1)
+    """The number of images to generated batched (simultaneously, not concurrently).
+    This is the `n_iter` parameter in ComfyUI"""
 
     @model_validator(mode="after")
     def verify_id_count(self: ImageGenerationParameters) -> ImageGenerationParameters:
@@ -330,7 +561,7 @@ class ImageGenerationParameters(ComposedParameterSetBase):
 
 
 def image_parameters_to_feature_flags(
-    parameters: ImageGenerationParameters,
+    parameters: ImageGenerationParametersTemplate,
 ) -> ImageGenerationFeatureFlags:
     """Create a feature flag object representing the features used in the parameters."""
     all_alchemy_forms = None
@@ -339,18 +570,22 @@ def image_parameters_to_feature_flags(
 
     baselines = (
         [parameters.base_params.model_baseline]
-        if parameters.base_params.model_baseline
+        if parameters.base_params and parameters.base_params.model_baseline
         else [KNOWN_IMAGE_GENERATION_BASELINE.infer]
     )
 
-    clip_skip_representation = parameters.base_params.clip_skip_representation
-
     hires_fix = parameters.hires_fix_params is not None
 
-    tiling = parameters.tiling
+    tiling = bool(parameters.tiling)
 
-    schedulers = [parameters.base_params.scheduler]
-    samplers = [parameters.base_params.sampler_name]
+    schedulers = []
+    samplers = []
+
+    if parameters.base_params is not None:
+        if parameters.base_params.scheduler is not None:
+            schedulers.append(parameters.base_params.scheduler)
+        if parameters.base_params.sampler_name is not None:
+            samplers.append(parameters.base_params.sampler_name)
 
     controlnets_feature_flags = (
         ControlnetFeatureFlags(
@@ -377,7 +612,6 @@ def image_parameters_to_feature_flags(
 
     return ImageGenerationFeatureFlags(
         baselines=baselines,
-        clip_skip_representation=clip_skip_representation,
         hires_fix=hires_fix,
         tiling=tiling,
         schedulers=schedulers,

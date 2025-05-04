@@ -71,7 +71,7 @@ Many classes contain standardized prefixes, suffixes, or identifiers within thei
 - **Base** (Always a Prefix): Indicates a foundational class that provides core functionality and may be abstract or partially implemented. It is intended to be extended by more specific classes.
   - Examples: `BaseAIHordeClient`, `BaseAIHordeSimpleClient`
 
-#### API/Client Specific  
+#### API/Client Specific
 
 - **Manual**: Refers to classes that do not have context management or automatic session handling. These classes require the user to clean up server resources manually.
   - Examples: `AIHordeAPIManualClient`, `GenericHordeAPIManualClient`
@@ -134,7 +134,7 @@ Many docstrings in the SDK have additional requirements when they are related to
     ```
 
   - Children classes of `HordeResponse` must have additional information, for example:
-  
+
     ```python
     class HordePerformanceResponse(HordeResponseBaseModel):
     """Information about the performance of the horde, such as worker counts and queue sizes.
@@ -146,7 +146,7 @@ Many docstrings in the SDK have additional requirements when they are related to
     ```
 
   - Children classes of `HordeRequest` must have additional information, for example:
-  
+
     ```python
     class HordePerformanceRequest(BaseAIHordeRequest):
         """Request performance information about the horde, such as worker counts and queue sizes.
@@ -160,14 +160,14 @@ Many docstrings in the SDK have additional requirements when they are related to
 - Class and method signatures should prefer keyword-only arguments especially when there are multiple arguments of the same type
   - This improves readability and reduces the chance of passing arguments in the wrong order. Additionally, it improves the ability to add new arguments in the future without breaking existing code.
   - For example, instead of:
-  
+
     ```python
     def create_user(name: str, age: int, email: str):
         ...
     ```
-  
+
     Prefer:
-  
+
     ```python
     def create_user(*, name: str, age: int, email: str):
         ...
@@ -189,7 +189,7 @@ Many docstrings in the SDK have additional requirements when they are related to
   - This is technically enforced by type hints, but it is still important to consider the implications of returning different types, especially as a consumer.
   - Generally, for methods which mutate or return a different type based on input, it should be clear from the method name and documentation that this is the case and which types can be expected based on different inputs.
     - For example, the following method signature should be considered bad practice:
-  
+
       ```python
       def get_items(self, as_list: bool = True) -> list[Item] | set[Item]:
           ...
@@ -197,7 +197,7 @@ Many docstrings in the SDK have additional requirements when they are related to
 
   - Methods which *can* return a list or a container should *always* return a list or container, even if it is a single item.
     - For example, the following method signature should be considered bad practice:
-  
+
       ```python
       def get_items(self) -> list[Item] | Item:
           ...
@@ -205,7 +205,7 @@ Many docstrings in the SDK have additional requirements when they are related to
 
   - Methods should avoid returning different container types *unless that is the purpose of the method*.
     - For example, the following method signatures should be considered bad practice:
-  
+
       ```python
       def get_items(self) -> list[Item] | set[Item]:
           ...
@@ -221,7 +221,7 @@ Many docstrings in the SDK have additional requirements when they are related to
 
 - Prefer guard clauses over deeply nested if statements.
   - For example, instead of:
-  
+
     ```python
     def process_item(item: Item):
         if item is not None:
@@ -231,7 +231,7 @@ Many docstrings in the SDK have additional requirements when they are related to
     ```
 
     Prefer:
-  
+
     ```python
     def process_item(item: Item):
         if item is None or not item.is_valid():
@@ -242,10 +242,10 @@ Many docstrings in the SDK have additional requirements when they are related to
 
 - Prefer meaningfully named composite `bool` conditionals over complex multi-line `if` statements.
   - For example, instead of:
-  
+
     ```python
     def is_valid_item(item: Item) -> bool:
-        if (item.has_name() and item.has_value()) or 
+        if (item.has_name() and item.has_value()) or
             (item.has_description() and item.description_valid()):
               if item.is_active():
                   return True
@@ -253,7 +253,7 @@ Many docstrings in the SDK have additional requirements when they are related to
     ```
 
     Prefer:
-  
+
     ```python
     def is_valid_item(item: Item) -> bool:
         has_name_and_value = item.has_name() and item.has_value()
@@ -299,7 +299,7 @@ Many docstrings in the SDK have additional requirements when they are related to
   - `Enum`s should be used to represent numbers with a specific set of valid values and regular constants can be used for isolated (unconnected) values.
   - If many constants relate to each other, they should be grouped into a class.
     - For example, instead of:
-  
+
       ```python
       MAX_RETRIES = 5
       TIMEOUT = 30
@@ -307,7 +307,7 @@ Many docstrings in the SDK have additional requirements when they are related to
       ```
 
     Prefer:
-  
+
       ```python
       class APIConfig:
           MAX_RETRIES = 5
@@ -317,7 +317,7 @@ Many docstrings in the SDK have additional requirements when they are related to
 
 ### "KNOWN" Constants
 
-- For consumer convenience, parameters which have a fixed set of known values should be defined as constants in an appropriate `consts.py` file. These constants should be named with the `KNOWN_` prefix and should be defined as `StrEnum`s or `Enum`s as appropriate. 
+- For consumer convenience, parameters which have a fixed set of known values should be defined as constants in an appropriate `consts.py` file. These constants should be named with the `KNOWN_` prefix and should be defined as `StrEnum`s or `Enum`s as appropriate.
 - However, these values should **always be considered optional**. Consumers of the SDK should be able to use any valid value for the parameter as long as its type is correct. It would be ideal, but not required, that classes or functions which require these parameters validate them against the live API at runtime.
   - **_Rationale_**: This prevents the SDK from needing to be updated every time a new value is added to an API, and allows consumers to use any valid value without needing to wait for an SDK update.
 
