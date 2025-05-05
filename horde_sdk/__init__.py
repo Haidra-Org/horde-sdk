@@ -100,6 +100,7 @@ from horde_sdk.generic_api.apimodels import (
     ResponseWithProgressMixin,
 )
 from horde_sdk.generic_api.consts import ANON_API_KEY
+from horde_sdk.utils import create_bridge_agent_string
 
 __all__ = [
     "PAYLOAD_HTTP_METHODS",
@@ -127,4 +128,5 @@ __all__ = [
     "HordeException",
     "_default_sslcontext",
     "_async_client_exceptions",
+    "create_bridge_agent_string",
 ]

@@ -20,6 +20,7 @@ from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH, url_with_path
 from horde_sdk.generic_api.metadata import GenericAcceptTypes
+from horde_sdk.utils import default_bridge_agent_string
 
 try:
     from horde_sdk._version import __version__
@@ -407,7 +408,7 @@ class HordeRequest(HordeAPIMessage, BaseModel):
     # X_Fields # TODO
 
     client_agent: str = Field(
-        default=f"horde_sdk:{__version__}:https://github.com/haidra-org/horde-sdk",
+        default=default_bridge_agent_string,
         alias="Client-Agent",
     )
     """The requesting client's agent. You should set this to reflect the name, version and contact information
