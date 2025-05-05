@@ -225,6 +225,11 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
     """The factor in the equation `max_power * (8 * 64 * 64)`. This will be the maximum number of pixels that can be
     generated (with inference) in a single job by this worker."""
 
+    @property
+    def max_pixels(self) -> int:
+        """Calculate the maximum number of pixels that can be generated in a single job by this worker."""
+        return self.max_power * (8 * 64 * 64)
+
     image_models_to_load: list[str] = Field(
         default_factory=list,
         alias="models_to_load",
