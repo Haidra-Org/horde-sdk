@@ -1,6 +1,20 @@
 
 # Code Philosophy and Design Constraints
 
+## Too long; didn't read
+
+While this document is long and quite detailed in certain areas, do not let this deter you. Many of the guidelines are enforced by linting or testing tools, and many of the other rules can be followed by matching the patterns already present in the codebase. In brief:
+
+- Type hints are mandatory for all public functions, methods, class attributes, and module-level variables.
+- Descriptive, unambiguous naming is required; avoid abbreviations and acronyms unless widely understood.
+- Never silently handle exceptions; always log or re-raise, and avoid blanket or bare excepts.
+- All public APIs must have Google-style docstrings.
+- Readability first: Prefer guard clauses, clear control flow, meaningful boolean expressions and avoid deeply nested structures.
+
+If this is your first time contributing, consider this a document to intermittently reference as you work on the codebase rather than a document to memorize.
+
+The principals described in this document are principled and highly opinionated. They exist for the purpose of consistency and strive to improve maintainability. These standards do not purport to be the "best" way and they are not an attack on alternative approaches. Change proposals are welcome to this document if you feel that something is overly restrictive, missing, or could be improved.
+
 ## General Principles
 
 - [PEP 20](https://peps.python.org/pep-0020/) should guide code design and implementation.
