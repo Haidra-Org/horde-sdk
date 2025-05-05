@@ -1,6 +1,7 @@
 """Contains functions to convert API responses to alchemy generation parameters."""
 
 from horde_sdk.ai_horde_api.apimodels import AlchemyJobPopResponse, NoValidAlchemyFound
+from horde_sdk.consts import KNOWN_DISPATCH_SOURCE
 from horde_sdk.generation_parameters.alchemy import (
     AlchemyParameters,
     CaptionAlchemyParameters,
@@ -26,7 +27,6 @@ from horde_sdk.utils.image_utils import (
 )
 from horde_sdk.worker.consts import (
     KNOWN_ALCHEMY_BACKEND,
-    KNOWN_DISPATCH_SOURCE,
     REQUESTED_BACKEND_CONSTRAINTS,
     REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE,
 )

@@ -352,22 +352,6 @@ class HordeWorkerConfigDefaults:
     DEFAULT_GENERATION_STRICT_TRANSITION_MODE: bool = True
 
 
-class KNOWN_DISPATCH_SOURCE(StrEnum):
-    """The known sources of a dispatch."""
-
-    UNKNOWN = auto()
-    """The source of the dispatch is unknown."""
-
-    LOCAL_CUSTOM_3RD_PARTY = auto()
-    """The source of the dispatch is a local custom 3rd party API."""
-
-    AI_HORDE_API_OFFICIAL = auto()
-    """The source of the dispatch is the official AI Horde API."""
-
-    AI_HORDE_API_FORK = auto()
-    """The source of the dispatch is a fork of the official AI Horde API."""
-
-
 class KNOWN_INFERENCE_BACKEND(StrEnum):
     """The known generative inference backends."""
 

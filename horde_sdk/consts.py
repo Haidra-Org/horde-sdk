@@ -1,7 +1,7 @@
 """Constants used by the SDK."""
 
 import os
-from enum import IntEnum
+from enum import IntEnum, auto
 from uuid import UUID
 
 from pydantic import ConfigDict
@@ -15,6 +15,8 @@ _OVERLOADED_MODEL = "_MODEL_OVERLOADED"
 
 GENERATION_ID_TYPES = str | UUID
 """The types that can be used as generation IDs."""
+
+horde_sdk_github_url = "https://github.com/Haidra-Org/horde_sdk"
 
 
 def get_default_frozen_model_config_dict() -> ConfigDict:
@@ -104,3 +106,19 @@ def is_error_status_code(status_code: HTTPStatusCode | int) -> bool:
     if isinstance(status_code, HTTPStatusCode):
         status_code = status_code.value
     return 400 <= status_code < 600
+
+
+class KNOWN_DISPATCH_SOURCE(StrEnum):
+    """The known sources of a dispatch."""
+
+    UNKNOWN = auto()
+    """The source of the dispatch is unknown."""
+
+    LOCAL_CUSTOM_3RD_PARTY = auto()
+    """The source of the dispatch is a local custom 3rd party API."""
+
+    AI_HORDE_API_OFFICIAL = auto()
+    """The source of the dispatch is the official AI Horde API."""
+
+    AI_HORDE_API_FORK = auto()
+    """The source of the dispatch is a fork of the official AI Horde API."""
