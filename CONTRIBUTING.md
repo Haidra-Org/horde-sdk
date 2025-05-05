@@ -28,44 +28,44 @@
 - `uv self update`
 - `uv sync --all-groups`
 - The `.venv/` directory will now be created with all project, development and documentation dependencies installed.
-  - Be sure to point your IDE to the python binary appropriate for your OS in this directory.
+    - Be sure to point your IDE to the python binary appropriate for your OS in this directory.
 
 ## Code Quality Tools
 
 - [**tox**](https://tox.wiki/)
-  - Creates virtual environments for CI or local pytest runs.
-    - Note that the CI does not current execute calls to the production API by default.
-  - Run `tox list` or see `tox.ini` for more info
+    - Creates virtual environments for CI or local pytest runs.
+        - Note that the CI does not current execute calls to the production API by default.
+    - Run `tox list` or see `tox.ini` for more info
 - [**pre-commit**](https://pre-commit.com/)
-  - Creates virtual environments for formatting and linting tools
-  - Run `pre-commit run --all-files` or see `.pre-commit-config.yaml` for more info.
+    - Creates virtual environments for formatting and linting tools
+    - Run `pre-commit run --all-files` or see `.pre-commit-config.yaml` for more info.
 
 > Note: Many of the tools below are run by `pre-commit` automatically, but can also be run manually if desired.
 
 - [**black**](https://github.com/psf/black)
-  - Whitespace formatter/code style formatter
-  - Run with `black .`
+    - Whitespace formatter/code style formatter
+    - Run with `black .`
 - [**ruff**](https://github.com/astral-sh/ruff)
-  - Linting rules from a wide variety of selectable rule sets
-  - See `pyproject.toml` for the rules used.
-  - See all rules (but not necessarily used in the project) availible in rust [here](https://beta.ruff.rs/docs/rules/).
-  - Run with `ruff check .`
-    - Note: When using autofixing (`ruff check . --fix`), changes may be made that require running black, which can then result in needing to run `ruff check . --fix` again.
-    - Consider running `black . && ruff check . --fix && black . && ruff check . --fix` to avoid this.
+    - Linting rules from a wide variety of selectable rule sets
+    - See `pyproject.toml` for the rules used.
+    - See all rules (but not necessarily used in the project) availible in rust [here](https://beta.ruff.rs/docs/rules/).
+    - Run with `ruff check .`
+        - Note: When using autofixing (`ruff check . --fix`), changes may be made that require running black, which can then result in needing to run `ruff check . --fix` again.
+        - Consider running `black . && ruff check . --fix && black . && ruff check . --fix` to avoid this.
 - [**mypy**](https://mypy-lang.org/)
-  - Static type safety
-  - I recommending using the [mypy daemon](https://mypy.readthedocs.io/en/stable/mypy_daemon.html) instead of periodically running `pre-commit` (or `mypy` directly.).
-    - If you are using VSCode, I recommend the `matangover.mypy` extension, which implements this nicely.
+    - Static type safety
+    - I recommending using the [mypy daemon](https://mypy.readthedocs.io/en/stable/mypy_daemon.html) instead of periodically running `pre-commit` (or `mypy` directly.).
+        - If you are using VSCode, I recommend the `matangover.mypy` extension, which implements this nicely.
 - [**pyright**](https://github.com/microsoft/pyright)
-  - Shipped with vscode by default (via the python extension `ms-python.vscode-pylance`)
-  - Suggested settings:
-    - `"python.analysis.typeCheckingMode": "off"`
-      - The pylance extension has certain opinionated type checking assertions which are clash with mypy.
-      - For example, overriding an optional field to be non-optional is considered by pylance to be a type error due to the field being invariant and the parent class potentially settings it to `None`. However, by convention in the SDK, this is a forbidden pattern.
-    - `"python.analysis.languageServerMode": "full"`
-    - `"python.testing.pytestEnabled": true`
+    - Shipped with vscode by default (via the python extension `ms-python.vscode-pylance`)
+    - Suggested settings:
+        - `"python.analysis.typeCheckingMode": "off"`
+            - The pylance extension has certain opinionated type checking assertions which are clash with mypy.
+            - For example, overriding an optional field to be non-optional is considered by pylance to be a type error due to the field being invariant and the parent class potentially settings it to `None`. However, by convention in the SDK, this is a forbidden pattern.
+        - `"python.analysis.languageServerMode": "full"`
+        - `"python.testing.pytestEnabled": true`
 - [**tach**](https://github.com/gauge-sh/tach)
-  - Enforces internal namespace dependency constraints. This helps avoid circular dependencies and helps ensure implementations are in a logical place.
+    - Enforces internal namespace dependency constraints. This helps avoid circular dependencies and helps ensure implementations are in a logical place.
 
 ## Code Style and System Design
 
@@ -119,7 +119,7 @@ The Horde ecosystem is a collaborative effort made possible through volunteer ef
 - Include tests for any new features or bug fixes
 - Update documentation for new features or changes to existing functionality
 - Use descriptive commit messages consistent with the project commit history, especially for medium-to-large changesets.
-  - While it is possible we will squash commits before merging, it is still helpful to have descriptive commit messages for review and opens the possibility of rebasing instead.
+    - While it is possible we will squash commits before merging, it is still helpful to have descriptive commit messages for review and opens the possibility of rebasing instead.
 
 #### Don't
 
