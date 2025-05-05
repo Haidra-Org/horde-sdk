@@ -135,25 +135,25 @@ Many docstrings in the SDK have additional requirements when they are related to
 
     - Children classes of `HordeResponse` must have additional information, for example:
 
-    ```python
-    class HordePerformanceResponse(HordeResponseBaseModel):
-    """Information about the performance of the horde, such as worker counts and queue sizes.
+      ```python
+      class HordePerformanceResponse(HordeResponseBaseModel):
+      """Information about the performance of the horde, such as worker counts and queue sizes.
 
-    Represents the data returned from the /v2/status/performance endpoint with http status code 200.
+      Represents the data returned from the /v2/status/performance endpoint with http status code 200.
 
-    v2 API Model: `HordePerformance`
-    """
-    ```
+      v2 API Model: `HordePerformance`
+      """
+      ```
 
     - Children classes of `HordeRequest` must have additional information, for example:
 
-    ```python
-    class HordePerformanceRequest(BaseAIHordeRequest):
-        """Request performance information about the horde, such as worker counts and queue sizes.
+      ```python
+      class HordePerformanceRequest(BaseAIHordeRequest):
+          """Request performance information about the horde, such as worker counts and queue sizes.
 
-        Represents a GET request to the /v2/status/performance endpoint.
-      """
-    ```
+          Represents a GET request to the /v2/status/performance endpoint.
+        """
+      ```
 
 ## Function and Method Signatures
 
@@ -190,32 +190,32 @@ Many docstrings in the SDK have additional requirements when they are related to
     - Generally, for methods which mutate or return a different type based on input, it should be clear from the method name and documentation that this is the case and which types can be expected based on different inputs.
         - For example, the following method signature should be considered bad practice:
 
-      ```python
-      def get_items(self, as_list: bool = True) -> list[Item] | set[Item]:
-          ...
-      ```
+          ```python
+          def get_items(self, as_list: bool = True) -> list[Item] | set[Item]:
+              ...
+          ```
 
     - Methods which *can* return a list or a container should *always* return a list or container, even if it is a single item.
         - For example, the following method signature should be considered bad practice:
 
-      ```python
-      def get_items(self) -> list[Item] | Item:
-          ...
-      ```
+          ```python
+          def get_items(self) -> list[Item] | Item:
+              ...
+          ```
 
     - Methods should avoid returning different container types *unless that is the purpose of the method*.
         - For example, the following method signatures should be considered bad practice:
 
-      ```python
-      def get_items(self) -> list[Item] | set[Item]:
-          ...
+          ```python
+          def get_items(self) -> list[Item] | set[Item]:
+              ...
 
-      def get_items(self, as_set: bool = False) -> list[Item] | set[Item]:
-          ...
-      ```
+          def get_items(self, as_set: bool = False) -> list[Item] | set[Item]:
+              ...
+          ```
 
-        - Instead, consider using a single container type and providing a separate method to convert to another type if needed.
-        - However, this should not be considered a ban on returning different container types if the method is specifically designed to do so or if it is clear from the method name and documentation that this is the case.
+    - Instead, consider using a single container type and providing a separate method to convert to another type if needed.
+    - However, this should not be considered a ban on returning different container types if the method is specifically designed to do so or if it is clear from the method name and documentation that this is the case.
 
 ## Control Flow and Readability
 
@@ -306,14 +306,14 @@ Many docstrings in the SDK have additional requirements when they are related to
         ...
         ```
 
-      Prefer:
+        Prefer:
 
-        ```python
-        class APIConfig:
-            MAX_RETRIES = 5
-            TIMEOUT = 30
-            ...
-      ```
+          ```python
+          class APIConfig:
+              MAX_RETRIES = 5
+              TIMEOUT = 30
+              ...
+          ```
 
 ### "KNOWN" Constants
 

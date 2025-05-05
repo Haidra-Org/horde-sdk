@@ -3,19 +3,19 @@
 ## Table of Contents
 
 - [Contributing to horde\_sdk](#contributing-to-horde_sdk)
-  - [Table of Contents](#table-of-contents)
-  - [Environment Management](#environment-management)
-    - [First time setup](#first-time-setup)
-  - [Code Quality Tools](#code-quality-tools)
-  - [Code Style and System Design](#code-style-and-system-design)
-  - [Testing](#testing)
-    - [When the API adds an endpoint or changes a model](#when-the-api-adds-an-endpoint-or-changes-a-model)
-    - [Verifying the horde SDK API surface](#verifying-the-horde-sdk-api-surface)
-  - [New Features/Pull Requests/Working on issues](#new-featurespull-requestsworking-on-issues)
-    - [Pull Request Do's and Don'ts](#pull-request-dos-and-donts)
-      - [Do](#do)
-      - [Don't](#dont)
-    - [Before Requesting Review](#before-requesting-review)
+    - [Table of Contents](#table-of-contents)
+    - [Environment Management](#environment-management)
+        - [First time setup](#first-time-setup)
+    - [Code Quality Tools](#code-quality-tools)
+    - [Code Style and System Design](#code-style-and-system-design)
+    - [Testing](#testing)
+        - [When the API adds an endpoint or changes a model](#when-the-api-adds-an-endpoint-or-changes-a-model)
+        - [Verifying the horde SDK API surface](#verifying-the-horde-sdk-api-surface)
+    - [New Features/Pull Requests/Working on issues](#new-featurespull-requestsworking-on-issues)
+        - [Pull Request Do's and Don'ts](#pull-request-dos-and-donts)
+            - [Do](#do)
+            - [Don't](#dont)
+        - [Before Requesting Review](#before-requesting-review)
 
 ## Environment Management
 
