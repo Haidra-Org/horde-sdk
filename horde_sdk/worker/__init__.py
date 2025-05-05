@@ -3,17 +3,17 @@
 from horde_sdk.worker.generations import AlchemySingleGeneration, ImageSingleGeneration, TextSingleGeneration
 from horde_sdk.worker.generations_base import HordeSingleGeneration
 
-AnyGenerationType = ImageSingleGeneration | AlchemySingleGeneration | TextSingleGeneration
+KnownGenerationType = ImageSingleGeneration | AlchemySingleGeneration | TextSingleGeneration
 """All of the possible generation types."""
 
 from horde_sdk.worker.job_base import HordeWorkerJob, HordeWorkerJobConfig, SingleGenerationTypeVar
 from horde_sdk.worker.jobs import AlchemyWorkerJob, ImageWorkerJob, TextWorkerJob
 
-AnyWorkerJobType = ImageWorkerJob | AlchemyWorkerJob | TextWorkerJob
+KnownWorkerJobType = ImageWorkerJob | AlchemyWorkerJob | TextWorkerJob
 
 __all__ = [
-    "AnyGenerationType",
-    "AnyWorkerJobType",
+    "KnownGenerationType",
+    "KnownWorkerJobType",
     "HordeSingleGeneration",
     "HordeWorkerJob",
     "HordeWorkerJobConfig",
