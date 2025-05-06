@@ -16,6 +16,7 @@ from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
     base_generate_progress_no_submit_transitions,
     base_generate_progress_transitions,
+    black_box_generate_progress_transitions,
 )
 
 GenerationResultTypeVar = TypeVar("GenerationResultTypeVar")
@@ -85,6 +86,13 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
 
     _strict_transition_mode: bool
 
+    _black_box_mode: bool
+
+    @property
+    def black_box_mode(self) -> bool:
+        """Whether or not the generation is in black box mode."""
+        return self._black_box_mode
+
     def __init__(
         self,
         *,
@@ -101,6 +109,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             GENERATION_PROGRESS,
             Iterable[GENERATION_PROGRESS],
         ] = base_generate_progress_transitions,
+        black_box_mode: bool = False,
         strict_transition_mode: bool = True,
         extra_logging: bool = True,
     ) -> None:
@@ -127,6 +136,10 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             generate_progress_transitions (dict[GenerationProgress, list[GenerationProgress]], optional): The \
                 transitions that are allowed between generation states. \
                 Defaults to `base_generate_progress_transitions` (found in consts.py).
+            black_box_mode (bool, optional): Whether the generation is in black box mode. \
+                This removes all of the intermediate states between starting and finished states. \
+                This should only be used when the backend has no observability into the generation process. \
+                Defaults to False.
             strict_transition_mode (bool, optional): Whether or not to enforce strict transition checking. \
                 This prevents setting the same state multiple times in a row. \
                 Defaults to True.
@@ -188,10 +201,20 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
 
         self._requires_submit = requires_submit
 
-        if generate_progress_transitions is None:
+        if generate_progress_transitions is None and not black_box_mode:
             raise ValueError("generate_progress_transitions cannot be None")
 
-        self._generate_progress_transitions = generate_progress_transitions
+        self._black_box_mode = black_box_mode
+
+        if black_box_mode:
+            if generate_progress_transitions != base_generate_progress_transitions:
+                logger.debug(
+                    "Black box mode is enabled, overriding generate_progress_transitions with "
+                    "black_box_generate_progress_transitions.",
+                )
+            self._generate_progress_transitions = black_box_generate_progress_transitions
+        else:
+            self._generate_progress_transitions = generate_progress_transitions
 
         self._errored_states = []
         self._error_counts = {}
@@ -446,7 +469,10 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         self._set_generation_progress(GENERATION_PROGRESS.PRELOADING_COMPLETE)
 
     def _work_complete(self) -> None:
-        if GENERATION_PROGRESS.PENDING_SAFETY_CHECK in self._generate_progress_transitions[self._generation_progress]:
+        if self._black_box_mode:
+            return
+
+        if self._requires_safety_check:
             self._set_generation_progress(GENERATION_PROGRESS.PENDING_SAFETY_CHECK)
         else:
             if self._requires_submit:
@@ -462,7 +488,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         just returned an image, interrogating an image has just completed or when a text backend has just generated
         text.
         """
-        if self.requires_post_processing:
+        if self.requires_post_processing and not self._black_box_mode:
             self._set_generation_progress(GENERATION_PROGRESS.PENDING_POST_PROCESSING)
         else:
             self._work_complete()
@@ -479,6 +505,10 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         """Call when post-processing is complete."""
         self._work_complete()
 
+    def on_pending_safety_check(self) -> None:
+        """Call when the generation is pending safety check."""
+        self._set_generation_progress(GENERATION_PROGRESS.PENDING_SAFETY_CHECK)
+
     def set_work_result(self, result: GenerationResultTypeVar | Collection[GenerationResultTypeVar]) -> None:
         """Set the result of the generation work.
 
@@ -486,6 +516,10 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             result (Any): The result of the generation work.
         """
         self._set_generation_work_result(result)
+
+    def on_complete(self) -> None:
+        """Call when the generation is complete."""
+        self._set_generation_progress(GENERATION_PROGRESS.COMPLETE)
 
     _generation_results: OrderedDict[GENERATION_ID_TYPES, GenerationResultTypeVar] | None = None
 
@@ -509,14 +543,18 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
                 self.on_post_processing()
             case GENERATION_PROGRESS.PENDING_POST_PROCESSING:
                 self.on_post_processing_complete()
+            case GENERATION_PROGRESS.PENDING_SAFETY_CHECK:
+                self.on_pending_safety_check()
             case GENERATION_PROGRESS.SAFETY_CHECKING:
                 self.on_safety_checking()
             case GENERATION_PROGRESS.PENDING_SUBMIT:
-                self.on_safety_check_complete(is_nsfw=False, is_csam=False)
+                self.on_pending_submit()
             case GENERATION_PROGRESS.SUBMITTING:
                 self.on_submitting()
             case GENERATION_PROGRESS.SUBMIT_COMPLETE:
                 self.on_submit_complete()
+            case GENERATION_PROGRESS.COMPLETE:
+                self.on_complete()
             case _:
                 raise ValueError(f"Invalid state {state} (current state: {self._generation_progress})")
 
@@ -638,6 +676,10 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             self._set_generation_progress(GENERATION_PROGRESS.PENDING_SUBMIT)
         else:
             self._set_generation_progress(GENERATION_PROGRESS.COMPLETE)
+
+    def on_pending_submit(self) -> None:
+        """Call when the generation is pending submission."""
+        self._set_generation_progress(GENERATION_PROGRESS.PENDING_SUBMIT)
 
     def on_submitting(self) -> None:
         """Call when an attempt is going to be made to submit the generation."""

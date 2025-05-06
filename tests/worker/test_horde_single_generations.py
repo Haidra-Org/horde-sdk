@@ -174,6 +174,105 @@ class TestHordeSingleGeneration:
         with pytest.raises(TypeError):
             ImageSingleGeneration(generation_id=None)  # type: ignore
 
+    def test_black_box_mode_no_submit(
+        self,
+        simple_image_generation_parameters: ImageGenerationParameters,
+    ) -> None:
+        """Test that a generation can be initialized in black box mode."""
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
+        from horde_sdk.worker.generations import ImageSingleGeneration
+
+        generation_id = str(UUID("00000000-0000-0000-0000-000000000000"))
+        generation = ImageSingleGeneration(
+            generation_id=generation_id,
+            generation_parameters=simple_image_generation_parameters,
+            black_box_mode=True,
+            requires_submit=False,
+        )
+
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.NOT_STARTED
+        assert generation.black_box_mode is True
+
+        generation.on_generating()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.GENERATING
+
+        generation.on_generation_work_complete()
+        generation.set_work_result(self._shared_image)
+        generation.on_complete()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.COMPLETE
+
+    def test_black_box_mode_with_submit(
+        self,
+        simple_image_generation_parameters: ImageGenerationParameters,
+    ) -> None:
+        """Test that a generation can be initialized in black box mode with submission."""
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
+        from horde_sdk.worker.generations import ImageSingleGeneration
+
+        generation_id = str(UUID("00000000-0000-0000-0000-000000000000"))
+        generation = ImageSingleGeneration(
+            generation_id=generation_id,
+            generation_parameters=simple_image_generation_parameters,
+            black_box_mode=True,
+            requires_submit=True,
+        )
+
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.NOT_STARTED
+        assert generation.black_box_mode is True
+
+        generation.on_generating()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.GENERATING
+
+        generation.on_generation_work_complete()
+        generation.set_work_result(self._shared_image)
+        generation.on_pending_submit()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.PENDING_SUBMIT
+
+        generation.on_submitting()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMITTING
+
+        generation.on_submit_complete()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMIT_COMPLETE
+
+    def test_black_box_mode_with_submit_and_safety_check(
+        self,
+        simple_image_generation_parameters: ImageGenerationParameters,
+    ) -> None:
+        """Test that a generation can be initialized in black box mode with submission."""
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
+        from horde_sdk.worker.generations import ImageSingleGeneration
+
+        generation_id = str(UUID("00000000-0000-0000-0000-000000000000"))
+        generation = ImageSingleGeneration(
+            generation_id=generation_id,
+            generation_parameters=simple_image_generation_parameters,
+            black_box_mode=True,
+            requires_submit=True,
+        )
+
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.NOT_STARTED
+        assert generation.black_box_mode is True
+
+        generation.on_generating()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.GENERATING
+
+        generation.on_generation_work_complete()
+        generation.set_work_result(self._shared_image)
+        generation.on_pending_safety_check()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.PENDING_SAFETY_CHECK
+
+        generation.on_safety_checking()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.SAFETY_CHECKING
+
+        generation.on_safety_check_complete(is_csam=False, is_nsfw=False)
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.PENDING_SUBMIT
+
+        generation.on_submitting()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMITTING
+
+        generation.on_submit_complete()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMIT_COMPLETE
+
     @staticmethod
     def shared_check_generation_init(
         generation: HordeSingleGeneration[Any],
@@ -258,12 +357,12 @@ class TestHordeSingleGeneration:
 
         with pytest.raises(
             ValueError,
-            match=f"Invalid state {GENERATION_PROGRESS.PENDING_SAFETY_CHECK} "
+            match=f"Invalid state {GENERATION_PROGRESS.NOT_STARTED} "
             r"\(current state: "
             f"{GENERATION_PROGRESS.NOT_STARTED}"
             r"\)",
         ):
-            generation.step(GENERATION_PROGRESS.PENDING_SAFETY_CHECK)
+            generation.step(GENERATION_PROGRESS.NOT_STARTED)
 
         generation.step(GENERATION_PROGRESS.PRELOADING)
         assert generation.get_generation_progress() == GENERATION_PROGRESS.PRELOADING
@@ -290,7 +389,7 @@ class TestHordeSingleGeneration:
 
         assert_raises_value_error(
             generation.on_generation_work_complete,
-            f"Invalid transition from {GENERATION_PROGRESS.NOT_STARTED} to {GENERATION_PROGRESS.PENDING_SUBMIT}",
+            f"Invalid transition from {GENERATION_PROGRESS.NOT_STARTED} to {GENERATION_PROGRESS.PENDING_SAFETY_CHECK}",
         )
 
         # Normal progression to preloading
@@ -304,7 +403,7 @@ class TestHordeSingleGeneration:
 
         assert_raises_value_error(
             generation.on_generation_work_complete,
-            f"Invalid transition from {GENERATION_PROGRESS.PRELOADING} to {GENERATION_PROGRESS.PENDING_SUBMIT}",
+            f"Invalid transition from {GENERATION_PROGRESS.PRELOADING} to {GENERATION_PROGRESS.PENDING_SAFETY_CHECK}",
         )
 
         # Normal progression to preloading complete

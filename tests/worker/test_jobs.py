@@ -2,6 +2,7 @@ from horde_sdk.consts import GENERATION_ID_TYPES
 from horde_sdk.generation_parameters import (
     AlchemyParameters,
     ImageGenerationParameters,
+    ImageGenerationParametersTemplate,
     TextGenerationParameters,
 )
 from horde_sdk.worker.generations import AlchemySingleGeneration, ImageSingleGeneration, TextSingleGeneration
@@ -49,8 +50,7 @@ def test_init_image_worker_job(
         image_worker_job=image_worker_job,
         generation_type=ImageSingleGeneration,
     )
-
-    assert len(image_worker_job._upload_map) == len(generation_parameters.generation_ids) == len(upload_map)
+    assert len(image_worker_job.generations) == len(upload_map) == len(generation_parameters.generation_ids)
 
 
 def test_init_image_worker_job_n_requests(
@@ -74,7 +74,7 @@ def test_init_image_worker_job_n_requests(
         generation_type=ImageSingleGeneration,
     )
 
-    assert len(image_worker_job._upload_map) == len(generation_parameters.generation_ids) == len(upload_map)
+    assert len(image_worker_job.generations) == len(upload_map) == len(generation_parameters.generation_ids)
 
 
 def test_init_image_worker_job_end_to_end_happy_path(
@@ -128,7 +128,7 @@ def test_init_alchemy_worker_job(
         generation_type=AlchemySingleGeneration,
     )
 
-    assert len(alchemy_worker_job._upload_map) == len(upload_map)
+    assert len(alchemy_worker_job.generations) == len(upload_map)
 
 
 def test_init_alchemy_worker_job_end_to_end_happy_path(

@@ -58,6 +58,7 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
         generation_id: GENERATION_ID_TYPES | None = None,
         batch_ids: list[GENERATION_ID_TYPES] | None = None,
         requires_submit: bool = True,
+        black_box_mode: bool = False,
         state_error_limits: (
             Mapping[GENERATION_PROGRESS, int] | None
         ) = HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS,
@@ -74,6 +75,10 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
                 If None, a random UUID will be generated for each result.
             requires_submit (bool, optional): Whether the generation requires submission. \
                 Defaults to True.
+            black_box_mode (bool, optional): Whether the generation is in black box mode. \
+                This removes all of the intermediate states between starting and finished states. \
+                This should only be used when the backend has no observability into the generation process. \
+                Defaults to False.
             state_error_limits (Mapping[GENERATION_PROGRESS, int], optional): The maximum number of times a \
                 generation can be in an error state before it is considered failed. \
                 Defaults to HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS.
@@ -100,6 +105,7 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
             requires_submit=requires_submit,
             state_error_limits=state_error_limits,
             generate_progress_transitions=generate_progress_transitions,
+            black_box_mode=black_box_mode,
             strict_transition_mode=strict_transition_mode,
             extra_logging=extra_logging,
         )
@@ -151,6 +157,7 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
         requires_post_processing: bool = True,
         requires_safety_check: bool = False,
         requires_submit: bool = True,
+        black_box_mode: bool = False,
         state_error_limits: (
             Mapping[GENERATION_PROGRESS, int] | None
         ) = HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS,
@@ -173,6 +180,10 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
                 Defaults to False.
             requires_submit (bool, optional): Whether the generation requires submission. \
                 Defaults to True.
+            black_box_mode (bool, optional): Whether the generation is in black box mode. \
+                This removes all of the intermediate states between starting and finished states. \
+                This should only be used when the backend has no observability into the generation process. \
+                Defaults to False.
             state_error_limits (Mapping[GENERATION_PROGRESS, int], optional): The maximum number of times a \
                 generation can be in an error state before it is considered failed. \
                 Defaults to HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS.
@@ -203,6 +214,7 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
             requires_submit=requires_submit,
             state_error_limits=state_error_limits,
             generate_progress_transitions=generate_progress_transitions,
+            black_box_mode=black_box_mode,
             strict_transition_mode=strict_transition_mode,
             extra_logging=extra_logging,
         )
@@ -249,6 +261,7 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
         requires_post_processing: bool = False,
         requires_safety_check: bool = False,
         requires_submit: bool = True,
+        black_box_mode: bool = False,
         state_error_limits: (
             Mapping[GENERATION_PROGRESS, int] | None
         ) = HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS,
@@ -271,6 +284,10 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
                 Defaults to False.
             requires_submit (bool, optional): Whether the generation requires submission. \
                 Defaults to True.
+            black_box_mode (bool, optional): Whether the generation is in black box mode. \
+                This removes all of the intermediate states between starting and finished states. \
+                This should only be used when the backend has no observability into the generation process. \
+                Defaults to False.
             state_error_limits (Mapping[GENERATION_PROGRESS, int], optional): The maximum number of times a \
                 generation can be in an error state before it is considered failed. \
                 Defaults to HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS.
@@ -304,6 +321,7 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
             requires_submit=requires_submit,
             state_error_limits=state_error_limits,
             generate_progress_transitions=generate_progress_transitions,
+            black_box_mode=black_box_mode,
             strict_transition_mode=strict_transition_mode,
             extra_logging=extra_logging,
         )

@@ -173,6 +173,42 @@ base_generate_progress_transitions: dict[GENERATION_PROGRESS, list[GENERATION_PR
 }
 """A map of the typical transitions between generation states."""
 
+# "black box" generations are connected to backends which have no internal observability. These transitions are
+# therefore limited to starting, erroring and completing.
+black_box_generate_progress_transitions: dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]] = {
+    GENERATION_PROGRESS.NOT_STARTED: [
+        GENERATION_PROGRESS.GENERATING,
+        GENERATION_PROGRESS.ERROR,
+    ],
+    GENERATION_PROGRESS.GENERATING: [
+        GENERATION_PROGRESS.PENDING_SUBMIT,
+        GENERATION_PROGRESS.PENDING_SAFETY_CHECK,
+        GENERATION_PROGRESS.COMPLETE,
+        GENERATION_PROGRESS.ERROR,
+    ],
+    GENERATION_PROGRESS.PENDING_SAFETY_CHECK: [
+        GENERATION_PROGRESS.SAFETY_CHECKING,
+        GENERATION_PROGRESS.ERROR,
+    ],
+    GENERATION_PROGRESS.SAFETY_CHECKING: [
+        GENERATION_PROGRESS.PENDING_SUBMIT,
+        GENERATION_PROGRESS.COMPLETE,
+        GENERATION_PROGRESS.ERROR,
+    ],
+    GENERATION_PROGRESS.PENDING_SUBMIT: [
+        GENERATION_PROGRESS.SUBMITTING,
+        GENERATION_PROGRESS.ERROR,
+    ],
+    GENERATION_PROGRESS.SUBMITTING: [
+        GENERATION_PROGRESS.SUBMIT_COMPLETE,
+        GENERATION_PROGRESS.COMPLETE,
+        GENERATION_PROGRESS.ABANDONED,
+        GENERATION_PROGRESS.ERROR,
+    ],
+    GENERATION_PROGRESS.COMPLETE: [],
+    GENERATION_PROGRESS.ERROR: [],
+}
+
 
 # Factory function to generate transition dictionaries
 def generate_transitions(
