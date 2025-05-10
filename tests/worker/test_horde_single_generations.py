@@ -11,13 +11,48 @@ from horde_sdk.generation_parameters.alchemy import (
 )
 from horde_sdk.generation_parameters.image import ImageGenerationParameters
 from horde_sdk.generation_parameters.text import TextGenerationParameters
-from horde_sdk.worker.consts import GENERATION_PROGRESS
+from horde_sdk.worker.consts import (
+    GENERATION_PROGRESS,
+    base_generate_progress_transitions,
+    black_box_generate_progress_transitions,
+)
 from horde_sdk.worker.generations import (
     AlchemySingleGeneration,
     ImageSingleGeneration,
     TextSingleGeneration,
 )
 from horde_sdk.worker.generations_base import HordeSingleGeneration
+
+
+def test_write_progress_transitions() -> None:
+    """Write the progress transitions to the docs folder."""
+
+    # Convert enum dictionaries to string dictionaries before serializing to YAML
+    def convert_enum_dict_to_string_dict(
+        enum_dict: dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]],
+    ) -> dict[str, list[str]]:
+        string_dict = {}
+        for key, values in enum_dict.items():
+            string_key = key.name  # Get the name of the enum
+            string_values = [value.name for value in values]  # Convert enum values to strings
+            string_dict[string_key] = string_values
+        return string_dict
+
+    transitions_to_write = [
+        (convert_enum_dict_to_string_dict(base_generate_progress_transitions), "base_transitions.yaml"),
+        (convert_enum_dict_to_string_dict(black_box_generate_progress_transitions), "black_box_transitions.yaml"),
+    ]
+
+    output_folder = "docs/ai-horde-worker"
+
+    for transitions in transitions_to_write:
+        transitions_dict, filename = transitions
+        output_path = f"{output_folder}/{filename}"
+
+        with open(output_path, "w") as file:
+            yaml.dump(transitions_dict, file, default_flow_style=False, sort_keys=False)
+
+        logger.info(f"Wrote progress transitions to {output_path}")
 
 
 class GenerationPermutation:
