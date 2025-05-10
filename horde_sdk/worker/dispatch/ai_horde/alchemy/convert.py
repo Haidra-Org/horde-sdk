@@ -1,7 +1,7 @@
 """Contains functions to convert API responses to alchemy generation parameters."""
 
 from horde_sdk.ai_horde_api.apimodels import AlchemyJobPopResponse, NoValidAlchemyFound
-from horde_sdk.consts import KNOWN_DISPATCH_SOURCE
+from horde_sdk.consts import KNOWN_ALCHEMY_BACKEND, KNOWN_DISPATCH_SOURCE, KNOWN_NSFW_DETECTOR
 from horde_sdk.generation_parameters.alchemy import (
     AlchemyParameters,
     CaptionAlchemyParameters,
@@ -15,7 +15,6 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_ALCHEMY_FORMS,
     KNOWN_CAPTION_MODELS,
     KNOWN_INTERROGATORS,
-    KNOWN_NSFW_DETECTOR,
     is_caption_form,
     is_facefixer_form,
     is_interrogator_form,
@@ -26,7 +25,6 @@ from horde_sdk.utils.image_utils import (
     base64_str_to_bytes,
 )
 from horde_sdk.worker.consts import (
-    KNOWN_ALCHEMY_BACKEND,
     REQUESTED_BACKEND_CONSTRAINTS,
     REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE,
 )
@@ -102,7 +100,7 @@ def convert_alchemy_job_pop_response_to_parameters(
                     generation_id=str(form.id_),
                     form=KNOWN_ALCHEMY_FORMS.nsfw,
                     source_image=base64_str_to_bytes(form.source_image),
-                    nsfw_detector=KNOWN_NSFW_DETECTOR.horde_safety,
+                    nsfw_detector=KNOWN_NSFW_DETECTOR.HORDE_SAFETY,
                 ),
             )
 

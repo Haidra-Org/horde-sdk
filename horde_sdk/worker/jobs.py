@@ -7,7 +7,7 @@ from typing_extensions import override
 
 from horde_sdk.consts import GENERATION_ID_TYPES, HTTPMethod
 from horde_sdk.generation_parameters import AlchemyParameters, ImageGenerationParameters, TextGenerationParameters
-from horde_sdk.worker.consts import WORKER_TYPE
+from horde_sdk.consts import WORKER_TYPE
 from horde_sdk.worker.generations import (
     AlchemySingleGeneration,
     ImageSingleGeneration,

@@ -122,3 +122,77 @@ class KNOWN_DISPATCH_SOURCE(StrEnum):
 
     AI_HORDE_API_FORK = auto()
     """The source of the dispatch is a fork of the official AI Horde API."""
+
+
+class KNOWN_NSFW_DETECTOR(StrEnum):
+    """The NSFW detectors that are known to the API."""
+
+    BACKEND_DEFAULT = auto()
+    """The default model for the worker backend."""
+
+    HORDE_SAFETY = auto()
+    """The AI-Horde horde_safety package."""
+
+    COMPVIS_SAFETY_CHECKER = auto()
+    """The compvis safety checker model released with stable diffusion."""
+
+
+class WORKER_TYPE(StrEnum):
+    """The worker types that are known.
+
+    (alchemy, image, text, etc...)
+    """
+
+    image = auto()
+    """Image generation worker."""
+    text = auto()
+    """Text generation worker."""
+    interrogation = auto()
+    """Alchemy/Interrogation worker."""
+    alchemist = "interrogation"
+    """Alchemy/Interrogation worker."""
+    video = auto()
+    """Video generation worker."""
+    audio = auto()
+    """Audio generation worker."""
+
+
+class KNOWN_INFERENCE_BACKEND(StrEnum):
+    """The known generative inference backends."""
+
+    UNKNOWN = auto()
+    """The inference backend is unknown."""
+
+    IN_MODEL_NAME = auto()
+    """The model name is prepended with the backend name."""
+
+    CUSTOM_UNPUBLISHED = auto()
+    """The inference backend is a custom, unpublished backend."""
+
+    COMFYUI = auto()
+    """The inference backend is ComfyUI."""
+
+    A1111 = auto()
+    """The inference backend is A1111."""
+
+    HORDE_ALCHEMIST = auto()
+    """The inference backend is the Horde Alchemist."""
+
+    KOBOLD_CPP = auto()
+    """The inference backend is Kobold CPP."""
+
+    APHRODITE = auto()
+    """The inference backend is Aphrodite."""
+
+
+class KNOWN_ALCHEMY_BACKEND(StrEnum):
+    """The known alchemy backends."""
+
+    UNKNOWN = auto()
+    """The alchemy backend is unknown."""
+
+    CUSTOM_UNPUBLISHED = auto()
+    """The alchemy backend is a custom, unpublished backend."""
+
+    HORDE_ALCHEMIST = auto()
+    """The alchemy backend is the Horde Alchemist."""

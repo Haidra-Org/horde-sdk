@@ -3,7 +3,9 @@ from typing import Any
 from uuid import UUID
 
 import pytest
+import yaml
 from loguru import logger
+from PIL import Image
 
 from horde_sdk.generation_parameters.alchemy import (
     AlchemyParameters,
@@ -11,6 +13,12 @@ from horde_sdk.generation_parameters.alchemy import (
 )
 from horde_sdk.generation_parameters.image import ImageGenerationParameters
 from horde_sdk.generation_parameters.text import TextGenerationParameters
+from horde_sdk.safety import (
+    ImageSafetyResult,
+    SafetyResult,
+    SafetyRules,
+    default_image_safety_rules,
+)
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
     base_generate_progress_transitions,
@@ -299,7 +307,13 @@ class TestHordeSingleGeneration:
         generation.on_safety_checking()
         assert generation.get_generation_progress() == GENERATION_PROGRESS.SAFETY_CHECKING
 
-        generation.on_safety_check_complete(is_csam=False, is_nsfw=False)
+        generation.on_safety_check_complete(
+            batch_index=0,
+            safety_result=ImageSafetyResult(
+                is_nsfw=False,
+                is_csam=False,
+            ),
+        )
         assert generation.get_generation_progress() == GENERATION_PROGRESS.PENDING_SUBMIT
 
         generation.on_submitting()
@@ -307,6 +321,247 @@ class TestHordeSingleGeneration:
 
         generation.on_submit_complete()
         assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMIT_COMPLETE
+
+    def _run_censor_test(
+        self,
+        *,
+        generation_parameters: ImageGenerationParameters | SingleAlchemyParameters,
+        generation_type: type[HordeSingleGeneration[Any]],
+        batch_id: UUID,
+        is_nsfw: bool,
+        is_csam: bool,
+        expect_censored: bool,
+        safety_rules: SafetyRules,
+    ) -> None:
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
+
+        generation_id = str(UUID("00000000-0000-0000-0000-000000000000"))
+
+        generation: HordeSingleGeneration[Any] = generation_type(
+            generation_id=generation_id,
+            generation_parameters=generation_parameters,
+            safety_rules=safety_rules,
+            batch_ids=[batch_id],
+            black_box_mode=True,
+        )
+
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.NOT_STARTED
+        assert generation.black_box_mode is True
+
+        generation.on_generating()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.GENERATING
+
+        generation.on_generation_work_complete()
+        generation.set_work_result(self._shared_image)
+
+        generation.on_pending_safety_check()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.PENDING_SAFETY_CHECK
+
+        generation.on_safety_checking()
+        assert generation.get_generation_progress() == GENERATION_PROGRESS.SAFETY_CHECKING
+
+        generation.on_safety_check_complete(
+            batch_index=0,
+            safety_result=ImageSafetyResult(
+                is_nsfw=is_nsfw,
+                is_csam=is_csam,
+            ),
+        )
+
+        safety_check_results = generation.get_safety_check_results()
+        assert safety_check_results is not None
+        assert len(safety_check_results) == 1
+        assert safety_check_results[0] is not None
+        assert safety_check_results[0].is_nsfw == is_nsfw
+        assert safety_check_results[0].is_csam == is_csam
+
+        assert batch_id in generation.generation_results
+        if expect_censored or is_csam:
+            assert generation.generation_results[batch_id] is None
+        else:
+            assert generation.generation_results[batch_id] is not None
+
+    def test_safety_censored_results(
+        self,
+        simple_image_generation_parameters: ImageGenerationParameters,
+        simple_alchemy_generation_parameters_nsfw_detect: AlchemyParameters,
+    ) -> None:
+        """Test that a generation can be censored based on safety results."""
+        self._run_censor_test(
+            generation_parameters=simple_image_generation_parameters,
+            generation_type=ImageSingleGeneration,
+            batch_id=UUID("00000000-0000-0000-9999-000000000000"),
+            is_nsfw=True,
+            is_csam=False,
+            expect_censored=True,
+            safety_rules=default_image_safety_rules,
+        )
+
+        assert simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors is not None
+        self._run_censor_test(
+            generation_parameters=simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0],
+            generation_type=AlchemySingleGeneration,
+            batch_id=UUID("00000000-0000-0000-8888-000000000000"),
+            is_nsfw=True,
+            is_csam=False,
+            expect_censored=True,
+            safety_rules=default_image_safety_rules,
+        )
+
+    def test_safety_censoring_not_expected(
+        self,
+        simple_image_generation_parameters: ImageGenerationParameters,
+        simple_alchemy_generation_parameters_nsfw_detect: AlchemyParameters,
+    ) -> None:
+        """Test that a generation is not censored when it shouldn't be."""
+        self._run_censor_test(
+            generation_parameters=simple_image_generation_parameters,
+            generation_type=ImageSingleGeneration,
+            batch_id=UUID("00000000-0000-0000-9999-000000000001"),
+            is_nsfw=False,
+            is_csam=False,
+            expect_censored=False,
+            safety_rules=default_image_safety_rules,
+        )
+
+        assert simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors is not None
+        self._run_censor_test(
+            generation_parameters=simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0],
+            generation_type=AlchemySingleGeneration,
+            batch_id=UUID("00000000-0000-0000-8888-000000000001"),
+            is_nsfw=False,
+            is_csam=False,
+            expect_censored=False,
+            safety_rules=default_image_safety_rules,
+        )
+
+    def test_safety_censored_csam(
+        self,
+        simple_image_generation_parameters: ImageGenerationParameters,
+        simple_alchemy_generation_parameters_nsfw_detect: AlchemyParameters,
+    ) -> None:
+        """Test that a generation is censored when CSAM is detected."""
+        self._run_censor_test(
+            generation_parameters=simple_image_generation_parameters,
+            generation_type=ImageSingleGeneration,
+            batch_id=UUID("00000000-0000-0000-9999-000000000002"),
+            is_nsfw=False,
+            is_csam=True,
+            expect_censored=True,
+            safety_rules=default_image_safety_rules,
+        )
+
+        assert simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors is not None
+        self._run_censor_test(
+            generation_parameters=simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0],
+            generation_type=AlchemySingleGeneration,
+            batch_id=UUID("00000000-0000-0000-8888-000000000002"),
+            is_nsfw=False,
+            is_csam=True,
+            expect_censored=True,
+            safety_rules=default_image_safety_rules,
+        )
+
+    def test_safety_censored_both(
+        self,
+        simple_image_generation_parameters: ImageGenerationParameters,
+        simple_alchemy_generation_parameters_nsfw_detect: AlchemyParameters,
+    ) -> None:
+        """Test that a generation is censored when both NSFW and CSAM are detected."""
+        self._run_censor_test(
+            generation_parameters=simple_image_generation_parameters,
+            generation_type=ImageSingleGeneration,
+            batch_id=UUID("00000000-0000-0000-9999-000000000003"),
+            is_nsfw=True,
+            is_csam=True,
+            expect_censored=True,
+            safety_rules=default_image_safety_rules,
+        )
+
+        assert simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors is not None
+        self._run_censor_test(
+            generation_parameters=simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0],
+            generation_type=AlchemySingleGeneration,
+            batch_id=UUID("00000000-0000-0000-8888-000000000003"),
+            is_nsfw=True,
+            is_csam=True,
+            expect_censored=True,
+            safety_rules=default_image_safety_rules,
+        )
+
+    def test_safety_uncensored_rules(
+        self,
+        simple_image_generation_parameters: ImageGenerationParameters,
+        simple_alchemy_generation_parameters_nsfw_detect: AlchemyParameters,
+    ) -> None:
+        """Test that a generation is not censored when the safety rules are set to not censor."""
+        self._run_censor_test(
+            generation_parameters=simple_image_generation_parameters,
+            generation_type=ImageSingleGeneration,
+            batch_id=UUID("00000000-0000-0000-9999-000000000004"),
+            is_nsfw=True,
+            is_csam=False,
+            expect_censored=False,
+            safety_rules=SafetyRules(
+                should_censor_nsfw=False,
+                should_censor_hate_speech=False,
+                should_censor_violent=False,
+                should_censor_self_harm=False,
+            ),
+        )
+
+        assert simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors is not None
+        self._run_censor_test(
+            generation_parameters=simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0],
+            generation_type=AlchemySingleGeneration,
+            batch_id=UUID("00000000-0000-0000-8888-000000000004"),
+            is_nsfw=True,
+            is_csam=False,
+            expect_censored=False,
+            safety_rules=SafetyRules(
+                should_censor_nsfw=False,
+                should_censor_hate_speech=False,
+                should_censor_violent=False,
+                should_censor_self_harm=False,
+            ),
+        )
+
+    def test_safety_csam_always_censors(
+        self,
+        simple_image_generation_parameters: ImageGenerationParameters,
+        simple_alchemy_generation_parameters_nsfw_detect: AlchemyParameters,
+    ) -> None:
+        """Test that a generation is always censored when CSAM is detected, regardless of safety rules."""
+        self._run_censor_test(
+            generation_parameters=simple_image_generation_parameters,
+            generation_type=ImageSingleGeneration,
+            batch_id=UUID("00000000-0000-0000-9999-000000000005"),
+            is_nsfw=False,
+            is_csam=True,
+            expect_censored=True,
+            safety_rules=SafetyRules(
+                should_censor_nsfw=False,
+                should_censor_hate_speech=False,
+                should_censor_violent=False,
+                should_censor_self_harm=False,
+            ),
+        )
+
+        assert simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors is not None
+        self._run_censor_test(
+            generation_parameters=simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0],
+            generation_type=AlchemySingleGeneration,
+            batch_id=UUID("00000000-0000-0000-8888-000000000005"),
+            is_nsfw=False,
+            is_csam=True,
+            expect_censored=True,
+            safety_rules=SafetyRules(
+                should_censor_nsfw=False,
+                should_censor_hate_speech=False,
+                should_censor_violent=False,
+                should_censor_self_harm=False,
+            ),
+        )
 
     @staticmethod
     def shared_check_generation_init(
@@ -324,10 +579,9 @@ class TestHordeSingleGeneration:
         assert generation.errored_states is not None
         assert len(generation.errored_states) == 0
 
-        assert generation.is_nsfw is None
-        assert generation.is_csam is None
+        assert generation._safety_results[0] is None
 
-        assert generation.generation_results is None
+        assert len(generation.generation_results) == 0
 
     def test_alchemy_single_generation_init(
         self,
@@ -477,7 +731,13 @@ class TestHordeSingleGeneration:
         _, generation = id_and_image_generation
 
         with pytest.raises(ValueError, match="Generation result must be set before setting safety check result"):
-            generation._set_safety_check_result(is_nsfw=True, is_csam=False)
+            generation.on_safety_check_complete(
+                batch_index=0,
+                safety_result=ImageSafetyResult(
+                    is_nsfw=False,
+                    is_csam=False,
+                ),
+            )
 
     def test_reference_run_generation_process_image(
         self,
@@ -517,7 +777,13 @@ class TestHordeSingleGeneration:
         generation.on_safety_checking()
         assert generation.get_generation_progress() == GENERATION_PROGRESS.SAFETY_CHECKING
 
-        generation.on_safety_check_complete(is_csam=False, is_nsfw=False)
+        generation.on_safety_check_complete(
+            batch_index=0,
+            safety_result=ImageSafetyResult(
+                is_nsfw=False,
+                is_csam=False,
+            ),
+        )
         assert generation.get_generation_progress() == GENERATION_PROGRESS.PENDING_SUBMIT
 
         generation.on_submitting()
@@ -659,9 +925,18 @@ class TestHordeSingleGeneration:
             generation.on_safety_checking()
             assert generation.get_generation_progress() == GENERATION_PROGRESS.SAFETY_CHECKING
 
-            generation.on_safety_check_complete(is_csam=False, is_nsfw=False)
-            assert generation.is_csam is False
-            assert generation.is_nsfw is False
+            generation.on_safety_check_complete(
+                batch_index=0,
+                safety_result=SafetyResult(
+                    is_nsfw=False,
+                    is_csam=False,
+                ),
+            )
+
+            assert generation._safety_results[0] is not None
+            assert generation._safety_results[0].is_nsfw is False
+            assert generation._safety_results[0].is_csam is False
+
         assert generation.get_generation_progress() == GENERATION_PROGRESS.PENDING_SUBMIT
 
         generation.on_submitting()
@@ -920,7 +1195,16 @@ class TestHordeSingleGeneration:
 
                 return
 
-            generation.on_safety_check_complete(is_csam=False, is_nsfw=False)
+            generation.on_safety_check_complete(
+                batch_index=0,
+                safety_result=SafetyResult(
+                    is_nsfw=False,
+                    is_csam=False,
+                ),
+            )
+            assert generation._safety_results[0] is not None
+            assert generation._safety_results[0].is_nsfw is False
+            assert generation._safety_results[0].is_csam is False
 
         if include_submit:
             generation.on_submitting()
@@ -1233,9 +1517,16 @@ class TestHordeSingleGeneration:
             generation.step(GENERATION_PROGRESS.SAFETY_CHECKING)
             assert generation.get_generation_progress() == GENERATION_PROGRESS.SAFETY_CHECKING
 
-        generation.on_safety_check_complete(is_csam=False, is_nsfw=False)
-        assert generation.is_csam is False
-        assert generation.is_nsfw is False
+        generation.on_safety_check_complete(
+            batch_index=0,
+            safety_result=SafetyResult(
+                is_nsfw=False,
+                is_csam=False,
+            ),
+        )
+        assert generation._safety_results[0] is not None
+        assert generation._safety_results[0].is_nsfw is False
+        assert generation._safety_results[0].is_csam is False
 
         return errors_count
 

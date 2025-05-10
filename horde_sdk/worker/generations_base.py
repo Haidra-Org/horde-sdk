@@ -12,18 +12,20 @@ from loguru import logger
 
 from horde_sdk.consts import GENERATION_ID_TYPES
 from horde_sdk.generation_parameters.generic import ComposedParameterSetBase
+from horde_sdk.safety import SafetyResult, SafetyRules, default_safety_rules
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
     base_generate_progress_no_submit_transitions,
     base_generate_progress_transitions,
     black_box_generate_progress_transitions,
+    validate_generation_progress_transitions,
 )
 
 GenerationResultTypeVar = TypeVar("GenerationResultTypeVar")
 
 
 class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
-    """Base class for individual generations. Generations are specific instances of inference or computation.
+    """Base class for tracking a generation. Generations are specific instances of inference or computation.
 
     This should not be confused with specific results, which are the output of a generation. For example, a generation
     could result in several images, but as the result of a single round of inference. The generation is the process of
@@ -77,10 +79,10 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
     _batch_ids: list[GENERATION_ID_TYPES]
 
     @property
-    def batch_ids(self) -> list[GENERATION_ID_TYPES] | None:
+    def batch_ids(self) -> list[GENERATION_ID_TYPES]:
         """The unique identifiers for the generations in the batch."""
         with self._lock:
-            return self._batch_ids.copy() if self._batch_ids is not None else None
+            return self._batch_ids.copy()
 
     _lock: threading.RLock
 
@@ -93,6 +95,22 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         """Whether or not the generation is in black box mode."""
         return self._black_box_mode
 
+    _registered_callbacks: dict[GENERATION_PROGRESS, list[Callable[[], None]]]
+
+    def register_callback(
+        self,
+        state: GENERATION_PROGRESS,
+        callback: Callable[[], None],
+    ) -> None:
+        """Register a callback to be called when the generation state is updated.
+
+        Args:
+            state (GENERATION_PROGRESS): The state to register the callback for.
+            callback (Callable[[], None]): The callback to call when the state is updated.
+        """
+        with self._lock:
+            self._registered_callbacks[state].append(callback)
+
     def __init__(
         self,
         *,
@@ -104,6 +122,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         requires_post_processing: bool = False,
         requires_safety_check: bool = True,
         requires_submit: bool = True,
+        safety_rules: SafetyRules = default_safety_rules,
         state_error_limits: Mapping[GENERATION_PROGRESS, int] | None = None,
         generate_progress_transitions: Mapping[
             GENERATION_PROGRESS,
@@ -130,6 +149,8 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
                 Defaults to True.
             requires_submit (bool, optional): Whether or not the generation requires submission. \
                 Defaults to True.
+            safety_rules (SafetyRules, optional): The rules to use for safety checking. \
+                Defaults to `default_safety_rules` from `horde_sdk.safety`.
             state_error_limits (Mapping[GENERATION_PROGRESS, int], optional): The maximum number of times a \
                 generation can be in an error state before it is considered failed. \
                 Defaults to None.
@@ -186,6 +207,8 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
 
         self._batch_ids = batch_ids
 
+        self._generation_results: OrderedDict[GENERATION_ID_TYPES, GenerationResultTypeVar | None] = OrderedDict()
+
         self._extra_logging = extra_logging
 
         if self.does_class_require_generation() and not requires_generation:
@@ -198,6 +221,8 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             raise ValueError("Generation class requires safety check but requires_safety_check is False")
 
         self._requires_safety_check = requires_safety_check
+        self._safety_results: list[SafetyResult | None] = [None] * self._batch_size
+        self._safety_rules = safety_rules
 
         self._requires_submit = requires_submit
 
@@ -214,6 +239,12 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
                 )
             self._generate_progress_transitions = black_box_generate_progress_transitions
         else:
+            if not validate_generation_progress_transitions(generate_progress_transitions):
+                raise ValueError(
+                    "Invalid generate_progress_transitions provided. "
+                    "Please ensure it is a valid mapping of GENERATION_PROGRESS to iterable of GENERATION_PROGRESS."
+                    "See horde_sdk.worker.consts for the default transitions.",
+                )
             self._generate_progress_transitions = generate_progress_transitions
 
         self._errored_states = []
@@ -230,6 +261,11 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         self._lock = threading.RLock()
 
         self._strict_transition_mode = strict_transition_mode
+
+        self._registered_callbacks = {}
+
+        for state in self._generate_progress_transitions:
+            self._registered_callbacks[state] = []
 
     generation_id: GENERATION_ID_TYPES
     """Unique identifier for the generation."""
@@ -395,6 +431,13 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
                 self._errored_states.append((last_non_error_state, last_non_error_state_time))
                 self._error_counts[last_non_error_state] = self._error_counts.get(last_non_error_state, 0) + 1
             else:
+                if next_state == GENERATION_PROGRESS.USER_REQUESTED_ABORT:
+                    self._extra_log()(
+                        f"Generation {self.generation_id} is being aborted by user request.",
+                    )
+                    self._set_generation_progress(GENERATION_PROGRESS.USER_REQUESTED_ABORT)
+                    return GENERATION_PROGRESS.ABORTED
+
                 if next_state == last_non_error_state:
                     self._extra_log()(f"Retrying state {next_state} after error")
                 elif next_state not in self._generate_progress_transitions[last_non_error_state]:
@@ -521,7 +564,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         """Call when the generation is complete."""
         self._set_generation_progress(GENERATION_PROGRESS.COMPLETE)
 
-    _generation_results: OrderedDict[GENERATION_ID_TYPES, GenerationResultTypeVar] | None = None
+    _generation_results: OrderedDict[GENERATION_ID_TYPES, GenerationResultTypeVar | None]
 
     def on_state(
         self,
@@ -567,10 +610,10 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         self.on_state(state)
 
     @property
-    def generation_results(self) -> OrderedDict[GENERATION_ID_TYPES, GenerationResultTypeVar] | None:
+    def generation_results(self) -> OrderedDict[GENERATION_ID_TYPES, GenerationResultTypeVar | None]:
         """Get the result of the generation."""
         with self._lock:
-            return self._generation_results.copy() if self._generation_results is not None else None
+            return self._generation_results.copy()
 
     def _set_generation_work_result(
         self,
@@ -594,9 +637,6 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             )
 
         with self._lock:
-            if self._generation_results is None:
-                self._generation_results = OrderedDict()
-
             if len(self._generation_results) >= self.batch_size:
                 raise ValueError(
                     f"Generation result list is full ({len(self._generation_results)}), cannot add more results",
@@ -618,60 +658,73 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
                 for index, passed_result in enumerate(result):
                     self._generation_results[self._batch_ids[len(self._generation_results) + index]] = passed_result
 
-    _is_nsfw: bool | None = None
-    _is_csam: bool | None = None
-
-    @property
-    def is_nsfw(self) -> bool | None:
-        """Whether or not the generation is NSFW."""
-        return self._is_nsfw
-
-    @property
-    def is_csam(self) -> bool | None:
-        """Whether or not the generation is CSAM."""
-        return self._is_csam
+    _safety_rules: SafetyRules
+    _safety_results: list[SafetyResult | None]
 
     def _set_safety_check_result(
         self,
-        *,
-        is_nsfw: bool,
-        is_csam: bool,
+        batch_index: int,
+        safety_result: SafetyResult,
     ) -> None:
         """Set the result of the safety check.
 
         Args:
-            is_nsfw (bool): Whether or not the generation is NSFW.
-            is_csam (bool): Whether or not the generation is CSAM.
+            batch_index (int): The index of the batch to set the safety check result for.
+            safety_result (SafetyResult): The result of the safety check.
 
         Raises:
             ValueError: If is_nsfw or is_csam is not provided or is `None`.
         """
-        if is_nsfw is None:
-            raise ValueError("is_nsfw must be provided")
-
-        if is_csam is None:
-            raise ValueError("is_csam must be provided")
-
-        if self.generation_results is None:
+        if len(self._generation_results) == 0 or len(self._generation_results) < batch_index + 1:
             raise ValueError("Generation result must be set before setting safety check result")
 
         with self._lock:
-            self._is_nsfw = is_nsfw
-            self._is_csam = is_csam
-            # TODO: Batch addressable results w/ automatic delete
+            if self._safety_results[batch_index] is not None:
+                logger.warning(
+                    f"Safety check result for batch index {batch_index} has already been set.",
+                )
+
+            self._safety_results[batch_index] = safety_result
+
+            if self._safety_rules.should_censor(safety_result):
+                logger.debug(
+                    f"Safety check result for batch index {batch_index} is unsafe: {safety_result}. "
+                    "Censoring result.",
+                )
+
+                if self._generation_results[self._batch_ids[batch_index]] is None:
+                    logger.warning(
+                        f"Generation result for batch index {batch_index} is None already",
+                    )
+
+                self._generation_results[self._batch_ids[batch_index]] = None
+
+    def get_safety_check_results(self) -> list[SafetyResult | None]:
+        """Get the results of the safety checks.
+
+        Returns:
+            list[SafetyResult | None]: The results of the safety checks for each batch.
+        """
+        with self._lock:
+            return self._safety_results.copy() if self._safety_results is not None else None
 
     def on_safety_checking(self) -> None:
         """Call when the safety check is about to start."""
         self._set_generation_progress(GENERATION_PROGRESS.SAFETY_CHECKING)
 
-    def on_safety_check_complete(self, *, is_nsfw: bool, is_csam: bool) -> None:
+    def on_safety_check_complete(self, batch_index: int, safety_result: SafetyResult) -> None:
         """Call when the safety check is complete.
 
         Args:
-            is_nsfw (bool): Whether or not the generation is NSFW.
-            is_csam (bool): Whether or not the generation is CSAM.
+            batch_index (int): The index of the batch to set the safety check result for.
+                This is 0-indexed and must match the position of the batch_ids provided during initialization.
+            safety_result (SafetyResult): The result of the safety check.
         """
-        self._set_safety_check_result(is_nsfw=is_nsfw, is_csam=is_csam)
+        self._set_safety_check_result(
+            batch_index=batch_index,
+            safety_result=safety_result,
+        )
+
         if self._requires_submit:
             self._set_generation_progress(GENERATION_PROGRESS.PENDING_SUBMIT)
         else:

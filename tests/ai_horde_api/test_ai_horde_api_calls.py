@@ -21,7 +21,7 @@ from horde_sdk.ai_horde_api.apimodels import (
 from horde_sdk.ai_horde_api.consts import AI_HORDE_WORKER_TYPES
 from horde_sdk.generic_api.apimodels import RequestErrorResponse
 from horde_sdk.generic_api.utils.swagger import SwaggerDoc
-from horde_sdk.worker.consts import WORKER_TYPE
+from horde_sdk.consts import WORKER_TYPE
 
 _PRODUCTION_RESPONSES_FOLDER = Path(__file__).parent.parent / "test_data" / "ai_horde_api" / "production_responses"
 

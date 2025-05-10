@@ -76,6 +76,7 @@ if sys.version_info[:2] == (3, 10):
 # It is important to load `horde_sdk.consts` here (and before `horde_sdk.generic_api`), after env vars are loaded
 # so the CI will work as intended. See `get_default_frozen_model_config_dict` for more details.
 from horde_sdk.consts import (
+    KNOWN_DISPATCH_SOURCE,
     PAYLOAD_HTTP_METHODS,
     HTTPMethod,
     HTTPStatusCode,
@@ -103,6 +104,7 @@ from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.utils import create_bridge_agent_string
 
 __all__ = [
+    "KNOWN_DISPATCH_SOURCE",
     "PAYLOAD_HTTP_METHODS",
     "HTTPMethod",
     "HTTPStatusCode",

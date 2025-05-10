@@ -1,13 +1,13 @@
 from pydantic import Field
 from typing_extensions import override
 
+from horde_sdk.consts import KNOWN_NSFW_DETECTOR
 from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_ALCHEMY_FORMS,
     KNOWN_ALCHEMY_TYPES,
     KNOWN_CAPTION_MODELS,
     KNOWN_FACEFIXERS,
     KNOWN_INTERROGATORS,
-    KNOWN_NSFW_DETECTOR,
     KNOWN_UPSCALERS,
 )
 from horde_sdk.generation_parameters.generic import ComposedParameterSetBase

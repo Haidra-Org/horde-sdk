@@ -6,6 +6,7 @@ which contains fields such as `prompt`, `max_length`, `temperature`, etc.
 
 """
 
+from horde_sdk.consts import KNOWN_NSFW_DETECTOR
 from horde_sdk.generation_parameters.alchemy import AlchemyParameters
 from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_ALCHEMY_FORMS,
@@ -15,7 +16,6 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_FACEFIXERS,
     KNOWN_INTERROGATORS,
     KNOWN_MISC_POST_PROCESSORS,
-    KNOWN_NSFW_DETECTOR,
     KNOWN_UPSCALERS,
     is_caption_form,
     is_facefixer_form,

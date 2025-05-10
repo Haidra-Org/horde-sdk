@@ -1,14 +1,13 @@
 """Contains functions to convert API responses to text generation parameters."""
 
 from horde_sdk.ai_horde_api.apimodels.generate.text.pop import TextGenerateJobPopResponse
-from horde_sdk.consts import KNOWN_DISPATCH_SOURCE
+from horde_sdk.consts import KNOWN_DISPATCH_SOURCE, KNOWN_INFERENCE_BACKEND
 from horde_sdk.generation_parameters.text import (
     BasicTextGenerationFormatParameters,
     BasicTextGenerationParameters,
     KoboldAITextGenerationParameters,
 )
 from horde_sdk.worker.consts import (
-    KNOWN_INFERENCE_BACKEND,
     REQUESTED_BACKEND_CONSTRAINTS,
 )
 from horde_sdk.worker.dispatch.ai_horde_parameters import AIHordeDispatchParameters

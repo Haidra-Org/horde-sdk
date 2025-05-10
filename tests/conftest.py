@@ -12,7 +12,7 @@ import PIL.Image
 import pytest
 from loguru import logger
 
-from horde_sdk.consts import GENERATION_ID_TYPES
+from horde_sdk.consts import GENERATION_ID_TYPES, KNOWN_NSFW_DETECTOR
 
 os.environ["TESTS_ONGOING"] = "1"
 
@@ -38,7 +38,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     TextGenerateJobPopResponse,
 )
 from horde_sdk.ai_horde_api.fields import GenerationID
-from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_FORMS, KNOWN_NSFW_DETECTOR, KNOWN_UPSCALERS
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_FORMS, KNOWN_UPSCALERS
 from horde_sdk.generation_parameters.alchemy.object_models import (
     AlchemyParameters,
     NSFWAlchemyParameters,

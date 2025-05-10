@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from enum import auto
 from typing import ClassVar
 
+from loguru import logger
 from strenum import StrEnum
 
 
@@ -309,6 +311,45 @@ finalized_generation_states = {
 }
 
 
+def validate_generation_progress_transitions(
+    progress_transitions: Mapping[GENERATION_PROGRESS, Iterable[GENERATION_PROGRESS]],
+) -> bool:
+    """Validate the generation progress transitions.
+
+    Args:
+        progress_transitions(dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]]): The progress transitions to
+        validate.
+
+    Returns:
+        bool: True if the transitions are valid, False otherwise.
+    """
+    parent_states: set[GENERATION_PROGRESS] = set(progress_transitions.keys())
+    target_states: set[GENERATION_PROGRESS] = set()
+    for transitions in progress_transitions.values():
+        target_states.update(transitions)
+
+    if not target_states.issubset(parent_states):
+        logger.error(
+            f"Invalid generation progress transitions: "
+            f"target states {target_states - parent_states} are not in parent states {parent_states}",
+        )
+        return False
+
+    if not all(isinstance(state, GENERATION_PROGRESS) for state in parent_states):
+        logger.error(
+            "Invalid generation progress transitions: not all parent states are instances of GENERATION_PROGRESS",
+        )
+        return False
+
+    if not all(isinstance(state, GENERATION_PROGRESS) for state in target_states):
+        logger.error(
+            "Invalid generation progress transitions: not all target states are instances of GENERATION_PROGRESS",
+        )
+        return False
+
+    return True
+
+
 class JobState(StrEnum):
     """The state of a job."""
 
@@ -388,47 +429,6 @@ class HordeWorkerConfigDefaults:
     DEFAULT_GENERATION_STRICT_TRANSITION_MODE: bool = True
 
 
-class KNOWN_INFERENCE_BACKEND(StrEnum):
-    """The known generative inference backends."""
-
-    UNKNOWN = auto()
-    """The inference backend is unknown."""
-
-    IN_MODEL_NAME = auto()
-    """The model name is prepended with the backend name."""
-
-    CUSTOM_UNPUBLISHED = auto()
-    """The inference backend is a custom, unpublished backend."""
-
-    COMFYUI = auto()
-    """The inference backend is ComfyUI."""
-
-    A1111 = auto()
-    """The inference backend is A1111."""
-
-    HORDE_ALCHEMIST = auto()
-    """The inference backend is the Horde Alchemist."""
-
-    KOBOLD_CPP = auto()
-    """The inference backend is Kobold CPP."""
-
-    APHRODITE = auto()
-    """The inference backend is Aphrodite."""
-
-
-class KNOWN_ALCHEMY_BACKEND(StrEnum):
-    """The known alchemy backends."""
-
-    UNKNOWN = auto()
-    """The alchemy backend is unknown."""
-
-    CUSTOM_UNPUBLISHED = auto()
-    """The alchemy backend is a custom, unpublished backend."""
-
-    HORDE_ALCHEMIST = auto()
-    """The alchemy backend is the Horde Alchemist."""
-
-
 class REQUESTED_BACKEND_CONSTRAINTS(StrEnum):
     """What constraints on backends to use were requested by the user/server."""
 
@@ -477,24 +477,6 @@ class REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE(StrEnum):
 
     USE_NOISE_IMAGE = auto()
     """Use a noise image if the source image is unusable."""
-
-
-class WORKER_TYPE(StrEnum):
-    """The worker types that are known to the API.
-
-    (alchemy, image, text, etc...)
-    """
-
-    all = ""
-    """All worker types."""
-    image = auto()
-    """Image generation worker."""
-    text = auto()
-    """Text generation worker."""
-    interrogation = auto()
-    """Alchemy/Interrogation worker."""
-    alchemist = "interrogation"
-    """Alchemy/Interrogation worker."""
 
 
 class CHAIN_EDGE_KIND(StrEnum):

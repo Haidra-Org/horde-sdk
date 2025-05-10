@@ -101,19 +101,6 @@ class KNOWN_CAPTION_MODELS(StrEnum):
     BLIP_LARGE_SALESFORCE = "Salesforce/blip-image-captioning-large"
 
 
-class KNOWN_NSFW_DETECTOR(StrEnum):
-    """The NSFW detectors that are known to the API."""
-
-    BACKEND_DEFAULT = auto()
-    """The default model for the worker backend."""
-
-    horde_safety = auto()
-    """The AI-Horde horde_safety package."""
-
-    compvis_safety_checkers = auto()
-    """The compvis safety checker model released with stable diffusion."""
-
-
 class KNOWN_ALCHEMY_TYPES(StrEnum):
     """The alchemy processes (types) that are known to the API.
 

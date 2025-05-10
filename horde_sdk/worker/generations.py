@@ -6,6 +6,7 @@ from horde_sdk.consts import GENERATION_ID_TYPES
 from horde_sdk.generation_parameters.alchemy import SingleAlchemyParameters
 from horde_sdk.generation_parameters.image import ImageGenerationParameters
 from horde_sdk.generation_parameters.text import TextGenerationParameters
+from horde_sdk.safety import SafetyRules, default_image_safety_rules, default_text_safety_rules
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
     HordeWorkerConfigDefaults,
@@ -58,6 +59,7 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
         generation_id: GENERATION_ID_TYPES | None = None,
         batch_ids: list[GENERATION_ID_TYPES] | None = None,
         requires_submit: bool = True,
+        safety_rules: SafetyRules = default_image_safety_rules,
         black_box_mode: bool = False,
         state_error_limits: (
             Mapping[GENERATION_PROGRESS, int] | None
@@ -75,6 +77,8 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
                 If None, a random UUID will be generated for each result.
             requires_submit (bool, optional): Whether the generation requires submission. \
                 Defaults to True.
+            safety_rules (SafetyRules, optional): The safety rules to apply to the generation. \
+                Defaults to default_image_safety_rules from `horde_sdk.safety`.
             black_box_mode (bool, optional): Whether the generation is in black box mode. \
                 This removes all of the intermediate states between starting and finished states. \
                 This should only be used when the backend has no observability into the generation process. \
@@ -103,6 +107,7 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
             requires_post_processing=generation_parameters.alchemy_params is not None,
             requires_safety_check=True,
             requires_submit=requires_submit,
+            safety_rules=safety_rules,
             state_error_limits=state_error_limits,
             generate_progress_transitions=generate_progress_transitions,
             black_box_mode=black_box_mode,
@@ -157,6 +162,7 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
         requires_post_processing: bool = True,
         requires_safety_check: bool = False,
         requires_submit: bool = True,
+        safety_rules: SafetyRules = default_image_safety_rules,
         black_box_mode: bool = False,
         state_error_limits: (
             Mapping[GENERATION_PROGRESS, int] | None
@@ -180,6 +186,8 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
                 Defaults to False.
             requires_submit (bool, optional): Whether the generation requires submission. \
                 Defaults to True.
+            safety_rules (SafetyRules, optional): The safety rules to apply to the generation. \
+                Defaults to default_image_safety_rules from `horde_sdk.safety`.
             black_box_mode (bool, optional): Whether the generation is in black box mode. \
                 This removes all of the intermediate states between starting and finished states. \
                 This should only be used when the backend has no observability into the generation process. \
@@ -212,6 +220,7 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
             requires_post_processing=requires_post_processing,
             requires_safety_check=requires_safety_check,
             requires_submit=requires_submit,
+            safety_rules=safety_rules,
             state_error_limits=state_error_limits,
             generate_progress_transitions=generate_progress_transitions,
             black_box_mode=black_box_mode,
@@ -261,6 +270,7 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
         requires_post_processing: bool = False,
         requires_safety_check: bool = False,
         requires_submit: bool = True,
+        safety_rules: SafetyRules = default_text_safety_rules,
         black_box_mode: bool = False,
         state_error_limits: (
             Mapping[GENERATION_PROGRESS, int] | None
@@ -284,6 +294,8 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
                 Defaults to False.
             requires_submit (bool, optional): Whether the generation requires submission. \
                 Defaults to True.
+            safety_rules (SafetyRules, optional): The safety rules to apply to the generation. \
+                Defaults to default_text_safety_rules from `horde_sdk.safety`.
             black_box_mode (bool, optional): Whether the generation is in black box mode. \
                 This removes all of the intermediate states between starting and finished states. \
                 This should only be used when the backend has no observability into the generation process. \
@@ -319,6 +331,7 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
             requires_post_processing=requires_post_processing,
             requires_safety_check=requires_safety_check,
             requires_submit=requires_submit,
+            safety_rules=safety_rules,
             state_error_limits=state_error_limits,
             generate_progress_transitions=generate_progress_transitions,
             black_box_mode=black_box_mode,

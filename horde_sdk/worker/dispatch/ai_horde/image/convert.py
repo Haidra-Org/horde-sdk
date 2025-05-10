@@ -9,7 +9,7 @@ from loguru import logger
 
 from horde_sdk.ai_horde_api.apimodels.generate.pop import ImageGenerateJobPopResponse
 from horde_sdk.ai_horde_api.consts import DEFAULT_HIRES_DENOISE_STRENGTH
-from horde_sdk.consts import KNOWN_DISPATCH_SOURCE
+from horde_sdk.consts import KNOWN_DISPATCH_SOURCE, KNOWN_INFERENCE_BACKEND
 from horde_sdk.generation_parameters.generic import GenerationParameterComponentBase
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.image import (
@@ -38,7 +38,6 @@ from horde_sdk.utils.image_utils import (
     get_first_pass_image_resolution_by_baseline,
 )
 from horde_sdk.worker.consts import (
-    KNOWN_INFERENCE_BACKEND,
     REQUESTED_BACKEND_CONSTRAINTS,
     REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE,
 )

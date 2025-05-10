@@ -2,7 +2,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     AlchemyJobPopResponse,
     NoValidAlchemyFound,
 )
-from horde_sdk.consts import KNOWN_DISPATCH_SOURCE
+from horde_sdk.consts import KNOWN_DISPATCH_SOURCE, KNOWN_NSFW_DETECTOR
 from horde_sdk.generation_parameters.alchemy import (
     AlchemyParameters,
     CaptionAlchemyParameters,
@@ -18,7 +18,6 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_FACEFIXERS,
     KNOWN_INTERROGATORS,
     KNOWN_MISC_POST_PROCESSORS,
-    KNOWN_NSFW_DETECTOR,
     KNOWN_UPSCALERS,
 )
 from horde_sdk.worker.consts import REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE

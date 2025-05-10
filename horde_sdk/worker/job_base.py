@@ -10,12 +10,11 @@ from typing import Any, Generic, TypeVar
 from loguru import logger
 from pydantic import BaseModel, Field
 
-from horde_sdk.consts import GENERATION_ID_TYPES
+from horde_sdk.consts import GENERATION_ID_TYPES, WORKER_TYPE
 from horde_sdk.generation_parameters import ComposedParameterSetBase
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
     WORKER_ERRORS,
-    WORKER_TYPE,
     HordeWorkerConfigDefaults,
 )
 from horde_sdk.worker.generations_base import HordeSingleGeneration
@@ -300,7 +299,15 @@ class HordeWorkerJob(
             if not self.generations:
                 return None
 
-            return any(gen.is_nsfw or gen.is_csam for gen in self.generations.values())
+            for generation in self.generations.values():
+                for result in generation.get_safety_check_results():
+                    if result is None:
+                        continue
+
+                    if result.is_nsfw or result.is_csam:
+                        return True
+
+            return False
 
     def get_generation(self, generation_id: str) -> SingleGenerationTypeVar:
         """Get a generation by its ID."""
