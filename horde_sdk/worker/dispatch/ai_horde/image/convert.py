@@ -339,7 +339,7 @@ def convert_image_job_pop_response_to_parameters(
         additional_params.append(custom_workflow_params)
 
     image_generation_parameters = ImageGenerationParameters(
-        generation_ids=raw_uuids,
+        result_ids=raw_uuids,
         batch_size=api_response.payload.n_iter,
         tiling=api_response.payload.tiling,
         source_processing=api_response.source_processing,

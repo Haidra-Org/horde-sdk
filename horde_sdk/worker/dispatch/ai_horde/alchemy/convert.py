@@ -57,7 +57,7 @@ def convert_alchemy_job_pop_response_to_parameters(
         if is_upscaler_form(form.form):
             parsed_upscalers.append(
                 UpscaleAlchemyParameters(
-                    generation_id=str(form.id_),
+                    result_id=str(form.id_),
                     form=KNOWN_ALCHEMY_FORMS.post_process,
                     source_image=base64_str_to_bytes(form.source_image),
                     upscaler=form.form,
@@ -67,7 +67,7 @@ def convert_alchemy_job_pop_response_to_parameters(
         elif is_facefixer_form(form.form):
             parsed_facefixers.append(
                 FacefixAlchemyParameters(
-                    generation_id=str(form.id_),
+                    result_id=str(form.id_),
                     form=KNOWN_ALCHEMY_FORMS.post_process,
                     source_image=base64_str_to_bytes(form.source_image),
                     facefixer=form.form,
@@ -77,7 +77,7 @@ def convert_alchemy_job_pop_response_to_parameters(
         elif is_interrogator_form(form.form):
             parsed_interrogators.append(
                 InterrogateAlchemyParameters(
-                    generation_id=str(form.id_),
+                    result_id=str(form.id_),
                     form=KNOWN_ALCHEMY_FORMS.interrogation,
                     source_image=base64_str_to_bytes(form.source_image),
                     interrogator=KNOWN_INTERROGATORS.vit_l_14,
@@ -87,7 +87,7 @@ def convert_alchemy_job_pop_response_to_parameters(
         elif is_caption_form(form.form):
             parsed_captions.append(
                 CaptionAlchemyParameters(
-                    generation_id=str(form.id_),
+                    result_id=str(form.id_),
                     form=KNOWN_ALCHEMY_FORMS.caption,
                     source_image=base64_str_to_bytes(form.source_image),
                     caption_model=KNOWN_CAPTION_MODELS.BLIP_BASE_SALESFORCE,
@@ -97,7 +97,7 @@ def convert_alchemy_job_pop_response_to_parameters(
         elif is_nsfw_detector_form(form.form):
             parsed_nsfw_detectors.append(
                 NSFWAlchemyParameters(
-                    generation_id=str(form.id_),
+                    result_id=str(form.id_),
                     form=KNOWN_ALCHEMY_FORMS.nsfw,
                     source_image=base64_str_to_bytes(form.source_image),
                     nsfw_detector=KNOWN_NSFW_DETECTOR.HORDE_SAFETY,
@@ -107,7 +107,7 @@ def convert_alchemy_job_pop_response_to_parameters(
         else:
             parsed_unknown_forms.append(
                 SingleAlchemyParameters(
-                    generation_id=str(form.id_),
+                    result_id=str(form.id_),
                     form=form.form,
                     source_image=base64_str_to_bytes(form.source_image),
                 ),

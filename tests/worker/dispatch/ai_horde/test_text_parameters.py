@@ -25,7 +25,7 @@ def test_convert_text_job_pop_response_to_parameters(
     assert dispatch_parameters.no_valid_request_found_reasons == simple_text_gen_job_pop_response.skipped
 
     # Base generation parameters.
-    assert generation_parameters.generation_ids == simple_text_gen_job_pop_response.ids
+    assert generation_parameters.result_ids == simple_text_gen_job_pop_response.ids
 
     assert generation_parameters.base_params.model == simple_text_gen_job_pop_response.model
     assert generation_parameters.base_params.prompt == simple_text_gen_job_pop_response.payload.prompt

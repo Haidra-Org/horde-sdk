@@ -12,7 +12,8 @@ import PIL.Image
 import pytest
 from loguru import logger
 
-from horde_sdk.consts import GENERATION_ID_TYPES, KNOWN_NSFW_DETECTOR
+from horde_sdk.consts import KNOWN_NSFW_DETECTOR
+from horde_sdk.worker.generations import AlchemySingleGeneration, ImageSingleGeneration, TextSingleGeneration
 
 os.environ["TESTS_ONGOING"] = "1"
 
@@ -258,7 +259,7 @@ def simple_text_generation_parameters(
 ) -> TextGenerationParameters:
     """Return a simple `TextGenerationParameters` object."""
     return TextGenerationParameters(
-        generation_ids=[single_id_str],
+        result_ids=[single_id_str],
         base_params=BasicTextGenerationParameters(
             prompt="Tell me about a cat in a hat.",
             model="oFakeModel",
@@ -272,7 +273,7 @@ def simple_image_generation_parameters(
 ) -> ImageGenerationParameters:
     """Return a simple `ImageGenerationParameters` object."""
     return ImageGenerationParameters(
-        generation_ids=[single_id_str],
+        result_ids=[single_id_str],
         source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         base_params=BasicImageGenerationParameters(
             model="Deliberate",
@@ -292,25 +293,13 @@ def simple_image_generation_parameters(
 
 
 @pytest.fixture(scope="function")
-def simple_image_generation_parameters_and_upload_map(
-    simple_image_generation_parameters: ImageGenerationParameters,
-) -> tuple[ImageGenerationParameters, dict[GENERATION_ID_TYPES, str | None]]:
-    """Return a simple `ImageGenerationParameters` object and an upload map."""
-    return simple_image_generation_parameters, {
-        simple_image_generation_parameters.generation_ids[
-            0
-        ]: f"https://not.a.real.url.internal/upload/{simple_image_generation_parameters.generation_ids[0]}",
-    }
-
-
-@pytest.fixture(scope="function")
 def simple_image_generation_parameters_n_iter(
     id_factory_str: Callable[[], str],
 ) -> ImageGenerationParameters:
     """Return a simple `ImageGenerationParameters` object."""
     batch_size = 3
     return ImageGenerationParameters(
-        generation_ids=[id_factory_str() for _ in range(batch_size)],
+        result_ids=[id_factory_str() for _ in range(batch_size)],
         batch_size=batch_size,
         source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         base_params=BasicImageGenerationParameters(
@@ -328,17 +317,6 @@ def simple_image_generation_parameters_n_iter(
             denoising_strength=1.0,
         ),
     )
-
-
-@pytest.fixture(scope="function")
-def simple_image_generation_parameters_n_iter_and_upload_map(
-    simple_image_generation_parameters_n_iter: ImageGenerationParameters,
-) -> tuple[ImageGenerationParameters, dict[GENERATION_ID_TYPES, str | None]]:
-    """Return a simple `ImageGenerationParameters` object and an upload map."""
-    return simple_image_generation_parameters_n_iter, {
-        gen_id: f"https://not.a.real.url.internal/upload/{gen_id}"
-        for gen_id in simple_image_generation_parameters_n_iter.generation_ids
-    }
 
 
 @pytest.fixture(scope="function")
@@ -350,28 +328,13 @@ def simple_alchemy_generation_parameters(
     return AlchemyParameters(
         upscalers=[
             UpscaleAlchemyParameters(
-                generation_id=single_id_str,
+                result_id=single_id_str,
                 form=KNOWN_ALCHEMY_FORMS.post_process,
                 source_image=default_testing_image_bytes,
                 upscaler=KNOWN_UPSCALERS.RealESRGAN_x2plus,
             ),
         ],
     )
-
-
-@pytest.fixture(scope="function")
-def simple_alchemy_generation_parameters_and_upload_map(
-    simple_alchemy_generation_parameters: AlchemyParameters,
-) -> tuple[AlchemyParameters, dict[GENERATION_ID_TYPES, str | None]]:
-    """Return a simple `AlchemyParameters` object and an upload map."""
-    upload_map: dict[GENERATION_ID_TYPES, str | None] = {}
-
-    for alchemy_operation in simple_alchemy_generation_parameters.all_alchemy_operations:
-        upload_map[alchemy_operation.generation_id] = (
-            f"https://not.a.real.url.internal/upload/{alchemy_operation.generation_id}"
-        )
-
-    return simple_alchemy_generation_parameters, upload_map
 
 
 @pytest.fixture(scope="function")
@@ -383,7 +346,7 @@ def simple_alchemy_generation_parameters_nsfw_detect(
     return AlchemyParameters(
         nsfw_detectors=[
             NSFWAlchemyParameters(
-                generation_id=single_id_str,
+                result_id=single_id_str,
                 form=KNOWN_ALCHEMY_FORMS.post_process,
                 source_image=default_testing_image_bytes,
                 nsfw_detector=KNOWN_NSFW_DETECTOR.BACKEND_DEFAULT,
@@ -393,28 +356,13 @@ def simple_alchemy_generation_parameters_nsfw_detect(
 
 
 @pytest.fixture(scope="function")
-def simple_alchemy_generation_parameters_nsfw_detect_and_upload_map(
-    simple_alchemy_generation_parameters_nsfw_detect: AlchemyParameters,
-) -> tuple[AlchemyParameters, dict[GENERATION_ID_TYPES, str | None]]:
-    """Return a simple `AlchemyParameters` object and an upload map."""
-    upload_map: dict[GENERATION_ID_TYPES, str | None] = {}
-
-    for alchemy_operation in simple_alchemy_generation_parameters_nsfw_detect.all_alchemy_operations:
-        upload_map[alchemy_operation.generation_id] = (
-            f"https://not.a.real.url.internal/upload/{alchemy_operation.generation_id}"
-        )
-
-    return simple_alchemy_generation_parameters_nsfw_detect, upload_map
-
-
-@pytest.fixture(scope="function")
 def simple_image_generation_parameters_post_processing(
     single_id_str: str,
     simple_alchemy_generation_parameters: AlchemyParameters,
 ) -> ImageGenerationParameters:
     """Return a simple `ImageGenerationParameters` object."""
     return ImageGenerationParameters(
-        generation_ids=[single_id_str],
+        result_ids=[single_id_str],
         source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         base_params=BasicImageGenerationParameters(
             model="Deliberate",
@@ -435,26 +383,6 @@ def simple_image_generation_parameters_post_processing(
 
 
 @pytest.fixture(scope="function")
-def simple_image_generation_parameters_post_processing_and_upload_map(
-    simple_image_generation_parameters_post_processing: ImageGenerationParameters,
-) -> tuple[ImageGenerationParameters, dict[GENERATION_ID_TYPES, str | None]]:
-    """Return a simple `ImageGenerationParameters` object and an upload map."""
-    upload_map: dict[GENERATION_ID_TYPES, str | None] = {}
-
-    for gen_id in simple_image_generation_parameters_post_processing.generation_ids:
-        upload_map[gen_id] = f"https://not.a.real.url.internal/upload/{gen_id}"
-        assert simple_image_generation_parameters_post_processing.alchemy_params is not None
-        for (
-            alchemy_operation
-        ) in simple_image_generation_parameters_post_processing.alchemy_params.all_alchemy_operations:
-            upload_map[alchemy_operation.generation_id] = (
-                f"https://not.a.real.url.internal/upload/{alchemy_operation.generation_id}"
-            )
-
-    return simple_image_generation_parameters_post_processing, upload_map
-
-
-@pytest.fixture(scope="function")
 def simple_image_generation_parameters_n_iter_post_processing(
     id_factory_str: Callable[[], str],
     simple_alchemy_generation_parameters: AlchemyParameters,
@@ -462,7 +390,7 @@ def simple_image_generation_parameters_n_iter_post_processing(
     """Return a simple `ImageGenerationParameters` object."""
     batch_size = 3
     return ImageGenerationParameters(
-        generation_ids=[id_factory_str() for _ in range(batch_size)],
+        result_ids=[id_factory_str() for _ in range(batch_size)],
         batch_size=batch_size,
         source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.txt2img,
         base_params=BasicImageGenerationParameters(
@@ -481,26 +409,6 @@ def simple_image_generation_parameters_n_iter_post_processing(
         ),
         alchemy_params=simple_alchemy_generation_parameters,
     )
-
-
-@pytest.fixture(scope="function")
-def simple_image_generation_parameters_n_iter_post_processing_and_upload_map(
-    simple_image_generation_parameters_n_iter_post_processing: ImageGenerationParameters,
-) -> tuple[ImageGenerationParameters, dict[GENERATION_ID_TYPES, str | None]]:
-    """Return a simple `ImageGenerationParameters` object and an upload map."""
-    upload_map: dict[GENERATION_ID_TYPES, str | None] = {}
-
-    for gen_id in simple_image_generation_parameters_n_iter_post_processing.generation_ids:
-        upload_map[gen_id] = f"https://not.a.real.url.internal/upload/{gen_id}"
-        assert simple_image_generation_parameters_n_iter_post_processing.alchemy_params is not None
-        for (
-            alchemy_operation
-        ) in simple_image_generation_parameters_n_iter_post_processing.alchemy_params.all_alchemy_operations:
-            upload_map[alchemy_operation.generation_id] = (
-                f"https://not.a.real.url.internal/upload/{alchemy_operation.generation_id}"
-            )
-
-    return simple_image_generation_parameters_n_iter_post_processing, upload_map
 
 
 @pytest.fixture(scope="function")
@@ -1042,6 +950,41 @@ def simple_alchemy_gen_job_pop_response_all(
             ),
         ],
         skipped=NoValidAlchemyFound(),
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_image_generation(
+    simple_image_generation_parameters: ImageGenerationParameters,
+) -> ImageSingleGeneration:
+    """Return a simple `ImageSingleGeneration` object."""
+
+    return ImageSingleGeneration(
+        generation_parameters=simple_image_generation_parameters,
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_text_generation(
+    simple_text_generation_parameters: TextGenerationParameters,
+) -> TextSingleGeneration:
+    """Return a simple `TextSingleGeneration` object."""
+
+    return TextSingleGeneration(
+        generation_parameters=simple_text_generation_parameters,
+    )
+
+
+@pytest.fixture(scope="function")
+def simple_alchemy_generation(
+    simple_alchemy_generation_parameters: AlchemyParameters,
+) -> AlchemySingleGeneration:
+    """Return a simple `AlchemySingleGeneration` object."""
+    assert len(simple_alchemy_generation_parameters.all_alchemy_operations) == 1
+    alchemy_single_generation_parameters = simple_alchemy_generation_parameters.all_alchemy_operations[0]
+
+    return AlchemySingleGeneration(
+        generation_parameters=alchemy_single_generation_parameters,
     )
 
 

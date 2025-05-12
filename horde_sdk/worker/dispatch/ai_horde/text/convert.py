@@ -27,7 +27,7 @@ def convert_text_job_pop_response_to_parameters(
     )
 
     generation_parameters = KoboldAITextGenerationParameters(
-        generation_ids=[str(id_) for id_ in api_response.ids],
+        result_ids=[str(id_) for id_ in api_response.ids],
         base_params=BasicTextGenerationParameters(
             model=api_response.model,
             prompt=api_response.payload.prompt,

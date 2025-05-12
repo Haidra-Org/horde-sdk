@@ -10,11 +10,12 @@ from typing import Generic, TypeVar
 
 from loguru import logger
 
-from horde_sdk.consts import GENERATION_ID_TYPES
+from horde_sdk.consts import ID_TYPES
 from horde_sdk.generation_parameters.generic import ComposedParameterSetBase
 from horde_sdk.safety import SafetyResult, SafetyRules, default_safety_rules
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
+    HordeWorkerConfigDefaults,
     base_generate_progress_no_submit_transitions,
     base_generate_progress_transitions,
     black_box_generate_progress_transitions,
@@ -76,13 +77,13 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         """The batch size of the generation."""
         return self._batch_size
 
-    _batch_ids: list[GENERATION_ID_TYPES]
+    _result_ids: list[ID_TYPES]
 
     @property
-    def batch_ids(self) -> list[GENERATION_ID_TYPES]:
+    def result_ids(self) -> list[ID_TYPES]:
         """The unique identifiers for the generations in the batch."""
         with self._lock:
-            return self._batch_ids.copy()
+            return self._result_ids.copy()
 
     _lock: threading.RLock
 
@@ -116,14 +117,16 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         *,
         generation_parameters: ComposedParameterSetBase,
         result_type: type[GenerationResultTypeVar] | None = None,
-        generation_id: GENERATION_ID_TYPES | None = None,
-        batch_ids: list[GENERATION_ID_TYPES] | None = None,
+        generation_id: ID_TYPES | None = None,
+        result_ids: list[ID_TYPES] | None = None,
         requires_generation: bool = True,
         requires_post_processing: bool = False,
         requires_safety_check: bool = True,
         requires_submit: bool = True,
         safety_rules: SafetyRules = default_safety_rules,
-        state_error_limits: Mapping[GENERATION_PROGRESS, int] | None = None,
+        state_error_limits: (
+            Mapping[GENERATION_PROGRESS, int] | None
+        ) = HordeWorkerConfigDefaults.DEFAULT_STATE_ERROR_LIMITS,
         generate_progress_transitions: Mapping[
             GENERATION_PROGRESS,
             Iterable[GENERATION_PROGRESS],
@@ -139,7 +142,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             result_type (type): The type of the result of the generation.
             generation_id (str | None): The unique identifier for the generation. \
                 If None, a new UUID will be generated.
-            batch_ids (list[GENERATION_ID_TYPES] | None): The unique identifiers for the results of the generation.
+            result_ids (list[ID_TYPES] | None): The unique identifiers for the results of the generation.
                 If None, a new UUID will be generated for each generation in the batch.
             requires_generation (bool, optional): Whether or not the generation requires generation (inference, etc). \
                 Defaults to True.
@@ -171,7 +174,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         Raises:
             ValueError: If result_type is None.
             ValueError: If the result type is not iterable but the batch size is greater than 1.
-            ValueError: If batch_ids is not None and its length does not match the batch size.
+            ValueError: If result_ids is not None and its length does not match the batch size.
             ValueError: If generate_progress_transitions is None.
             ValueError: If the generation class requires generation but requires_generation is False.
             ValueError: If the generation class requires a safety check but requires_safety_check is False.
@@ -196,18 +199,18 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             raise ValueError(
                 f"Result type {self._result_type} is not iterable, but batch size is {self._batch_size}",
             )
-        if batch_ids is not None and len(batch_ids) != self._batch_size:
+        if result_ids is not None and len(result_ids) != self._batch_size:
             raise ValueError(
-                f"Batch IDs length {len(batch_ids)} does not match batch size {self._batch_size}",
+                f"Batch IDs length {len(result_ids)} does not match batch size {self._batch_size}",
             )
 
-        if batch_ids is None:
+        if result_ids is None:
             logger.trace("Batch IDs are None, creating new ones.")
-            batch_ids = [uuid.uuid4() for _ in range(self._batch_size)]
+            result_ids = [uuid.uuid4() for _ in range(self._batch_size)]
 
-        self._batch_ids = batch_ids
+        self._result_ids = result_ids
 
-        self._generation_results: OrderedDict[GENERATION_ID_TYPES, GenerationResultTypeVar | None] = OrderedDict()
+        self._generation_results: OrderedDict[ID_TYPES, GenerationResultTypeVar | None] = OrderedDict()
 
         self._extra_logging = extra_logging
 
@@ -267,7 +270,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         for state in self._generate_progress_transitions:
             self._registered_callbacks[state] = []
 
-    generation_id: GENERATION_ID_TYPES
+    generation_id: ID_TYPES
     """Unique identifier for the generation."""
 
     generation_parameters: ComposedParameterSetBase
@@ -564,7 +567,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         """Call when the generation is complete."""
         self._set_generation_progress(GENERATION_PROGRESS.COMPLETE)
 
-    _generation_results: OrderedDict[GENERATION_ID_TYPES, GenerationResultTypeVar | None]
+    _generation_results: OrderedDict[ID_TYPES, GenerationResultTypeVar | None]
 
     def on_state(
         self,
@@ -610,7 +613,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         self.on_state(state)
 
     @property
-    def generation_results(self) -> OrderedDict[GENERATION_ID_TYPES, GenerationResultTypeVar | None]:
+    def generation_results(self) -> OrderedDict[ID_TYPES, GenerationResultTypeVar | None]:
         """Get the result of the generation."""
         with self._lock:
             return self._generation_results.copy()
@@ -643,7 +646,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
                 )
 
             if isinstance(result, self._result_type):
-                self._generation_results[self._batch_ids[len(self._generation_results)]] = result
+                self._generation_results[self._result_ids[len(self._generation_results)]] = result
 
             elif isinstance(result, Collection):
                 if len(result) + len(self._generation_results) > self.batch_size:
@@ -656,7 +659,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
                     )
 
                 for index, passed_result in enumerate(result):
-                    self._generation_results[self._batch_ids[len(self._generation_results) + index]] = passed_result
+                    self._generation_results[self._result_ids[len(self._generation_results) + index]] = passed_result
 
     _safety_rules: SafetyRules
     _safety_results: list[SafetyResult | None]
@@ -692,12 +695,12 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
                     "Censoring result.",
                 )
 
-                if self._generation_results[self._batch_ids[batch_index]] is None:
+                if self._generation_results[self._result_ids[batch_index]] is None:
                     logger.warning(
                         f"Generation result for batch index {batch_index} is None already",
                     )
 
-                self._generation_results[self._batch_ids[batch_index]] = None
+                self._generation_results[self._result_ids[batch_index]] = None
 
     def get_safety_check_results(self) -> list[SafetyResult | None]:
         """Get the results of the safety checks.
@@ -717,7 +720,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
 
         Args:
             batch_index (int): The index of the batch to set the safety check result for.
-                This is 0-indexed and must match the position of the batch_ids provided during initialization.
+                This is 0-indexed and must match the position of the result_ids provided during initialization.
             safety_result (SafetyResult): The result of the safety check.
         """
         self._set_safety_check_result(

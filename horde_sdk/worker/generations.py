@@ -2,7 +2,7 @@ from collections.abc import Mapping
 
 from typing_extensions import override
 
-from horde_sdk.consts import GENERATION_ID_TYPES
+from horde_sdk.consts import ID_TYPES
 from horde_sdk.generation_parameters.alchemy import SingleAlchemyParameters
 from horde_sdk.generation_parameters.image import ImageGenerationParameters
 from horde_sdk.generation_parameters.text import TextGenerationParameters
@@ -56,8 +56,8 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
         self,
         *,
         generation_parameters: ImageGenerationParameters,
-        generation_id: GENERATION_ID_TYPES | None = None,
-        batch_ids: list[GENERATION_ID_TYPES] | None = None,
+        generation_id: ID_TYPES | None = None,
+        result_ids: list[ID_TYPES] | None = None,
         requires_submit: bool = True,
         safety_rules: SafetyRules = default_image_safety_rules,
         black_box_mode: bool = False,
@@ -73,7 +73,7 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
             generation_parameters (ImageGenerationParameters): The parameters for the generation.
             generation_id (str | None): The unique identifier for the generation. \
                 If None, a random UUID will be generated.
-            batch_ids (list[GENERATION_ID_TYPES] | None): The unique identifiers for the generation. \
+            result_ids (list[ID_TYPES] | None): The unique identifiers for the generation. \
                 If None, a random UUID will be generated for each result.
             requires_submit (bool, optional): Whether the generation requires submission. \
                 Defaults to True.
@@ -102,7 +102,7 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
             result_type=bytes,
             generation_parameters=generation_parameters,
             generation_id=generation_id,
-            batch_ids=batch_ids,
+            result_ids=result_ids,
             requires_generation=ImageSingleGeneration.does_class_require_generation(),
             requires_post_processing=generation_parameters.alchemy_params is not None,
             requires_safety_check=True,
@@ -157,7 +157,7 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
         *,
         generation_parameters: SingleAlchemyParameters,
         generation_id: str | None = None,
-        batch_ids: list[GENERATION_ID_TYPES] | None = None,
+        result_ids: list[ID_TYPES] | None = None,
         requires_generation: bool = False,
         requires_post_processing: bool = True,
         requires_safety_check: bool = False,
@@ -176,7 +176,7 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
             generation_parameters (SingleAlchemyParameters): The parameters for the generation.
             generation_id (str | None): The unique identifier for the generation. \
                 If None, a random UUID will be generated.
-            batch_ids (list[GENERATION_ID_TYPES] | None): The unique identifiers for the generation. \
+            result_ids (list[ID_TYPES] | None): The unique identifiers for the generation. \
                 If None, a random UUID will be generated for each result.
             requires_generation (bool, optional): Whether the generation requires generation. \
                 Defaults to False.
@@ -215,7 +215,7 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
             generation_parameters=generation_parameters,
             result_type=bytes,
             generation_id=generation_id,
-            batch_ids=batch_ids,
+            result_ids=result_ids,
             requires_generation=requires_generation,
             requires_post_processing=requires_post_processing,
             requires_safety_check=requires_safety_check,
@@ -264,8 +264,8 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
         self,
         *,
         generation_parameters: TextGenerationParameters,
-        generation_id: GENERATION_ID_TYPES | None = None,
-        batch_ids: list[GENERATION_ID_TYPES] | None = None,
+        generation_id: ID_TYPES | None = None,
+        result_ids: list[ID_TYPES] | None = None,
         requires_generation: bool = True,
         requires_post_processing: bool = False,
         requires_safety_check: bool = False,
@@ -284,7 +284,7 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
             generation_parameters (TextGenerationParameters): The parameters for the generation.
             generation_id (str | None): The unique identifier for the generation. \
                 If None, a random UUID will be generated.
-            batch_ids (list[GENERATION_ID_TYPES] | None): The unique identifiers for the generation. \
+            result_ids (list[ID_TYPES] | None): The unique identifiers for the generation. \
                 If None, a random UUID will be generated for each result.
             requires_generation (bool, optional): Whether the generation requires generation. \
                 Defaults to True.
@@ -326,7 +326,7 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
             result_type=str,
             generation_parameters=generation_parameters,
             generation_id=generation_id,
-            batch_ids=batch_ids,
+            result_ids=result_ids,
             requires_generation=True,
             requires_post_processing=requires_post_processing,
             requires_safety_check=requires_safety_check,

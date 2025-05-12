@@ -24,7 +24,7 @@ class AlchemyFeatureFlags(GenerationFeatureFlags):
 class SingleAlchemyParameters(ComposedParameterSetBase):
     """Represents the common bare minimum parameters for any alchemy generation."""
 
-    generation_id: str
+    result_id: str
     """The generation ID to use for the generation."""
 
     form: KNOWN_ALCHEMY_FORMS | str

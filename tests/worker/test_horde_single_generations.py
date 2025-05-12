@@ -5,7 +5,6 @@ from uuid import UUID
 import pytest
 import yaml
 from loguru import logger
-from PIL import Image
 
 from horde_sdk.generation_parameters.alchemy import (
     AlchemyParameters,
@@ -327,7 +326,7 @@ class TestHordeSingleGeneration:
         *,
         generation_parameters: ImageGenerationParameters | SingleAlchemyParameters,
         generation_type: type[HordeSingleGeneration[Any]],
-        batch_id: UUID,
+        result_id: UUID,
         is_nsfw: bool,
         is_csam: bool,
         expect_censored: bool,
@@ -341,7 +340,7 @@ class TestHordeSingleGeneration:
             generation_id=generation_id,
             generation_parameters=generation_parameters,
             safety_rules=safety_rules,
-            batch_ids=[batch_id],
+            result_ids=[result_id],
             black_box_mode=True,
         )
 
@@ -375,11 +374,11 @@ class TestHordeSingleGeneration:
         assert safety_check_results[0].is_nsfw == is_nsfw
         assert safety_check_results[0].is_csam == is_csam
 
-        assert batch_id in generation.generation_results
+        assert result_id in generation.generation_results
         if expect_censored or is_csam:
-            assert generation.generation_results[batch_id] is None
+            assert generation.generation_results[result_id] is None
         else:
-            assert generation.generation_results[batch_id] is not None
+            assert generation.generation_results[result_id] is not None
 
     def test_safety_censored_results(
         self,
@@ -390,7 +389,7 @@ class TestHordeSingleGeneration:
         self._run_censor_test(
             generation_parameters=simple_image_generation_parameters,
             generation_type=ImageSingleGeneration,
-            batch_id=UUID("00000000-0000-0000-9999-000000000000"),
+            result_id=UUID("00000000-0000-0000-9999-000000000000"),
             is_nsfw=True,
             is_csam=False,
             expect_censored=True,
@@ -401,7 +400,7 @@ class TestHordeSingleGeneration:
         self._run_censor_test(
             generation_parameters=simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0],
             generation_type=AlchemySingleGeneration,
-            batch_id=UUID("00000000-0000-0000-8888-000000000000"),
+            result_id=UUID("00000000-0000-0000-8888-000000000000"),
             is_nsfw=True,
             is_csam=False,
             expect_censored=True,
@@ -417,7 +416,7 @@ class TestHordeSingleGeneration:
         self._run_censor_test(
             generation_parameters=simple_image_generation_parameters,
             generation_type=ImageSingleGeneration,
-            batch_id=UUID("00000000-0000-0000-9999-000000000001"),
+            result_id=UUID("00000000-0000-0000-9999-000000000001"),
             is_nsfw=False,
             is_csam=False,
             expect_censored=False,
@@ -428,7 +427,7 @@ class TestHordeSingleGeneration:
         self._run_censor_test(
             generation_parameters=simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0],
             generation_type=AlchemySingleGeneration,
-            batch_id=UUID("00000000-0000-0000-8888-000000000001"),
+            result_id=UUID("00000000-0000-0000-8888-000000000001"),
             is_nsfw=False,
             is_csam=False,
             expect_censored=False,
@@ -444,7 +443,7 @@ class TestHordeSingleGeneration:
         self._run_censor_test(
             generation_parameters=simple_image_generation_parameters,
             generation_type=ImageSingleGeneration,
-            batch_id=UUID("00000000-0000-0000-9999-000000000002"),
+            result_id=UUID("00000000-0000-0000-9999-000000000002"),
             is_nsfw=False,
             is_csam=True,
             expect_censored=True,
@@ -455,7 +454,7 @@ class TestHordeSingleGeneration:
         self._run_censor_test(
             generation_parameters=simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0],
             generation_type=AlchemySingleGeneration,
-            batch_id=UUID("00000000-0000-0000-8888-000000000002"),
+            result_id=UUID("00000000-0000-0000-8888-000000000002"),
             is_nsfw=False,
             is_csam=True,
             expect_censored=True,
@@ -471,7 +470,7 @@ class TestHordeSingleGeneration:
         self._run_censor_test(
             generation_parameters=simple_image_generation_parameters,
             generation_type=ImageSingleGeneration,
-            batch_id=UUID("00000000-0000-0000-9999-000000000003"),
+            result_id=UUID("00000000-0000-0000-9999-000000000003"),
             is_nsfw=True,
             is_csam=True,
             expect_censored=True,
@@ -482,7 +481,7 @@ class TestHordeSingleGeneration:
         self._run_censor_test(
             generation_parameters=simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0],
             generation_type=AlchemySingleGeneration,
-            batch_id=UUID("00000000-0000-0000-8888-000000000003"),
+            result_id=UUID("00000000-0000-0000-8888-000000000003"),
             is_nsfw=True,
             is_csam=True,
             expect_censored=True,
@@ -498,7 +497,7 @@ class TestHordeSingleGeneration:
         self._run_censor_test(
             generation_parameters=simple_image_generation_parameters,
             generation_type=ImageSingleGeneration,
-            batch_id=UUID("00000000-0000-0000-9999-000000000004"),
+            result_id=UUID("00000000-0000-0000-9999-000000000004"),
             is_nsfw=True,
             is_csam=False,
             expect_censored=False,
@@ -514,7 +513,7 @@ class TestHordeSingleGeneration:
         self._run_censor_test(
             generation_parameters=simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0],
             generation_type=AlchemySingleGeneration,
-            batch_id=UUID("00000000-0000-0000-8888-000000000004"),
+            result_id=UUID("00000000-0000-0000-8888-000000000004"),
             is_nsfw=True,
             is_csam=False,
             expect_censored=False,
@@ -535,7 +534,7 @@ class TestHordeSingleGeneration:
         self._run_censor_test(
             generation_parameters=simple_image_generation_parameters,
             generation_type=ImageSingleGeneration,
-            batch_id=UUID("00000000-0000-0000-9999-000000000005"),
+            result_id=UUID("00000000-0000-0000-9999-000000000005"),
             is_nsfw=False,
             is_csam=True,
             expect_censored=True,
@@ -551,7 +550,7 @@ class TestHordeSingleGeneration:
         self._run_censor_test(
             generation_parameters=simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0],
             generation_type=AlchemySingleGeneration,
-            batch_id=UUID("00000000-0000-0000-8888-000000000005"),
+            result_id=UUID("00000000-0000-0000-8888-000000000005"),
             is_nsfw=False,
             is_csam=True,
             expect_censored=True,

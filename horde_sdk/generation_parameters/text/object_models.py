@@ -7,7 +7,7 @@ from strenum import StrEnum
 from typing_extensions import override
 
 from horde_sdk import get_default_frozen_model_config_dict
-from horde_sdk.consts import GENERATION_ID_TYPES
+from horde_sdk.consts import ID_TYPES
 from horde_sdk.generation_parameters.generic import (
     BasicModelGenerationParameters,
     ComposedParameterSetBase,
@@ -210,7 +210,7 @@ class TextGenerationParametersTemplate(ComposedParameterSetBase):
 class TextGenerationParameters(TextGenerationParametersTemplate):
     """Represents the common bare-minium parameters for a text generation."""
 
-    generation_ids: list[GENERATION_ID_TYPES]
+    result_ids: list[ID_TYPES]
     """The generation IDs to assign to the resulting discrete generations."""
 
     base_params: BasicTextGenerationParameters

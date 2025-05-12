@@ -13,8 +13,8 @@ _ANONYMOUS_MODEL = "_ANONYMOUS_MODEL"
 _OVERLOADED_MODEL = "_MODEL_OVERLOADED"
 """The model is used incorrectly on the API."""
 
-GENERATION_ID_TYPES = str | UUID
-"""The types that can be used as generation IDs."""
+ID_TYPES = str | UUID
+"""The types that can be used as IDs."""
 
 horde_sdk_github_url = "https://github.com/Haidra-Org/horde_sdk"
 

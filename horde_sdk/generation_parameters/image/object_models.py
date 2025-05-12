@@ -7,7 +7,7 @@ from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
 from pydantic import ConfigDict, Field, field_validator, model_validator
 from typing_extensions import override
 
-from horde_sdk.consts import GENERATION_ID_TYPES, get_default_frozen_model_config_dict
+from horde_sdk.consts import ID_TYPES, get_default_frozen_model_config_dict
 from horde_sdk.generation_parameters.alchemy import AlchemyParameters
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
 from horde_sdk.generation_parameters.generic import (
@@ -408,7 +408,7 @@ class CustomWorkflowGenerationParameters(GenerationParameterComponentBase):
     """The version of the custom workflow to use for the generation. \
         If None, the latest version will be used. Defaults to None."""
 
-    custom_parameters: dict[GENERATION_ID_TYPES, str] | None = None
+    custom_parameters: dict[ID_TYPES, str] | None = None
     """The custom parameters to use for the generation. Defaults to None."""
 
 
@@ -538,8 +538,8 @@ class ImageGenerationParametersTemplate(ComposedParameterSetBase):
 class ImageGenerationParameters(ImageGenerationParametersTemplate):
     """Represents the common bare-minimum parameters for an image generation."""
 
-    generation_ids: list[GENERATION_ID_TYPES]
-    """The generation IDs to assign to the resulting images."""
+    result_ids: list[ID_TYPES]
+    """The IDs to assign to the resulting images."""
 
     base_params: BasicImageGenerationParameters
     """The base parameters for the generation."""
@@ -551,10 +551,10 @@ class ImageGenerationParameters(ImageGenerationParametersTemplate):
     @model_validator(mode="after")
     def verify_id_count(self: ImageGenerationParameters) -> ImageGenerationParameters:
         """Ensure that at least one generation ID is provided."""
-        if not self.generation_ids:
+        if not self.result_ids:
             raise ValueError("At least one generation ID must be provided.")
 
-        if len(self.generation_ids) != self.batch_size:
+        if len(self.result_ids) != self.batch_size:
             raise ValueError("The number of generation IDs must match the batch size.")
 
         return self

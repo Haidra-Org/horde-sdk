@@ -45,7 +45,7 @@ def assert_common_parameters(
     assert dispatch_parameters.source_image_fallback_choice == REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE.ABANDON
 
     for generation_id in api_response.ids:
-        assert any(str(generation_id) == x.generation_id for x in generation_parameters.all_alchemy_operations)
+        assert any(str(generation_id) == x.result_id for x in generation_parameters.all_alchemy_operations)  # FIXME
 
     for single_generation in generation_parameters.all_alchemy_operations:
         assert isinstance(single_generation, SingleAlchemyParameters)
