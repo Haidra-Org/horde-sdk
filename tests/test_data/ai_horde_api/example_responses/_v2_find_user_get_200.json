@@ -52,6 +52,7 @@
     "education": false,
     "customizer": false,
     "special": false,
+    "deleted": false,
     "suspicious": 0,
     "pseudonymous": false,
     "contact": "email@example.com",

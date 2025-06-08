@@ -249,6 +249,8 @@ from horde_sdk.ai_horde_api.apimodels.teams import (
 from horde_sdk.ai_horde_api.apimodels.users import (
     ActiveGenerations,
     ContributionsDetails,
+    DeleteUserRequest,
+    DeleteUserResponse,
     ListUsersDetailsRequest,
     ListUsersDetailsResponse,
     ModifyUser,
@@ -341,6 +343,8 @@ __all__ = [
     "SingleFilterRequest",
     "ActiveGenerations",
     "ContributionsDetails",
+    "DeleteUserRequest",
+    "DeleteUserResponse",
     "FindUserRequest",
     "KudosAwardRequest",
     "KudosAwardResponse",

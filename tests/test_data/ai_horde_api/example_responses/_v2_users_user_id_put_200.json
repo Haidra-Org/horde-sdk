@@ -14,6 +14,7 @@
     "service": false,
     "education": false,
     "special": false,
+    "undeleted": false,
     "new_suspicion": 0,
     "contact": "email@example.com",
     "admin_comment": "User is sus"

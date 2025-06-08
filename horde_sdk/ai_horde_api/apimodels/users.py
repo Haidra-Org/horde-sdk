@@ -10,6 +10,7 @@ from horde_sdk.ai_horde_api.fields import UUID_Identifier
 from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
+    ContainsMessageResponseMixin,
     HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
     HordeResponseRootModel,
@@ -314,6 +315,12 @@ class UserDetailsResponse(HordeResponseBaseModel):
     )
     """(Privileged) This user has been given the Special role."""
 
+    deleted: bool | None = Field(
+        default=None,
+        examples=[False],
+    )
+    """If True, this user has been deleted."""
+
     suspicious: int | None = Field(
         default=None,
         examples=[0],
@@ -550,12 +557,17 @@ class ModifyUser(_ModifyUserBase):
     reset_suspicion: bool | None = Field(default=None)
     """Set the user's suspicion back to 0."""
 
+    undelete: bool | None = Field(default=None)
+    """When set to true, A user's who's marked to be deleted will become active again."""
+
 
 class ModifyUserReply(_ModifyUserBase):
     new_kudos: float | None = Field(default=None)
     """The new amount of kudos this user has."""
     new_suspicion: int | None = Field(default=None)
     """The new amount of suspicion this user has."""
+    undeleted: bool | None = Field(default=None)
+    """True if the user was undeleted with this operation."""
 
 
 class ModifyUserResponse(HordeResponseBaseModel, ModifyUserReply):
@@ -590,6 +602,61 @@ class ModifyUserRequest(
     @classmethod
     def get_default_success_response_type(cls) -> type[ModifyUserResponse]:
         return ModifyUserResponse
+
+    @override
+    @classmethod
+    def is_api_key_required(cls) -> bool:
+        return True
+
+
+class DeleteUserResponse(
+    HordeResponseBaseModel,
+    ContainsMessageResponseMixin,
+):
+    """Confirmation that a user was deleted.
+
+    Represents the data returned from the /v2/users/{user_id} endpoint with http status code 200.
+
+    v2 API Model: `SimpleResponse`
+    """
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "SimpleResponse"
+
+
+class DeleteUserRequest(
+    BaseAIHordeRequest,
+    MessageSpecifiesUserIDMixin,
+    APIKeyAllowedInRequestMixin,
+):
+    """Request to delete a user.
+
+    Note that this is a privileged operation and requires the owning user, a moderator, or admin API key.
+
+    Represents a DELETE request to the /v2/users/{user_id} endpoint.
+    """
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.DELETE
+
+    @override
+    @classmethod
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_users_single
+
+    @override
+    @classmethod
+    def get_default_success_response_type(cls) -> type[DeleteUserResponse]:
+        return DeleteUserResponse
 
     @override
     @classmethod
