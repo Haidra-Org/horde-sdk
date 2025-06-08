@@ -55,7 +55,6 @@ def get_fields_descriptions_and_types(class_type: type[BaseModel]) -> dict[str, 
     return field_names_and_descriptions
 
 
-@pytest.mark.object_verify
 def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     """Ensure all models defined in ai_horde_api are defined in the swagger doc."""
     all_request_types: list[type[HordeRequest]] = get_all_request_types(horde_sdk.ai_horde_api.apimodels.__name__)
@@ -79,6 +78,8 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
 
     default_num_request_fields = len(HordeRequest.model_fields)
 
+    sdk_defined_endpoint_verbs: dict[str, list[HTTPMethod]] = {}
+
     for request_type in all_request_types:
         endpoint_subpath: GENERIC_API_ENDPOINT_SUBPATH = request_type.get_api_endpoint_subpath()
         assert endpoint_subpath, f"Failed to get endpoint subpath for {request_type.__name__}"
@@ -88,6 +89,11 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
         # Check if the endpoint subpath is defined in the Swagger documentation
         assert endpoint_subpath in swagger_doc.paths, f"Endpoint {endpoint_subpath} not found in the swagger"
         swagger_endpoint: SwaggerEndpoint = swagger_doc.paths[endpoint_subpath]
+
+        if endpoint_subpath not in sdk_defined_endpoint_verbs:
+            sdk_defined_endpoint_verbs[endpoint_subpath] = []
+
+        sdk_defined_endpoint_verbs[endpoint_subpath].append(request_type.get_http_method())
 
         # Check if the HTTP method used by the request type is defined in the Swagger documentation
         assert swagger_endpoint.get_endpoint_method_from_http_method(request_type.get_http_method()) is not None
@@ -171,6 +177,31 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
 
             response_field_dict = get_fields_descriptions_and_types(response_type)
             response_field_names_and_descriptions[response_type.__name__] = response_field_dict
+
+    endpoint_verbs_missing_from_sdk: dict[str, list[HTTPMethod]] = {}
+    endpoint_verbs_missing_from_swagger: dict[str, list[HTTPMethod]] = {}
+
+    for endpoint_subpath, sdk_endpoint_verbs in sdk_defined_endpoint_verbs.items():
+        all_swagger_endpoint_verbs = swagger_doc.get_all_verbs_for_endpoint(endpoint_subpath)
+
+        # Identify verbs missing from SDK
+        missing_from_sdk = [verb for verb in all_swagger_endpoint_verbs if verb not in sdk_endpoint_verbs]
+        if missing_from_sdk:
+            endpoint_verbs_missing_from_sdk[endpoint_subpath] = missing_from_sdk
+
+        # Identify verbs missing from Swagger
+        missing_from_swagger = [verb for verb in sdk_endpoint_verbs if verb not in all_swagger_endpoint_verbs]
+        if missing_from_swagger:
+            endpoint_verbs_missing_from_swagger[endpoint_subpath] = missing_from_swagger
+
+    assert not endpoint_verbs_missing_from_sdk, (
+        "The following endpoints are defined in the Swagger documentation but not in the SDK: "
+        f"{endpoint_verbs_missing_from_sdk}"
+    )
+    assert not endpoint_verbs_missing_from_swagger, (
+        "The following endpoints are defined in the SDK but not in the Swagger documentation: "
+        f"{endpoint_verbs_missing_from_swagger}"
+    )
 
     def json_serializer(obj: object) -> object:
         if isinstance(obj, str):
