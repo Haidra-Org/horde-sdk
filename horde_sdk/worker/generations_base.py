@@ -6,12 +6,14 @@ import uuid
 from abc import ABC
 from collections import OrderedDict
 from collections.abc import Callable, Collection, Iterable, Mapping
+from enum import auto
 from typing import Generic, TypeVar
 
 from loguru import logger
+from strenum import StrEnum
 
 from horde_sdk.consts import ID_TYPES
-from horde_sdk.generation_parameters.generic import ComposedParameterSetBase
+from horde_sdk.generation_parameters.generic import CompositeParametersBase
 from horde_sdk.safety import SafetyResult, SafetyRules, default_safety_rules
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
@@ -21,8 +23,37 @@ from horde_sdk.worker.consts import (
     black_box_generate_progress_transitions,
     validate_generation_progress_transitions,
 )
+from horde_sdk.worker.exceptions import GenerationStateErrorLimitExceeded
 
 GenerationResultTypeVar = TypeVar("GenerationResultTypeVar")
+
+
+class InputCollectionConstraint(StrEnum):
+    """Types of constraints for inputs collections."""
+
+    NONE = auto()
+    """No constraints."""
+    single_only = auto()
+    """Single input only."""
+    multiple_only = auto()
+    """Multiple inputs only."""
+    single_or_multiple = auto()
+    """Single or multiple inputs allowed."""
+
+
+class InputConstraintType(StrEnum):
+    """Types of constraints for inputs."""
+
+    IMAGE = auto()
+    """Image input only."""
+    TEXT = auto()
+    """Text input only."""
+    AUDIO = auto()
+    """Audio input only."""
+    VIDEO = auto()
+    """Video input only."""
+    SPECIFIC_CLASS_TYPE = auto()
+    """Specific class type input only."""
 
 
 class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
@@ -36,7 +67,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
     """
 
     _generate_progress_transitions: Mapping[GENERATION_PROGRESS, Iterable[GENERATION_PROGRESS]]
-    _state_error_limits: Mapping[GENERATION_PROGRESS, int] | None
+    _state_error_limits: Mapping[GENERATION_PROGRESS, int]
 
     @classmethod
     def default_generate_progress_transitions(cls) -> Mapping[GENERATION_PROGRESS, Iterable[GENERATION_PROGRESS]]:
@@ -49,6 +80,11 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
     ) -> Mapping[GENERATION_PROGRESS, Iterable[GENERATION_PROGRESS]]:
         """Get the default generation progress transitions without submission."""
         return base_generate_progress_no_submit_transitions
+
+    @classmethod
+    def default_interrupt_states(cls) -> set[GENERATION_PROGRESS]:
+        """Get the default interrupt states."""
+        return {GENERATION_PROGRESS.ABORTED, GENERATION_PROGRESS.USER_REQUESTED_ABORT, GENERATION_PROGRESS.ABANDONED}
 
     @classmethod
     def does_class_require_generation(cls) -> bool:
@@ -115,7 +151,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
     def __init__(
         self,
         *,
-        generation_parameters: ComposedParameterSetBase,
+        generation_parameters: CompositeParametersBase,
         result_type: type[GenerationResultTypeVar] | None = None,
         generation_id: ID_TYPES | None = None,
         result_ids: list[ID_TYPES] | None = None,
@@ -236,7 +272,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
 
         if black_box_mode:
             if generate_progress_transitions != base_generate_progress_transitions:
-                logger.debug(
+                logger.trace(
                     "Black box mode is enabled, overriding generate_progress_transitions with "
                     "black_box_generate_progress_transitions.",
                 )
@@ -253,7 +289,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         self._errored_states = []
         self._error_counts = {}
 
-        self._state_error_limits = state_error_limits
+        self._state_error_limits = state_error_limits or {}
         self._generation_failed_messages = []
         self._generation_failure_exceptions = []
 
@@ -273,7 +309,12 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
     generation_id: ID_TYPES
     """Unique identifier for the generation."""
 
-    generation_parameters: ComposedParameterSetBase
+    @property
+    def short_id(self) -> str:
+        """Get a short identifier for the generation."""
+        return str(self.generation_id)[:8]
+
+    generation_parameters: CompositeParametersBase
     """The parameters for the generation."""
 
     _generation_failure_count: int = 0
@@ -295,6 +336,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
 
     _errored_states: list[tuple[GENERATION_PROGRESS, float]]
     _error_counts: dict[GENERATION_PROGRESS, int]
+    _any_error_count_exceeded: bool = False
 
     @property
     def errored_states(self) -> list[tuple[GENERATION_PROGRESS, float]]:
@@ -366,6 +408,57 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
                     self._generation_failure_exceptions = []
                 self._generation_failure_exceptions.append(exception)
 
+    def get_last_non_error_state(self) -> GENERATION_PROGRESS:
+        """Get the last non-error state."""
+        with self._lock:
+            for state, _ in reversed(self._progress_history):
+                if state != GENERATION_PROGRESS.ERROR:
+                    return state
+            raise RuntimeError("No non-error state found in progress history")
+
+    def get_last_non_error_state_and_time(self) -> tuple[GENERATION_PROGRESS, float]:
+        """Get the last non-error state and the time it was set."""
+        with self._lock:
+            for state, time_set in reversed(self._progress_history):
+                if state != GENERATION_PROGRESS.ERROR:
+                    return state, time_set
+            raise RuntimeError("No non-error state found in progress history")
+
+    def is_next_state_valid(
+        self,
+        next_state: GENERATION_PROGRESS,
+    ) -> bool:
+        """Check if the next state is valid."""
+        with self._lock:
+            if next_state in self.default_interrupt_states():
+                return True
+
+            current_state = self._generation_progress
+
+            if self._strict_transition_mode:
+                if current_state == next_state:
+                    return False
+
+                if self._any_error_count_exceeded:
+                    return False
+
+                if current_state == GENERATION_PROGRESS.ERROR and next_state == GENERATION_PROGRESS.ERROR:
+                    return False
+
+            if current_state == GENERATION_PROGRESS.ERROR and len(self._progress_history) < 2:
+                return False
+
+            state_error_count = self._error_counts.get(next_state, 0)
+            state_error_limit = (
+                self._state_error_limits.get(next_state, float("inf")) if self._state_error_limits else float("inf")
+            )
+            error_count_exceeded = state_error_count >= state_error_limit
+
+            if error_count_exceeded:
+                return False
+
+        return True
+
     def _set_generation_progress(
         self,
         next_state: GENERATION_PROGRESS,
@@ -393,16 +486,19 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
 
         Raises:
             ValueError: If the transition is invalid.
+            RuntimeError: If error limits have been exceeded or other state transition constraints are violated.
         """
         with self._lock:
+            current_state = self._generation_progress
+
+            # Handle failure messages
             if next_state == GENERATION_PROGRESS.ABORTED and failed_message is None:
                 logger.error("Faulted reason should be set when transitioning to FAULTED")
 
             if failed_message is not None:
                 self._add_failure_message(failed_message, failure_exception)
 
-            current_state = self._generation_progress
-
+            # Check if state is unchanged
             if current_state == next_state:
                 if self._strict_transition_mode:
                     raise ValueError(f"Generation {self.generation_id} is already in state {current_state}")
@@ -412,53 +508,45 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
                 )
                 return current_state
 
-            transition_log_string = (
-                f"Attempting transitioning generation {self.generation_id} from {current_state} to {next_state}. "
+            transition_log_message = self._build_transition_log_message(
+                current_state,
+                next_state,
+                failed_message,
+                failure_exception,
             )
-            if failed_message is not None:
-                transition_log_string += f"Reason: {failed_message}. "
-            if failure_exception is not None:
-                transition_log_string += f"Exception: {failure_exception}. "
-
-            self._extra_log()(transition_log_string)
+            self._extra_log()(transition_log_message)
 
             if current_state == GENERATION_PROGRESS.ERROR and len(self._progress_history) < 2:
                 raise RuntimeError("Cannot transition from error state without a history!")
 
-            last_non_error_state, last_non_error_state_time = (
-                (current_state, 0.0) if current_state != GENERATION_PROGRESS.ERROR else self._progress_history[-2]
-            )
+            last_non_error_state, last_non_error_state_time = self._get_last_non_error_state(current_state)
 
-            if current_state == GENERATION_PROGRESS.ERROR:
-                self._extra_log()(f"Generation {self.generation_id} last non-error state was {last_non_error_state}")
-                self._errored_states.append((last_non_error_state, last_non_error_state_time))
-                self._error_counts[last_non_error_state] = self._error_counts.get(last_non_error_state, 0) + 1
-            else:
-                if next_state == GENERATION_PROGRESS.USER_REQUESTED_ABORT:
-                    self._extra_log()(
-                        f"Generation {self.generation_id} is being aborted by user request.",
+            if self._any_error_count_exceeded:
+                if self._strict_transition_mode:
+                    if next_state not in self._state_error_limits:
+                        raise RuntimeError(
+                            f"Generation {self.generation_id} has exceeded the maximum number of errors "
+                            f"but there is no limit set for {next_state}. This should be impossible.",
+                        )
+                    raise GenerationStateErrorLimitExceeded(
+                        generation_id=self.generation_id,
+                        error_limit=self._state_error_limits[next_state],
+                        last_non_error_state=last_non_error_state,
                     )
-                    self._set_generation_progress(GENERATION_PROGRESS.USER_REQUESTED_ABORT)
-                    return GENERATION_PROGRESS.ABORTED
-
-                if next_state == last_non_error_state:
-                    self._extra_log()(f"Retrying state {next_state} after error")
-                elif next_state not in self._generate_progress_transitions[last_non_error_state]:
-                    self._extra_log()(
-                        f"{self._progress_history=}, {self._generation_progress=}, {next_state=}, "
-                        f"{self._generate_progress_transitions=}",
-                    )
-                    raise ValueError(f"Invalid transition from {current_state} to {next_state}")
-
-            error_count_exceeded = False
-
-            if self._state_error_limits is not None:
-                error_count_exceeded = self._error_counts.get(next_state, 0) >= self._state_error_limits.get(
-                    next_state,
-                    float("inf"),
+                logger.debug(
+                    f"Generation {self.generation_id} has exceeded the maximum number of errors "
+                    f"but is transitioning to {next_state}",
                 )
 
-            if error_count_exceeded:
+            if next_state == GENERATION_PROGRESS.ERROR:
+                self._update_error_tracking(last_non_error_state, last_non_error_state_time)
+            elif current_state == GENERATION_PROGRESS.ERROR:
+                self._extra_log()(f"Generation {self.generation_id} last non-error state was {last_non_error_state}")
+            else:
+                self._validate_normal_transition(next_state, last_non_error_state)
+
+            if self._check_error_limit_exceeded(next_state):
+                self._any_error_count_exceeded = True
                 raise RuntimeError(
                     f"Generation {self.generation_id} has exceeded the maximum number of errors "
                     f"for state {next_state}",
@@ -470,7 +558,57 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
 
             return next_state
 
-    def on_error(self, *, failed_message: str, failure_exception: Exception | None = None) -> None:
+    def _build_transition_log_message(
+        self,
+        current_state: GENERATION_PROGRESS,
+        next_state: GENERATION_PROGRESS,
+        failed_message: str | None,
+        failure_exception: Exception | None,
+    ) -> str:
+        """Build a log message describing the state transition."""
+        message = f"Attempting transitioning generation {self.generation_id} from {current_state} to {next_state}. "
+        if failed_message is not None:
+            message += f"Reason: {failed_message}. "
+        if failure_exception is not None:
+            message += f"Exception: {failure_exception}. "
+        return message
+
+    def _get_last_non_error_state(self, current_state: GENERATION_PROGRESS) -> tuple[GENERATION_PROGRESS, float]:
+        """Get the relevant previous state for transition logic."""
+        for state, time_set in reversed(self._progress_history):
+            if state != GENERATION_PROGRESS.ERROR:
+                return state, time_set
+
+        return current_state, time.monotonic()
+
+    def _update_error_tracking(self, last_state: GENERATION_PROGRESS, last_state_time: float) -> None:
+        """Update error tracking when transitioning to an error state."""
+        self._errored_states.append((last_state, last_state_time))
+        self._error_counts[last_state] = self._error_counts.get(last_state, 0) + 1
+
+    def _validate_normal_transition(self, next_state: GENERATION_PROGRESS, last_state: GENERATION_PROGRESS) -> None:
+        """Validate a normal (non-error) state transition."""
+        if next_state in self.default_interrupt_states():
+            self._extra_log()(f"Generation {self.generation_id} is being interrupted by {next_state}")
+        elif next_state not in self._generate_progress_transitions[last_state]:
+            self._extra_log()(
+                f"{self._progress_history=}, {self._generation_progress=}, {next_state=}, "
+                f"{self._generate_progress_transitions=}",
+            )
+            raise ValueError(f"Invalid transition from {last_state} to {next_state}")
+        elif next_state == last_state:
+            self._extra_log()(f"Retrying state {next_state} after error")
+
+    def _check_error_limit_exceeded(self, state: GENERATION_PROGRESS) -> bool:
+        """Check if the error limit for a state has been exceeded."""
+        if self._state_error_limits is None:
+            return False
+
+        state_error_count = self._error_counts.get(state, 0)
+        state_error_limit = self._state_error_limits.get(state, float("inf"))
+        return state_error_count >= state_error_limit
+
+    def on_error(self, *, failed_message: str, failure_exception: Exception | None = None) -> GENERATION_PROGRESS:
         """Call when an error occurs at any point in the generation process, safety checks, or submission.
 
         This should be reserved for errors which make the current step **impossible** to complete. For example, if the
@@ -483,50 +621,68 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             failed_message (str): The reason the generation failed.
             failure_exception (Exception, optional): The exception that caused the generation to fail. \
                 Defaults to None.
+
+        Returns:
+            GENERATION_PROGRESS: The new state of the generation, which will be set to `GENERATION_PROGRESS.ERROR`.
+
+        Raises:
+            RuntimeError: If the generation has exceeded the maximum number of errors for the current state.
+            RuntimeError: If the generation is in an error state and has no previous state to transition from.
         """
         with self._lock:
             self._generation_failure_count += 1
-            self._set_generation_progress(
+            return self._set_generation_progress(
                 GENERATION_PROGRESS.ERROR,
                 failed_message=failed_message,
                 failure_exception=failure_exception,
             )
 
-    def on_abort(self, *, failed_message: str, failure_exception: Exception | None = None) -> None:
+    def on_abort(self, *, failed_message: str, failure_exception: Exception | None = None) -> GENERATION_PROGRESS:
         """Call when the generation is aborted.
 
         Args:
             failed_message (str): The reason the generation was aborted.
             failure_exception (Exception, optional): The exception that caused the generation to be aborted. \
                 Defaults to None.
+
+        Returns:
+            GENERATION_PROGRESS: The new state of the generation, which will be set to `GENERATION_PROGRESS.ABORTED`.
+
+        Raises:
+            RuntimeError: If the generation has exceeded the maximum number of errors for the current state.
+            RuntimeError: If the generation is in an error state and has no previous state to transition from.
+
         """
-        self._set_generation_progress(
+        return self._set_generation_progress(
             GENERATION_PROGRESS.ABORTED,
             failed_message=failed_message,
             failure_exception=failure_exception,
         )
 
-    def on_preloading(self) -> None:
+    def on_preloading(self) -> GENERATION_PROGRESS:
         """Call when preloading is about to begin."""
-        self._set_generation_progress(GENERATION_PROGRESS.PRELOADING)
+        return self._set_generation_progress(GENERATION_PROGRESS.PRELOADING)
 
-    def on_preloading_complete(self) -> None:
+    def on_preloading_complete(self) -> GENERATION_PROGRESS:
         """Call after preloading is complete."""
-        self._set_generation_progress(GENERATION_PROGRESS.PRELOADING_COMPLETE)
+        return self._set_generation_progress(GENERATION_PROGRESS.PRELOADING_COMPLETE)
 
-    def _work_complete(self) -> None:
+    def _work_complete(self) -> GENERATION_PROGRESS:
         if self._black_box_mode:
-            return
+            return self._generation_progress
 
         if self._requires_safety_check:
-            self._set_generation_progress(GENERATION_PROGRESS.PENDING_SAFETY_CHECK)
-        else:
-            if self._requires_submit:
-                self._set_generation_progress(GENERATION_PROGRESS.PENDING_SUBMIT)
-            else:
-                self._set_generation_progress(GENERATION_PROGRESS.COMPLETE)
+            return self._set_generation_progress(GENERATION_PROGRESS.PENDING_SAFETY_CHECK)
 
-    def on_generation_work_complete(self) -> None:
+        if self._requires_submit:
+            return self._set_generation_progress(GENERATION_PROGRESS.PENDING_SUBMIT)
+
+        return self._set_generation_progress(GENERATION_PROGRESS.COMPLETE)
+
+    def on_generation_work_complete(
+        self,
+        result: GenerationResultTypeVar | Collection[GenerationResultTypeVar] | None = None,
+    ) -> GENERATION_PROGRESS:
         """Call when the generation work is complete, such as when inference is done.
 
         This does not mean the generation is finalized, as calling this function means that safety checks and
@@ -535,25 +691,28 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         text.
         """
         if self.requires_post_processing and not self._black_box_mode:
-            self._set_generation_progress(GENERATION_PROGRESS.PENDING_POST_PROCESSING)
-        else:
-            self._work_complete()
+            return self._set_generation_progress(GENERATION_PROGRESS.PENDING_POST_PROCESSING)
 
-    def on_generating(self) -> None:
+        work_complete_progress = self._work_complete()
+        if result is not None:
+            self._set_generation_work_result(result)
+        return work_complete_progress
+
+    def on_generating(self) -> GENERATION_PROGRESS:
         """Call when the generation is about to begin."""
-        self._set_generation_progress(GENERATION_PROGRESS.GENERATING)
+        return self._set_generation_progress(GENERATION_PROGRESS.GENERATING)
 
-    def on_post_processing(self) -> None:
+    def on_post_processing(self) -> GENERATION_PROGRESS:
         """Call when post-processing is about to begin."""
-        self._set_generation_progress(GENERATION_PROGRESS.POST_PROCESSING)
+        return self._set_generation_progress(GENERATION_PROGRESS.POST_PROCESSING)
 
-    def on_post_processing_complete(self) -> None:
+    def on_post_processing_complete(self) -> GENERATION_PROGRESS:
         """Call when post-processing is complete."""
-        self._work_complete()
+        return self._work_complete()
 
-    def on_pending_safety_check(self) -> None:
+    def on_pending_safety_check(self) -> GENERATION_PROGRESS:
         """Call when the generation is pending safety check."""
-        self._set_generation_progress(GENERATION_PROGRESS.PENDING_SAFETY_CHECK)
+        return self._set_generation_progress(GENERATION_PROGRESS.PENDING_SAFETY_CHECK)
 
     def set_work_result(self, result: GenerationResultTypeVar | Collection[GenerationResultTypeVar]) -> None:
         """Set the result of the generation work.
@@ -563,16 +722,16 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         """
         self._set_generation_work_result(result)
 
-    def on_complete(self) -> None:
+    def on_complete(self) -> GENERATION_PROGRESS:
         """Call when the generation is complete."""
-        self._set_generation_progress(GENERATION_PROGRESS.COMPLETE)
+        return self._set_generation_progress(GENERATION_PROGRESS.COMPLETE)
 
     _generation_results: OrderedDict[ID_TYPES, GenerationResultTypeVar | None]
 
     def on_state(
         self,
         state: GENERATION_PROGRESS,
-    ) -> None:
+    ) -> GENERATION_PROGRESS:
         """Call when the generation state is updated.
 
         Args:
@@ -580,37 +739,37 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         """
         match state:
             case GENERATION_PROGRESS.PRELOADING:
-                self.on_preloading()
+                return self.on_preloading()
             case GENERATION_PROGRESS.PRELOADING_COMPLETE:
-                self.on_preloading_complete()
+                return self.on_preloading_complete()
             case GENERATION_PROGRESS.GENERATING:
-                self.on_generating()
+                return self.on_generating()
             case GENERATION_PROGRESS.POST_PROCESSING:
-                self.on_post_processing()
+                return self.on_post_processing()
             case GENERATION_PROGRESS.PENDING_POST_PROCESSING:
-                self.on_post_processing_complete()
+                return self.on_post_processing_complete()
             case GENERATION_PROGRESS.PENDING_SAFETY_CHECK:
-                self.on_pending_safety_check()
+                return self.on_pending_safety_check()
             case GENERATION_PROGRESS.SAFETY_CHECKING:
-                self.on_safety_checking()
+                return self.on_safety_checking()
             case GENERATION_PROGRESS.PENDING_SUBMIT:
-                self.on_pending_submit()
+                return self.on_pending_submit()
             case GENERATION_PROGRESS.SUBMITTING:
-                self.on_submitting()
+                return self.on_submitting()
             case GENERATION_PROGRESS.SUBMIT_COMPLETE:
-                self.on_submit_complete()
+                return self.on_submit_complete()
             case GENERATION_PROGRESS.COMPLETE:
-                self.on_complete()
+                return self.on_complete()
             case _:
-                raise ValueError(f"Invalid state {state} (current state: {self._generation_progress})")
+                return self._set_generation_progress(state)
 
-    def step(self, state: GENERATION_PROGRESS) -> None:
+    def step(self, state: GENERATION_PROGRESS) -> GENERATION_PROGRESS:
         """Call when the generation state is updated.
 
         Args:
             state (GENERATION_PROGRESS): The new state of the generation.
         """
-        self.on_state(state)
+        return self.on_state(state)
 
     @property
     def generation_results(self) -> OrderedDict[ID_TYPES, GenerationResultTypeVar | None]:
@@ -658,8 +817,9 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
                         f"Result type {type(result)} does not match expected type {self.result_type}",
                     )
 
+                start = len(self._generation_results)
                 for index, passed_result in enumerate(result):
-                    self._generation_results[self._result_ids[len(self._generation_results) + index]] = passed_result
+                    self._generation_results[self._result_ids[start + index]] = passed_result
 
     _safety_rules: SafetyRules
     _safety_results: list[SafetyResult | None]
@@ -690,7 +850,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             self._safety_results[batch_index] = safety_result
 
             if self._safety_rules.should_censor(safety_result):
-                logger.debug(
+                logger.trace(
                     f"Safety check result for batch index {batch_index} is unsafe: {safety_result}. "
                     "Censoring result.",
                 )
@@ -702,6 +862,19 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
 
                 self._generation_results[self._result_ids[batch_index]] = None
 
+    def is_safety_checking_done_on_all_batch(self) -> bool:
+        """Check if the safety check is being done on a one-on-all basis.
+
+        Returns:
+            bool: True if the safety check is being done on a one-on-all basis, False otherwise.
+        """
+        all_batch_result_complete = False
+        with self._lock:
+            if self._safety_results is not None:
+                all_batch_result_complete = all(result is not None for result in self._safety_results)
+
+        return all_batch_result_complete
+
     def get_safety_check_results(self) -> list[SafetyResult | None]:
         """Get the results of the safety checks.
 
@@ -711,11 +884,11 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         with self._lock:
             return self._safety_results.copy() if self._safety_results is not None else None
 
-    def on_safety_checking(self) -> None:
+    def on_safety_checking(self) -> GENERATION_PROGRESS:
         """Call when the safety check is about to start."""
-        self._set_generation_progress(GENERATION_PROGRESS.SAFETY_CHECKING)
+        return self._set_generation_progress(GENERATION_PROGRESS.SAFETY_CHECKING)
 
-    def on_safety_check_complete(self, batch_index: int, safety_result: SafetyResult) -> None:
+    def on_safety_check_complete(self, batch_index: int, safety_result: SafetyResult) -> GENERATION_PROGRESS:
         """Call when the safety check is complete.
 
         Args:
@@ -728,27 +901,30 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             safety_result=safety_result,
         )
 
+        if not self.is_safety_checking_done_on_all_batch():
+            return GENERATION_PROGRESS.SAFETY_CHECKING
+
         if self._requires_submit:
-            self._set_generation_progress(GENERATION_PROGRESS.PENDING_SUBMIT)
-        else:
-            self._set_generation_progress(GENERATION_PROGRESS.COMPLETE)
+            return self._set_generation_progress(GENERATION_PROGRESS.PENDING_SUBMIT)
 
-    def on_pending_submit(self) -> None:
+        return self._set_generation_progress(GENERATION_PROGRESS.COMPLETE)
+
+    def on_pending_submit(self) -> GENERATION_PROGRESS:
         """Call when the generation is pending submission."""
-        self._set_generation_progress(GENERATION_PROGRESS.PENDING_SUBMIT)
+        return self._set_generation_progress(GENERATION_PROGRESS.PENDING_SUBMIT)
 
-    def on_submitting(self) -> None:
+    def on_submitting(self) -> GENERATION_PROGRESS:
         """Call when an attempt is going to be made to submit the generation."""
-        self._set_generation_progress(GENERATION_PROGRESS.SUBMITTING)
+        return self._set_generation_progress(GENERATION_PROGRESS.SUBMITTING)
 
-    def on_submit_complete(self) -> None:
+    def on_submit_complete(self) -> GENERATION_PROGRESS:
         """Call when the generation has been successfully submitted."""
-        self._set_generation_progress(GENERATION_PROGRESS.SUBMIT_COMPLETE)
+        return self._set_generation_progress(GENERATION_PROGRESS.SUBMIT_COMPLETE)
 
-    def on_user_requested_abort(self) -> None:
+    def on_user_requested_abort(self) -> GENERATION_PROGRESS:
         """Call when the user requests to abort the generation."""
-        self._set_generation_progress(GENERATION_PROGRESS.USER_REQUESTED_ABORT)
+        return self._set_generation_progress(GENERATION_PROGRESS.USER_REQUESTED_ABORT)
 
-    def on_user_abort_complete(self) -> None:
+    def on_user_abort_complete(self) -> GENERATION_PROGRESS:
         """Call when the user requested abort is complete."""
-        self._set_generation_progress(GENERATION_PROGRESS.USER_ABORT_COMPLETE)
+        return self._set_generation_progress(GENERATION_PROGRESS.USER_ABORT_COMPLETE)

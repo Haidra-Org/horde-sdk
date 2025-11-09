@@ -55,6 +55,47 @@ def find_subclasses(module_or_package: types.ModuleType, super_type: type) -> li
     return subclasses
 
 
+@cache
+def find_subclasses_and_dependency_imports(
+    module_or_package: types.ModuleType,
+    super_type: type,
+) -> list[tuple[type, list[str]]]:
+    """Find all subclasses of a given type in a module or package.
+
+    Args:
+        module_or_package (types.ModuleType): The module or package to search in.
+        super_type (type): The super type of the classes to search for.
+
+    Returns:
+        list[tuple[type, list[str]]]: A list of tuples of all the subclasses of the super type in the module or package
+        and all of the imported symbols in the module.
+    """
+    subclasses: list[tuple[type, list[str]]] = []
+
+    if hasattr(module_or_package, "__package__") and module_or_package.__package__ is not None:
+        module_or_package = importlib.import_module(module_or_package.__package__)
+
+    for _importer, modname, _ispkg in pkgutil.walk_packages(
+        path=module_or_package.__path__,
+        prefix=module_or_package.__name__ + ".",
+        onerror=lambda x: None,
+    ):
+        module = importlib.import_module(modname)
+        for name in dir(module):
+            obj = getattr(module, name)
+            if (
+                isinstance(obj, type)
+                and issubclass(obj, super_type)
+                and obj is not super_type
+                and not inspect.isabstract(obj)
+            ):
+                if hasattr(module, "__all__"):
+                    subclasses.append((obj, module.__all__))
+                else:
+                    pass
+    return subclasses
+
+
 def any_unimported_classes(module: types.ModuleType, super_type: type) -> tuple[bool, set[type]]:
     """Check if any classes in the module are not imported in the `__init__.py` of the apimodels namespace.
 

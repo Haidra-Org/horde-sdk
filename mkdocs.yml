@@ -18,6 +18,7 @@ plugins:
       python:
         options:
           members_order: source
+          inherited_members: true
           docstring_section_style: list
           show_if_no_docstring: true
           separate_signature: true

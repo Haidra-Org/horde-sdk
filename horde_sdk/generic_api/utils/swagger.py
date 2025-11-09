@@ -610,6 +610,28 @@ class SwaggerDoc(BaseModel):
         # Replace any consecutive underscores with a single underscore.
         return re.sub(r"__+", "_", endpoint_path)
 
+    def get_all_verbs_for_endpoint(
+        self,
+        endpoint_path: str,
+    ) -> list[HTTPMethod]:
+        """Get all HTTP methods defined for a given endpoint path.
+
+        Args:
+            endpoint_path: The path of the endpoint.
+
+        Returns:
+            A list of HTTPMethod objects representing the HTTP methods defined for the endpoint.
+        """
+        # Get the SwaggerEndpoint object for the given endpoint path.
+        endpoint = self.paths.get(endpoint_path)
+
+        # If the endpoint does not exist, return an empty list.
+        if not endpoint:
+            return []
+
+        # Get all defined HTTP methods for the endpoint and return them as a list of HTTPMethod objects.
+        return [HTTPMethod(http_method_name.upper()) for http_method_name in endpoint.get_defined_endpoints()]
+
     def write_all_payload_examples_to_file(self, directory: str | Path) -> bool:
         """Write all example payloads to a file in the test_data directory.
 

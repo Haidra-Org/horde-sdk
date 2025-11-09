@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import Field
 from typing_extensions import override
 
@@ -10,7 +12,7 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_INTERROGATORS,
     KNOWN_UPSCALERS,
 )
-from horde_sdk.generation_parameters.generic import ComposedParameterSetBase
+from horde_sdk.generation_parameters.generic import CompositeParametersBase
 from horde_sdk.generation_parameters.generic.object_models import GenerationFeatureFlags
 
 
@@ -21,7 +23,29 @@ class AlchemyFeatureFlags(GenerationFeatureFlags):
     """The alchemy types supported by the worker."""
 
 
-class SingleAlchemyParameters(ComposedParameterSetBase):
+class SingleAlchemyParametersTemplate(CompositeParametersBase):
+    """Template for alchemy parameters with all fields optional.
+
+    Use this class during chain construction when not all parameters are known yet.
+    Convert to SingleAlchemyParameters (or subclasses) before execution.
+    """
+
+    result_id: str | None = None
+    """The generation ID to use for the generation."""
+
+    form: KNOWN_ALCHEMY_FORMS | str | None = None
+    """The form to use for the generation."""
+
+    source_image: bytes | str | None = None
+    """The source image to use for the generation."""
+
+    @override
+    def get_number_expected_results(self) -> int:
+        """Get the number of expected results."""
+        return 1
+
+
+class SingleAlchemyParameters(CompositeParametersBase):
     """Represents the common bare minimum parameters for any alchemy generation."""
 
     result_id: str
@@ -39,10 +63,24 @@ class SingleAlchemyParameters(ComposedParameterSetBase):
         return 1
 
 
+class UpscaleAlchemyParametersTemplate(SingleAlchemyParametersTemplate):
+    """Template for upscale alchemy parameters with all fields optional."""
+
+    upscaler: KNOWN_UPSCALERS | str | None = None
+
+
 class UpscaleAlchemyParameters(SingleAlchemyParameters):
     """Represents the parameters for an upscale alchemy generation."""
 
+    form: Literal[KNOWN_ALCHEMY_FORMS.post_process] = KNOWN_ALCHEMY_FORMS.post_process
+
     upscaler: KNOWN_UPSCALERS | str
+
+
+class FacefixAlchemyParametersTemplate(SingleAlchemyParametersTemplate):
+    """Template for facefix alchemy parameters with all fields optional."""
+
+    facefixer: KNOWN_FACEFIXERS | str | None = None
 
 
 class FacefixAlchemyParameters(SingleAlchemyParameters):
@@ -51,10 +89,22 @@ class FacefixAlchemyParameters(SingleAlchemyParameters):
     facefixer: KNOWN_FACEFIXERS | str
 
 
+class InterrogateAlchemyParametersTemplate(SingleAlchemyParametersTemplate):
+    """Template for interrogate alchemy parameters with all fields optional."""
+
+    interrogator: KNOWN_INTERROGATORS | str | None = None
+
+
 class InterrogateAlchemyParameters(SingleAlchemyParameters):
     """Represents the parameters for an interrogation alchemy generation."""
 
     interrogator: KNOWN_INTERROGATORS | str
+
+
+class CaptionAlchemyParametersTemplate(SingleAlchemyParametersTemplate):
+    """Template for caption alchemy parameters with all fields optional."""
+
+    caption_model: KNOWN_CAPTION_MODELS | str | None = None
 
 
 class CaptionAlchemyParameters(SingleAlchemyParameters):
@@ -63,13 +113,19 @@ class CaptionAlchemyParameters(SingleAlchemyParameters):
     caption_model: KNOWN_CAPTION_MODELS | str
 
 
+class NSFWAlchemyParametersTemplate(SingleAlchemyParametersTemplate):
+    """Template for NSFW alchemy parameters with all fields optional."""
+
+    nsfw_detector: KNOWN_NSFW_DETECTOR | str | None = None
+
+
 class NSFWAlchemyParameters(SingleAlchemyParameters):
     """Represents the parameters for a NSFW alchemy generation."""
 
     nsfw_detector: KNOWN_NSFW_DETECTOR | str
 
 
-class AlchemyParameters(ComposedParameterSetBase):
+class AlchemyParameters(CompositeParametersBase):
     """Represents the parameters for an alchemy generation."""
 
     upscalers: list[UpscaleAlchemyParameters] | None = None

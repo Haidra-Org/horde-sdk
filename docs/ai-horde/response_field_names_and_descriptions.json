@@ -509,6 +509,14 @@
             ]
         }
     },
+    "DeleteUserResponse": {
+        "message": {
+            "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
+            "types": [
+                "str"
+            ]
+        }
+    },
     "DeleteWorkerIPAddressResponse": {
         "message": {
             "description": "A message from the API. This is typically an error or warning message, but may also be informational.",
@@ -701,6 +709,13 @@
         },
         "special": {
             "description": "(Privileged) This user has been given the Special role.",
+            "types": [
+                "bool",
+                "None"
+            ]
+        },
+        "deleted": {
+            "description": "If True, this user has been deleted.",
             "types": [
                 "bool",
                 "None"
@@ -1295,6 +1310,13 @@
             "description": "The new amount of suspicion this user has.",
             "types": [
                 "int",
+                "None"
+            ]
+        },
+        "undeleted": {
+            "description": "True if the user was undeleted with this operation.",
+            "types": [
+                "bool",
                 "None"
             ]
         }

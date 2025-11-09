@@ -50,7 +50,7 @@ def test_write_progress_transitions() -> None:
         (convert_enum_dict_to_string_dict(black_box_generate_progress_transitions), "black_box_transitions.yaml"),
     ]
 
-    output_folder = "docs/ai-horde-worker"
+    output_folder = "docs/worker"
 
     for transitions in transitions_to_write:
         transitions_dict, filename = transitions
@@ -74,48 +74,65 @@ class GenerationPermutation:
     def __init__(
         self,
         *,
-        include_generation: bool,
-        include_safety_check: bool,
         include_preloading: bool,
+        include_generation: bool,
         include_post_processing: bool,
+        include_safety_check: bool,
+        include_submit: bool = False,
         underlying_payload: ImageGenerationParameters | TextGenerationParameters | SingleAlchemyParameters,
     ) -> None:
         """Initialize the permutation.
 
         Args:
-            include_safety_check (bool): Whether to include a safety check in the generation process.
             include_preloading (bool): Whether to include preloading in the generation process.
+            include_generation (bool): Whether to include generation in the generation process.
             include_post_processing (bool): Whether to include post-processing in the generation process.
-
+            include_safety_check (bool): Whether to include a safety check in the generation process.
+            include_submit (bool): Whether to include submission in the generation process.
+            underlying_payload (ImageGenerationParameters | TextGenerationParameters | SingleAlchemyParameters): The
+                underlying payload for the generation process.
         """
-        self.include_generation = include_generation
-        self.include_safety_check = include_safety_check
         self.include_preloading = include_preloading
+        self.include_generation = include_generation
         self.include_post_processing = include_post_processing
+        self.include_safety_check = include_safety_check
+        self.include_submit = include_submit
         self.underlying_payload = underlying_payload
 
 
 def create_permutations(
     payload: ImageGenerationParameters | TextGenerationParameters | SingleAlchemyParameters,
-    required_safety_check: bool = False,
+    *,
     required_preloading: bool = False,
     required_post_processing: bool = False,
     required_generation: bool = False,
+    required_safety_check: bool = False,
+    required_submit: bool = False,
 ) -> list[GenerationPermutation]:
     permutations = []
-    for include_safety_check in [True] if required_safety_check else [False, True]:
-        for include_preloading in [True] if required_preloading else [False, True]:
-            for include_post_processing in [True] if required_post_processing else [False, True]:
-                for include_generation in [True] if required_generation else [False, True]:
-                    permutations.append(
-                        GenerationPermutation(
-                            include_generation=include_generation,
-                            include_safety_check=include_safety_check,
-                            include_preloading=include_preloading,
-                            include_post_processing=include_post_processing,
-                            underlying_payload=payload,
-                        ),
-                    )
+
+    for include_generation in [True] if required_generation else [False, True]:
+        for include_post_processing in [True] if required_post_processing else [False, True]:
+            if not (include_generation or include_post_processing):
+                continue
+
+            for include_preloading in [True] if required_preloading else [False, True]:
+                for include_safety_check in [True] if required_safety_check else [False, True]:
+                    if not (include_safety_check or include_generation or include_post_processing):
+                        continue
+
+                    for include_submit in [True] if required_submit else [False, True]:
+                        permutations.append(
+                            GenerationPermutation(
+                                include_preloading=include_preloading,
+                                include_generation=include_generation,
+                                include_post_processing=include_post_processing,
+                                include_safety_check=include_safety_check,
+                                include_submit=include_submit,
+                                underlying_payload=payload,
+                            ),
+                        )
+
     return permutations
 
 
@@ -143,6 +160,7 @@ def image_permutations(
     ) + create_permutations(
         simple_image_generation_parameters_post_processing,
         required_generation=True,
+        required_post_processing=True,
         required_safety_check=True,
     )
 
@@ -320,6 +338,24 @@ class TestHordeSingleGeneration:
 
         generation.on_submit_complete()
         assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMIT_COMPLETE
+
+    def test_alchemy_safety_only(
+        self,
+        simple_alchemy_generation_parameters_nsfw_detect: AlchemyParameters,
+    ) -> None:
+        assert len(simple_alchemy_generation_parameters_nsfw_detect.all_alchemy_operations) == 1
+        assert simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors is not None
+        assert len(simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors) == 1
+
+        nsfw_parameters = simple_alchemy_generation_parameters_nsfw_detect.nsfw_detectors[0]
+
+        generation = AlchemySingleGeneration(
+            generation_parameters=nsfw_parameters,
+            requires_post_processing=False,
+            requires_submit=False,
+        )
+
+        generation.on_preloading()
 
     def _run_censor_test(
         self,
@@ -633,28 +669,6 @@ class TestHordeSingleGeneration:
 
         assert generation._generate_progress_transitions == default_text_generate_progress_transitions
 
-    def test_invalid_step_raises_error(
-        self,
-        id_and_image_generation: tuple[str, ImageSingleGeneration],
-    ) -> None:
-        """Test that an exception is raised when an invalid step is passed to the generation."""
-
-        _, generation = id_and_image_generation
-
-        assert generation.get_generation_progress() == GENERATION_PROGRESS.NOT_STARTED
-
-        with pytest.raises(
-            ValueError,
-            match=f"Invalid state {GENERATION_PROGRESS.NOT_STARTED} "
-            r"\(current state: "
-            f"{GENERATION_PROGRESS.NOT_STARTED}"
-            r"\)",
-        ):
-            generation.step(GENERATION_PROGRESS.NOT_STARTED)
-
-        generation.step(GENERATION_PROGRESS.PRELOADING)
-        assert generation.get_generation_progress() == GENERATION_PROGRESS.PRELOADING
-
     def test_wrong_order_of_steps(
         self,
         id_and_image_generation: tuple[str, ImageSingleGeneration],
@@ -915,7 +929,7 @@ class TestHordeSingleGeneration:
         assert len(generation.generation_results) == 1
 
         generation_result_id, generation_result = generation.generation_results.popitem()
-        assert isinstance(generation_result_id, UUID)
+        assert isinstance(generation_result_id, UUID | str)
         assert generation_result is not None
 
         if include_safety_check:
@@ -1109,6 +1123,9 @@ class TestHordeSingleGeneration:
         if include_submit and not generation.requires_submit:
             return
 
+        if generation.requires_post_processing is not include_post_processing:
+            return
+
         if include_preloading:
             generation.on_preloading()
             assert generation.get_generation_progress() == GENERATION_PROGRESS.PRELOADING
@@ -1123,9 +1140,10 @@ class TestHordeSingleGeneration:
                         assert generation.get_generation_progress() == GENERATION_PROGRESS.ERROR
                         generation.step(GENERATION_PROGRESS.PRELOADING)
                         assert generation.get_generation_progress() == GENERATION_PROGRESS.PRELOADING
-            else:
-                generation.on_preloading_complete()
-                assert generation.get_generation_progress() == GENERATION_PROGRESS.PRELOADING_COMPLETE
+
+                return
+            generation.on_preloading_complete()
+            assert generation.get_generation_progress() == GENERATION_PROGRESS.PRELOADING_COMPLETE
 
         if include_generation:
             generation.on_generating()
@@ -1226,28 +1244,154 @@ class TestHordeSingleGeneration:
             generation.on_submit_complete()
             assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMIT_COMPLETE
 
-    def simulate_hitting_all_error_limits(
+    def simulate_abort(
         self,
-        generations: list[HordeSingleGeneration[Any]],
+        generation: HordeSingleGeneration[Any],
+        state_to_abort_on: GENERATION_PROGRESS,
         include_preloading: bool,
         include_generation: bool,
         include_post_processing: bool,
         include_safety_check: bool,
         include_submit: bool,
+        error_message: str,
+        error_exception: Exception,
     ) -> None:
-        error_limits = generations[0]._state_error_limits
-        assert error_limits is not None
+        """Simulate aborting a generation.
 
-        for i, (state, _) in enumerate(error_limits.items()):
-            self.simulate_hitting_error_limit(
-                generations[i],
-                state,
-                include_preloading=include_preloading,
-                include_generation=include_generation,
-                include_post_processing=include_post_processing,
-                include_safety_check=include_safety_check,
-                include_submit=include_submit,
+        This function will simulate aborting a generation by calling the `on_abort` method on the generation object.
+        It will also check that the generation progresses through the correct states.
+
+        If a step is not requested, it will be skipped.
+        """
+        from horde_sdk.worker.consts import GENERATION_PROGRESS
+
+        if state_to_abort_on == GENERATION_PROGRESS.PRELOADING and not include_preloading:
+            return
+        if state_to_abort_on == GENERATION_PROGRESS.GENERATING and not include_generation:
+            return
+        if state_to_abort_on == GENERATION_PROGRESS.POST_PROCESSING and not include_post_processing:
+            return
+        if state_to_abort_on == GENERATION_PROGRESS.SAFETY_CHECKING and not include_safety_check:
+            return
+        if state_to_abort_on == GENERATION_PROGRESS.SUBMITTING and not include_submit:
+            return
+
+        if not (include_preloading or include_generation or include_post_processing or include_safety_check):
+            return
+
+        if include_submit and not generation.requires_submit:
+            return
+
+        if state_to_abort_on == GENERATION_PROGRESS.NOT_STARTED:
+            generation.on_abort(
+                failed_message=error_message,
+                failure_exception=error_exception,
             )
+            assert generation.get_generation_progress() == GENERATION_PROGRESS.ABORTED
+            return
+
+        if include_preloading:
+            generation.on_preloading()
+            assert generation.get_generation_progress() == GENERATION_PROGRESS.PRELOADING
+
+            if state_to_abort_on == GENERATION_PROGRESS.PRELOADING:
+                generation.on_abort(
+                    failed_message=error_message,
+                    failure_exception=error_exception,
+                )
+
+                assert generation.get_generation_progress() == GENERATION_PROGRESS.ABORTED
+                return
+
+            generation.on_preloading_complete()
+            assert generation.get_generation_progress() == GENERATION_PROGRESS.PRELOADING_COMPLETE
+
+        if include_generation:
+            generation.on_generating()
+            assert generation.get_generation_progress() == GENERATION_PROGRESS.GENERATING
+
+            if state_to_abort_on == GENERATION_PROGRESS.GENERATING:
+                generation.on_abort(
+                    failed_message=error_message,
+                    failure_exception=error_exception,
+                )
+
+                assert generation.get_generation_progress() == GENERATION_PROGRESS.ABORTED
+                return
+
+            generation.on_generation_work_complete()
+
+            if not include_post_processing:
+                if generation.result_type is bytes:
+                    generation.set_work_result(self._shared_image)
+                elif generation.result_type is str:
+                    generation.set_work_result("Fake Text Generation Result")
+
+        if include_post_processing:
+            generation.on_post_processing()
+            assert generation.get_generation_progress() == GENERATION_PROGRESS.POST_PROCESSING
+
+            if state_to_abort_on == GENERATION_PROGRESS.POST_PROCESSING:
+                generation.on_abort(
+                    failed_message=error_message,
+                    failure_exception=error_exception,
+                )
+
+                assert generation.get_generation_progress() == GENERATION_PROGRESS.ABORTED
+                return
+
+            generation.on_post_processing_complete()
+            if generation._result_type is bytes:
+                generation.set_work_result(self._shared_image)
+            elif generation._result_type is str:
+                generation.set_work_result("Fake Text Generation Result")
+
+        if include_safety_check:
+            generation.on_safety_checking()
+            assert generation.get_generation_progress() == GENERATION_PROGRESS.SAFETY_CHECKING
+            if state_to_abort_on == GENERATION_PROGRESS.SAFETY_CHECKING:
+                generation.on_abort(
+                    failed_message=error_message,
+                    failure_exception=error_exception,
+                )
+
+                assert generation.get_generation_progress() == GENERATION_PROGRESS.ABORTED
+                return
+            generation.on_safety_check_complete(
+                batch_index=0,
+                safety_result=SafetyResult(
+                    is_nsfw=False,
+                    is_csam=False,
+                ),
+            )
+            assert generation._safety_results[0] is not None
+            assert generation._safety_results[0].is_nsfw is False
+            assert generation._safety_results[0].is_csam is False
+
+        if include_submit:
+            generation.on_submitting()
+            assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMITTING
+
+            if state_to_abort_on == GENERATION_PROGRESS.SUBMITTING:
+                generation.on_abort(
+                    failed_message=error_message,
+                    failure_exception=error_exception,
+                )
+
+                assert generation.get_generation_progress() == GENERATION_PROGRESS.ABORTED
+                return
+
+            generation.on_submit_complete()
+            assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMIT_COMPLETE
+
+            if state_to_abort_on == GENERATION_PROGRESS.SUBMIT_COMPLETE:
+                generation.on_abort(
+                    failed_message=error_message,
+                    failure_exception=error_exception,
+                )
+
+                assert generation.get_generation_progress() == GENERATION_PROGRESS.ABORTED
+                return
 
     @staticmethod
     def handle_error(
@@ -1283,37 +1427,23 @@ class TestHordeSingleGeneration:
         incremented.
 
         """
-        if not generation.does_class_require_generation() and not include_generation and not include_post_processing:
-            logger.trace(
-                f"Skipping generation for {generation.__class__.__name__} as it does not require generation "
-                "and generation and post-processing are not included",
-            )
+        if error_on_preloading and not include_preloading:
             return
-
-        if generation.does_class_require_generation() and not include_generation:
-            logger.trace(
-                f"Skipping generation for {generation.__class__.__name__} as it requires generation and "
-                "generation is not included",
-            )
+        if error_on_generation and not include_generation:
             return
-
-        if include_post_processing and not generation.requires_post_processing:
-            logger.trace(
-                f"Skipping post-processing for {generation.__class__.__name__} as it does not require post-processing",
-            )
+        if error_on_post_processing and not include_post_processing:
             return
-
-        if not include_submit and error_on_submit:
-            logger.trace(
-                f"Skipping submission for {generation.__class__.__name__} as it is not included and "
-                "error_on_submit is True",
-            )
+        if error_on_safety_check and not include_safety_check:
+            return
+        if error_on_submit and not include_submit:
             return
 
         error_flags = {
             "preloading": error_on_preloading and include_preloading,
             "generation": error_on_generation and include_generation,
-            "post_processing": error_on_post_processing and include_post_processing,
+            "post_processing": error_on_post_processing
+            and include_post_processing
+            and generation.requires_post_processing,
             "safety_check": error_on_safety_check and include_safety_check,
             "submit": error_on_submit,
         }
@@ -1332,7 +1462,7 @@ class TestHordeSingleGeneration:
                 errors_count=errors_count,
             )
 
-        if include_post_processing:
+        if include_post_processing and generation.requires_post_processing:
             errors_count = self._simulate_post_processing(
                 generation,
                 error_on_post_processing=error_on_post_processing,
@@ -1396,18 +1526,21 @@ class TestHordeSingleGeneration:
 
         assert generation.get_generation_progress() == GENERATION_PROGRESS.NOT_STARTED
 
-        generation.step(GENERATION_PROGRESS.PRELOADING)
+        assert generation.step(GENERATION_PROGRESS.PRELOADING) == GENERATION_PROGRESS.PRELOADING
         assert generation.get_generation_progress() == GENERATION_PROGRESS.PRELOADING
 
         if error_on_preloading:
             errors_count += 1
-            generation.on_error(
-                failed_message="Failed to preload",
-                failure_exception=Exception("Failed to preload exception"),
+            assert (
+                generation.on_error(
+                    failed_message="Failed to preload",
+                    failure_exception=Exception("Failed to preload exception"),
+                )
+                == GENERATION_PROGRESS.ERROR
             )
             assert generation.get_generation_progress() == GENERATION_PROGRESS.ERROR
 
-            generation.step(GENERATION_PROGRESS.PRELOADING)
+            assert generation.step(GENERATION_PROGRESS.PRELOADING) == GENERATION_PROGRESS.PRELOADING
             assert generation.get_generation_progress() == GENERATION_PROGRESS.PRELOADING
 
             assert generation.generation_failure_count == errors_count
@@ -1416,7 +1549,7 @@ class TestHordeSingleGeneration:
             assert error_state == GENERATION_PROGRESS.PRELOADING
             assert error_time != 0
 
-        generation.on_preloading_complete()
+        assert generation.on_preloading_complete() == GENERATION_PROGRESS.PRELOADING_COMPLETE
         assert generation.get_generation_progress() == GENERATION_PROGRESS.PRELOADING_COMPLETE
 
         return errors_count
@@ -1432,18 +1565,21 @@ class TestHordeSingleGeneration:
 
         from horde_sdk.worker.consts import GENERATION_PROGRESS
 
-        generation.step(GENERATION_PROGRESS.GENERATING)
+        assert generation.step(GENERATION_PROGRESS.GENERATING) == GENERATION_PROGRESS.GENERATING
         assert generation.get_generation_progress() == GENERATION_PROGRESS.GENERATING
 
         if error_on_generation:
             errors_count += 1
-            generation.on_error(
-                failed_message="Failed to generate",
-                failure_exception=Exception("Failed to generate exception"),
+            assert (
+                generation.on_error(
+                    failed_message="Failed to generate",
+                    failure_exception=Exception("Failed to generate exception"),
+                )
+                == GENERATION_PROGRESS.ERROR
             )
             assert generation.get_generation_progress() == GENERATION_PROGRESS.ERROR
 
-            generation.step(GENERATION_PROGRESS.GENERATING)
+            assert generation.step(GENERATION_PROGRESS.GENERATING) == GENERATION_PROGRESS.GENERATING
             assert generation.get_generation_progress() == GENERATION_PROGRESS.GENERATING
 
             assert generation.generation_failure_count == errors_count
@@ -1452,10 +1588,15 @@ class TestHordeSingleGeneration:
             assert error_state == GENERATION_PROGRESS.GENERATING
             assert error_time != 0
 
-        if include_post_processing:
-            generation.on_generation_work_complete()
+        if include_post_processing and generation.requires_post_processing:
+            assert generation.on_generation_work_complete() == GENERATION_PROGRESS.PENDING_POST_PROCESSING
         else:
-            generation.on_generation_work_complete()
+            assert generation.on_generation_work_complete() in (
+                GENERATION_PROGRESS.PENDING_SUBMIT,
+                GENERATION_PROGRESS.PENDING_SAFETY_CHECK,
+                GENERATION_PROGRESS.PENDING_POST_PROCESSING,
+                GENERATION_PROGRESS.COMPLETE,
+            )
 
             self._set_and_confirm_work_result(generation)
 
@@ -1471,21 +1612,28 @@ class TestHordeSingleGeneration:
 
         from horde_sdk.worker.consts import GENERATION_PROGRESS
 
-        generation.step(GENERATION_PROGRESS.POST_PROCESSING)
+        assert generation.step(GENERATION_PROGRESS.POST_PROCESSING) == GENERATION_PROGRESS.POST_PROCESSING
         assert generation.get_generation_progress() == GENERATION_PROGRESS.POST_PROCESSING
 
         if error_on_post_processing:
             errors_count += 1
-            generation.on_error(
-                failed_message="Failed during post-processing",
-                failure_exception=Exception("Failed during post-processing exception"),
+            assert (
+                generation.on_error(
+                    failed_message="Failed during post-processing",
+                    failure_exception=Exception("Failed during post-processing exception"),
+                )
+                == GENERATION_PROGRESS.ERROR
             )
             assert generation.get_generation_progress() == GENERATION_PROGRESS.ERROR
 
             generation.step(GENERATION_PROGRESS.POST_PROCESSING)
             assert generation.get_generation_progress() == GENERATION_PROGRESS.POST_PROCESSING
 
-        generation.on_post_processing_complete()
+        assert generation.on_post_processing_complete() in (
+            GENERATION_PROGRESS.PENDING_SUBMIT,
+            GENERATION_PROGRESS.PENDING_SAFETY_CHECK,
+            GENERATION_PROGRESS.COMPLETE,
+        )
 
         self._set_and_confirm_work_result(generation)
 
@@ -1502,18 +1650,21 @@ class TestHordeSingleGeneration:
 
         assert generation.get_generation_progress() == GENERATION_PROGRESS.PENDING_SAFETY_CHECK
 
-        generation.step(GENERATION_PROGRESS.SAFETY_CHECKING)
+        assert generation.step(GENERATION_PROGRESS.SAFETY_CHECKING) == GENERATION_PROGRESS.SAFETY_CHECKING
         assert generation.get_generation_progress() == GENERATION_PROGRESS.SAFETY_CHECKING
 
         if error_on_safety_check:
             errors_count += 1
-            generation.on_error(
-                failed_message="Failed during safety check",
-                failure_exception=Exception("Failed during safety check exception"),
+            assert (
+                generation.on_error(
+                    failed_message="Failed during safety check",
+                    failure_exception=Exception("Failed during safety check exception"),
+                )
+                == GENERATION_PROGRESS.ERROR
             )
             assert generation.get_generation_progress() == GENERATION_PROGRESS.ERROR
 
-            generation.step(GENERATION_PROGRESS.SAFETY_CHECKING)
+            assert generation.step(GENERATION_PROGRESS.SAFETY_CHECKING) == GENERATION_PROGRESS.SAFETY_CHECKING
             assert generation.get_generation_progress() == GENERATION_PROGRESS.SAFETY_CHECKING
 
         generation.on_safety_check_complete(
@@ -1540,32 +1691,128 @@ class TestHordeSingleGeneration:
 
         assert generation.get_generation_progress() == GENERATION_PROGRESS.PENDING_SUBMIT
 
-        generation.step(GENERATION_PROGRESS.SUBMITTING)
+        assert generation.step(GENERATION_PROGRESS.SUBMITTING) == GENERATION_PROGRESS.SUBMITTING
         assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMITTING
 
         if error_on_submit:
             errors_count += 1
-            generation.on_error(
-                failed_message="Failed during submission",
-                failure_exception=Exception("Failed during submission exception"),
+            assert (
+                generation.on_error(
+                    failed_message="Failed during submission",
+                    failure_exception=Exception("Failed during submission exception"),
+                )
+                == GENERATION_PROGRESS.ERROR
             )
             assert generation.get_generation_progress() == GENERATION_PROGRESS.ERROR
 
-            generation.step(GENERATION_PROGRESS.SUBMITTING)
+            assert generation.step(GENERATION_PROGRESS.SUBMITTING) == GENERATION_PROGRESS.SUBMITTING
             assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMITTING
 
-        generation.on_submit_complete()
+        assert generation.on_submit_complete() == GENERATION_PROGRESS.SUBMIT_COMPLETE
         assert generation.get_generation_progress() == GENERATION_PROGRESS.SUBMIT_COMPLETE
 
         return errors_count
+
+    def run_generation_abort_and_error_tests(
+        self,
+        generation_class: type[ImageSingleGeneration | TextSingleGeneration | AlchemySingleGeneration],
+        generation_id_factory: Callable[[], str],
+        generation_parameters: ImageGenerationParameters | TextGenerationParameters | SingleAlchemyParameters,
+        include_generation: bool,
+        include_post_processing: bool,
+        include_safety_check: bool,
+        include_submit: bool,
+    ) -> None:
+        states_to_test = list(GENERATION_PROGRESS.__members__.values())
+        states_to_test = [s for s in states_to_test if s not in generation_class.default_interrupt_states()]
+        states_to_test.remove(GENERATION_PROGRESS.ERROR)
+
+        for state in states_to_test:
+            if self.is_conflicting_permutations(
+                generation_class_requires_generation=generation_class.does_class_require_generation(),
+                generation_requires_post_processing=include_post_processing,
+                generation_requires_submit=include_submit,
+                include_generation=include_generation,
+                include_post_processing=include_post_processing,
+                include_submit=include_submit,
+            ):
+                continue
+
+            abort_generation = self.create_generation_instance(
+                generation_class,
+                generation_id_factory(),
+                generation_parameters,
+                requires_generation=include_generation,
+                requires_post_processing=include_post_processing,
+                requires_safety_check=include_safety_check,
+                requires_submit=include_submit,
+                strict_transition_mode=True,
+                extra_logging=False,
+            )
+
+            if abort_generation.requires_post_processing is not include_post_processing:
+                continue
+
+            self.simulate_abort(
+                generation=abort_generation,
+                state_to_abort_on=state,
+                include_preloading=True,
+                include_generation=include_generation,
+                include_post_processing=include_post_processing,
+                include_safety_check=include_safety_check,
+                include_submit=include_submit,
+                error_message="Simulated error message",
+                error_exception=Exception("Simulated error exception"),
+            )
+
+        generation_strict = self.create_generation_instance(
+            generation_class,
+            generation_id_factory(),
+            generation_parameters,
+            requires_generation=include_generation,
+            requires_post_processing=include_post_processing,
+            requires_safety_check=include_safety_check,
+            requires_submit=include_submit,
+            strict_transition_mode=True,
+            extra_logging=False,
+        )
+        self.simulate_hitting_error_limit(
+            generation=generation_strict,
+            state_to_error_out_on=state,
+            include_preloading=True,
+            include_generation=include_generation,
+            include_post_processing=include_post_processing,
+            include_safety_check=include_safety_check,
+            include_submit=include_submit,
+        )
+
+        generation_non_strict = self.create_generation_instance(
+            generation_class,
+            generation_id_factory(),
+            generation_parameters,
+            requires_generation=include_generation,
+            requires_post_processing=include_post_processing,
+            requires_safety_check=include_safety_check,
+            requires_submit=include_submit,
+            strict_transition_mode=False,
+            extra_logging=False,
+        )
+
+        self.simulate_hitting_error_limit(
+            generation=generation_non_strict,
+            state_to_error_out_on=state,
+            include_preloading=True,
+            include_generation=include_generation,
+            include_post_processing=include_post_processing,
+            include_safety_check=include_safety_check,
+            include_submit=include_submit,
+        )
 
     def run_generation_test_permutations(
         self,
         generation_class: type[ImageSingleGeneration | TextSingleGeneration | AlchemySingleGeneration],
         generation_id_factory: Callable[[], str],
         permutations: list[GenerationPermutation],
-        include_generation: bool,
-        include_submit: bool,
         error_on_preloading: bool,
         error_on_generation: bool,
         error_on_post_processing: bool,
@@ -1574,77 +1821,39 @@ class TestHordeSingleGeneration:
     ) -> None:
         """Run permutations of generation configurations.
 
+        Additionally ensures that error limits are respected and that aborting a generation works as expected.
+
         See the docstring for `GenerationPermutation` for more information on the possible configurations.
 
         Args:
             generation_class (type[HordeSingleGeneration[Any]]): The generation class to test.
-            generation_id (str | Callable[[], str]): The generation ID or generation ID factory to\
-                use for the test.
-            permutations (list[GenerationPermutation]): The permutations to test.
-            process_function (Callable[..., None]): The function to process the generation.
-            include_generation (bool): Whether to include generation in the process.
-            requires_generation (bool | None): Whether the generation requires generation.
-            **kwargs (Any): Additional keyword arguments to pass to the process function.
-
+            generation_id_factory (Callable[[], str]): A factory function to create unique generation IDs.
+            permutations (list[GenerationPermutation]): A list of permutations to test.
+            include_generation (bool): Whether to force include the generation step.
+            include_submit (bool): Whether to force include the submit step.
+            error_on_preloading (bool): Whether to simulate an error during preloading.
+            error_on_generation (bool): Whether to simulate an error during generation.
+            error_on_post_processing (bool): Whether to simulate an error during post-processing.
+            error_on_safety_check (bool): Whether to simulate an error during safety check.
+            error_on_submit (bool): Whether to simulate an error during submission.
         """
-        dummy_generation = self.create_generation_instance(
-            generation_class,
-            generation_id_factory,
-            include_submit,
-            GenerationPermutation(
-                include_preloading=True,
-                include_generation=True,
-                include_post_processing=True,
-                include_safety_check=True,
-                underlying_payload=permutations[0].underlying_payload,
-            ),
-            force_post_processing=True,
-        )
-        assert dummy_generation._state_error_limits is not None
-
-        for state in dummy_generation._state_error_limits:
-            assert state in GENERATION_PROGRESS.__members__
-
-            addtl_generation_for_testing_error_limit = self.create_generation_instance(
-                generation_class,
-                generation_id_factory,
-                include_submit,
-                GenerationPermutation(
-                    include_preloading=True,
-                    include_generation=True,
-                    include_post_processing=True,
-                    include_safety_check=True,
-                    underlying_payload=permutations[0].underlying_payload,
-                ),
-                force_post_processing=True,
-            )
-
-            self.simulate_hitting_error_limit(
-                generation=addtl_generation_for_testing_error_limit,
-                state_to_error_out_on=state,
-                include_preloading=True,
-                include_generation=True,
-                include_post_processing=True,
-                include_safety_check=True,
-                include_submit=True,
-            )
-
         for permutation in permutations:
             generation: HordeSingleGeneration[Any]
 
-            generation = self.create_generation_instance(
+            generation = self.create_generation_instance_for_permutation(
                 generation_class,
                 generation_id_factory,
-                include_submit,
+                permutation.include_submit,
                 permutation,
             )
+
             self.process_generation(
                 generation,
-                include_generation=include_generation,
+                include_generation=permutation.include_generation,
                 include_safety_check=permutation.include_safety_check,
                 include_preloading=permutation.include_preloading,
                 include_post_processing=permutation.include_post_processing,
-                include_submit=include_submit,
+                include_submit=permutation.include_submit,
                 error_on_preloading=error_on_preloading,
                 error_on_generation=error_on_generation,
                 error_on_post_processing=error_on_post_processing,
@@ -1652,79 +1861,156 @@ class TestHordeSingleGeneration:
                 error_on_submit=error_on_submit,
             )
 
+    @staticmethod
+    def is_conflicting_permutations(
+        generation_class_requires_generation: bool,
+        generation_requires_post_processing: bool,
+        generation_requires_submit: bool,
+        include_generation: bool,
+        include_post_processing: bool,
+        include_submit: bool,
+    ) -> bool:
+        """Check if the given generation and configurations are conflicting.
+
+        Args:
+            generation (HordeSingleGeneration[Any]): The generation to check.
+            include_generation (bool): Whether to force include the generation step.
+            include_post_processing (bool): Whether to force include the post-processing step.
+            include_submit (bool): Whether to force include the submit step.
+
+        Returns:
+            bool: True if the configurations are conflicting, False otherwise.
+        """
+        if not generation_class_requires_generation and not include_generation:
+            return True
+
+        if generation_class_requires_generation and not include_generation:
+            return True
+
+        if not include_generation and not include_post_processing:
+            return True
+
+        if include_post_processing is not generation_requires_post_processing:
+            return True
+
+        if include_submit is not generation_requires_submit:
+            return True
+
+        return bool(not (include_generation or include_post_processing))
+
+    @staticmethod
     def create_generation_instance(
+        generation_class: type[ImageSingleGeneration | TextSingleGeneration | AlchemySingleGeneration],
+        generation_id: str,
+        generation_parameters: ImageGenerationParameters | TextGenerationParameters | SingleAlchemyParameters,
+        requires_generation: bool,
+        requires_post_processing: bool,
+        requires_safety_check: bool,
+        requires_submit: bool,
+        strict_transition_mode: bool,
+        extra_logging: bool = False,
+    ) -> HordeSingleGeneration[Any]:
+        """Create a generation instance for the given class and parameters.
+
+        Args:
+            generation_class (type[HordeSingleGeneration[Any]]): The generation class to create.
+            generation_id (str): The ID of the generation.
+            generation_parameters (ImageGenerationParameters | TextGenerationParameters | SingleAlchemyParameters):
+                The parameters for the generation.
+            requires_generation (bool): Whether the generation requires generation.
+            requires_post_processing (bool): Whether the generation requires post-processing.
+            requires_safety_check (bool): Whether the generation requires a safety check.
+            requires_submit (bool): Whether the generation requires submission.
+            force_post_processing (bool): Whether to force post-processing.
+            strict_transition_mode (bool): Whether to use strict transition mode.
+            extra_logging (bool, optional): Whether to enable extra logging. Defaults to False.
+
+        Returns:
+            HordeSingleGeneration[Any]: The created generation instance.
+        """
+
+        generation: HordeSingleGeneration[Any]
+
+        if generation_class == ImageSingleGeneration:
+            assert isinstance(generation_parameters, ImageGenerationParameters)
+            generation = ImageSingleGeneration(
+                generation_id=generation_id,
+                generation_parameters=generation_parameters,
+                requires_submit=requires_submit,
+                extra_logging=extra_logging,
+                strict_transition_mode=strict_transition_mode,
+            )
+        elif generation_class == AlchemySingleGeneration:
+            assert isinstance(generation_parameters, SingleAlchemyParameters)
+            generation = AlchemySingleGeneration(
+                generation_id=generation_id,
+                generation_parameters=generation_parameters,
+                requires_generation=requires_generation,
+                requires_post_processing=requires_post_processing,
+                requires_safety_check=requires_safety_check,
+                requires_submit=requires_submit,
+                extra_logging=extra_logging,
+                strict_transition_mode=strict_transition_mode,
+            )
+        elif generation_class == TextSingleGeneration:
+            assert isinstance(generation_parameters, TextGenerationParameters)
+            generation = TextSingleGeneration(
+                generation_id=generation_id,
+                generation_parameters=generation_parameters,
+                requires_post_processing=requires_post_processing,
+                requires_safety_check=requires_safety_check,
+                requires_submit=requires_submit,
+                extra_logging=extra_logging,
+                strict_transition_mode=strict_transition_mode,
+            )
+        else:
+            raise ValueError(f"Unknown generation class: {generation_class}")
+
+        return generation
+
+    def create_generation_instance_for_permutation(
         self,
         generation_class: type[ImageSingleGeneration | TextSingleGeneration | AlchemySingleGeneration],
         generation_id_factory: Callable[[], str],
         include_submit: bool,
         permutation: GenerationPermutation,
-        force_post_processing: bool = False,
+        strict_transition_mode: bool = True,
     ) -> HordeSingleGeneration[Any]:
-        generation: HordeSingleGeneration[Any]
-
-        if generation_class == ImageSingleGeneration:
-            assert isinstance(permutation.underlying_payload, ImageGenerationParameters)
-            generation = ImageSingleGeneration(
-                generation_id=generation_id_factory(),
-                generation_parameters=permutation.underlying_payload,
-                requires_submit=include_submit,
-                extra_logging=False,
-            )
-            if force_post_processing:
-                generation._requires_post_processing = True
-
-            permutation.include_post_processing = generation.requires_post_processing
-        elif generation_class == AlchemySingleGeneration:
-            assert isinstance(permutation.underlying_payload, SingleAlchemyParameters)
-            generation = AlchemySingleGeneration(
-                generation_id=generation_id_factory(),
-                generation_parameters=permutation.underlying_payload,
-                requires_generation=permutation.include_post_processing,
-                requires_post_processing=permutation.include_post_processing,
-                requires_safety_check=permutation.include_safety_check,
-                requires_submit=include_submit,
-                extra_logging=False,
-            )
-
-        elif generation_class == TextSingleGeneration:
-            assert isinstance(permutation.underlying_payload, TextGenerationParameters)
-            generation = TextSingleGeneration(
-                generation_id=generation_id_factory(),
-                generation_parameters=permutation.underlying_payload,
-                requires_post_processing=permutation.include_post_processing,
-                requires_safety_check=permutation.include_safety_check,
-                requires_submit=include_submit,
-                extra_logging=False,
-            )
+        generation: HordeSingleGeneration[Any] = self.create_generation_instance(
+            generation_class,
+            generation_id=generation_id_factory(),
+            generation_parameters=permutation.underlying_payload,
+            requires_generation=permutation.include_generation,
+            requires_post_processing=permutation.include_post_processing,
+            requires_safety_check=permutation.include_safety_check,
+            requires_submit=include_submit,
+            strict_transition_mode=strict_transition_mode,
+            extra_logging=False,
+        )
 
         return generation
 
     @pytest.mark.parametrize(
-        "generation_class,include_submit,include_generation",
+        "generation_class",
         [
-            (ImageSingleGeneration, True, True),
-            (ImageSingleGeneration, False, True),
-            (AlchemySingleGeneration, True, True),
-            (AlchemySingleGeneration, False, True),
-            (AlchemySingleGeneration, True, False),
-            (AlchemySingleGeneration, False, False),
-            (TextSingleGeneration, True, True),
-            (TextSingleGeneration, False, True),
-            (TextSingleGeneration, True, False),
-            (TextSingleGeneration, False, False),
+            ImageSingleGeneration,
+            AlchemySingleGeneration,
+            TextSingleGeneration,
         ],
     )
     def test_error_handling(
         self,
         generation_class: type[ImageSingleGeneration | TextSingleGeneration | AlchemySingleGeneration],
-        include_generation: bool,
-        include_submit: bool,
         id_factory_str: Callable[[], str],
         image_permutations: list[GenerationPermutation],
         alchemy_permutations: list[GenerationPermutation],
         text_permutations: list[GenerationPermutation],
     ) -> None:
-        """Test error handling for all permutations of generation configurations."""
+        """Test error handling for all permutations of generation configurations.
+
+        This function is one of the heaviest in the test suite but does a lot of heavy
+        lifting in terms of making sure all of the intended generation paths are covered.
+        """
 
         from collections import namedtuple
 
@@ -1754,23 +2040,37 @@ class TestHordeSingleGeneration:
             for error_on_submit in [True, False]
         ]
 
+        permutations_map: dict[
+            type[ImageSingleGeneration] | type[AlchemySingleGeneration] | type[TextSingleGeneration],
+            list[GenerationPermutation],
+        ]
         permutations_map = {
             ImageSingleGeneration: image_permutations,
             AlchemySingleGeneration: alchemy_permutations,
             TextSingleGeneration: text_permutations,
         }
 
+        for generation_type, permutations in permutations_map.items():
+            for permutation in permutations:
+                self.run_generation_abort_and_error_tests(
+                    generation_class=generation_type,
+                    generation_id_factory=id_factory_str,
+                    generation_parameters=permutation.underlying_payload,
+                    include_generation=permutation.include_generation,
+                    include_post_processing=permutation.include_post_processing,
+                    include_safety_check=permutation.include_safety_check,
+                    include_submit=permutation.include_submit,
+                )
+
         for error_permutation in error_permutations:
-            permutations = permutations_map.get(generation_class)
-            if permutations is None:
+            permutations_list = permutations_map.get(generation_class)
+            if permutations_list is None:
                 raise ValueError(f"Permutations not found for {generation_class.__name__}")
             try:
                 self.run_generation_test_permutations(
                     generation_class,
                     id_factory_str,
-                    permutations,
-                    include_generation=include_generation,
-                    include_submit=include_submit,
+                    permutations_list,
                     error_on_preloading=error_permutation.error_on_preloading,
                     error_on_generation=error_permutation.error_on_generation,
                     error_on_post_processing=error_permutation.error_on_post_processing,
@@ -1780,7 +2080,6 @@ class TestHordeSingleGeneration:
             except Exception as e:
                 logger.exception(f"Error running permutations for {generation_class.__name__}")
                 logger.exception(f"Error permutation: {error_permutation}")
-                logger.exception(f"Generation permutations: {permutations}")
-                logger.exception(f"included generation: {include_generation}")
+                logger.exception(f"Generation permutations: {permutations_list}")
 
                 raise e

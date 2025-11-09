@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 
+from loguru import logger
 from typing_extensions import override
 
 from horde_sdk.consts import ID_TYPES
@@ -97,6 +98,18 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
 
         if not requires_submit:
             generate_progress_transitions = self.default_generate_progress_transitions_no_submit()
+
+        if result_ids is None and generation_parameters.result_ids is not None:
+            result_ids = generation_parameters.result_ids
+            logger.trace(
+                f"Result IDs were not provided, using result IDs from generation parameters: {result_ids}",
+                extra={"generation_id": generation_id},
+            )
+        elif result_ids is not None and generation_parameters.result_ids is not None:
+            logger.warning(
+                "Both result IDs and generation parameters result IDs were provided. Using the provided result IDs.",
+                extra={"generation_id": generation_id},
+            )
 
         super().__init__(
             result_type=bytes,

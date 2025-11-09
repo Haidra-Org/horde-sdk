@@ -55,7 +55,6 @@
 - [**mypy**](https://mypy-lang.org/)
     - Static type safety
     - I recommending using the [mypy daemon](https://mypy.readthedocs.io/en/stable/mypy_daemon.html) instead of periodically running `pre-commit` (or `mypy` directly.).
-        - If you are using VSCode, I recommend the `matangover.mypy` extension, which implements this nicely.
 - [**pyright**](https://github.com/microsoft/pyright)
     - Shipped with vscode by default (via the python extension `ms-python.vscode-pylance`)
     - Suggested settings:

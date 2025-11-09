@@ -181,18 +181,18 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     endpoint_verbs_missing_from_sdk: dict[str, list[HTTPMethod]] = {}
     endpoint_verbs_missing_from_swagger: dict[str, list[HTTPMethod]] = {}
 
-    for endpoint_subpath, sdk_endpoint_verbs in sdk_defined_endpoint_verbs.items():
-        all_swagger_endpoint_verbs = swagger_doc.get_all_verbs_for_endpoint(endpoint_subpath)
+    for sdk_endpoint_subpath, sdk_endpoint_verbs in sdk_defined_endpoint_verbs.items():
+        all_swagger_endpoint_verbs = swagger_doc.get_all_verbs_for_endpoint(sdk_endpoint_subpath)
 
         # Identify verbs missing from SDK
         missing_from_sdk = [verb for verb in all_swagger_endpoint_verbs if verb not in sdk_endpoint_verbs]
         if missing_from_sdk:
-            endpoint_verbs_missing_from_sdk[endpoint_subpath] = missing_from_sdk
+            endpoint_verbs_missing_from_sdk[sdk_endpoint_subpath] = missing_from_sdk
 
         # Identify verbs missing from Swagger
         missing_from_swagger = [verb for verb in sdk_endpoint_verbs if verb not in all_swagger_endpoint_verbs]
         if missing_from_swagger:
-            endpoint_verbs_missing_from_swagger[endpoint_subpath] = missing_from_swagger
+            endpoint_verbs_missing_from_swagger[sdk_endpoint_subpath] = missing_from_swagger
 
     assert not endpoint_verbs_missing_from_sdk, (
         "The following endpoints are defined in the Swagger documentation but not in the SDK: "

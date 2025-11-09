@@ -51,11 +51,11 @@ class TestAIHordeGenerate:
             ) -> ImageGenerateAsyncResponse | RequestErrorResponse | None:
                 await asyncio.sleep(delay)
                 async with AIHordeAPIAsyncClientSession(aiohttp_session) as horde_session:
-                    api_response: ImageGenerateAsyncResponse | RequestErrorResponse = (
-                        await horde_session.submit_request(
-                            simple_image_gen_request,
-                            simple_image_gen_request.get_default_success_response_type(),
-                        )
+                    api_response: (
+                        ImageGenerateAsyncResponse | RequestErrorResponse
+                    ) = await horde_session.submit_request(
+                        simple_image_gen_request,
+                        simple_image_gen_request.get_default_success_response_type(),
                     )
                     return api_response
                 return None

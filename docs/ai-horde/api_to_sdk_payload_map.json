@@ -92,6 +92,11 @@
         "DELETE": "horde_sdk.ai_horde_api.apimodels.generate.text.status.DeleteTextGenerateRequest",
         "GET": "horde_sdk.ai_horde_api.apimodels.generate.text.status.TextGenerateStatusRequest"
     },
+    "/v2/users/{user_id}": {
+        "DELETE": "horde_sdk.ai_horde_api.apimodels.users.DeleteUserRequest",
+        "PUT": "horde_sdk.ai_horde_api.apimodels.users.ModifyUserRequest",
+        "GET": "horde_sdk.ai_horde_api.apimodels.users.SingleUserDetailsRequest"
+    },
     "/v2/workers/messages/{message_id}": {
         "DELETE": "horde_sdk.ai_horde_api.apimodels.workers.messages.DeleteWorkerMessageRequest",
         "GET": "horde_sdk.ai_horde_api.apimodels.workers.messages.SingleWorkerMessageRequest"
@@ -147,10 +152,6 @@
     },
     "/v2/users": {
         "GET": "horde_sdk.ai_horde_api.apimodels.users.ListUsersDetailsRequest"
-    },
-    "/v2/users/{user_id}": {
-        "PUT": "horde_sdk.ai_horde_api.apimodels.users.ModifyUserRequest",
-        "GET": "horde_sdk.ai_horde_api.apimodels.users.SingleUserDetailsRequest"
     },
     "/v2/status/news": {
         "GET": "horde_sdk.ai_horde_api.apimodels.status.NewsRequest"

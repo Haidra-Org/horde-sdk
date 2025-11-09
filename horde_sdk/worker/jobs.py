@@ -34,7 +34,6 @@ class ImageWorkerJob(HordeWorkerJob[ImageSingleGeneration, ImageGenerationParame
 
         Args:
             generation (ImageSingleGeneration): The generation to use for the job.
-            result_ids (Iterable[ID_TYPES] | None): The result IDs for the job.
             job_config (HordeWorkerJobConfig | None): The configuration for the job.
             job_config (HordeWorkerJobConfig, optional): The configuration for the job. If `None`, the default \
                 configuration will be used. Defaults to None.
@@ -64,7 +63,6 @@ class AlchemyWorkerJob(HordeWorkerJob[AlchemySingleGeneration, SingleAlchemyPara
 
         Args:
             generation (AlchemySingleGeneration): The response from the API.
-            result_ids (Iterable[ID_TYPES] | None): The result IDs for the job.
             job_config (HordeWorkerJobConfig | None, optional): The configuration for the job. If `None`, the default \
                 configuration will be used. Defaults to None.
         """
@@ -92,7 +90,6 @@ class TextWorkerJob(HordeWorkerJob[TextSingleGeneration, TextGenerationParameter
 
         Args:
             generation (TextSingleGeneration): The response from the API.
-            result_ids (Iterable[ID_TYPES] | None): The result IDs for the job.
             job_config (HordeWorkerJobConfig | None, optional): The configuration for the job. If `None`, the default \
                 configuration will be used. Defaults to None.
         """

@@ -20,6 +20,21 @@ from horde_sdk.ai_horde_api.apimodels import (
 # isort: on
 
 
+def save_image_and_json(
+    image: Image,
+    generation: ImageGeneration,
+    example_path: Path,
+    filename_base: str,
+) -> None:
+    image.save(example_path / f"{filename_base}.webp")
+    logger.info(f"Image saved to {example_path / f'{filename_base}.webp'}")
+
+    with open(example_path / f"{filename_base}.json", "w") as f:
+        f.write(generation.model_dump_json(indent=4))
+
+    logger.info(f"Response JSON saved to {example_path / f'{filename_base}.json'}")
+
+
 def simple_generate_example(api_key: str = ANON_API_KEY) -> None:
     simple_client = AIHordeAPISimpleClient()
 
@@ -66,20 +81,6 @@ def simple_generate_example(api_key: str = ANON_API_KEY) -> None:
     logger.info(
         f"{status_response.kudos} kudos were spent on this request for {len(status_response.generations)} images.",
     )
-
-    def save_image_and_json(
-        image: Image,
-        generation: ImageGeneration,
-        example_path: Path,
-        filename_base: str,
-    ) -> None:
-        image.save(example_path / f"{filename_base}.webp")
-        logger.info(f"Image saved to {example_path / f'{filename_base}.webp'}")
-
-        with open(example_path / f"{filename_base}.json", "w") as f:
-            f.write(generation.model_dump_json(indent=4))
-
-        logger.info(f"Response JSON saved to {example_path / f'{filename_base}.json'}")
 
     filename_base = f"{gen_id}_simple_sync_example"
 

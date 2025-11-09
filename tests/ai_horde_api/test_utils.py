@@ -2,7 +2,6 @@ from horde_sdk.utils import seed_to_int
 
 
 class TestSeedToInt:
-
     def test_convert_integer_seed_to_integer(self) -> None:
         """Test converting an integer seed to an integer."""
         seed = 12345

@@ -4,7 +4,7 @@ import os
 from enum import IntEnum, auto
 from uuid import UUID
 
-from pydantic import ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from strenum import StrEnum
 
 _ANONYMOUS_MODEL = "_ANONYMOUS_MODEL"
@@ -196,3 +196,104 @@ class KNOWN_ALCHEMY_BACKEND(StrEnum):
 
     HORDE_ALCHEMIST = auto()
     """The alchemy backend is the Horde Alchemist."""
+
+
+class KNOWN_SERVICE(StrEnum):
+    """The known services that can be used for generation."""
+
+    UNKNOWN = auto()
+    """The service is unknown."""
+
+    CUSTOM_UNPUBLISHED = auto()
+    """The service is a custom, unpublished service."""
+
+    AI_HORDE = auto()
+    """The AI Horde service."""
+
+    CIVITAI = auto()
+    """The CivitAI service."""
+
+
+class ServiceInfo(BaseModel):
+    """Represents information about a service."""
+
+    model_config = ConfigDict(
+        use_attribute_docstrings=True,
+    )
+
+    known_identifier: KNOWN_SERVICE = KNOWN_SERVICE.UNKNOWN
+    """The known identifier for the service, if any."""
+
+    display_name: str = Field(..., min_length=1)
+    """The name of the service."""
+
+    description: str | None = None
+    """A description of the service."""
+
+    url: str | None = None
+    """The URL of the service."""
+
+
+UnknownServiceInfo = ServiceInfo(
+    known_identifier=KNOWN_SERVICE.UNKNOWN,
+    display_name="Unknown Service",
+    description="This service is not recognized.",
+    url=None,
+)
+
+CustomUnpublishedServiceInfo = ServiceInfo(
+    known_identifier=KNOWN_SERVICE.CUSTOM_UNPUBLISHED,
+    display_name="Custom Unpublished Service",
+    description="This is a custom unpublished service.",
+    url=None,
+)
+
+AIHordeServiceInfo = ServiceInfo(
+    known_identifier=KNOWN_SERVICE.AI_HORDE,
+    display_name="AI Horde",
+    description="AI Horde is a decentralized, crowd-sourced platform for AI model generation and more.",
+    url="https://aihorde.net",
+)
+
+CivitAIServiceInfo = ServiceInfo(
+    known_identifier=KNOWN_SERVICE.CIVITAI,
+    display_name="CivitAI",
+    description="CivitAI is a platform for AI model hosting and deployment.",
+    url="https://civitai.com",
+)
+
+_known_service_infos = {
+    KNOWN_SERVICE.UNKNOWN: UnknownServiceInfo,
+    KNOWN_SERVICE.CUSTOM_UNPUBLISHED: CustomUnpublishedServiceInfo,
+    KNOWN_SERVICE.AI_HORDE: AIHordeServiceInfo,
+    KNOWN_SERVICE.CIVITAI: CivitAIServiceInfo,
+}
+
+
+def register_known_service_info(service_info: ServiceInfo) -> None:
+    """Register a known service info.
+
+    Args:
+        service_info: The service info to register.
+
+    Raises:
+        ValueError: If the service info is already registered.
+    """
+    _known_service_infos[service_info.known_identifier] = service_info
+
+
+def get_known_service_info(service: KNOWN_SERVICE) -> ServiceInfo:
+    """Get the known service info for a given service.
+
+    Args:
+        service: The known service.
+
+    Returns:
+        ServiceInfo: The service info for the given service.
+    """
+    try:
+        service = KNOWN_SERVICE(service)
+    except ValueError as e:
+        raise ValueError("Invalid service type") from e
+
+    return _known_service_infos.get(service, UnknownServiceInfo)

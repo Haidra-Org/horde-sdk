@@ -1,6 +1,39 @@
 # Package Structure
 
+```mermaid
+    graph TD
+        generation_parameters
+        generic_api
+        deploy_config --> generation_parameters
+        ai_horde_api --> generation_parameters
+        ai_horde_api --> generic_api
+        worker --> ai_horde_api
+        worker --> generic_api
+        worker --> generation_parameters
+        worker --> deploy_config
+```
+
 ## API Support Packages
+
+```mermaid
+    graph TD
+        generic_api
+        generation_parameters
+
+
+        ai_horde_api
+
+        generic_api --> ai_horde_api
+        generation_parameters --> ai_horde_api
+
+        ai_horde_api --> apimodels
+        ai_horde_api --> clients
+        ai_horde_api --> consts
+        ai_horde_api --> exceptions
+        ai_horde_api --> endpoints
+        ai_horde_api --> metadata
+        ai_horde_api --> utils
+```
 
 API support packages do the following:
 
@@ -64,13 +97,59 @@ By convention, the following files within an api support package should always c
 
 ## Generation Parameters
 
+```mermaid
+    graph TD
+        generation_parameters
+        deploy_config --> generation_parameters
+        ai_horde_api --> generation_parameters
+        worker --> ai_horde_api
+        worker --> generation_parameters
+```
+
 - `generation_parameters/__init__.py`
     - Must import **all** generation parameter classes as well as related constants/enums and must be included in the `__all__` module variable.
+- `generation_parameters/generic/`
+    - Contains the generic base class `GenerationFeatureFlags` which serves as the base class for all generation feature flags.
 - `generation_parameters/{generation_type}/__init__.py`
     - Must import **all** generation parameter classes for that specific generation type as well as related constants/enums and must be included in the `__all__` module variable.
 - `generation_parameters/{generation_type}/object_models.py` or `generation_parameters/{generation_type}/object_models/*`
     - Contains data structures representing parameters for generation that are not specific to any one API.
     - All top level classes (and classes which they contain) should always inherit from an appropriate base class in `horde_sdk.generation_parameters.generic.object_models`.
+    - There should always be at least one concrete `ComposedParameterSetBase` and at least one corresponding concrete `GenerationFeatureFlags`.
 - `generation_parameters/{generation_type}/consts.py`
     - Contains constants related to the generation parameters for that specific generation type, such as default values, valid options, and other configuration settings.
     - Consider if these constants are applicable to multiple generation types and if so, place them in `horde_sdk.generation_parameters.generic.consts.py` instead.
+
+## Worker
+
+```mermaid
+    graph TD
+        worker
+        deploy_config --> worker
+        ai_horde_api --> worker
+        generic_api --> worker
+        generation_parameters --> worker
+```
+
+- `worker/__init__.py`
+    - Must import **all** generic and concrete generation classes
+    - Must import **all** generic and concrete job classes
+- `worker/consts.py`
+    - Contains constants specific to workers, generations, or jobs. This includes default values, valid options, and other configuration settings.
+    - Consider if these constants are applicable to the API logic and if so, place them in `horde_sdk.generic_api.consts.py`. Also consider if they are broadly applicable and place them in `horde_sdk.consts.py` in that case.
+- `worker/feature_flags.py`
+    - Contains the generic class `WorkerFeatureFlags` and concrete implementations for each supported worker type.
+    - This class is used to determine if given `GenerationFeatureFlags` are supported by the worker.
+- `worker/dispatch/`
+    - Logic for interacting with worker APIs or other dispatch systems.
+    - This may include logic for dispatching jobs to workers, converting remote API response to SDK objects, and other related tasks.
+- `worker/generations_base.py`
+    - Contains the base class for all generation types, `HordeSingleGeneration`
+        - This class is a state machine for the generation process and *reflects* the state of a generation rather than *managing* the state of a generation.
+        - However, it does enforce certain constraints on state transitions and other generation-level validations.
+- `worker/generations.py`
+    - Contains the concrete implementations of `HordeSingleGeneration` for each supported generation type.
+    - These classes should generally be limited in terms of their own logic and when appropriate, delegate to the `HordeSingleGeneration` class's methods or implementations.
+- `worker/jobs_base.py`
+    - Contains the base class for all job types, `HordeWorkerJob`
+        - `HordeWorkerJob` wraps `HordeSingleGeneration`

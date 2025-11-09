@@ -143,5 +143,3 @@ def test_init_text_worker_job_end_to_end_happy_path(
         include_post_processing=False,
         include_safety_check=False,
     )
-
-

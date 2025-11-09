@@ -21,10 +21,8 @@ class ImageModelLoadResolver:
 
     _model_reference_manager: ModelReferenceManager
 
-    def __init__(self, model_reference_manager: ModelReferenceManager) -> None:  # noqa: D107
-        if not isinstance(model_reference_manager, ModelReferenceManager):
-            raise TypeError("model_reference_manager must be of type ModelReferenceManager")
-        self._model_reference_manager = model_reference_manager
+    def __init__(self) -> None:  # noqa: D107
+        self._model_reference_manager = ModelReferenceManager()
 
     def resolve_meta_instructions(
         self,

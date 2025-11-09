@@ -9,9 +9,9 @@ from typing_extensions import override
 from horde_sdk import get_default_frozen_model_config_dict
 from horde_sdk.consts import ID_TYPES
 from horde_sdk.generation_parameters.generic import (
-    BasicModelGenerationParameters,
-    ComposedParameterSetBase,
-    GenerationParameterComponentBase,
+    CompositeParametersBase,
+    GenerationParameterBaseModel,
+    GenerationWithModelParameters,
 )
 from horde_sdk.generation_parameters.generic.object_models import GenerationFeatureFlags
 
@@ -79,7 +79,7 @@ class FormatFeatureFlags(GenerationFeatureFlags):
     newline."""
 
 
-class BasicTextGenerationFormatParameters(GenerationParameterComponentBase):  # TODO: Better field names
+class BasicTextGenerationFormatParameters(GenerationParameterBaseModel):  # TODO: Better field names
     """Represent common text generation formatting parameters."""
 
     frmtadsnsp: bool | None = Field(
@@ -123,7 +123,7 @@ class BasicTextGenerationFormatParameters(GenerationParameterComponentBase):  # 
     newline."""
 
 
-class BasicTextGenerationParametersTemplate(BasicModelGenerationParameters):  # TODO: Non-AI-Horde specific constraints
+class BasicTextGenerationParametersTemplate(GenerationWithModelParameters):  # TODO: Non-AI-Horde specific constraints
     """Represents the common parameters for a text generation."""
 
     prompt: str | None = None
@@ -188,7 +188,7 @@ class BasicTextGenerationParameters(BasicTextGenerationParametersTemplate):  # T
     """The prompt to use for the generation."""
 
 
-class TextGenerationParametersTemplate(ComposedParameterSetBase):
+class TextGenerationParametersTemplate(CompositeParametersBase):
     """Represents the parameters for a text generation."""
 
     base_params: BasicTextGenerationParametersTemplate | None = None

@@ -18,7 +18,7 @@ Client session classes provide context management for API operations. They autom
 
 ### Generation
 
-A generation is a single instance of inference or generation. Generations can result in one or more logical outputs. For example, a text generation may result in a single string output, while an image generation may result in one or multiple images being returned. Generations may be a single step in a multi-step process. Not to be confused with a job.
+A generation is a single instance of inference or in the case of alchemy, a single instance of post-processing. Generations can result in one or more logical outputs and may or may not be batched. For example, a text generation may result in a single string output, while an image generation may result in one or multiple images being returned. Generations may be a single step in a multi-step process. Not to be confused with a job.
 
 ### Job
 

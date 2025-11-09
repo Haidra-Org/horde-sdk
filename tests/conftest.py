@@ -96,8 +96,8 @@ def model_reference_manager() -> ModelReferenceManager:
 
 
 @pytest.fixture(scope="session")
-def image_model_load_resolver(model_reference_manager: ModelReferenceManager) -> ImageModelLoadResolver:
-    return ImageModelLoadResolver(model_reference_manager)
+def image_model_load_resolver() -> ImageModelLoadResolver:
+    return ImageModelLoadResolver()
 
 
 @functools.cache
@@ -263,6 +263,7 @@ def simple_text_generation_parameters(
         base_params=BasicTextGenerationParameters(
             prompt="Tell me about a cat in a hat.",
             model="oFakeModel",
+            model_baseline="fake-baseline-v1",
         ),
     )
 

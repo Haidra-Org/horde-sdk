@@ -79,6 +79,7 @@ This is a mapping of the AI-Horde API models (defined at [https://stablehorde.ne
 | /v2/teams/{team_id} | PATCH | [ModifyTeamRequest][horde_sdk.ai_horde_api.apimodels.teams.ModifyTeamRequest] |
 | /v2/teams/{team_id} | GET | [SingleTeamDetailsRequest][horde_sdk.ai_horde_api.apimodels.teams.SingleTeamDetailsRequest] |
 | /v2/users | GET | [ListUsersDetailsRequest][horde_sdk.ai_horde_api.apimodels.users.ListUsersDetailsRequest] |
+| /v2/users/{user_id} | DELETE | [DeleteUserRequest][horde_sdk.ai_horde_api.apimodels.users.DeleteUserRequest] |
 | /v2/users/{user_id} | PUT | [ModifyUserRequest][horde_sdk.ai_horde_api.apimodels.users.ModifyUserRequest] |
 | /v2/users/{user_id} | GET | [SingleUserDetailsRequest][horde_sdk.ai_horde_api.apimodels.users.SingleUserDetailsRequest] |
 | /v2/workers | GET | [AllWorkersDetailsRequest][horde_sdk.ai_horde_api.apimodels.workers.workers.AllWorkersDetailsRequest] |

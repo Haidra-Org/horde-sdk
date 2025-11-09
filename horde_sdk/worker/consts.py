@@ -39,14 +39,20 @@ class GENERATION_PROGRESS(StrEnum):
     """The generation has completed preloading."""
     GENERATING = auto()
     """The generation is in progress. This will also preload if that step did not yet occur."""
+    GENERATION_COMPLETE = auto()
+    """The generation has completed generating the data, but may still need post-processing or safety checks."""
     PENDING_POST_PROCESSING = auto()
     """The generation has completed and is pending post-processing."""
     POST_PROCESSING = auto()
     """The generation is post-processing the generated data."""
+    POST_PROCESSING_COMPLETE = auto()
+    """The generation has completed post-processing and is pending safety check."""
     PENDING_SAFETY_CHECK = auto()
     """The generation was created and is pending safety check."""
     SAFETY_CHECKING = auto()
     """The generation is being safety checked."""
+    SAFETY_CHECK_COMPLETE = auto()
+    """The generation has completed safety check and is pending submission."""
     PENDING_SUBMIT = auto()
     """The generation has completed safety check and is pending submission."""
     SUBMITTING = auto()
@@ -155,7 +161,6 @@ base_generate_progress_transitions: dict[GENERATION_PROGRESS, list[GENERATION_PR
     ],
     GENERATION_PROGRESS.SUBMITTING: [
         GENERATION_PROGRESS.SUBMIT_COMPLETE,
-        GENERATION_PROGRESS.ABANDONED,
         GENERATION_PROGRESS.ERROR,
     ],
     GENERATION_PROGRESS.SUBMIT_COMPLETE: [GENERATION_PROGRESS.COMPLETE],
@@ -168,7 +173,6 @@ base_generate_progress_transitions: dict[GENERATION_PROGRESS, list[GENERATION_PR
     GENERATION_PROGRESS.ERROR: [GENERATION_PROGRESS.ABORTED],
     GENERATION_PROGRESS.USER_REQUESTED_ABORT: [
         GENERATION_PROGRESS.USER_ABORT_COMPLETE,
-        GENERATION_PROGRESS.ABANDONED,
     ],
     GENERATION_PROGRESS.USER_ABORT_COMPLETE: [],
     GENERATION_PROGRESS.ABANDONED: [],
@@ -204,41 +208,51 @@ black_box_generate_progress_transitions: dict[GENERATION_PROGRESS, list[GENERATI
     GENERATION_PROGRESS.SUBMITTING: [
         GENERATION_PROGRESS.SUBMIT_COMPLETE,
         GENERATION_PROGRESS.COMPLETE,
-        GENERATION_PROGRESS.ABANDONED,
         GENERATION_PROGRESS.ERROR,
     ],
+    GENERATION_PROGRESS.SUBMIT_COMPLETE: [GENERATION_PROGRESS.COMPLETE],
     GENERATION_PROGRESS.COMPLETE: [],
-    GENERATION_PROGRESS.ERROR: [],
+    GENERATION_PROGRESS.ABORTED: [
+        GENERATION_PROGRESS.REPORTED_FAILED,
+        GENERATION_PROGRESS.ERROR,
+    ],
+    GENERATION_PROGRESS.REPORTED_FAILED: [],
+    GENERATION_PROGRESS.ERROR: [GENERATION_PROGRESS.ABORTED],
+    GENERATION_PROGRESS.USER_REQUESTED_ABORT: [
+        GENERATION_PROGRESS.USER_ABORT_COMPLETE,
+        GENERATION_PROGRESS.ABANDONED,
+    ],
+    GENERATION_PROGRESS.USER_ABORT_COMPLETE: [],
+    GENERATION_PROGRESS.ABANDONED: [],
 }
 
 
-# Factory function to generate transition dictionaries
 def generate_transitions(
     base_transitions: dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]],
     skip_submit: bool = False,
-    skip_safety_checks: bool = False,
+    can_skip_safety_checks: bool = False,
+    supports_safety_only: bool = False,
 ) -> dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]]:
-    """Generate transitions with optional modifications."""
+    """Generate transitions with optional modifications.
+
+    Args:
+        base_transitions (dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]]): The base transitions to modify.
+        skip_submit (bool, optional): Whether to skip submit transitions. Defaults to False.
+        can_skip_safety_checks (bool, optional): Whether to skip safety check transitions can be skipped.
+            Defaults to False.
+        supports_safety_only (bool, optional): Whether to allow transition directly to safety check
+            without going through generation or post-processing. Defaults to False.
+    """
     transitions = deepcopy(base_transitions)
 
-    if skip_safety_checks:
+    if can_skip_safety_checks:
         for state in [
-            GENERATION_PROGRESS.PENDING_SAFETY_CHECK,
-            GENERATION_PROGRESS.SAFETY_CHECKING,
-        ]:
-            transitions.pop(state, None)
-
-        transitions[GENERATION_PROGRESS.GENERATING] = [
-            GENERATION_PROGRESS.PENDING_POST_PROCESSING,
+            GENERATION_PROGRESS.GENERATING,
             GENERATION_PROGRESS.POST_PROCESSING,
-            GENERATION_PROGRESS.PENDING_SUBMIT,
-            GENERATION_PROGRESS.SUBMITTING,
-            GENERATION_PROGRESS.ERROR,
-        ]
-        transitions[GENERATION_PROGRESS.POST_PROCESSING] = [
-            GENERATION_PROGRESS.PENDING_SUBMIT,
-            GENERATION_PROGRESS.ERROR,
-        ]
+        ]:
+            transitions[state].append(
+                GENERATION_PROGRESS.PENDING_SUBMIT,
+            )
 
     if skip_submit:
         for state in [
@@ -248,22 +262,28 @@ def generate_transitions(
         ]:
             transitions.pop(state, None)
 
-        if skip_safety_checks:
-            transitions[GENERATION_PROGRESS.GENERATING] = [
-                GENERATION_PROGRESS.PENDING_POST_PROCESSING,
-                GENERATION_PROGRESS.POST_PROCESSING,
-                GENERATION_PROGRESS.COMPLETE,
-                GENERATION_PROGRESS.ERROR,
-            ]
-            transitions[GENERATION_PROGRESS.POST_PROCESSING] = [
-                GENERATION_PROGRESS.COMPLETE,
-                GENERATION_PROGRESS.ERROR,
-            ]
-        else:
-            transitions[GENERATION_PROGRESS.SAFETY_CHECKING] = [
-                GENERATION_PROGRESS.COMPLETE,
-                GENERATION_PROGRESS.ERROR,
-            ]
+        for transition_values in transitions.values():
+            for transition_value in transition_values:
+                found_transition_to_remove = False
+                if transition_value in [
+                    GENERATION_PROGRESS.PENDING_SUBMIT,
+                    GENERATION_PROGRESS.SUBMITTING,
+                    GENERATION_PROGRESS.SUBMIT_COMPLETE,
+                ]:
+                    transition_values.remove(transition_value)
+                    found_transition_to_remove = True
+
+            if found_transition_to_remove:
+                transition_values.append(
+                    GENERATION_PROGRESS.COMPLETE,
+                )
+    if supports_safety_only:
+        for state in [
+            GENERATION_PROGRESS.NOT_STARTED,
+            GENERATION_PROGRESS.PRELOADING_COMPLETE,
+        ]:
+            if state in transitions:
+                transitions[state].append(GENERATION_PROGRESS.PENDING_SAFETY_CHECK)
 
     return transitions
 
@@ -283,22 +303,22 @@ default_image_generate_progress_no_submit_transitions = generate_transitions(
 
 default_alchemy_generate_progress_transitions = generate_transitions(
     base_generate_progress_transitions,
-    skip_safety_checks=True,
+    can_skip_safety_checks=True,
 )
 default_alchemy_generate_progress_no_submit_transitions = generate_transitions(
     base_generate_progress_transitions,
     skip_submit=True,
-    skip_safety_checks=True,
+    can_skip_safety_checks=True,
 )
 
 default_text_generate_progress_transitions = generate_transitions(
     base_generate_progress_transitions,
-    skip_safety_checks=True,
+    can_skip_safety_checks=True,
 )
 default_text_generate_progress_no_submit_transitions = generate_transitions(
     base_generate_progress_transitions,
     skip_submit=True,
-    skip_safety_checks=True,
+    can_skip_safety_checks=True,
 )
 
 
@@ -317,8 +337,8 @@ def validate_generation_progress_transitions(
     """Validate the generation progress transitions.
 
     Args:
-        progress_transitions(dict[GENERATION_PROGRESS, list[GENERATION_PROGRESS]]): The progress transitions to
-        validate.
+        progress_transitions (Mapping[GENERATION_PROGRESS, Iterable[GENERATION_PROGRESS]]):
+            The transitions to validate
 
     Returns:
         bool: True if the transitions are valid, False otherwise.
@@ -496,3 +516,15 @@ class CHAIN_EDGE_KIND(StrEnum):
 
     RESULTING_IMAGE_AS_CONTROL_MAP = auto()
     """The resulting image of the previous generation is used as the control map for the next generation."""
+
+    IMAGE_TO_ALCHEMY_UPSCALE = auto()
+    """The resulting image from image generation is used as the source for alchemy upscaling."""
+
+    IMAGE_TO_ALCHEMY_FACEFIX = auto()
+    """The resulting image from image generation is used as the source for alchemy face fixing."""
+
+    ALCHEMY_TO_ALCHEMY = auto()
+    """The resulting image from one alchemy operation is used as the source for another alchemy operation."""
+
+    TEXT_TO_IMAGE_PROMPT = auto()
+    """The resulting text from text generation is used as the prompt for image generation."""

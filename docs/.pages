@@ -3,15 +3,25 @@ nav:
     - getting_started.md
     - faq.md
     - examples.md
+    - Definitions: haidra-assets/docs/definitions
     - AI-Horde:
         - API Model to SDK Class Map: ai-horde/api_to_sdk_map
         - AI Horde Request/Job Lifecycle: haidra-assets/docs/workers
-        - Worker Loop Diagram: haidra-assets/docs/worker_loop
         - Kudos Explanation: haidra-assets/docs/kudos
         - Motivations: haidra-assets/docs/why
-        - Definitions: haidra-assets/docs/definitions
+    - Workers:
+        - Generations: worker/generations
+        - Worker Loop Diagram: haidra-assets/docs/worker_loop
+    - SDK Development:
+        - Developer's Getting Started: developers.md
+        - CONTRIBUTING.md (github link): 'https://github.com/Haidra-Org/horde-sdk/blob/main/CONTRIBUTING.md'
+        - Style Guide: concepts/style_guide.md
+        - Package Structure: concepts/package_structure.md
+        - Definitions: definitions.md
+        - SDK Client Design: concepts/client_design
+        - Backend Values Mappers: concepts/backend_values_mappers
     - horde_sdk
-    - developers.md
+       
     - GitHub Repo: 'https://github.com/Haidra-Org/horde-sdk'
 
 order: desc

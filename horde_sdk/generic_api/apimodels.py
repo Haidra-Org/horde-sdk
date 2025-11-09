@@ -127,7 +127,7 @@ class HordeResponseRootModel(RootModel[T], HordeResponse):
 
     For example:
     ```python
-    class MyDataModel(HordeResponseRootModel[MyData]):
+    class MyDataRootModel(HordeResponseRootModel[MyData]):
         pass
     ```
 

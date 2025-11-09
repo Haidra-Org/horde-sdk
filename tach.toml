@@ -16,7 +16,7 @@ depends_on = ["horde_sdk.generation_parameters", "horde_sdk.generic_api"]
 
 [[modules ]]
 path = "horde_sdk.worker"
-depends_on = ["horde_sdk.ai_horde_api", "horde_sdk.generic_api", "horde_sdk.generation_parameters"]
+depends_on = ["horde_sdk.ai_horde_api", "horde_sdk.generic_api", "horde_sdk.generation_parameters", "horde_sdk.deploy_config"]
 
 [[modules ]]
 path = "horde_sdk.generation_parameters"
@@ -25,3 +25,7 @@ depends_on = []
 [[modules ]]
 path = "horde_sdk.generic_api"
 depends_on = []
+
+[[modules ]]
+path = "horde_sdk.deploy_config"
+depends_on = ["horde_sdk.generation_parameters"]

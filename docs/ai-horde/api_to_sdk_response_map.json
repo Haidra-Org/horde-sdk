@@ -71,6 +71,9 @@
     "/v2/generate/text/status/{id}": {
         "200": "horde_sdk.ai_horde_api.apimodels.generate.text.status.TextGenerateStatusResponse"
     },
+    "/v2/users/{user_id}": {
+        "200": "horde_sdk.ai_horde_api.apimodels.users.UserDetailsResponse"
+    },
     "/v2/workers/messages/{message_id}": {
         "200": "horde_sdk.ai_horde_api.apimodels.workers.messages.ResponseModelMessage"
     },
@@ -122,9 +125,6 @@
     },
     "/v2/users": {
         "200": "horde_sdk.ai_horde_api.apimodels.users.ListUsersDetailsResponse"
-    },
-    "/v2/users/{user_id}": {
-        "200": "horde_sdk.ai_horde_api.apimodels.users.UserDetailsResponse"
     },
     "/v2/status/news": {
         "200": "horde_sdk.ai_horde_api.apimodels.status.NewsResponse"

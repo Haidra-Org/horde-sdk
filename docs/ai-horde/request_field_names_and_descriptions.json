@@ -1091,6 +1091,33 @@
             ]
         }
     },
+    "DeleteUserRequest": {
+        "apikey": {
+            "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
+            "types": [
+                "str",
+                "None"
+            ]
+        },
+        "user_id": {
+            "description": "The user's ID, as a `str`, but only containing numeric values.",
+            "types": [
+                "str"
+            ]
+        },
+        "accept": {
+            "description": "The 'accept' header field.",
+            "types": [
+                "horde_sdk.generic_api.metadata.GenericAcceptTypes"
+            ]
+        },
+        "client_agent": {
+            "description": "The requesting client's agent. You should set this to reflect the name, version and contact information\nfor your client.",
+            "types": [
+                "str"
+            ]
+        }
+    },
     "DeleteWorkerIPAddressRequest": {
         "apikey": {
             "description": "Defaults to `ANON_API_KEY`. See also `.is_api_key_required()`",
@@ -2243,6 +2270,13 @@
         },
         "reset_suspicion": {
             "description": "Set the user's suspicion back to 0.",
+            "types": [
+                "bool",
+                "None"
+            ]
+        },
+        "undelete": {
+            "description": "When set to true, A user's who's marked to be deleted will become active again.",
             "types": [
                 "bool",
                 "None"

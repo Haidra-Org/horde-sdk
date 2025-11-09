@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import time
 from abc import ABC
 from ssl import SSLContext
 from typing import Any, TypeVar
@@ -12,7 +13,7 @@ import aiohttp
 import logfire
 import requests
 from loguru import logger
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 from strenum import StrEnum
 from typing_extensions import override
 
@@ -23,7 +24,7 @@ from horde_sdk._telemetry.metrics import (
     _telemetry_client_requests_finished_successfully_counter,
     _telemetry_client_requests_started_counter,
 )
-from horde_sdk.consts import HTTPMethod
+from horde_sdk.consts import HTTPMethod, HTTPStatusCode
 from horde_sdk.exceptions import PayloadValidationError
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
@@ -70,6 +71,31 @@ HordeResponseTypeVar = TypeVar(
 )
 """TypeVar for the horde response type."""
 
+DEFAULT_RETRY_STATUS_CODES = {
+    HTTPStatusCode.TOO_MANY_REQUESTS,
+    HTTPStatusCode.SERVICE_UNAVAILABLE,
+    HTTPStatusCode.GATEWAY_TIMEOUT,
+    HTTPStatusCode.REQUEST_TIMEOUT,
+}
+
+
+class RetryConfiguration(BaseModel):
+    """Configuration for retrying requests using exponential backoff and jitter."""
+
+    max_retries: int = Field(default=3, lt=10, ge=0)
+    initial_delay_seconds: float = Field(default=0.5, gt=0)
+    max_delay_seconds: float = Field(default=30.0, gt=0)
+    backoff_factor: float = Field(default=2.0, gt=1)
+    jitter_factor: float = Field(default=0.1, gt=0, le=1)
+    retry_status_codes: set[HTTPStatusCode] = Field(
+        default=DEFAULT_RETRY_STATUS_CODES,
+        description="HTTP status codes that should trigger a retry",
+    )
+    retry_on_connection_errors: bool = Field(
+        default=True,
+        description="Whether to retry on connection errors",
+    )
+
 
 class BaseHordeAPIClient(ABC):
     """An abstract class which is the base for all horde API clients."""
@@ -94,6 +120,9 @@ class BaseHordeAPIClient(ABC):
         "submit_request {sync_async} {http_method_name} for {api_request_type} expecting {expected_response_type}"
     )
 
+    _retry_by_default: bool = True
+    retry_config: RetryConfiguration
+
     # endregion
 
     def __init__(
@@ -105,6 +134,7 @@ class BaseHordeAPIClient(ABC):
         query_fields: type[GenericQueryFields] = GenericQueryFields,
         accept_types: type[GenericAcceptTypes] = GenericAcceptTypes,
         ssl_context: SSLContext = _default_sslcontext,
+        retry_config: RetryConfiguration | None = None,
         **kwargs: Any,  # noqa: ANN401 # FIXME
     ) -> None:
         """Initialize a new `GenericHordeAPIClient` instance.
@@ -122,6 +152,8 @@ class BaseHordeAPIClient(ABC):
                 Defaults to GenericAcceptTypes.
             ssl_context (SSLContext, optional): The SSL context to use for aiohttp requests.
                 Defaults to using `certifi`.
+            retry_config (RetryConfiguration, optional): The retry configuration to use for requests.
+                Defaults to None, which will use the default retry configuration.
             kwargs: Any additional keyword arguments are ignored.
 
         Raises:
@@ -154,6 +186,14 @@ class BaseHordeAPIClient(ABC):
         self._path_field_keys = path_fields
         self._query_field_keys = query_fields
         self._accept_types = accept_types
+
+        if retry_config is None:
+            retry_config = RetryConfiguration()
+
+        if not isinstance(retry_config, RetryConfiguration):
+            raise TypeError("`retry_config` must be of type `RetryConfiguration` or a subclass of it!")
+
+        self.retry_config = retry_config
 
     def _validate_and_prepare_request(self, api_request: HordeRequest) -> ParsedRawRequest:
         """Validate the given `api_request` and returns a `_ParsedRequest` instance with the data to be sent.
@@ -329,6 +369,44 @@ class BaseHordeAPIClient(ABC):
 
         return handled_response
 
+    def should_retry(
+        self,
+        status_code: int,
+        current_error_count: int,
+        retry_after: float,
+    ) -> bool:
+        """Determine if a request should be retried based on the status code and retry configuration.
+
+        Args:
+            status_code (int): The HTTP status code returned by the request.
+            current_error_count (int): The current number of errors encountered.
+            retry_after (float): The time to wait before retrying the request.
+
+        Returns:
+            bool: True if the request should be retried, False otherwise.
+        """
+        if not self._retry_by_default:
+            return False
+
+        if current_error_count >= self.retry_config.max_retries:
+            return False
+
+        if status_code not in self.retry_config.retry_status_codes:
+            return False
+
+        jitter = (self.retry_config.jitter_factor * retry_after) if self.retry_config.jitter_factor else 0
+
+        retry_delay = (
+            min(
+                self.retry_config.initial_delay_seconds * (self.retry_config.backoff_factor**current_error_count),
+                self.retry_config.max_delay_seconds,
+            )
+            + jitter
+        )
+
+        time.sleep(retry_delay)
+        return True
+
 
 class GenericHordeAPIManualClient(BaseHordeAPIClient):
     """Interfaces with any flask API the horde provides, but provides little error handling.
@@ -376,7 +454,6 @@ class GenericHordeAPIManualClient(BaseHordeAPIClient):
             api_request_type=type(api_request).__name__,
             expected_response_type=expected_response_type.__name__,
         ):
-
             parsed_request = self._validate_and_prepare_request(api_request)
 
             raw_response: requests.Response | None = None
@@ -485,7 +562,6 @@ class GenericAsyncHordeAPIManualClient(BaseHordeAPIClient):
             api_request_type=type(api_request).__name__,
             expected_response_type=expected_response_type.__name__,
         ):
-
             async with (
                 self._aiohttp_session.request(
                     http_method_name.value,

@@ -36,13 +36,19 @@ def assert_features_selected(
     tis: bool = False,
 ) -> None:
     """Confirm that the selected features are present if intended, and not present if deselected."""
-    assert (generation_parameters.controlnet_params is not None) == control_net
-    assert (generation_parameters.custom_workflow_params is not None) == custom_workflow
-    assert (generation_parameters.hires_fix_params is not None) == hires_fix
-    assert (generation_parameters.img2img_params is not None) == img2img
-    assert (generation_parameters.remix_params is not None) == remix
-    assert (generation_parameters.loras is not None) == loras
-    assert (generation_parameters.tis is not None) == tis
+    additional_params = generation_parameters.additional_params
+
+    if additional_params is None:
+        assert not (control_net or custom_workflow or hires_fix or img2img or remix or loras or tis)
+        return
+
+    assert (additional_params.controlnet_params is not None) == control_net
+    assert bool(additional_params.custom_workflows_params) == custom_workflow
+    assert (additional_params.hires_fix_params is not None) == hires_fix
+    assert (additional_params.image2image_params is not None) == img2img
+    assert (additional_params.remix_params is not None) == remix
+    assert bool(additional_params.lora_params) == loras
+    assert bool(additional_params.ti_params) == tis
 
 
 def assert_base_image_generation_parameters(
@@ -133,9 +139,11 @@ def test_convert_image_job_pop_response_to_parameters_img2img(
     )
     assert_features_selected(generation_parameters, img2img=True)
 
-    assert isinstance(generation_parameters.img2img_params, Image2ImageGenerationParameters)
-    assert isinstance(generation_parameters.img2img_params.source_image, bytes)
-    assert generation_parameters.img2img_params.source_mask is None
+    additional_params = generation_parameters.additional_params
+
+    assert isinstance(additional_params.image2image_params, Image2ImageGenerationParameters)
+    assert isinstance(additional_params.image2image_params.source_image, bytes)
+    assert additional_params.image2image_params.source_mask is None
 
 
 def test_convert_image_job_pop_response_to_parameters_img2img_masked(
@@ -155,9 +163,11 @@ def test_convert_image_job_pop_response_to_parameters_img2img_masked(
 
     assert_features_selected(generation_parameters, img2img=True)
 
-    assert isinstance(generation_parameters.img2img_params, Image2ImageGenerationParameters)
-    assert isinstance(generation_parameters.img2img_params.source_image, bytes)
-    assert isinstance(generation_parameters.img2img_params.source_mask, bytes)
+    additional_params = generation_parameters.additional_params
+
+    assert isinstance(additional_params.image2image_params, Image2ImageGenerationParameters)
+    assert isinstance(additional_params.image2image_params.source_image, bytes)
+    assert isinstance(additional_params.image2image_params.source_mask, bytes)
 
 
 def test_convert_image_job_pop_response_to_parameters_inpainting(
@@ -178,9 +188,11 @@ def test_convert_image_job_pop_response_to_parameters_inpainting(
 
     assert_features_selected(generation_parameters, img2img=True)
 
-    assert isinstance(generation_parameters.img2img_params, Image2ImageGenerationParameters)
-    assert isinstance(generation_parameters.img2img_params.source_image, bytes)
-    assert isinstance(generation_parameters.img2img_params.source_mask, bytes)
+    additional_params = generation_parameters.additional_params
+
+    assert isinstance(additional_params.image2image_params, Image2ImageGenerationParameters)
+    assert isinstance(additional_params.image2image_params.source_image, bytes)
+    assert isinstance(additional_params.image2image_params.source_mask, bytes)
 
 
 def test_convert_image_job_pop_response_to_parameters_outpainting_alpha(
@@ -203,8 +215,10 @@ def test_convert_image_job_pop_response_to_parameters_outpainting_alpha(
 
     assert_features_selected(generation_parameters, img2img=True)
 
-    assert isinstance(generation_parameters.img2img_params, Image2ImageGenerationParameters)
-    assert isinstance(generation_parameters.img2img_params.source_image, bytes)
+    additional_params = generation_parameters.additional_params
+
+    assert isinstance(additional_params.image2image_params, Image2ImageGenerationParameters)
+    assert isinstance(additional_params.image2image_params.source_image, bytes)
 
 
 def test_convert_image_job_pop_response_to_parameters_controlnet_openpose(
@@ -225,10 +239,12 @@ def test_convert_image_job_pop_response_to_parameters_controlnet_openpose(
 
     assert_features_selected(generation_parameters, control_net=True)
 
-    assert isinstance(generation_parameters.controlnet_params, ControlnetGenerationParameters)
-    assert generation_parameters.controlnet_params.control_map is not None
-    assert isinstance(generation_parameters.controlnet_params.control_map, bytes)
-    assert generation_parameters.controlnet_params.source_image is None
+    additional_params = generation_parameters.additional_params
+
+    assert isinstance(additional_params.controlnet_params, ControlnetGenerationParameters)
+    assert additional_params.controlnet_params.control_map is not None
+    assert isinstance(additional_params.controlnet_params.control_map, bytes)
+    assert additional_params.controlnet_params.source_image is None
 
 
 def test_convert_image_job_pop_response_to_parameters_hires_fix(
@@ -249,17 +265,19 @@ def test_convert_image_job_pop_response_to_parameters_hires_fix(
 
     assert_features_selected(generation_parameters, hires_fix=True)
 
-    assert isinstance(generation_parameters.hires_fix_params, HiresFixGenerationParameters)
+    additional_params = generation_parameters.additional_params
 
-    assert generation_parameters.hires_fix_params.first_pass is not None
+    assert isinstance(additional_params.hires_fix_params, HiresFixGenerationParameters)
+
+    assert additional_params.hires_fix_params.first_pass is not None
     assert_base_image_generation_parameters(
-        base_params=generation_parameters.hires_fix_params.first_pass,
+        base_params=additional_params.hires_fix_params.first_pass,
         api_response=simple_image_gen_job_pop_response_hires_fix,
     )
 
-    assert generation_parameters.hires_fix_params.second_pass is not None
+    assert additional_params.hires_fix_params.second_pass is not None
     assert_base_image_generation_parameters(
-        base_params=generation_parameters.hires_fix_params.second_pass,
+        base_params=additional_params.hires_fix_params.second_pass,
         api_response=simple_image_gen_job_pop_response_hires_fix,
     )
 
@@ -282,21 +300,23 @@ def test_convert_image_job_pop_response_to_parameters_hires_fix_denoise(
 
     assert_features_selected(generation_parameters, hires_fix=True)
 
-    assert isinstance(generation_parameters.hires_fix_params, HiresFixGenerationParameters)
+    additional_params = generation_parameters.additional_params
 
-    assert generation_parameters.hires_fix_params.first_pass is not None
+    assert isinstance(additional_params.hires_fix_params, HiresFixGenerationParameters)
+
+    assert additional_params.hires_fix_params.first_pass is not None
     assert_base_image_generation_parameters(
-        base_params=generation_parameters.hires_fix_params.first_pass,
+        base_params=additional_params.hires_fix_params.first_pass,
         api_response=simple_image_gen_job_pop_response_hires_fix_denoise,
     )
 
-    assert generation_parameters.hires_fix_params.second_pass is not None
+    assert additional_params.hires_fix_params.second_pass is not None
     assert_base_image_generation_parameters(
-        base_params=generation_parameters.hires_fix_params.second_pass,
+        base_params=additional_params.hires_fix_params.second_pass,
         api_response=simple_image_gen_job_pop_response_hires_fix_denoise,
     )
     assert (
-        generation_parameters.hires_fix_params.second_pass.denoising_strength
+        additional_params.hires_fix_params.second_pass.denoising_strength
         == simple_image_gen_job_pop_response_hires_fix_denoise.payload.hires_fix_denoising_strength
     )
 
@@ -306,26 +326,28 @@ def assert_lora_parameters(
     api_response: ImageGenerateJobPopResponse,
 ) -> None:
     """Confirm that LoRa parameters are correctly mapped."""
-    assert isinstance(generation_parameters.loras, list)
-    assert len(generation_parameters.loras) > 0
+    additional_params = generation_parameters.additional_params
+
+    assert isinstance(additional_params.lora_params, list)
+    assert len(additional_params.lora_params) > 0
 
     assert api_response.payload.loras is not None
 
-    assert len(generation_parameters.loras) == len(api_response.payload.loras)
+    assert len(additional_params.lora_params) == len(api_response.payload.loras)
 
-    for i in range(len(generation_parameters.loras)):
-        assert isinstance(generation_parameters.loras[i], LoRaEntry)
-        assert generation_parameters.loras[i].lora_inject_trigger_choice == LORA_TRIGGER_INJECT_CHOICE.NO_INJECT
+    for i in range(len(additional_params.lora_params)):
+        assert isinstance(additional_params.lora_params[i], LoRaEntry)
+        assert additional_params.lora_params[i].lora_inject_trigger_choice == LORA_TRIGGER_INJECT_CHOICE.NO_INJECT
 
         if api_response.payload.loras[i].is_version:
-            assert generation_parameters.loras[i].remote_version_id is not None
-            assert generation_parameters.loras[i].remote_version_id == api_response.payload.loras[i].name
-            assert generation_parameters.loras[i].name is None
-            assert generation_parameters.loras[i].model_strength
+            assert additional_params.lora_params[i].remote_version_id is not None
+            assert additional_params.lora_params[i].remote_version_id == api_response.payload.loras[i].name
+            assert additional_params.lora_params[i].name is None
+            assert additional_params.lora_params[i].model_strength
         else:
-            assert generation_parameters.loras[i].name is not None
-            assert generation_parameters.loras[i].name == api_response.payload.loras[i].name
-            assert generation_parameters.loras[i].remote_version_id is None
+            assert additional_params.lora_params[i].name is not None
+            assert additional_params.lora_params[i].name == api_response.payload.loras[i].name
+            assert additional_params.lora_params[i].remote_version_id is None
 
 
 def test_convert_image_job_pop_response_to_parameters_loras(
@@ -346,8 +368,10 @@ def test_convert_image_job_pop_response_to_parameters_loras(
 
     assert_features_selected(generation_parameters, loras=True)
 
-    assert isinstance(generation_parameters.loras, list)
-    assert len(generation_parameters.loras) == 1
+    additional_params = generation_parameters.additional_params
+
+    assert isinstance(additional_params.lora_params, list)
+    assert len(additional_params.lora_params) == 1
 
     assert simple_image_gen_job_pop_response_loras.payload.loras is not None
 
@@ -359,17 +383,19 @@ def assert_ti_parameters(
     api_response: ImageGenerateJobPopResponse,
 ) -> None:
     """Confirm that TI parameters are correctly mapped."""
-    assert isinstance(generation_parameters.tis, list)
-    assert len(generation_parameters.tis) > 0
+    additional_params = generation_parameters.additional_params
+
+    assert isinstance(additional_params.ti_params, list)
+    assert len(additional_params.ti_params) > 0
 
     assert api_response.payload.tis is not None
 
-    assert len(generation_parameters.tis) == len(api_response.payload.tis)
+    assert len(additional_params.ti_params) == len(api_response.payload.tis)
 
-    for i in range(len(generation_parameters.tis)):
-        assert isinstance(generation_parameters.tis[i], TIEntry)
+    for i in range(len(additional_params.ti_params)):
+        assert isinstance(additional_params.ti_params[i], TIEntry)
 
-        assert generation_parameters.tis[i].name == api_response.payload.tis[i].name
+        assert additional_params.ti_params[i].name == api_response.payload.tis[i].name
 
 
 def test_convert_image_job_pop_response_to_parameters_tis(
@@ -390,18 +416,20 @@ def test_convert_image_job_pop_response_to_parameters_tis(
 
     assert_features_selected(generation_parameters, tis=True)
 
-    assert isinstance(generation_parameters.tis, list)
-    assert len(generation_parameters.tis) == 1
+    additional_params = generation_parameters.additional_params
+
+    assert isinstance(additional_params.ti_params, list)
+    assert len(additional_params.ti_params) == 1
 
     assert simple_image_gen_job_pop_response_tis.payload.tis is not None
 
-    assert isinstance(generation_parameters.tis[0], TIEntry)
+    assert isinstance(additional_params.ti_params[0], TIEntry)
 
-    for i in range(len(generation_parameters.tis)):
-        assert isinstance(generation_parameters.tis[i], TIEntry)
+    for i in range(len(additional_params.ti_params)):
+        assert isinstance(additional_params.ti_params[i], TIEntry)
 
-        assert generation_parameters.tis[i].ti_inject_trigger_choice == TI_TRIGGER_INJECT_CHOICE.NEGATIVE_PROMPT
-        assert generation_parameters.tis[i].name == simple_image_gen_job_pop_response_tis.payload.tis[i].name
+        assert additional_params.ti_params[i].ti_inject_trigger_choice == TI_TRIGGER_INJECT_CHOICE.NEGATIVE_PROMPT
+        assert additional_params.ti_params[i].name == simple_image_gen_job_pop_response_tis.payload.tis[i].name
 
 
 def test_convert_image_job_pop_response_to_parameters_remix(
@@ -422,4 +450,6 @@ def test_convert_image_job_pop_response_to_parameters_remix(
 
     assert_features_selected(generation_parameters, remix=True)
 
-    assert isinstance(generation_parameters.remix_params, RemixGenerationParameters)
+    additional_params = generation_parameters.additional_params
+
+    assert isinstance(additional_params.remix_params, RemixGenerationParameters)

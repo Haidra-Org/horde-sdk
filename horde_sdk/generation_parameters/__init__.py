@@ -24,7 +24,12 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     is_strip_background_form,
     is_upscaler_form,
 )
-from horde_sdk.generation_parameters.generic import BasicModelGenerationParameters, ComposedParameterSetBase
+from horde_sdk.generation_parameters.generic import (
+    CompositeParametersBase,
+    GenerationParameterBaseModel,
+    GenerationParameterList,
+    GenerationWithModelParameters,
+)
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.image.consts import (
     CLIP_SKIP_REPRESENTATION,
@@ -67,8 +72,10 @@ __all__ = [
     "is_nsfw_detector_form",
     "is_strip_background_form",
     "is_upscaler_form",
-    "BasicModelGenerationParameters",
-    "ComposedParameterSetBase",
+    "GenerationWithModelParameters",
+    "CompositeParametersBase",
+    "GenerationParameterBaseModel",
+    "GenerationParameterList",
     "KNOWN_AUX_MODEL_SOURCE",
     "KNOWN_IMAGE_CONTROLNETS",
     "KNOWN_IMAGE_SAMPLERS",

@@ -4,22 +4,34 @@ import threading
 import time
 import uuid
 from abc import ABC, abstractmethod
+from enum import auto
 from typing import Any, Generic, TypeVar
 
 from loguru import logger
 from pydantic import BaseModel, Field
+from strenum import StrEnum
 
 from horde_sdk.consts import ID_TYPES, WORKER_TYPE
-from horde_sdk.generation_parameters import ComposedParameterSetBase
+from horde_sdk.generation_parameters import CompositeParametersBase
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
     WORKER_ERRORS,
     HordeWorkerConfigDefaults,
+    finalized_generation_states,
 )
 from horde_sdk.worker.generations_base import HordeSingleGeneration
 
 SingleGenerationTypeVar = TypeVar("SingleGenerationTypeVar", bound=HordeSingleGeneration[Any])
-ComposedParameterSetTypeVar = TypeVar("ComposedParameterSetTypeVar", bound=ComposedParameterSetBase)
+ComposedParameterSetTypeVar = TypeVar("ComposedParameterSetTypeVar", bound=CompositeParametersBase)
+
+
+class JOB_EXECUTION_MODE(StrEnum):
+    """How the job should be executed in a chain context."""
+
+    LOCAL_ONLY = auto()
+    """Execute job locally on the worker without submitting back to API."""
+    SUBMIT_TO_API = auto()
+    """Submit job results back to API for distributed chain execution."""
 
 
 class HordeWorkerJobConfig(BaseModel):
@@ -116,9 +128,6 @@ class HordeWorkerJob(
             generation (SingleGenerationType): The generation to use for the job.
             generation_cls (type[SingleGenerationType]): The class to use for the generations in the job.
             job_id (ID_TYPES | None): The unique identifier for the job. If `None`, a new UUID will be generated.
-            result_ids (Iterable[str]): The unique identifiers for the generations in the job.
-            should_censor_nsfw (bool): Whether or not the user has requested that NSFW content be censored. \
-                Defaults to False.
             job_config (HordeWorkerJobConfig, optional): The configuration for the job. If `None`, the default \
                 configuration will be used. Defaults to None.
             time_received (float | None): The time the job was received. If `None`, the time the response model was \
@@ -162,30 +171,35 @@ class HordeWorkerJob(
         """The individual generations in this job."""
         return self._generation
 
+    @property
+    def job_config(self) -> HordeWorkerJobConfig:
+        """Return the configuration associated with this job."""
+        return self._job_config
+
     @classmethod
     @abstractmethod
     def job_worker_type(cls) -> WORKER_TYPE:
         """Type of worker that can process this job."""
 
-    # TODO
-    # FIXME
-    # _time_received: float | None = None
+    _time_received: float | None = None
 
-    # @property
-    # def time_received(self) -> float:
-    #     """The time the job response was either received or constructed (in epoch time).
+    @property
+    def time_received(self) -> float | None:
+        """The time the job response was either received or constructed (in epoch time).
 
-    #     **Note:** This generally will be the time the job was popped from the server. However, manually constructed
-    #     api responses or jobs that are not popped from a queue may imbue this property with a different meaning.
+        **Note:** This generally will be the time the job was popped from the server. However, manually constructed
+        api responses or jobs that are not popped from a queue may imbue this property with a different meaning.
 
-    #     You can manually set this value with the `time_received` parameter in the constructor.
-    #     """
-    #     return self._time_received or self.generation_parameters.time_constructed
+        You can manually set this value with the `time_received` parameter in the constructor.
+        """
+        return self._time_received
 
-    # @property
-    # def time_since_received(self) -> float:
-    #     """The time since the job was popped from the queue in seconds."""
-    #     return time.time() - self.time_received
+    @property
+    def time_since_received(self) -> float | None:
+        """The time since the job was popped from the queue in seconds, or None if not yet received."""
+        if self._time_received is None:
+            return None
+        return time.time() - self._time_received
 
     _time_submitted: float | None = None
 
@@ -264,18 +278,18 @@ class HordeWorkerJob(
                 failure_exception=failure_exception,
             )
 
-    # TODO
-    # FIXME
-    # @property
-    # @abstractmethod
-    # def is_job_finalized(self) -> bool:
-    #     """Return true if all generations in the job are finalized.
+    @property
+    def is_job_finalized(self) -> bool:
+        """Return true if the generation in the job is finalized.
 
-    #     Note: This means that all generations have been submitted as either successful or failed, or have been
-    #     abandoned. Accordingly, there is nothing more to do with the job.
-    #     """
+        Note: This means the generation has been submitted as either successful or failed, or has been
+        abandoned. Accordingly, there is nothing more to do with the job.
+        """
+        with self._lock:
+            return self.generation.get_generation_progress() in finalized_generation_states
 
-    # @property
-    # @abstractmethod
-    # def job_completed_successfully(self) -> bool:
-    #     """Return true if all generations in the job are completed successfully."""
+    @property
+    def job_completed_successfully(self) -> bool:
+        """Return true if the generation in the job completed successfully."""
+        with self._lock:
+            return self.generation.get_generation_progress() == GENERATION_PROGRESS.SUBMIT_COMPLETE

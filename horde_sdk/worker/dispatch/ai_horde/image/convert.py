@@ -10,7 +10,6 @@ from loguru import logger
 from horde_sdk.ai_horde_api.apimodels.generate.pop import ImageGenerateJobPopResponse
 from horde_sdk.ai_horde_api.consts import DEFAULT_HIRES_DENOISE_STRENGTH
 from horde_sdk.consts import KNOWN_DISPATCH_SOURCE, KNOWN_INFERENCE_BACKEND
-from horde_sdk.generation_parameters.generic import GenerationParameterComponentBase
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.image import (
     DEFAULT_BASELINE_RESOLUTION,
@@ -32,6 +31,7 @@ from horde_sdk.generation_parameters.image.consts import (
     LORA_TRIGGER_INJECT_CHOICE,
     TI_TRIGGER_INJECT_CHOICE,
 )
+from horde_sdk.generation_parameters.image.object_models import ImageGenerationComponentContainer
 from horde_sdk.utils.image_utils import (
     base64_str_to_bytes,
     calc_upscale_sampler_steps,
@@ -325,7 +325,15 @@ def convert_image_job_pop_response_to_parameters(
 
     raw_uuids = [id_.root for id_ in api_response.ids]
 
-    additional_params: list[GenerationParameterComponentBase] = []
+    additional_params: list[
+        Image2ImageGenerationParameters
+        | RemixGenerationParameters
+        | ControlnetGenerationParameters
+        | HiresFixGenerationParameters
+        | LoRaEntry
+        | TIEntry
+        | CustomWorkflowGenerationParameters
+    ] = []
 
     if img2img_params is not None:
         additional_params.append(img2img_params)
@@ -335,6 +343,10 @@ def convert_image_job_pop_response_to_parameters(
         additional_params.append(controlnet_params)
     if hires_fix_params is not None:
         additional_params.append(hires_fix_params)
+    if loras is not None:
+        additional_params.extend(loras)
+    if tis is not None:
+        additional_params.extend(tis)
     if custom_workflow_params is not None:
         additional_params.append(custom_workflow_params)
 
@@ -344,9 +356,9 @@ def convert_image_job_pop_response_to_parameters(
         tiling=api_response.payload.tiling,
         source_processing=api_response.source_processing,
         base_params=base_params,
-        additional_params=additional_params,
-        loras=loras,
-        tis=tis,
+        additional_params=ImageGenerationComponentContainer(
+            components=additional_params,
+        ),
     )
 
     r2_upload_url_map = {}
