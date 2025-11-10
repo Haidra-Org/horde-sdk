@@ -819,7 +819,6 @@ def test_problem_payload() -> None:
 
 
 def test_problem_gen_request_response() -> None:
-
     example_json = """
                     {
                     "id": "00000000-0000-0000-0000-000000000000",

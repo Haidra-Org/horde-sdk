@@ -19,7 +19,6 @@ from horde_sdk.ai_horde_api.apimodels._stats import (
 
 
 class TestAIHordeStats:
-
     @pytest.mark.asyncio
     async def test_get_image_stats_models(self) -> None:
         async with (

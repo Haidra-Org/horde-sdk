@@ -48,7 +48,6 @@ class AIHordeDocumentRequestMixin(HordeAPIObjectBaseModel):
 
 
 class AIHordeGetPrivacyPolicyRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin):
-
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -71,7 +70,6 @@ class AIHordeGetPrivacyPolicyRequest(BaseAIHordeRequest, AIHordeDocumentRequestM
 
 
 class AIHordeGetSponsorsRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin):
-
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -94,7 +92,6 @@ class AIHordeGetSponsorsRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin)
 
 
 class AIHordeGetTermsRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin):
-
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:

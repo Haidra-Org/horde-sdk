@@ -414,7 +414,6 @@ class ListUsersDetailsRequest(BaseAIHordeRequest):
 
 
 class SingleUserDetailsRequest(BaseAIHordeRequest, RequestSpecifiesUserIDMixin):
-
     @override
     @classmethod
     def get_api_model_name(cls) -> None:
