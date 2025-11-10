@@ -3,7 +3,7 @@ import re
 
 from horde_model_reference.meta_consts import MODEL_REFERENCE_CATEGORY, STABLE_DIFFUSION_BASELINE_CATEGORY
 from horde_model_reference.model_reference_manager import ModelReferenceManager
-from horde_model_reference.model_reference_records import StableDiffusion_ModelRecord
+from horde_model_reference.model_reference_records import ImageGenerationModelRecord
 from loguru import logger
 
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient
@@ -176,9 +176,9 @@ class ImageModelLoadResolver:
         """
         all_model_references = self._model_reference_manager.get_all_model_references()
 
-        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.stable_diffusion]
+        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.image_generation]
 
-        all_models = set(sd_model_references.root.keys()) if sd_model_references is not None else set()
+        all_models = set(sd_model_references.keys()) if sd_model_references is not None else set()
 
         if not ignore_large_models_env_var:
             all_models = self.remove_large_models(all_models)
@@ -198,7 +198,7 @@ class ImageModelLoadResolver:
         """
         all_model_references = self._model_reference_manager.get_all_model_references()
 
-        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.stable_diffusion]
+        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.image_generation]
 
         found_models: set[str] = set()
 
@@ -206,13 +206,13 @@ class ImageModelLoadResolver:
             logger.error("No stable diffusion models found in model reference.")
             return found_models
 
-        for model in sd_model_references.root.values():
-            if not isinstance(model, StableDiffusion_ModelRecord):
-                logger.error(f"Model {model} is not a StableDiffusion_ModelRecord")
+        for model_name, model in sd_model_references.items():
+            if not isinstance(model, ImageGenerationModelRecord):
+                logger.error(f"Model {model_name} is not a ImageGenerationModelRecord")
                 continue
 
             if model.nsfw == nsfw:
-                found_models.add(model.name)
+                found_models.add(model_name)
 
         return found_models
 
@@ -240,7 +240,7 @@ class ImageModelLoadResolver:
         """
         all_model_references = self._model_reference_manager.get_all_model_references()
 
-        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.stable_diffusion]
+        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.image_generation]
 
         found_models: set[str] = set()
 
@@ -248,13 +248,13 @@ class ImageModelLoadResolver:
             logger.error("No stable diffusion models found in model reference.")
             return found_models
 
-        for model in sd_model_references.root.values():
-            if not isinstance(model, StableDiffusion_ModelRecord):
-                logger.error(f"Model {model} is not a StableDiffusion_ModelRecord")
+        for model_name, model in sd_model_references.items():
+            if not isinstance(model, ImageGenerationModelRecord):
+                logger.error(f"Model {model_name} is not a ImageGenerationModelRecord")
                 continue
 
             if model.inpainting:
-                found_models.add(model.name)
+                found_models.add(model_name)
 
         return found_models
 
@@ -269,7 +269,7 @@ class ImageModelLoadResolver:
         """
         all_model_references = self._model_reference_manager.get_all_model_references()
 
-        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.stable_diffusion]
+        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.image_generation]
 
         found_models: set[str] = set()
 
@@ -277,13 +277,13 @@ class ImageModelLoadResolver:
             logger.error("No stable diffusion models found in model reference.")
             return found_models
 
-        for model in sd_model_references.root.values():
-            if not isinstance(model, StableDiffusion_ModelRecord):
-                logger.error(f"Model {model} is not a StableDiffusion_ModelRecord")
+        for model_name, model in sd_model_references.items():
+            if not isinstance(model, ImageGenerationModelRecord):
+                logger.error(f"Model {model_name} is not a ImageGenerationModelRecord")
                 continue
 
             if model.baseline == baseline:
-                found_models.add(model.name)
+                found_models.add(model_name)
 
         return found_models
 
