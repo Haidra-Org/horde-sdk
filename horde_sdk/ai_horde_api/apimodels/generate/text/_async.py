@@ -186,7 +186,6 @@ class ModelPayloadRootKobold(HordeAPIData):
 
 @Unhashable
 class ModelGenerationInputKobold(ModelPayloadRootKobold):
-
     pass
 
 

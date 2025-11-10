@@ -28,7 +28,6 @@ async def async_text_generate_example(
     simple_client: AIHordeAPIAsyncSimpleClient,
     apikey: str = ANON_API_KEY,
 ) -> None:
-
     status_response: TextGenerateStatusResponse
     job_id: JobID
 

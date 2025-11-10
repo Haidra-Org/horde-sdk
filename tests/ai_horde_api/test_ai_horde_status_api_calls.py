@@ -22,7 +22,6 @@ from horde_sdk.ai_horde_api.apimodels._status import (
 
 
 class TestAIHordeStatus:
-
     @pytest.mark.asyncio
     async def test_ai_horde_heartbeat(self) -> None:
         async with (
