@@ -118,15 +118,15 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
                     "Consider giving it a unique name on the API.",
                 )
             else:
-                assert (
-                    request_type.get_api_model_name() in swagger_defined_models
-                ), f"Model is defined in horde_sdk, but not in swagger: {request_type.get_api_model_name()}"
+                assert request_type.get_api_model_name() in swagger_defined_models, (
+                    f"Model is defined in horde_sdk, but not in swagger: {request_type.get_api_model_name()}"
+                )
 
             assert endpoint_subpath in swagger_doc.paths, f"Missing {request_type.__name__} in swagger"
 
-            assert (
-                endpoint_subpath in swagger_defined_payload_examples
-            ), f"Missing {request_type.__name__} in swagger examples"
+            assert endpoint_subpath in swagger_defined_payload_examples, (
+                f"Missing {request_type.__name__} in swagger examples"
+            )
 
         endpoint_http_status_code_responses: dict[HTTPStatusCode, dict[str, object] | list[Any]] | None | None = None
 
@@ -155,18 +155,18 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
                 for success_code in get_all_success_status_codes()
                 if success_code in endpoint_http_status_code_responses
             ]
-            assert (
-                len(endpoint_success_http_status_codes) > 0
-            ), f"Failed to find any success status codes in {request_type.__name__}"
+            assert len(endpoint_success_http_status_codes) > 0, (
+                f"Failed to find any success status codes in {request_type.__name__}"
+            )
 
             for success_code in endpoint_success_http_status_codes:
-                assert (
-                    success_code in request_type.get_success_status_response_pairs()
-                ), f"Missing success response type for {request_type.__name__} with status code {success_code}"
+                assert success_code in request_type.get_success_status_response_pairs(), (
+                    f"Missing success response type for {request_type.__name__} with status code {success_code}"
+                )
         else:
-            assert (
-                request_type.get_default_success_response_type() is not None
-            ), f"Failed to get default success response type for {request_type.__name__}"
+            assert request_type.get_default_success_response_type() is not None, (
+                f"Failed to get default success response type for {request_type.__name__}"
+            )
 
         api_to_sdk_response_model_map[endpoint_subpath] = request_type.get_success_status_response_pairs()
 

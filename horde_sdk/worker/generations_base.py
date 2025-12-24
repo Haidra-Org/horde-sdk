@@ -870,8 +870,7 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
 
             if self._safety_rules.should_censor(safety_result):
                 logger.trace(
-                    f"Safety check result for batch index {batch_index} is unsafe: {safety_result}. "
-                    "Censoring result.",
+                    f"Safety check result for batch index {batch_index} is unsafe: {safety_result}. Censoring result.",
                 )
 
                 if self._generation_results[self._result_ids[batch_index]] is None:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from enum import auto
 from typing import Self, override
 
@@ -191,6 +191,9 @@ class BasicTextGenerationParameters(BasicTextGenerationParametersTemplate):  # T
 
     model_config = get_default_frozen_model_config_dict()
 
+    model: str
+    """The model to use for the generation."""
+
     prompt: str  # pyright: ignore[reportGeneralTypeIssues, reportIncompatibleVariableOverride]
     """The prompt to use for the generation."""
 
@@ -216,7 +219,7 @@ class TextGenerationParametersTemplate(CompositeParametersBase):
     def to_parameters(
         self,
         *,
-        base_param_updates: Mapping[str, object] | None = None,
+        base_param_updates: BasicTextGenerationParametersTemplate | None = None,
         result_ids: Sequence[ID_TYPES] | None = None,
         allocator: ResultIdAllocator | None = None,
         seed: str = "text",
@@ -229,7 +232,7 @@ class TextGenerationParametersTemplate(CompositeParametersBase):
         overrides: dict[str, object] | None = None
         if base_param_updates:
             overrides = {
-                "base_params": base_params.model_copy(update=dict(base_param_updates)),
+                "base_params": base_params.model_copy(update=base_param_updates.model_dump(exclude_none=True)),
             }
 
         def _inject_base_params_into_fingerprint(

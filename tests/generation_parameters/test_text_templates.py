@@ -20,7 +20,7 @@ def test_text_template_to_parameters_applies_base_updates() -> None:
         base_params=_create_basic_template(prompt="initial"),
     )
 
-    parameters = template.to_parameters(base_param_updates={"prompt": "updated"})
+    parameters = template.to_parameters(base_param_updates=BasicTextGenerationParametersTemplate(prompt="updated"))
 
     assert isinstance(parameters.base_params, BasicTextGenerationParameters)
     assert parameters.base_params.prompt == "updated"

@@ -1,18 +1,25 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from typing import override
 
 from horde_sdk.consts import ID_TYPES, WORKER_TYPE, HTTPMethod
 from horde_sdk.generation_parameters import (
+    BasicImageGenerationParametersTemplate,
     ImageGenerationParameters,
     SingleAlchemyParameters,
     TextGenerationParameters,
 )
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_FORMS
 from horde_sdk.generation_parameters.alchemy.object_models import SingleAlchemyParametersTemplate
-from horde_sdk.generation_parameters.image.object_models import ImageGenerationParametersTemplate
-from horde_sdk.generation_parameters.text.object_models import TextGenerationParametersTemplate
+from horde_sdk.generation_parameters.image.object_models import (
+    ImageGenerationComponentContainer,
+    ImageGenerationParametersTemplate,
+)
+from horde_sdk.generation_parameters.text.object_models import (
+    BasicTextGenerationParametersTemplate,
+    TextGenerationParametersTemplate,
+)
 from horde_sdk.generation_parameters.utils import ResultIdAllocator
 from horde_sdk.worker.generations import (
     AlchemyGenerationInitKwargs,
@@ -82,7 +89,8 @@ class ImageWorkerJob(HordeWorkerJob[ImageSingleGeneration, ImageGenerationParame
         dispatch_result_ids: Sequence[ID_TYPES] | None = None,
         job_id: ID_TYPES | None = None,
         dispatch_job_id: ID_TYPES | None = None,
-        base_param_updates: Mapping[str, object] | None = None,
+        base_param_updates: BasicImageGenerationParametersTemplate | None = None,
+        additional_param_updates: ImageGenerationComponentContainer | None = None,
         result_ids: Sequence[ID_TYPES] | None = None,
         allocator: ResultIdAllocator | None = None,
         seed: str = "image",
@@ -93,6 +101,7 @@ class ImageWorkerJob(HordeWorkerJob[ImageSingleGeneration, ImageGenerationParame
         """Instantiate an image job from a template."""
         generation_parameters = template.to_parameters(
             base_param_updates=base_param_updates,
+            additional_param_updates=additional_param_updates,
             result_ids=result_ids,
             allocator=allocator,
             seed=seed,
@@ -264,7 +273,7 @@ class TextWorkerJob(HordeWorkerJob[TextSingleGeneration, TextGenerationParameter
         dispatch_result_ids: Sequence[ID_TYPES] | None = None,
         job_id: ID_TYPES | None = None,
         dispatch_job_id: ID_TYPES | None = None,
-        base_param_updates: Mapping[str, object] | None = None,
+        base_param_updates: BasicTextGenerationParametersTemplate | None = None,
         result_ids: Sequence[ID_TYPES] | None = None,
         allocator: ResultIdAllocator | None = None,
         seed: str = "text",

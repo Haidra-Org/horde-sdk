@@ -22,25 +22,27 @@ jobs:
   build:
     env:
       AIWORKER_CACHE_HOME: ${{ github.workspace }}/.cache
-      TESTS_ONGOING: 1
-      HORDE_SDK_TESTING: 1
-      HORDE_MODEL_REFERENCE_MAKE_FOLDERS: 1
+      TESTS_ONGOING: "1"
+      AI_HORDE_TESTING: "1"
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.12", "3.13"]
+        python-version:
+          - "3.12"
+          - "3.13"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: ${{ matrix.python }}
-      - name: Install tox and any other packages
-        run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade -r requirements.dev.txt
-      - name: Run unit tests
-        run: tox -e tests-no-api-calls
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run tests
+        run: uv run pytest tests --ignore-glob='**/*api_calls*' -m "not api_side_ci"

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from pathlib import Path
 from typing import override
 
@@ -258,6 +258,10 @@ class BasicImageGenerationParameters(BasicImageGenerationParametersTemplate):
         frozen=True,
         from_attributes=True,
     )
+
+
+    model: str
+    """The model to use for the generation."""
 
     prompt: str
     """The prompt to use for the generation."""
@@ -610,7 +614,8 @@ class ImageGenerationParametersTemplate(CompositeParametersBase):
     def to_parameters(
         self,
         *,
-        base_param_updates: Mapping[str, object] | None = None,
+        base_param_updates: BasicImageGenerationParametersTemplate | None = None,
+        additional_param_updates: ImageGenerationComponentContainer | None = None,
         result_ids: Sequence[ID_TYPES] | None = None,
         allocator: ResultIdAllocator | None = None,
         seed: str = "image",
@@ -623,8 +628,15 @@ class ImageGenerationParametersTemplate(CompositeParametersBase):
         overrides: dict[str, object] | None = None
         if base_param_updates:
             overrides = {
-                "base_params": base_params.model_copy(update=dict(base_param_updates)),
+                "base_params": base_params.model_copy(update=base_param_updates.model_dump(exclude_none=True)),
             }
+
+        if additional_param_updates:
+            if overrides is None:
+                overrides = {}
+            if not self.additional_params:
+                raise ValueError("additional_params must be defined before applying updates.")
+            overrides["additional_params"] = self.additional_params.model_copy(update=dict(additional_param_updates))
 
         finalization = finalize_template_for_parameters(
             self,

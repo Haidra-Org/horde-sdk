@@ -20,7 +20,7 @@ def test_image_template_to_parameters_applies_base_updates() -> None:
         base_params=_create_basic_template(prompt="starting"),
     )
 
-    parameters = template.to_parameters(base_param_updates={"prompt": "updated"})
+    parameters = template.to_parameters(base_param_updates=BasicImageGenerationParametersTemplate(prompt="updated"))
 
     assert isinstance(parameters.base_params, BasicImageGenerationParameters)
     assert parameters.base_params.prompt == "updated"

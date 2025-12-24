@@ -6,12 +6,19 @@ from typing import TypedDict, override
 from loguru import logger
 
 from horde_sdk.consts import ID_TYPES
+from horde_sdk.generation_parameters import BasicImageGenerationParametersTemplate
 from horde_sdk.generation_parameters.alchemy import SingleAlchemyParameters
 from horde_sdk.generation_parameters.alchemy.object_models import SingleAlchemyParametersTemplate
 from horde_sdk.generation_parameters.image import ImageGenerationParameters
-from horde_sdk.generation_parameters.image.object_models import ImageGenerationParametersTemplate
+from horde_sdk.generation_parameters.image.object_models import (
+    ImageGenerationComponentContainer,
+    ImageGenerationParametersTemplate,
+)
 from horde_sdk.generation_parameters.text import TextGenerationParameters
-from horde_sdk.generation_parameters.text.object_models import TextGenerationParametersTemplate
+from horde_sdk.generation_parameters.text.object_models import (
+    BasicTextGenerationParametersTemplate,
+    TextGenerationParametersTemplate,
+)
 from horde_sdk.generation_parameters.utils import ResultIdAllocator
 from horde_sdk.safety import SafetyRules, default_image_safety_rules, default_text_safety_rules
 from horde_sdk.worker.consts import (
@@ -198,7 +205,8 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
         *,
         generation_id: ID_TYPES | None = None,
         dispatch_result_ids: Sequence[ID_TYPES] | None = None,
-        base_param_updates: Mapping[str, object] | None = None,
+        base_param_updates: BasicImageGenerationParametersTemplate | None = None,
+        additional_param_updates: ImageGenerationComponentContainer | None = None,
         result_ids: Sequence[ID_TYPES] | None = None,
         allocator: ResultIdAllocator | None = None,
         seed: str = "image",
@@ -503,7 +511,7 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
         *,
         generation_id: ID_TYPES | None = None,
         dispatch_result_ids: Sequence[ID_TYPES] | None = None,
-        base_param_updates: Mapping[str, object] | None = None,
+        base_param_updates: BasicTextGenerationParametersTemplate | None = None,
         result_ids: Sequence[ID_TYPES] | None = None,
         allocator: ResultIdAllocator | None = None,
         seed: str = "text",

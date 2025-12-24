@@ -973,11 +973,11 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
             # Log the results of each cleanup request.
             for i, cleanup_response in enumerate(cleanup_responses):
                 if isinstance(cleanup_response, Exception):
-                    logger.error(f"Recovery request {i+1} failed!")
+                    logger.error(f"Recovery request {i + 1} failed!")
 
-                logger.info(f"Recovery request {i+1} submitted!")
-                logger.debug(f"Recovery request {i+1}: {cleanup_requests[i].log_safe_model_dump()}")
-                logger.debug(f"Recovery response {i+1}: {cleanup_response}")
+                logger.info(f"Recovery request {i + 1} submitted!")
+                logger.debug(f"Recovery request {i + 1}: {cleanup_requests[i].log_safe_model_dump()}")
+                logger.debug(f"Recovery response {i + 1}: {cleanup_response}")
 
             # Return True to indicate that all requests were handled successfully.
             return True

@@ -1456,7 +1456,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
     async def image_generate_request(
         self,
         image_gen_request: ImageGenerateAsyncRequest,
-        timeout: int = GENERATION_MAX_LIFE, # noqa: ASYNC109 # FIXME
+        timeout: int = GENERATION_MAX_LIFE,  # noqa: ASYNC109 # FIXME
         check_callback: Callable[[ImageGenerateCheckResponse], None] | None = None,
         delay: float = 0.0,
     ) -> tuple[ImageGenerateStatusResponse, GenerationID]:
@@ -1542,7 +1542,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
     async def alchemy_request(
         self,
         alchemy_request: AlchemyAsyncRequest,
-        timeout: int = GENERATION_MAX_LIFE, # noqa: ASYNC109 # FIXME
+        timeout: int = GENERATION_MAX_LIFE,  # noqa: ASYNC109 # FIXME
         check_callback: Callable[[AlchemyStatusResponse], None] | None = None,
     ) -> tuple[AlchemyStatusResponse, GenerationID]:
         """Submit an alchemy request to the AI-Horde API, and wait for it to complete.
@@ -1588,7 +1588,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
     async def text_generate_request(
         self,
         text_gen_request: TextGenerateAsyncRequest,
-        timeout: int = GENERATION_MAX_LIFE, # noqa: ASYNC109 # FIXME
+        timeout: int = GENERATION_MAX_LIFE,  # noqa: ASYNC109 # FIXME
         check_callback: Callable[[TextGenerateStatusResponse], None] | None = None,
         delay: float = 0.0,
     ) -> tuple[TextGenerateStatusResponse, GenerationID]:

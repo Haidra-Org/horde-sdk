@@ -54,9 +54,9 @@ def test_all_ai_horde_api_models_defined() -> None:
         if key in undefined_classes:
             undefined_classes.remove(key)
 
-    assert (
-        "GenerationInputStable" not in undefined_classes
-    ), "A model which is known to be defined in the SDK was not found. Something critically bad has happened."
+    assert "GenerationInputStable" not in undefined_classes, (
+        "A model which is known to be defined in the SDK was not found. Something critically bad has happened."
+    )
 
     # Pretty print the undefined classes sorted by dict values, NOT by keys
     import json
@@ -105,7 +105,7 @@ def test_all_ai_horde_api_models_defined() -> None:
             undefined_classes.remove(skipped_class)
 
     assert not undefined_classes, (
-        "The following models are defined in the API but not in the SDK: " f"{undefined_classes}"
+        f"The following models are defined in the API but not in the SDK: {undefined_classes}"
     )
 
 
@@ -116,9 +116,9 @@ def test_all_ai_horde_api_models_defined_for_endpoints() -> None:
 
     undefined_classes = all_undefined_classes_for_endpoints(horde_sdk.ai_horde_api.apimodels)
 
-    assert (
-        "GenerationInputStable" not in undefined_classes
-    ), "A model which is known to be defined in the SDK was not found. Something critically bad has happened."
+    assert "GenerationInputStable" not in undefined_classes, (
+        "A model which is known to be defined in the SDK was not found. Something critically bad has happened."
+    )
 
     # Pretty print the undefined classes sorted by dict values, NOT by keys
     import json
@@ -137,7 +137,7 @@ def test_all_ai_horde_api_models_defined_for_endpoints() -> None:
     print(json.dumps(undefined_classes_sorted, indent=4))
 
     assert not undefined_classes, (
-        "The following models are defined in the API but not in the SDK: " f"{undefined_classes}"
+        f"The following models are defined in the API but not in the SDK: {undefined_classes}"
     )
 
 
@@ -148,7 +148,7 @@ def test_all_ai_horde_endpoints_known() -> None:
     unknown_endpoints = all_unknown_endpoints_ai_horde()
 
     assert not unknown_endpoints, (
-        "The following endpoints are defined in the API but not in the SDK: " f"{unknown_endpoints}"
+        f"The following endpoints are defined in the API but not in the SDK: {unknown_endpoints}"
     )
 
 
@@ -169,7 +169,7 @@ def test_all_ai_horde_endpoints_addressed() -> None:
         print(f"Unaddressed path: {unaddressed_endpoint}.")
 
     assert not unaddressed_endpoints, (
-        "The following endpoints are defined in the API but not in the SDK: " f"{unaddressed_endpoints}"
+        f"The following endpoints are defined in the API but not in the SDK: {unaddressed_endpoints}"
     )
 
 
@@ -202,7 +202,7 @@ def test_all_models_have_docstrings() -> None:
     stringified_missing_docstrings = {k.__name__: list(v) for k, v in missing_docstrings.items()}
     jsonified_missing_docstrings = json.dumps(stringified_missing_docstrings, indent=4)
 
-    assert not missing_docstrings, "The following models are missing docstrings: " f"{jsonified_missing_docstrings}"
+    assert not missing_docstrings, f"The following models are missing docstrings: {jsonified_missing_docstrings}"
 
 
 @pytest.mark.object_verify

@@ -138,7 +138,6 @@ class HordeResponseRootModel(RootModel[T], HordeResponse):
     )
 
 
-
 class HordeResponseBaseModel(HordeResponse, BaseModel):
     """Base class for all Horde API response data models (leveraging pydantic)."""
 

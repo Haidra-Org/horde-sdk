@@ -46,7 +46,7 @@ class SchemaVersionedBaseModel(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _assign_schema_version(cls, data: Any) -> Any: # noqa: ANN401
+    def _assign_schema_version(cls, data: Any) -> Any:  # noqa: ANN401
         """Populate ``schema_version`` when omitted by callers."""
         if data is None:
             return {"schema_version": cls.SCHEMA_VERSION}
@@ -79,8 +79,6 @@ class GenerationParameterBaseModel(SchemaVersionedBaseModel, AbstractGenerationP
     `GenerationParameterBaseModel` for a single LoRa entry and `GenerationParameterList`
     for a list of those LoRa entries.
     """
-
-
 
     underlying_generation_scheme: UNDERLYING_GENERATION_SCHEME | None = None
     """The underlying method the generation uses to produce results.
@@ -160,7 +158,7 @@ class GenerationWithModelParameters(GenerationParameterBaseModel):
     underlying_generation_scheme: UNDERLYING_GENERATION_SCHEME = UNDERLYING_GENERATION_SCHEME.MODEL
     """See :attr:`ComposedParameterSetBase.underlying_generation_scheme` for more information."""
 
-    model: str
+    model: str | None = None
     model_baseline: str | None = None
 
 
