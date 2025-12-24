@@ -6,15 +6,18 @@ from horde_sdk.generation_parameters import (
     AlchemyParameters,
 )
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_FORMS
+from horde_sdk.generation_parameters.alchemy.object_models import (
+    UpscaleAlchemyParametersTemplate,
+)
+from horde_sdk.generation_parameters.image.object_models import (
+    BasicImageGenerationParametersTemplate,
+    ImageGenerationParametersTemplate,
+)
 from horde_sdk.generation_parameters.text.object_models import (
     BasicTextGenerationParametersTemplate,
     TextGenerationParametersTemplate,
 )
 from horde_sdk.generation_parameters.utils import ResultIdAllocator
-from horde_sdk.worker.chaining.parameter_templates import (
-    create_basic_image_template,
-    create_upscale_template,
-)
 from horde_sdk.worker.consts import GENERATION_PROGRESS, WORKER_ERRORS
 from horde_sdk.worker.generations import AlchemySingleGeneration, ImageSingleGeneration, TextSingleGeneration
 from horde_sdk.worker.jobs import AlchemyWorkerJob, ImageWorkerJob, TextWorkerJob
@@ -309,14 +312,17 @@ def test_text_worker_job_lifecycle_uses_dispatch_job_id(
 
 
 def test_image_worker_job_from_template_overrides_prompt() -> None:
-    template = create_basic_image_template("placeholder")
+    template = ImageGenerationParametersTemplate(
+        base_params=BasicImageGenerationParametersTemplate(prompt="placeholder")
+    )
     job = ImageWorkerJob.from_template(
         template,
-        base_param_updates={"prompt": "generated"},
+        base_param_updates=BasicImageGenerationParametersTemplate(prompt="generated", model="image-model"),
         result_ids=("image-result",),
     )
 
     assert job.generation.generation_parameters.base_params.prompt == "generated"
+    assert job.generation.generation_parameters.base_params.model == "image-model"
     assert job.generation.generation_parameters.result_ids == ["image-result"]
 
 
@@ -329,7 +335,7 @@ def test_text_worker_job_from_template_updates_prompt() -> None:
     )
     job = TextWorkerJob.from_template(
         template,
-        base_param_updates={"prompt": "final"},
+        base_param_updates=BasicTextGenerationParametersTemplate(prompt="final"),
     )
 
     assert job.generation.generation_parameters.base_params.prompt == "final"
@@ -346,7 +352,7 @@ def test_text_worker_job_from_template_accepts_explicit_result_ids() -> None:
 
     job = TextWorkerJob.from_template(
         template,
-        base_param_updates={"prompt": "updated"},
+        base_param_updates=BasicTextGenerationParametersTemplate(prompt="updated"),
         result_ids=("text-template",),
     )
 
@@ -374,7 +380,7 @@ def test_text_worker_job_from_template_uses_allocator() -> None:
 
 
 def test_alchemy_worker_job_from_template_sets_source_image() -> None:
-    template = create_upscale_template()
+    template = UpscaleAlchemyParametersTemplate()
     job = AlchemyWorkerJob.from_template(
         template,
         source_image=b"image-bytes",
@@ -386,7 +392,7 @@ def test_alchemy_worker_job_from_template_sets_source_image() -> None:
 
 
 def test_alchemy_worker_job_from_template_allocates_result_id_with_allocator() -> None:
-    template = create_upscale_template()
+    template = UpscaleAlchemyParametersTemplate()
     allocator = ResultIdAllocator()
 
     first_job = AlchemyWorkerJob.from_template(
@@ -409,12 +415,15 @@ def test_alchemy_worker_job_from_template_allocates_result_id_with_allocator() -
 
 
 def test_worker_job_from_template_preserves_generation_identifier_when_requested() -> None:
-    template = create_basic_image_template("placeholder")
+    template = ImageGenerationParametersTemplate(
+        base_params=BasicImageGenerationParametersTemplate(prompt="placeholder")
+    )
     job = ImageWorkerJob.from_template(
         template,
         generation_id="generation-id",
         job_id="job-id",
         preserve_generation_id=True,
+        base_param_updates=BasicImageGenerationParametersTemplate(prompt="generated", model="image-model"),
     )
 
     assert job.job_id == "job-id"
@@ -422,7 +431,9 @@ def test_worker_job_from_template_preserves_generation_identifier_when_requested
 
 
 def test_worker_job_from_template_binds_generation_identifier_by_default() -> None:
-    template = create_basic_image_template("placeholder")
+    template = ImageGenerationParametersTemplate(
+        base_params=BasicImageGenerationParametersTemplate(prompt="placeholder", model="image-model")
+    )
     job = ImageWorkerJob.from_template(
         template,
         job_id="job-id",
@@ -495,7 +506,9 @@ def test_text_worker_job_defaults_dispatch_result_ids_to_dispatch_job_id(
 
 
 def test_image_worker_job_from_template_uses_allocator_for_result_ids() -> None:
-    template = create_basic_image_template("allocator prompt")
+    template = ImageGenerationParametersTemplate(
+        base_params=BasicImageGenerationParametersTemplate(prompt="allocator prompt", model="image-model")
+    )
     template.batch_size = 2
     allocator = ResultIdAllocator()
 

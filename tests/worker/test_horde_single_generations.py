@@ -11,7 +11,14 @@ from horde_sdk.generation_parameters.alchemy import (
     SingleAlchemyParameters,
 )
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_FORMS
+from horde_sdk.generation_parameters.alchemy.object_models import (
+    UpscaleAlchemyParametersTemplate,
+)
 from horde_sdk.generation_parameters.image import ImageGenerationParameters
+from horde_sdk.generation_parameters.image.object_models import (
+    BasicImageGenerationParametersTemplate,
+    ImageGenerationParametersTemplate,
+)
 from horde_sdk.generation_parameters.text import TextGenerationParameters
 from horde_sdk.generation_parameters.text.object_models import (
     BasicTextGenerationParametersTemplate,
@@ -23,10 +30,6 @@ from horde_sdk.safety import (
     SafetyResult,
     SafetyRules,
     default_image_safety_rules,
-)
-from horde_sdk.worker.chaining.parameter_templates import (
-    create_basic_image_template,
-    create_upscale_template,
 )
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
@@ -191,10 +194,12 @@ def alchemy_permutations(
 
 
 def test_image_single_generation_from_template_applies_updates() -> None:
-    template = create_basic_image_template("placeholder")
+    template = ImageGenerationParametersTemplate(
+        base_params=BasicImageGenerationParametersTemplate(prompt="placeholder"),
+    )
     generation = ImageSingleGeneration.from_template(
         template,
-        base_param_updates={"prompt": "updated"},
+        base_param_updates=BasicImageGenerationParametersTemplate(model="test-model", prompt="updated"),
         result_ids=("result-1",),
     )
 
@@ -203,7 +208,9 @@ def test_image_single_generation_from_template_applies_updates() -> None:
 
 
 def test_image_single_generation_allocator_is_deterministic() -> None:
-    template = create_basic_image_template("allocator prompt")
+    template = ImageGenerationParametersTemplate(
+        base_params=BasicImageGenerationParametersTemplate(prompt="allocator prompt", model="image-model"),
+    )
     template.batch_size = 2
 
     allocator = ResultIdAllocator()
@@ -212,7 +219,9 @@ def test_image_single_generation_allocator_is_deterministic() -> None:
 
     assert first.generation_parameters.result_ids == second.generation_parameters.result_ids
 
-    variant_template = create_basic_image_template("allocator prompt variant")
+    variant_template = ImageGenerationParametersTemplate(
+        base_params=BasicImageGenerationParametersTemplate(prompt="allocator prompt variant", model="image-model"),
+    )
     variant_template.batch_size = 2
     third = ImageSingleGeneration.from_template(variant_template, allocator=allocator, seed="image-seed")
 
@@ -229,7 +238,7 @@ def test_text_single_generation_from_template_allocates_result_id() -> None:
 
     generation = TextSingleGeneration.from_template(
         template,
-        base_param_updates={"prompt": "final"},
+        base_param_updates=BasicTextGenerationParametersTemplate(prompt="final"),
     )
 
     assert generation.generation_parameters.base_params.prompt == "final"
@@ -263,7 +272,7 @@ def test_text_single_generation_allocator_is_deterministic() -> None:
 
 
 def test_alchemy_single_generation_from_template_sets_source_image() -> None:
-    template = create_upscale_template()
+    template = UpscaleAlchemyParametersTemplate()
     generation = AlchemySingleGeneration.from_template(
         template,
         source_image=b"image-bytes",
