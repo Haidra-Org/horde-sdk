@@ -188,6 +188,8 @@ class _BasePayloadKoboldMixin(HordeAPIData):
 
 @Unhashable
 class ModelPayloadRootKobold(_BasePayloadKoboldMixin):
+    """Base model for KoboldAI generation payloads."""
+
     n: int | None = Field(default=None, examples=[1], ge=1, le=20)
     """The number of generations to produce."""
 
@@ -204,7 +206,7 @@ class ModelPayloadRootKobold(_BasePayloadKoboldMixin):
 
 @Unhashable
 class ModelGenerationInputKobold(ModelPayloadRootKobold):
-    pass
+    """API Parity intermediate model for generation input."""
 
 
 class TextGenerateAsyncDryRunResponse(HordeResponseBaseModel):

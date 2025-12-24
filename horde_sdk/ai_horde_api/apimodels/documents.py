@@ -14,6 +14,8 @@ from horde_sdk.generic_api.apimodels import (
 
 
 class DocumentFormat(StrEnum):
+    """The supported formats for a document."""
+
     html = "html"
     markdown = "markdown"
 
@@ -25,7 +27,7 @@ class HordeDocument(HordeResponseBaseModel):
         - /v2/documents/privacy | AIHordeGetPrivacyPolicyRequest [GET] -> 200
 
     v2 API Model: `HordeDocument`
-    """
+    """  # noqa: D205, D415
 
     html: str | None = None
     """The HTML content of the document, if requested."""
@@ -39,6 +41,8 @@ class HordeDocument(HordeResponseBaseModel):
 
 
 class AIHordeDocumentRequestMixin(HordeAPIObjectBaseModel):
+    """Mixin for requests that retrieve a document from the AI Horde API."""
+
     format: DocumentFormat | str = DocumentFormat.html
 
     """The format of the document to return. Default is markdown."""

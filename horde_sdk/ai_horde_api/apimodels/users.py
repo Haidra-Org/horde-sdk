@@ -558,6 +558,8 @@ class _ModifyUserBase(HordeAPIObjectBaseModel):
 
 
 class ModifyUser(_ModifyUserBase):
+    """Underlying model for modifying a user."""
+
     kudos: float | None = Field(default=None)
     """The amount of kudos to modify (can be negative)."""
 
@@ -569,6 +571,8 @@ class ModifyUser(_ModifyUserBase):
 
 
 class ModifyUserReply(_ModifyUserBase):
+    """Base class for the response returned when modifying a user."""
+
     new_kudos: float | None = Field(default=None)
     """The new amount of kudos this user has."""
     new_suspicion: int | None = Field(default=None)

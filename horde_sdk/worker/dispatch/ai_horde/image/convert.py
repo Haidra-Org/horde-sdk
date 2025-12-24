@@ -87,15 +87,16 @@ def _get_remix_params(api_response: ImageGenerateJobPopResponse) -> RemixGenerat
             for remix_image in api_response.extra_source_images:
                 payload_image = remix_image.image
 
+                payload_image_bytes: bytes | None = None
                 if isinstance(payload_image, str):
-                    payload_image = base64_str_to_bytes(payload_image)
+                    payload_image_bytes = base64_str_to_bytes(payload_image)
 
-                if not payload_image:
+                if not payload_image_bytes:
                     raise ValueError("Remix image payload is empty.")
 
                 remix_images.append(
                     RemixImageEntry(
-                        image=payload_image,
+                        image=payload_image_bytes,
                         strength=remix_image.strength,
                     ),
                 )

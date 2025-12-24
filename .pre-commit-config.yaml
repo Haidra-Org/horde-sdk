@@ -1,21 +1,18 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
     -   id: check-yaml
         exclude: ^mkdocs\.yml$
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
--   repo: https://github.com/psf/black
-    rev: 24.10.0
-    hooks:
-    -   id: black
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.2
+    rev: v0.14.10
     hooks:
-    -    id: ruff
+    -    id: ruff-check
+    -    id: ruff-format
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.13.0'
+    rev: v1.19.1
     hooks:
     -   id: mypy
         args: [., --strict, --ignore-missing-imports, --exclude=^codegen]
@@ -30,10 +27,11 @@ repos:
             types-setuptools,
             types-urllib3,
             types-aiofiles,
+            types-PyYAML,
             StrEnum,
             horde_model_reference>=2.0.0,
         ]
 - repo: https://github.com/gauge-sh/tach-pre-commit
-  rev: v0.27.0
+  rev: v0.29.0
   hooks:
     - id: tach

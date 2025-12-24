@@ -85,7 +85,7 @@ These functions return the transitioned to state.
 #### Important Notes on State Transitions
 
 - **Strict Order:** You must call state transition methods in the correct sequence. For example, you cannot call `on_generating()` before `on_preloading_complete()`. This strictness helps catch workflow errors early. Out-of-order calls almost always indicate a problem in your logic or resource handling.
-- **Error Handling:** If an error occurs at any step, use `on_error(failed_message="...")` to move the generation into the `ERROR` state. This lets you handle errors gracefully and, if needed, recover. To continue after an error, you must return to the most recent valid state before proceeding.  
+- **Error Handling:** If an error occurs at any step, use `on_error(failed_message="...")` to move the generation into the `ERROR` state. This lets you handle errors gracefully and, if needed, recover. To continue after an error, you must return to the most recent valid state before proceeding.
     - For example, if you are in the `GENERATING` state and an error occurs, call `on_error()` to enter `ERROR`, then call `on_generating()` again to retry.
 - **Dynamic States:** Some transition methods, such as `on_generation_work_complete()`, may lead to different next states depending on context (e.g., whether post-processing is required). The class handles these decisions internally, so you don’t need to manually select the next state.
 - **Manual States:** You can use the generic `step(state)` or `on_state(state)` methods to transition to a specific state. However, you are responsible for ensuring the transition is valid—these methods bypass some of the built-in checks.
@@ -346,7 +346,7 @@ flowchart TD
 
     NOT_STARTED@{shape: subproc}
     PRELOADING@{shape: subproc}
-    PRELOADING_COMPLETE@{shape: subproc} 
+    PRELOADING_COMPLETE@{shape: subproc}
     PENDING_POST_PROCESSING@{ shape: subproc}
     POST_PROCESSING@{ shape: subproc}
     GENERATING@{ shape: subproc}
@@ -451,7 +451,7 @@ Good:
     - Here, the worker encountered an error during preloading, attempted to recover, but failed again and then aborted the job. Note that you can set the intended number of retries in worker job configuration. See the `HordeWorkerJobConfig` class and the  `state_error_limits` arg in a generation class constructor for more details.
 - `NOT_STARTED` -> `PRELOADING` -> `USER_REQUESTED_ABORT` -> `USER_ABORT_COMPLETE`
     - In this case, the user who created the job requested an abort, and the worker was able to complete the abort process successfully.
-  
+
 Bad:
 
 - `NOT_STARTED` -> `PRELOADING` -> `ERROR` -> `GENERATING`

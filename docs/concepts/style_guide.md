@@ -162,7 +162,7 @@ Many classes contain standardized prefixes, suffixes, or identifiers within thei
         - For example, methods which are known to rely on external resources (e.g., network calls, file I/O) should document the exceptions that may be raised in the event of a failure.
         - It is **not** expected that every conceivable exception raised from a particular call hierarchy is documented, but rather those that are most likely to occur and can be reasonably anticipated.
             - A method that opens a file should document `FileNotFoundError` and `IOError` in its `Raises` section, while network-related methods should document `ConnectionError`, `TimeoutError`, and other relevant exceptions.
-  
+
 ### API Model Specific Documentation
 
 Many docstrings in the SDK have additional requirements when they are related to API models or requests/responses. While these rules would be difficult to remember, they are luckily enforced by CI and the `horde_sdk.meta` module has helper functions to assist in generating the required docstrings. The correct docstrings will also be emitted by the `object_verify` tests. Be sure to run the tests with `-s` to see the output.

@@ -10,14 +10,14 @@ from horde_sdk.generation_parameters import ImageGenerationParameters
 from horde_sdk.utils import default_bridge_agent_string
 from horde_sdk.worker.dispatch.ai_horde.bridge_data import ImageWorkerBridgeData
 from horde_sdk.worker.dispatch.ai_horde.image.convert import convert_image_job_pop_response_to_parameters
-from horde_sdk.worker.dispatch.pop_strategy import JobPopStrategy
+from horde_sdk.worker.dispatch.pop_strategy import JobPopStrategyGeneric
 from horde_sdk.worker.generations import (
     ImageSingleGeneration,
 )
 from horde_sdk.worker.jobs import ImageWorkerJob
 
 
-class AIHordeImageWorkerJobPopStrategy(JobPopStrategy[ImageSingleGeneration, ImageGenerationParameters]):
+class AIHordeImageWorkerJobPopStrategy(JobPopStrategyGeneric[ImageSingleGeneration, ImageGenerationParameters]):
     """Job pop strategy for AI Horde image worker jobs."""
 
     _image_worker_bridge_data: ImageWorkerBridgeData
@@ -30,7 +30,7 @@ class AIHordeImageWorkerJobPopStrategy(JobPopStrategy[ImageSingleGeneration, Ima
 
     def __init__(
         self,
-        default_job_pop_time_spacing: float = JobPopStrategy._default_job_pop_time_spacing,
+        default_job_pop_time_spacing: float = JobPopStrategyGeneric._default_job_pop_time_spacing,
         *,
         image_worker_bridge_data: ImageWorkerBridgeData,
         bridge_agent_string: str = default_bridge_agent_string,

@@ -14,7 +14,7 @@ flowchart TD
 
     NOT_STARTED@{shape: subproc}
     PRELOADING@{shape: subproc}
-    PRELOADING_COMPLETE@{shape: subproc} 
+    PRELOADING_COMPLETE@{shape: subproc}
     PENDING_POST_PROCESSING@{ shape: subproc}
     POST_PROCESSING@{ shape: subproc}
     GENERATING@{ shape: subproc}
@@ -119,7 +119,7 @@ Good:
     - Here, the worker encountered an error during preloading, attempted to recover, but failed again and then aborted the job. Note that you can set the intended number of retries in worker job configuration. See the `HordeWorkerJobConfig` class and the  `state_error_limits` arg in a generation class constructor for more details.
 - `NOT_STARTED` -> `PRELOADING` -> `USER_REQUESTED_ABORT` -> `USER_ABORT_COMPLETE`
     - In this case, the user who created the job requested an abort, and the worker was able to complete the abort process successfully.
-  
+
 Bad:
 
 - `NOT_STARTED` -> `PRELOADING` -> `ERROR` -> `GENERATING`

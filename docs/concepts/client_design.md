@@ -12,9 +12,9 @@ classDiagram
     class GenericHordeAPIManualClient
 
     class GenericAsyncHordeAPIManualClient
-    class GenericHordeAPISession 
+    class GenericHordeAPISession
 
-    class GenericAsyncHordeAPISession 
+    class GenericAsyncHordeAPISession
 
     BaseHordeAPIClient <|-- GenericHordeAPIManualClient
     BaseHordeAPIClient <|-- GenericAsyncHordeAPIManualClient

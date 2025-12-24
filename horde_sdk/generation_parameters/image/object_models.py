@@ -259,7 +259,6 @@ class BasicImageGenerationParameters(BasicImageGenerationParametersTemplate):
         from_attributes=True,
     )
 
-
     model: str
     """The model to use for the generation."""
 
