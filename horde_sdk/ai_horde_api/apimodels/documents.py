@@ -19,6 +19,14 @@ class DocumentFormat(StrEnum):
 
 
 class HordeDocument(HordeResponseBaseModel):
+    """Represents the data returned from the following endpoints and http status codes:
+        - /v2/documents/terms | AIHordeGetTermsRequest [GET] -> 200
+        - /v2/documents/sponsors | AIHordeGetSponsorsRequest [GET] -> 200
+        - /v2/documents/privacy | AIHordeGetPrivacyPolicyRequest [GET] -> 200
+
+    v2 API Model: `HordeDocument`
+    """
+
     html: str | None = None
     """The HTML content of the document, if requested."""
     markdown: str | None = None
@@ -50,6 +58,8 @@ class AIHordeDocumentRequestMixin(HordeAPIObjectBaseModel):
 
 
 class AIHordeGetPrivacyPolicyRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin):
+    """Represents a GET request to the /v2/documents/privacy endpoint."""
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -72,6 +82,8 @@ class AIHordeGetPrivacyPolicyRequest(BaseAIHordeRequest, AIHordeDocumentRequestM
 
 
 class AIHordeGetSponsorsRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin):
+    """Represents a GET request to the /v2/documents/sponsors endpoint."""
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:
@@ -94,6 +106,8 @@ class AIHordeGetSponsorsRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin)
 
 
 class AIHordeGetTermsRequest(BaseAIHordeRequest, AIHordeDocumentRequestMixin):
+    """Represents a GET request to the /v2/documents/terms endpoint."""
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str | None:

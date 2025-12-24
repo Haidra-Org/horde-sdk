@@ -22,7 +22,7 @@ from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 class ContributionsDetails(HordeAPIObjectBaseModel):
     """How many images and megapixelsteps this user has generated.
 
-    v2 API Model: ContributionsDetails
+    v2 API Model: `ContributionsDetails`
     """
 
     fulfillments: int | None = Field(
@@ -43,7 +43,7 @@ class ContributionsDetails(HordeAPIObjectBaseModel):
 class UserKudosDetails(HordeAPIObjectBaseModel):
     """The details of the kudos this user has accumulated, used, sent and received.
 
-    v2 API Model: UserKudosDetails
+    v2 API Model: `UserKudosDetails`
     """
 
     accumulated: float | None = Field(0)
@@ -79,7 +79,7 @@ class UserKudosDetails(HordeAPIObjectBaseModel):
 class MonthlyKudos(HordeAPIObjectBaseModel):
     """The details of the monthly kudos this user receives.
 
-    v2 API Model: MonthlyKudos
+    v2 API Model: `MonthlyKudos`
     """
 
     amount: int | None = Field(default=None)
@@ -97,7 +97,7 @@ class MonthlyKudos(HordeAPIObjectBaseModel):
 class UserThingRecords(HordeAPIObjectBaseModel):
     """How many images, texts, megapixelsteps and tokens this user has generated or requested.
 
-    v2 API Model: UserThingRecords
+    v2 API Model: `UserThingRecords`
     """
 
     megapixelsteps: float | None = Field(0)
@@ -115,7 +115,7 @@ class UserThingRecords(HordeAPIObjectBaseModel):
 class UserAmountRecords(HordeAPIObjectBaseModel):
     """How many images, texts, megapixelsteps and tokens this user has generated or requested.
 
-    v2 API Model: UserAmountRecords
+    v2 API Model: `UserAmountRecords`
     """
 
     image: int | None = Field(0)
@@ -136,7 +136,7 @@ class UserAmountRecords(HordeAPIObjectBaseModel):
 class UserRecords(HordeAPIObjectBaseModel):
     """How many images, texts, megapixelsteps, tokens and styles this user has generated, requested or has had used.
 
-    v2 API Model: UserRecords
+    v2 API Model: `UserRecords`
     """
 
     contribution: UserThingRecords | None = None
@@ -159,7 +159,7 @@ class UserRecords(HordeAPIObjectBaseModel):
 class UsageDetails(HordeAPIObjectBaseModel):
     """How many images and megapixelsteps this user has requested.
 
-    v2 API Model: UsageDetails
+    v2 API Model: `UsageDetails`
     """
 
     megapixelsteps: float | None = Field(default=None)
@@ -179,7 +179,7 @@ class UsageDetails(HordeAPIObjectBaseModel):
 class ActiveGenerations(HordeAPIObjectBaseModel):
     """A list of generations that are currently active for this user.
 
-    v2 API Model: ActiveGenerations
+    v2 API Model: `ActiveGenerations`
     """
 
     """A list of generations that are currently active for this user."""
@@ -380,7 +380,9 @@ class UserDetailsResponse(HordeResponseBaseModel):
 class ListUsersDetailsResponse(HordeResponseRootModel[list[UserDetailsResponse]]):
     """The response for a list of user details.
 
-    v2 API Model: _ANONYMOUS_MODEL
+    Represents the data returned from the /v2/users endpoint with http status code 200.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
     """
 
     root: list[UserDetailsResponse]
@@ -393,7 +395,10 @@ class ListUsersDetailsResponse(HordeResponseRootModel[list[UserDetailsResponse]]
 
 
 class ListUsersDetailsRequest(BaseAIHordeRequest):
-    """Represents a request to list all users."""
+    """Represents a request to list all users.
+
+    Represents a GET request to the /v2/users endpoint.
+    """
 
     page: int
     """The page number to request. There are up to 25 users per page."""
@@ -427,7 +432,9 @@ class ListUsersDetailsRequest(BaseAIHordeRequest):
         return ["page", "sort"]
 
 
-class SingleUserDetailsRequest(BaseAIHordeRequest, RequestSpecifiesUserIDMixin):
+class SingleUserDetailsRequest(BaseAIHordeRequest, MessageSpecifiesUserIDMixin):
+    """Represents a GET request to the /v2/users/{user_id} endpoint."""
+
     @override
     @classmethod
     def get_api_model_name(cls) -> None:
@@ -571,6 +578,11 @@ class ModifyUserReply(_ModifyUserBase):
 
 
 class ModifyUserResponse(HordeResponseBaseModel, ModifyUserReply):
+    """Represents the data returned from the /v2/users/{user_id} endpoint with http status code 200.
+
+    v2 API Model: `ModifyUser`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:
@@ -583,6 +595,11 @@ class ModifyUserRequest(
     ModifyUser,
     APIKeyAllowedInRequestMixin,
 ):
+    """Represents a PUT request to the /v2/users/{user_id} endpoint.
+
+    v2 API Model: `ModifyUserInput`
+    """
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:

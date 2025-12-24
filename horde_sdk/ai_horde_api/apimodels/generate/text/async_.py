@@ -208,6 +208,11 @@ class ModelGenerationInputKobold(ModelPayloadRootKobold):
 
 
 class TextGenerateAsyncDryRunResponse(HordeResponseBaseModel):
+    """Represents the data returned from the /v2/generate/text/async endpoint with http status code 200.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
+    """
+
     kudos: float
     """The expected kudos consumption for this request."""
 
@@ -223,7 +228,7 @@ class TextGenerateAsyncRequest(
     APIKeyAllowedInRequestMixin,
     RequestUsesWorkerMixin,
 ):
-    """Represents the data needed to make a request to the `/v2/generate/async` endpoint.
+    """Represents a POST request to the /v2/generate/text/async endpoint.
 
     v2 API Model: `GenerationInputKobold`
     """

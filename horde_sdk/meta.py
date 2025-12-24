@@ -514,7 +514,7 @@ def all_models_non_conforming_docstrings() -> dict[type, tuple[str | None, str |
     def process_other(class_type: type[HordeAPIObject]) -> None:
         api_model_name = class_type.get_api_model_name()
 
-        expected_other_docstring = v2_api_model_template.format(api_model=api_model_name)
+        expected_suffix = v2_api_model_template.format(api_model=api_model_name)
 
         if not class_type.__doc__:
             return
@@ -522,9 +522,16 @@ def all_models_non_conforming_docstrings() -> dict[type, tuple[str | None, str |
         original_other_docstring = class_type.__doc__.rstrip()
         original_other_docstring = original_other_docstring.replace("\n\n    ", "\n\n")
 
-        expected_other_docstring = expected_other_docstring.replace("\n\n    ", "\n\n")
-        if not original_other_docstring.endswith(expected_other_docstring):
-            non_conforming_other[class_type] = (class_type.__doc__, expected_other_docstring)
+        expected_suffix_normalized = expected_suffix.replace("\n\n    ", "\n\n")
+        if not original_other_docstring.endswith(expected_suffix_normalized):
+            # Extract the description portion (everything before any "v2 API Model:" line)
+            # to construct the full expected docstring
+            description_part = original_other_docstring
+            if "\n\nv2 API Model:" in original_other_docstring:
+                description_part = original_other_docstring.split("\n\nv2 API Model:")[0]
+
+            full_expected_docstring = description_part + expected_suffix_normalized
+            non_conforming_other[class_type] = (original_other_docstring, full_expected_docstring)
 
     _sorted_all_classes = sorted(all_classes, key=lambda x: x.__name__)
     _sorted_all_classes.reverse()
