@@ -3,6 +3,19 @@ from enum import auto
 from strenum import StrEnum
 
 
+class ALCHEMY_PARAMETER_FIELDS(StrEnum):
+    """Field names that commonly appear in alchemy parameter payloads."""
+
+    result_id = auto()
+    form = auto()
+    source_image = auto()
+    upscaler = auto()
+    facefixer = auto()
+    interrogator = auto()
+    caption_model = auto()
+    nsfw_detector = auto()
+
+
 class KNOWN_ALCHEMY_FORMS(StrEnum):
     """Forms (type of services) for alchemist type workers.
 

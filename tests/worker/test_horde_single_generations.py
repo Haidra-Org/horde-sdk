@@ -10,13 +10,23 @@ from horde_sdk.generation_parameters.alchemy import (
     AlchemyParameters,
     SingleAlchemyParameters,
 )
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_FORMS
 from horde_sdk.generation_parameters.image import ImageGenerationParameters
 from horde_sdk.generation_parameters.text import TextGenerationParameters
+from horde_sdk.generation_parameters.text.object_models import (
+    BasicTextGenerationParametersTemplate,
+    TextGenerationParametersTemplate,
+)
+from horde_sdk.generation_parameters.utils import ResultIdAllocator
 from horde_sdk.safety import (
     ImageSafetyResult,
     SafetyResult,
     SafetyRules,
     default_image_safety_rules,
+)
+from horde_sdk.worker.chaining.parameter_templates import (
+    create_basic_image_template,
+    create_upscale_template,
 )
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
@@ -180,6 +190,91 @@ def alchemy_permutations(
     )
 
 
+def test_image_single_generation_from_template_applies_updates() -> None:
+    template = create_basic_image_template("placeholder")
+    generation = ImageSingleGeneration.from_template(
+        template,
+        base_param_updates={"prompt": "updated"},
+        result_ids=("result-1",),
+    )
+
+    assert generation.generation_parameters.base_params.prompt == "updated"
+    assert generation.generation_parameters.result_ids == ["result-1"]
+
+
+def test_image_single_generation_allocator_is_deterministic() -> None:
+    template = create_basic_image_template("allocator prompt")
+    template.batch_size = 2
+
+    allocator = ResultIdAllocator()
+    first = ImageSingleGeneration.from_template(template, allocator=allocator, seed="image-seed")
+    second = ImageSingleGeneration.from_template(template, allocator=allocator, seed="image-seed")
+
+    assert first.generation_parameters.result_ids == second.generation_parameters.result_ids
+
+    variant_template = create_basic_image_template("allocator prompt variant")
+    variant_template.batch_size = 2
+    third = ImageSingleGeneration.from_template(variant_template, allocator=allocator, seed="image-seed")
+
+    assert first.generation_parameters.result_ids != third.generation_parameters.result_ids
+
+
+def test_text_single_generation_from_template_allocates_result_id() -> None:
+    template = TextGenerationParametersTemplate(
+        base_params=BasicTextGenerationParametersTemplate(
+            prompt="base",
+            model="test-model",
+        ),
+    )
+
+    generation = TextSingleGeneration.from_template(
+        template,
+        base_param_updates={"prompt": "final"},
+    )
+
+    assert generation.generation_parameters.base_params.prompt == "final"
+    assert generation.generation_parameters.result_ids is not None
+    assert len(generation.generation_parameters.result_ids) == 1
+
+
+def test_text_single_generation_allocator_is_deterministic() -> None:
+    template = TextGenerationParametersTemplate(
+        base_params=BasicTextGenerationParametersTemplate(
+            prompt="allocator",
+            model="allocator-model",
+        ),
+    )
+
+    allocator = ResultIdAllocator()
+    first = TextSingleGeneration.from_template(template, allocator=allocator, seed="text-seed")
+    second = TextSingleGeneration.from_template(template, allocator=allocator, seed="text-seed")
+
+    assert first.generation_parameters.result_ids == second.generation_parameters.result_ids
+
+    modified_template = TextGenerationParametersTemplate(
+        base_params=BasicTextGenerationParametersTemplate(
+            prompt="allocator-2",
+            model="allocator-model",
+        ),
+    )
+    third = TextSingleGeneration.from_template(modified_template, allocator=allocator, seed="text-seed")
+
+    assert first.generation_parameters.result_ids != third.generation_parameters.result_ids
+
+
+def test_alchemy_single_generation_from_template_sets_source_image() -> None:
+    template = create_upscale_template()
+    generation = AlchemySingleGeneration.from_template(
+        template,
+        source_image=b"image-bytes",
+        default_form=KNOWN_ALCHEMY_FORMS.post_process,
+    )
+
+    assert generation.generation_parameters.source_image == b"image-bytes"
+    assert generation.generation_parameters.form == KNOWN_ALCHEMY_FORMS.post_process
+    assert generation.generation_parameters.result_id is not None
+
+
 class TestHordeSingleGeneration:
     """Test the `HordeSingleGeneration` class."""
 
@@ -188,6 +283,33 @@ class TestHordeSingleGeneration:
     @pytest.fixture(autouse=True)
     def setup(self, default_testing_image_bytes: bytes) -> None:
         self._shared_image = default_testing_image_bytes
+
+    def test_image_generation_results_preserve_dispatch_identifiers(
+        self,
+        simple_image_generation_parameters: ImageGenerationParameters,
+    ) -> None:
+        dispatch_ids = ["dispatch-image-1"]
+        generation = ImageSingleGeneration(
+            generation_parameters=simple_image_generation_parameters,
+            dispatch_result_ids=dispatch_ids,
+        )
+
+        generation.on_generating()
+        generation.on_generation_work_complete(result=self._shared_image)
+
+        results_snapshot = generation.generation_results
+        assert list(results_snapshot.keys()) == generation.result_ids
+
+        result_id, payload = results_snapshot.popitem()
+        assert payload == self._shared_image
+        assert result_id == generation.result_ids[-1]
+
+        assert generation.dispatch_result_ids == dispatch_ids
+        mutated_ids = generation.dispatch_result_ids
+        if mutated_ids is not None:
+            mutated_ids.append("mutated")
+        assert generation.dispatch_result_ids == dispatch_ids
+        assert len(generation.generation_results) == 1
 
     @pytest.fixture(scope="function")
     def id_and_image_generation(
@@ -200,6 +322,33 @@ class TestHordeSingleGeneration:
             generation_parameters=simple_image_generation_parameters,
         )
         return single_id_str, generation
+
+    def test_text_generation_results_preserve_dispatch_identifiers(
+        self,
+        simple_text_generation_parameters: TextGenerationParameters,
+    ) -> None:
+        dispatch_ids = ["dispatch-text-1"]
+        generation = TextSingleGeneration(
+            generation_parameters=simple_text_generation_parameters,
+            dispatch_result_ids=dispatch_ids,
+        )
+
+        generation.on_generating()
+        generation.on_generation_work_complete(result="generated text")
+
+        results_snapshot = generation.generation_results
+        assert list(results_snapshot.keys()) == generation.result_ids
+
+        result_id, payload = results_snapshot.popitem()
+        assert payload == "generated text"
+        assert result_id == generation.result_ids[-1]
+
+        assert generation.dispatch_result_ids == dispatch_ids
+        mutated_ids = generation.dispatch_result_ids
+        if mutated_ids is not None:
+            mutated_ids.append("mutated")
+        assert generation.dispatch_result_ids == dispatch_ids
+        assert len(generation.generation_results) == 1
 
     @pytest.fixture(scope="function")
     def id_and_text_generation(
@@ -225,6 +374,37 @@ class TestHordeSingleGeneration:
             generation_parameters=simple_alchemy_generation_parameters.all_alchemy_operations[0],
         )
         return single_id_str, generation
+
+    def test_alchemy_generation_results_preserve_dispatch_identifiers(
+        self,
+        simple_alchemy_generation_parameters: AlchemyParameters,
+    ) -> None:
+        assert len(simple_alchemy_generation_parameters.all_alchemy_operations) == 1
+        operation_parameters = simple_alchemy_generation_parameters.all_alchemy_operations[0]
+
+        dispatch_ids = ["dispatch-alchemy-1"]
+        generation = AlchemySingleGeneration(
+            generation_parameters=operation_parameters,
+            dispatch_result_ids=dispatch_ids,
+        )
+
+        generation.on_post_processing()
+        generation.set_work_result(self._shared_image)
+        generation.on_post_processing_complete()
+
+        results_snapshot = generation.generation_results
+        assert list(results_snapshot.keys()) == generation.result_ids
+
+        result_id, payload = results_snapshot.popitem()
+        assert payload == self._shared_image
+        assert result_id == generation.result_ids[-1]
+
+        assert generation.dispatch_result_ids == dispatch_ids
+        mutated_ids = generation.dispatch_result_ids
+        if mutated_ids is not None:
+            mutated_ids.append("mutated")
+        assert generation.dispatch_result_ids == dispatch_ids
+        assert len(generation.generation_results) == 1
 
     def test_none_generation_init(
         self,

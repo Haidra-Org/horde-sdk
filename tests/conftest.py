@@ -6,14 +6,10 @@ import os
 import pathlib
 import sys
 from collections.abc import Callable
+from typing import Final
 from uuid import UUID
 
-import PIL.Image
-import pytest
-from loguru import logger
-
-from horde_sdk.consts import KNOWN_NSFW_DETECTOR
-from horde_sdk.worker.generations import AlchemySingleGeneration, ImageSingleGeneration, TextSingleGeneration
+# We have to do these early so any other libraries use these settings
 
 os.environ["TESTS_ONGOING"] = "1"
 
@@ -21,8 +17,11 @@ if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
+import PIL.Image
+import pytest
 from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
 from horde_model_reference.model_reference_manager import ModelReferenceManager
+from loguru import logger
 
 from horde_sdk.ai_horde_api.apimodels import (
     AlchemyJobPopResponse,
@@ -39,6 +38,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     TextGenerateJobPopResponse,
 )
 from horde_sdk.ai_horde_api.fields import GenerationID
+from horde_sdk.consts import KNOWN_NSFW_DETECTOR
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_FORMS, KNOWN_UPSCALERS
 from horde_sdk.generation_parameters.alchemy.object_models import (
     AlchemyParameters,
@@ -55,8 +55,58 @@ from horde_sdk.generation_parameters.image.object_models import (
     ImageGenerationParameters,
 )
 from horde_sdk.generation_parameters.text.object_models import BasicTextGenerationParameters, TextGenerationParameters
+from horde_sdk.generic_api.consts import ANON_API_KEY
 from horde_sdk.worker.dispatch.ai_horde.image.convert import convert_image_job_pop_response_to_parameters
+from horde_sdk.worker.generations import AlchemySingleGeneration, ImageSingleGeneration, TextSingleGeneration
 from horde_sdk.worker.model_meta import ImageModelLoadResolver
+
+NETWORK_TEST_PATH_SUFFIXES: Final[set[str]] = {
+    "api_calls.py",
+}
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """Register custom CLI options for the test suite."""
+
+    parser.addoption(
+        "--run-network-tests",
+        action="store_true",
+        default=False,
+        help="Run tests that require access to the live AI Horde API.",
+    )
+
+
+def _env_flag_enabled(value: str | None) -> bool:
+    """Return True when the provided environment flag string represents an enabled state."""
+
+    if value is None:
+        return False
+
+    normalised = value.strip().lower()
+    return normalised in {"1", "true", "yes", "on"}
+
+
+def _has_valid_api_key() -> bool:
+    """Return True when a non-anonymous AI Horde API key is available."""
+
+    dev_key = os.getenv("AI_HORDE_DEV_APIKEY")
+    if dev_key is None:
+        return False
+
+    trimmed = dev_key.strip()
+    return bool(trimmed) and trimmed != ANON_API_KEY
+
+
+def _should_run_network_tests(config: pytest.Config) -> bool:
+    """Return True when network-dependent tests should execute."""
+
+    if config.getoption("--run-network-tests"):
+        return _has_valid_api_key()
+
+    if _env_flag_enabled(os.getenv("HORDE_SDK_RUN_NETWORK_TESTS")):
+        return _has_valid_api_key()
+
+    return False
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -84,8 +134,6 @@ def check_tests_ongoing_env_var() -> None:
 def ai_horde_api_key() -> str:
     """Return the key being used for testing against an AI Horde API."""
     dev_key = os.getenv("AI_HORDE_DEV_APIKEY", None)
-
-    from horde_sdk.generic_api.consts import ANON_API_KEY
 
     return dev_key if dev_key is not None else ANON_API_KEY
 
@@ -989,32 +1037,48 @@ def simple_alchemy_generation(
     )
 
 
-def pytest_collection_modifyitems(items):  # type: ignore # noqa
-    """Modifies test items to ensure test modules run in a given order."""
+def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config, items: list[pytest.Item]) -> None:
+    """Modifies test items to ensure test modules run in a given order and skips network tests when disabled."""
     MODULES_TO_RUN_FIRST = [
-        "tests.tests_generic",
-        "tests.test_utils",
-        "tests.test_dynamically_check_apimodels",
-        "tests.test_verify_api_surface",
+        "tests/tests_generic.py",
+        "tests/test_utils.py",
+        "tests/test_dynamically_check_apimodels.py",
+        "tests/test_verify_api_surface.py",
     ]
 
-    MODULES_TO_RUN_LAST = [
-        "tests.ai_horde_api.test_ai_horde_api_calls",
-        "tests.ai_horde_api.test_ai_horde_alchemy_api_calls",
-        "tests.ai_horde_api.test_ai_horde_generate_api_calls",
-    ]  # FIXME make dynamic
-    module_mapping = {item: item.module.__name__ for item in items}
+    MODULES_TO_RUN_LAST: list[str] = []
 
-    sorted_items = []
+    run_network_tests = _should_run_network_tests(config)
+    if not run_network_tests:
+        skip_network = pytest.mark.skip(
+            reason=("network-dependent tests require --run-network-tests and a valid AI_HORDE_DEV_APIKEY"),
+        )
+        for item in items:
+            item_path = item.path.as_posix()
+            if any(item_path.endswith(suffix) for suffix in NETWORK_TEST_PATH_SUFFIXES):
+                item.add_marker(skip_network)
+
+    module_mapping = {item: item.path.as_posix() for item in items}
+
+    def _matches(path: str, target: str) -> bool:
+        return path.endswith(target)
+
+    sorted_items: list[pytest.Item] = []
 
     for module in MODULES_TO_RUN_FIRST:
-        sorted_items.extend([item for item in items if module_mapping[item] == module])
+        sorted_items.extend([item for item in items if _matches(module_mapping[item], module)])
 
     sorted_items.extend(
-        [item for item in items if module_mapping[item] not in MODULES_TO_RUN_FIRST + MODULES_TO_RUN_LAST],
+        [
+            item
+            for item in items
+            if not any(
+                _matches(module_mapping[item], candidate) for candidate in MODULES_TO_RUN_FIRST + MODULES_TO_RUN_LAST
+            )
+        ],
     )
 
     for module in MODULES_TO_RUN_LAST:
-        sorted_items.extend([item for item in items if module_mapping[item] == module])
+        sorted_items.extend([item for item in items if _matches(module_mapping[item], module)])
 
     items[:] = sorted_items

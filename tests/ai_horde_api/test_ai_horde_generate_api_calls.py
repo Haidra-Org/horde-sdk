@@ -77,7 +77,7 @@ class TestAIHordeGenerate:
         """Test that a simple image generation request can be submitted and cancelled."""
         simple_client = AIHordeAPISimpleClient()
 
-        image_generate_status_respons, gen_id = simple_client.image_generate_request(simple_image_gen_request)
+        image_generate_status_respons, _gen_id = simple_client.image_generate_request(simple_image_gen_request)
 
         if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
             raise AssertionError(image_generate_status_respons.generations.message)
@@ -106,7 +106,7 @@ class TestAIHordeGenerate:
             models=["Deliberate"],
         )
 
-        image_generate_status_respons, gen_id = simple_client.image_generate_request(pp_image_gen_request)
+        image_generate_status_respons, _gen_id = simple_client.image_generate_request(pp_image_gen_request)
 
         if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
             raise AssertionError(image_generate_status_respons.generations.message)
@@ -140,7 +140,7 @@ class TestAIHordeGenerate:
             models=["Deliberate"],
         )
 
-        image_generate_status_respons, gen_id = simple_client.image_generate_request(pp_image_gen_request)
+        image_generate_status_respons, _gen_id = simple_client.image_generate_request(pp_image_gen_request)
 
         if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
             raise AssertionError(image_generate_status_respons.generations.message)
@@ -174,7 +174,7 @@ class TestAIHordeGenerate:
             models=["Deliberate"],
         )
 
-        image_generate_status_respons, gen_id = simple_client.image_generate_request(pp_image_gen_request)
+        image_generate_status_respons, _gen_id = simple_client.image_generate_request(pp_image_gen_request)
 
         if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
             raise AssertionError(image_generate_status_respons.generations.message)
@@ -191,7 +191,7 @@ class TestAIHordeGenerate:
         """Test that a simple image generation request can be submitted and cancelled when no API key is specified."""
         simple_client = AIHordeAPISimpleClient()
 
-        image_generate_status_respons, gen_id = simple_client.image_generate_request(
+        image_generate_status_respons, _gen_id = simple_client.image_generate_request(
             ImageGenerateAsyncRequest(
                 prompt="a cat in a hat",
                 params=ImageGenerationInputPayload(
@@ -227,7 +227,7 @@ class TestAIHordeGenerate:
 
         simple_client = AIHordeAPISimpleClient()
 
-        image_generate_status_respons, gen_id = simple_client.image_generate_request(
+        image_generate_status_respons, _gen_id = simple_client.image_generate_request(
             lora_image_gen_request,
         )
 
@@ -246,7 +246,7 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            image_generate_status_respons, gen_id = await simple_client.image_generate_request(
+            image_generate_status_respons, _gen_id = await simple_client.image_generate_request(
                 simple_image_gen_request,
             )
 
@@ -263,7 +263,7 @@ class TestAIHordeGenerate:
         """Test that a batch of image generation requests can be submitted and cancelled."""
         simple_client = AIHordeAPISimpleClient()
 
-        image_generate_status_respons, gen_id = simple_client.image_generate_request(simple_image_gen_n_requests)
+        image_generate_status_respons, _gen_id = simple_client.image_generate_request(simple_image_gen_n_requests)
 
         assert simple_image_gen_n_requests.params is not None
         assert len(image_generate_status_respons.generations) == simple_image_gen_n_requests.params.n
@@ -280,7 +280,7 @@ class TestAIHordeGenerate:
         simple_client = AIHordeAPISimpleClient()
 
         for _ in range(5):
-            image_generate_status_respons, gen_id = simple_client.image_generate_request(simple_image_gen_request)
+            image_generate_status_respons, _gen_id = simple_client.image_generate_request(simple_image_gen_request)
 
             if isinstance(image_generate_status_respons.generations, RequestErrorResponse):
                 raise AssertionError(image_generate_status_respons.generations.message)
@@ -297,7 +297,7 @@ class TestAIHordeGenerate:
     ) -> None:
         simple_client = AIHordeAPISimpleClient()
 
-        result, GenerationID = simple_client.alchemy_request(
+        result, _GenerationID = simple_client.alchemy_request(
             alchemy_request=AlchemyAsyncRequest(
                 forms=[
                     AlchemyAsyncRequestFormItem(
@@ -324,7 +324,7 @@ class TestAIHordeGenerate:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
             async def submit_request() -> AlchemyStatusResponse:
-                result, GenerationID = await simple_client.alchemy_request(
+                result, _GenerationID = await simple_client.alchemy_request(
                     alchemy_request=AlchemyAsyncRequest(
                         forms=[
                             AlchemyAsyncRequestFormItem(
@@ -359,7 +359,7 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            image_generate_status_response, gen_id = await simple_client.image_generate_request(
+            image_generate_status_response, _gen_id = await simple_client.image_generate_request(
                 simple_image_gen_n_requests,
             )
 
@@ -383,7 +383,7 @@ class TestAIHordeGenerate:
         async with aiohttp.ClientSession() as aiohttp_session:
             simple_client = AIHordeAPIAsyncSimpleClient(aiohttp_session)
 
-            image_generate_status_response, gen_id = await simple_client.image_generate_request(
+            image_generate_status_response, _gen_id = await simple_client.image_generate_request(
                 simple_image_gen_n_requests,
                 timeout=7,  # 7 seconds isn't (generally) going to be enough time for 3 generations to complete
             )
@@ -439,7 +439,7 @@ class TestAIHordeGenerate:
             async def submit_request(delay: int) -> ImageGenerateStatusResponse | None:
                 try:
                     await asyncio.sleep(delay)
-                    image_generate_status_response, gen_id = await simple_client.image_generate_request(
+                    image_generate_status_response, _gen_id = await simple_client.image_generate_request(
                         simple_image_gen_request,
                         timeout=-1,
                     )
@@ -470,7 +470,7 @@ class TestAIHordeGenerate:
                 print(f"Callback: {generation}")
                 assert generation
 
-            image_generate_status_response, gen_id = await simple_client.image_generate_request(
+            image_generate_status_response, _gen_id = await simple_client.image_generate_request(
                 simple_image_gen_request,
                 check_callback=example_callback,
             )
@@ -497,7 +497,7 @@ class TestAIHordeGenerate:
                     logger.debug(f"Response: {response}")
                     raise KeyboardInterrupt("Test KeyboardInterrupt")
 
-                image_generate_status_response, gen_id = await simple_client.image_generate_request(
+                _image_generate_status_response, _gen_id = await simple_client.image_generate_request(
                     simple_image_gen_request,
                     check_callback=check_callback,
                 )
@@ -514,7 +514,7 @@ class TestAIHordeGenerate:
                 print(f"Callback: {generation}")
                 assert generation
 
-            result, GenerationID = await simple_client.alchemy_request(
+            result, _GenerationID = await simple_client.alchemy_request(
                 alchemy_request=AlchemyAsyncRequest(
                     forms=[
                         AlchemyAsyncRequestFormItem(
@@ -540,7 +540,7 @@ class TestAIHordeGenerate:
                 pass
 
             with pytest.raises(ValueError, match="Callback"):
-                image_generate_status_response, gen_id = await simple_client.image_generate_request(
+                _image_generate_status_response, _gen_id = await simple_client.image_generate_request(
                     simple_image_gen_request,
                     check_callback=bad_callback,  # type: ignore
                 )
@@ -557,7 +557,7 @@ class TestAIHordeGenerate:
                 pass
 
             with pytest.raises(ValueError, match="Callback"):
-                result, GenerationID = await simple_client.alchemy_request(
+                _result, _GenerationID = await simple_client.alchemy_request(
                     alchemy_request=AlchemyAsyncRequest(
                         forms=[
                             AlchemyAsyncRequestFormItem(

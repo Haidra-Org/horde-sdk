@@ -10,14 +10,29 @@ authors = [
     {name = "db0", email = "mail@dbzer0.com"},
 ]
 readme = "README.md"
-requires-python = ">=3.10"
-dynamic=["version", "dependencies"]
+requires-python = ">=3.12"
+dynamic=["version"]
 license = {file = "LICENSE"}
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Development Status :: 4 - Beta",
+]
+dependencies = [
+    "aiodns>=3.2.0",
+    "aiofiles>=24.1.0",
+    "aiohttp>=3.11.13",
+    "certifi>=2025.1.31",
+    "horde-model-reference>=0.10.0",
+    "logfire>=3.7.1",
+    "loguru>=0.7.3",
+    "networkx>=3.4.2",
+    "pillow>=11.1.0",
+    "pydantic>=2.10.6",
+    "python-dotenv>=1.0.1",
+    "requests>=2.32.3",
+    "strenum>=0.4.15",
 ]
 
 [tool.setuptools_scm]
@@ -49,6 +64,7 @@ select = [
   "F",
   "UP",
   "YTT",
+  "TID",
   "B",
   "C4",
   "PIE",
@@ -62,8 +78,6 @@ select = [
   "ASYNC",
   ]
 ignore = [
-  "ANN101", # Missing type annotation for self in method
-  "ANN102",  # Missing type annotation for cls in classmethod
   "D105", # Missing docstring in magic method
   "D100", # Missing docstring in public module
   # Ignore D rules for non-google docstring standard
@@ -87,6 +101,7 @@ ignore = [
 "docs/*" = ["D"] # Ignore D rules for docs
 "codegen/*" = ["D"] # Ignore D rules for codegen
 
+
 [tool.black]
 line-length = 119
 include = '\.pyi?$'
@@ -95,11 +110,13 @@ exclude = '''
  \.git
  | \.hg
  | \.mypy_cache
+ | \.ruff_cache
  | \.tox
  | \.venv.*
  | _build
  | buck-out
  | build
+ | codegen
  | dist
 )/
 '''
@@ -116,12 +133,16 @@ exclude = [
   '\.git',
   '\.hg',
   '\.mypy_cache',
+  '\.ruff_cache',
   '\.tox',
+  '\.venv',
   '\.venv.*',
   '_build',
   'buck-out',
   'build',
+  'codegen',
   'dist',
+  'docs',
 ]
 
 [tool.coverage.run]
@@ -133,4 +154,43 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "object_verify: marks tests that verify the API object structure and layout",
     "api_side_ci: indicates that the test is intended to run during CI for the API",
+]
+
+[dependency-groups]
+dev = [
+    "babel>=2.17.0",
+    "black>=24.10.0",
+    "build>=0.10.0",
+    "coverage>=7.2.7",
+    "datamodel-code-generator>=0.28.4",
+    "gevent>=24.11.1",
+    "mypy>=1.13.0",
+    "pre-commit~=4.0.1",
+    "pytest>=8.3.3",
+    "pytest-asyncio>=0.25.3",
+    "pytest-cov>=6.0.0",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.7.2",
+    "tach>=0.29.0",
+    "tox~=4.23.2",
+    "types-aiofiles>=24.1.0.20241221",
+    "types-networkx>=3.5.0.20251104",
+    "types-pillow>=10.2.0.20240822",
+    "types-pytz>=2025.1.0.20250204",
+    "types-pyyaml>=6.0.12.20250402",
+    "types-requests>=2.32.0.20250306",
+    "types-setuptools>=75.8.2.20250305",
+    "types-urllib3>=1.26.25.14",
+]
+docs = [
+    "mkdocs-awesome-pages-plugin>=2.10.1",
+    "mkdocs-material>=9.6.7",
+    "mkdocs-material-extensions>=1.3.1",
+    "mkdocs-mermaid2-plugin>=1.2.1",
+    "mkdocstrings>=0.29.0",
+    "mkdocstrings-python>=1.16.5",
+]
+full-telemetry = [
+    "opentelemetry-instrumentation-aiohttp-client>=0.51b0",
+    "opentelemetry-instrumentation-requests>=0.51b0",
 ]

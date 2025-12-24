@@ -2,10 +2,10 @@
 
 import uuid
 from enum import auto
+from typing import override
 
 from pydantic import BaseModel, Field
 from strenum import StrEnum
-from typing_extensions import override
 
 from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod
 from horde_sdk.generic_api.apimodels import (

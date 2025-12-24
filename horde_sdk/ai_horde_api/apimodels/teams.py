@@ -1,5 +1,6 @@
+from typing import override
+
 from pydantic import Field
-from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import ActiveModelLite, BaseAIHordeRequest
 from horde_sdk.ai_horde_api.apimodels.workers.workers import TeamDetailsLite, WorkerDetailLite

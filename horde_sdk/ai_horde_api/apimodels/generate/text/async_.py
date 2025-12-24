@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from typing import override
+
 from loguru import logger
 from pydantic import Field, model_validator
-from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,

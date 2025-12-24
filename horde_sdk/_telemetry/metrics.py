@@ -28,6 +28,6 @@ _telemetry_client_requests_finished_successfully_counter = logfire.metric_counte
 __all__ = [
     "_telemetry_client_critical_errors_counter",
     "_telemetry_client_horde_api_errors_counter",
-    "_telemetry_client_requests_started_counter",
     "_telemetry_client_requests_finished_successfully_counter",
+    "_telemetry_client_requests_started_counter",
 ]

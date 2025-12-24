@@ -1,12 +1,18 @@
-from collections.abc import Mapping
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+from typing import TypedDict, override
 
 from loguru import logger
-from typing_extensions import override
 
 from horde_sdk.consts import ID_TYPES
 from horde_sdk.generation_parameters.alchemy import SingleAlchemyParameters
+from horde_sdk.generation_parameters.alchemy.object_models import SingleAlchemyParametersTemplate
 from horde_sdk.generation_parameters.image import ImageGenerationParameters
+from horde_sdk.generation_parameters.image.object_models import ImageGenerationParametersTemplate
 from horde_sdk.generation_parameters.text import TextGenerationParameters
+from horde_sdk.generation_parameters.text.object_models import TextGenerationParametersTemplate
+from horde_sdk.generation_parameters.utils import ResultIdAllocator
 from horde_sdk.safety import SafetyRules, default_image_safety_rules, default_text_safety_rules
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
@@ -21,6 +27,59 @@ from horde_sdk.worker.consts import (
     default_text_generate_progress_transitions,
 )
 from horde_sdk.worker.generations_base import HordeSingleGeneration
+
+
+class ImageGenerationInitKwargs(TypedDict, total=False):
+    """Optional keyword arguments accepted by `ImageSingleGeneration` from template helpers."""
+
+    generation_id: ID_TYPES | None
+    dispatch_result_ids: Sequence[ID_TYPES] | None
+    result_ids: list[ID_TYPES] | None
+    requires_submit: bool
+    safety_rules: SafetyRules
+    black_box_mode: bool
+    state_error_limits: Mapping[GENERATION_PROGRESS, int] | None
+    strict_transition_mode: bool
+    extra_logging: bool
+
+
+class AlchemyGenerationInitKwargs(TypedDict, total=False):
+    """Optional keyword arguments accepted by `AlchemySingleGeneration` factory flows."""
+
+    generation_id: str | None
+    dispatch_result_ids: Sequence[ID_TYPES] | None
+    result_ids: list[ID_TYPES] | None
+    requires_generation: bool
+    requires_post_processing: bool
+    requires_safety_check: bool
+    requires_submit: bool
+    safety_rules: SafetyRules
+    black_box_mode: bool
+    state_error_limits: Mapping[GENERATION_PROGRESS, int] | None
+    strict_transition_mode: bool
+    extra_logging: bool
+
+
+class TextGenerationInitKwargs(TypedDict, total=False):
+    """Optional keyword arguments accepted by `TextSingleGeneration` helpers."""
+
+    generation_id: ID_TYPES | None
+    dispatch_result_ids: Sequence[ID_TYPES] | None
+    result_ids: list[ID_TYPES] | None
+    requires_post_processing: bool
+    requires_safety_check: bool
+    requires_submit: bool
+    safety_rules: SafetyRules
+    black_box_mode: bool
+    state_error_limits: Mapping[GENERATION_PROGRESS, int] | None
+    strict_transition_mode: bool
+    extra_logging: bool
+
+
+def _stringify_id(identifier: ID_TYPES | None) -> str | None:
+    if identifier is None:
+        return None
+    return str(identifier)
 
 
 class ImageSingleGeneration(HordeSingleGeneration[bytes]):
@@ -58,6 +117,7 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
         *,
         generation_parameters: ImageGenerationParameters,
         generation_id: ID_TYPES | None = None,
+        dispatch_result_ids: Sequence[ID_TYPES] | None = None,
         result_ids: list[ID_TYPES] | None = None,
         requires_submit: bool = True,
         safety_rules: SafetyRules = default_image_safety_rules,
@@ -74,6 +134,8 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
             generation_parameters (ImageGenerationParameters): The parameters for the generation.
             generation_id (str | None): The unique identifier for the generation. \
                 If None, a random UUID will be generated.
+            dispatch_result_ids (Sequence[str | uuid.UUID] | None): Result identifiers assigned by dispatch, if
+                available.
             result_ids (list[ID_TYPES] | None): The unique identifiers for the generation. \
                 If None, a random UUID will be generated for each result.
             requires_submit (bool, optional): Whether the generation requires submission. \
@@ -115,6 +177,7 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
             result_type=bytes,
             generation_parameters=generation_parameters,
             generation_id=generation_id,
+            dispatch_result_ids=dispatch_result_ids,
             result_ids=result_ids,
             requires_generation=ImageSingleGeneration.does_class_require_generation(),
             requires_post_processing=generation_parameters.alchemy_params is not None,
@@ -126,6 +189,39 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
             black_box_mode=black_box_mode,
             strict_transition_mode=strict_transition_mode,
             extra_logging=extra_logging,
+        )
+
+    @classmethod
+    def from_template(
+        cls,
+        template: ImageGenerationParametersTemplate,
+        *,
+        generation_id: ID_TYPES | None = None,
+        dispatch_result_ids: Sequence[ID_TYPES] | None = None,
+        base_param_updates: Mapping[str, object] | None = None,
+        result_ids: Sequence[ID_TYPES] | None = None,
+        allocator: ResultIdAllocator | None = None,
+        seed: str = "image",
+        init_kwargs: ImageGenerationInitKwargs | None = None,
+    ) -> ImageSingleGeneration:
+        """Instantiate an image generation from a template."""
+        generation_parameters = template.to_parameters(
+            base_param_updates=base_param_updates,
+            result_ids=result_ids,
+            allocator=allocator,
+            seed=seed,
+        )
+        resolved_kwargs: ImageGenerationInitKwargs = {}
+        if init_kwargs:
+            resolved_kwargs.update(init_kwargs)
+        if generation_id is not None:
+            resolved_kwargs.setdefault("generation_id", generation_id)
+        if dispatch_result_ids is not None:
+            resolved_kwargs.setdefault("dispatch_result_ids", list(dispatch_result_ids))
+        resolved_kwargs.setdefault("result_ids", generation_parameters.result_ids)
+        return cls(
+            generation_parameters=generation_parameters,
+            **resolved_kwargs,
         )
 
 
@@ -170,6 +266,7 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
         *,
         generation_parameters: SingleAlchemyParameters,
         generation_id: str | None = None,
+        dispatch_result_ids: Sequence[ID_TYPES] | None = None,
         result_ids: list[ID_TYPES] | None = None,
         requires_generation: bool = False,
         requires_post_processing: bool = True,
@@ -189,6 +286,8 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
             generation_parameters (SingleAlchemyParameters): The parameters for the generation.
             generation_id (str | None): The unique identifier for the generation. \
                 If None, a random UUID will be generated.
+            dispatch_result_ids (Sequence[str | uuid.UUID] | None): Result identifiers assigned by dispatch, if
+                available.
             result_ids (list[ID_TYPES] | None): The unique identifiers for the generation. \
                 If None, a random UUID will be generated for each result.
             requires_generation (bool, optional): Whether the generation requires generation. \
@@ -228,6 +327,7 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
             generation_parameters=generation_parameters,
             result_type=bytes,
             generation_id=generation_id,
+            dispatch_result_ids=dispatch_result_ids,
             result_ids=result_ids,
             requires_generation=requires_generation,
             requires_post_processing=requires_post_processing,
@@ -239,6 +339,46 @@ class AlchemySingleGeneration(HordeSingleGeneration[bytes]):
             black_box_mode=black_box_mode,
             strict_transition_mode=strict_transition_mode,
             extra_logging=extra_logging,
+        )
+
+    @classmethod
+    def from_template(
+        cls,
+        template: SingleAlchemyParametersTemplate,
+        *,
+        source_image: bytes | str | None = None,
+        default_form: str | None = None,
+        generation_id: ID_TYPES | None = None,
+        dispatch_result_ids: Sequence[ID_TYPES] | None = None,
+        result_id: ID_TYPES | None = None,
+        allocator: ResultIdAllocator | None = None,
+        seed: str = "alchemy",
+        init_kwargs: AlchemyGenerationInitKwargs | None = None,
+    ) -> AlchemySingleGeneration:
+        """Instantiate an alchemy generation from a template."""
+        generation_parameters = template.to_parameters(
+            result_id=result_id,
+            source_image=source_image,
+            default_form=default_form,
+            allocator=allocator,
+            seed=seed,
+        )
+        resolved_kwargs: AlchemyGenerationInitKwargs = {}
+        if init_kwargs:
+            resolved_kwargs.update(init_kwargs)
+        if generation_id is not None:
+            resolved_kwargs.setdefault("generation_id", _stringify_id(generation_id))
+        else:
+            resolved_kwargs.setdefault("generation_id", _stringify_id(generation_parameters.result_id))
+        if dispatch_result_ids is not None:
+            resolved_kwargs.setdefault(
+                "dispatch_result_ids",
+                [str(identifier) for identifier in dispatch_result_ids],
+            )
+        resolved_kwargs.setdefault("result_ids", [generation_parameters.result_id])
+        return cls(
+            generation_parameters=generation_parameters,
+            **resolved_kwargs,
         )
 
 
@@ -278,6 +418,7 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
         *,
         generation_parameters: TextGenerationParameters,
         generation_id: ID_TYPES | None = None,
+        dispatch_result_ids: Sequence[ID_TYPES] | None = None,
         result_ids: list[ID_TYPES] | None = None,
         requires_generation: bool = True,
         requires_post_processing: bool = False,
@@ -297,6 +438,8 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
             generation_parameters (TextGenerationParameters): The parameters for the generation.
             generation_id (str | None): The unique identifier for the generation. \
                 If None, a random UUID will be generated.
+            dispatch_result_ids (Sequence[str | uuid.UUID] | None): Result identifiers assigned by dispatch, if
+                available.
             result_ids (list[ID_TYPES] | None): The unique identifiers for the generation. \
                 If None, a random UUID will be generated for each result.
             requires_generation (bool, optional): Whether the generation requires generation. \
@@ -339,6 +482,7 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
             result_type=str,
             generation_parameters=generation_parameters,
             generation_id=generation_id,
+            dispatch_result_ids=dispatch_result_ids,
             result_ids=result_ids,
             requires_generation=True,
             requires_post_processing=requires_post_processing,
@@ -350,4 +494,37 @@ class TextSingleGeneration(HordeSingleGeneration[str]):
             black_box_mode=black_box_mode,
             strict_transition_mode=strict_transition_mode,
             extra_logging=extra_logging,
+        )
+
+    @classmethod
+    def from_template(
+        cls,
+        template: TextGenerationParametersTemplate,
+        *,
+        generation_id: ID_TYPES | None = None,
+        dispatch_result_ids: Sequence[ID_TYPES] | None = None,
+        base_param_updates: Mapping[str, object] | None = None,
+        result_ids: Sequence[ID_TYPES] | None = None,
+        allocator: ResultIdAllocator | None = None,
+        seed: str = "text",
+        init_kwargs: TextGenerationInitKwargs | None = None,
+    ) -> TextSingleGeneration:
+        """Instantiate a text generation from a template."""
+        generation_parameters = template.to_parameters(
+            base_param_updates=base_param_updates,
+            result_ids=result_ids,
+            allocator=allocator,
+            seed=seed,
+        )
+        resolved_kwargs: TextGenerationInitKwargs = {}
+        if init_kwargs:
+            resolved_kwargs.update(init_kwargs)
+        if generation_id is not None:
+            resolved_kwargs.setdefault("generation_id", generation_id)
+        if dispatch_result_ids is not None:
+            resolved_kwargs.setdefault("dispatch_result_ids", list(dispatch_result_ids))
+        resolved_kwargs.setdefault("result_ids", generation_parameters.result_ids)
+        return cls(
+            generation_parameters=generation_parameters,
+            **resolved_kwargs,
         )

@@ -1,5 +1,6 @@
+from typing import override
+
 from horde_model_reference.model_reference_manager import ModelReferenceManager
-from typing_extensions import override
 
 from horde_sdk import KNOWN_DISPATCH_SOURCE, RequestErrorResponse
 from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIAsyncClientSession, AIHordeAPIClientSession

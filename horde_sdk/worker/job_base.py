@@ -4,8 +4,9 @@ import threading
 import time
 import uuid
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from enum import auto
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from loguru import logger
 from pydantic import BaseModel, Field
@@ -92,9 +93,11 @@ class HordeWorkerJobConfig(BaseModel):
     )
 
 
-class HordeWorkerJob(
+class HordeWorkerJob[
+    SingleGenerationTypeVar: HordeSingleGeneration[Any],
+    ComposedParameterSetTypeVar: CompositeParametersBase,
+](
     ABC,
-    Generic[SingleGenerationTypeVar, ComposedParameterSetTypeVar],
 ):
     """Base class for all worker jobs.
 
@@ -105,7 +108,8 @@ class HordeWorkerJob(
 
     """
 
-    _job_id: ID_TYPES
+    _local_job_id: ID_TYPES
+    _dispatch_job_id: ID_TYPES | None = None
     _job_config: HordeWorkerJobConfig
 
     _consecutive_failed_job_submits: int = 0
@@ -119,8 +123,11 @@ class HordeWorkerJob(
         generation_cls: type[SingleGenerationTypeVar],
         job_id: ID_TYPES | None = None,
         *,
+        dispatch_job_id: ID_TYPES | None = None,
+        dispatch_result_ids: Sequence[ID_TYPES] | None = None,
         job_config: HordeWorkerJobConfig | None = None,
         time_received: float | None = None,
+        preserve_generation_id: bool = False,
     ) -> None:
         """Initialize the job.
 
@@ -128,10 +135,16 @@ class HordeWorkerJob(
             generation (SingleGenerationType): The generation to use for the job.
             generation_cls (type[SingleGenerationType]): The class to use for the generations in the job.
             job_id (ID_TYPES | None): The unique identifier for the job. If `None`, a new UUID will be generated.
+            dispatch_job_id (ID_TYPES | None): Identifier supplied by the dispatch source. Defaults to None when
+                the job has not been announced remotely.
+            dispatch_result_ids (Sequence[ID_TYPES] | None): Result identifiers supplied by dispatch for the attached
+                generation, if available. Defaults to None.
             job_config (HordeWorkerJobConfig, optional): The configuration for the job. If `None`, the default \
                 configuration will be used. Defaults to None.
             time_received (float | None): The time the job was received. If `None`, the time the response model was \
                 constructed will be used. Defaults to None.
+            preserve_generation_id (bool): When True, retain the generation's existing identifier instead of
+                rebinding it to the job identifier. Defaults to False.
         """
         if job_config is None:
             job_config = HordeWorkerJobConfig()
@@ -140,10 +153,24 @@ class HordeWorkerJob(
         self._generation = generation
         self._generation_cls = generation_cls
 
-        if job_id is None:
-            job_id = uuid.uuid4()
+        effective_job_id = job_id
+        if preserve_generation_id:
+            if effective_job_id is None:
+                effective_job_id = generation.generation_id
+                if effective_job_id is None:
+                    effective_job_id = uuid.uuid4()
+        else:
+            if effective_job_id is None:
+                effective_job_id = uuid.uuid4()
+            self._generation.generation_id = effective_job_id
 
-        self._generation.generation_id = job_id
+        self._local_job_id = effective_job_id
+        self._dispatch_job_id = dispatch_job_id
+
+        if dispatch_result_ids is not None:
+            self._generation.set_dispatch_result_ids(dispatch_result_ids)
+        elif dispatch_job_id is not None and not self._generation.dispatch_result_ids:
+            self._generation.set_dispatch_result_ids([dispatch_job_id])
 
         if time_received is not None:
             self._time_received = time_received
@@ -175,6 +202,27 @@ class HordeWorkerJob(
     def job_config(self) -> HordeWorkerJobConfig:
         """Return the configuration associated with this job."""
         return self._job_config
+
+    @property
+    def job_id(self) -> ID_TYPES:
+        """Return the identifier assigned to this job."""
+        return self._local_job_id
+
+    @property
+    def local_job_id(self) -> ID_TYPES:
+        """Alias for :meth:`job_id` to emphasize local scope."""
+        return self._local_job_id
+
+    @property
+    def dispatch_job_id(self) -> ID_TYPES | None:
+        """Return the identifier provided by the dispatch source, if any."""
+        with self._lock:
+            return self._dispatch_job_id
+
+    def set_dispatch_job_id(self, dispatch_job_id: ID_TYPES | None) -> None:
+        """Bind the job to the identifier supplied by dispatch."""
+        with self._lock:
+            self._dispatch_job_id = dispatch_job_id
 
     @classmethod
     @abstractmethod

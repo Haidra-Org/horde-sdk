@@ -4,6 +4,8 @@ This includes meta-parameters that are API-specific (ids), pertain to API expect
 or otherwise required for the worker to complete the task (such as r2 upload URLs).
 """
 
+from collections.abc import Mapping
+
 from horde_sdk.ai_horde_api.apimodels import NoValidRequestFound
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.generic_api.apimodels import HordeAPIObjectBaseModel
@@ -29,5 +31,5 @@ class AIHordeDispatchParameters(DispatchParameterBase):
 class AIHordeR2DispatchParameters(AIHordeDispatchParameters):
     """Dispatch parameters for R2 tasks."""
 
-    r2_upload_url_map: dict[GenerationID, str]
+    r2_upload_url_map: Mapping[GenerationID, str]
     """The map of GenerationID to R2 upload URLs for this job."""

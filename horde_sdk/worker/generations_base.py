@@ -5,9 +5,9 @@ import time
 import uuid
 from abc import ABC
 from collections import OrderedDict
-from collections.abc import Callable, Collection, Iterable, Mapping
+from collections.abc import Callable, Collection, Iterable, Mapping, Sequence
 from enum import auto
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from loguru import logger
 from strenum import StrEnum
@@ -56,7 +56,7 @@ class InputConstraintType(StrEnum):
     """Specific class type input only."""
 
 
-class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
+class HordeSingleGeneration[GenerationResultTypeVar](ABC):
     """Base class for tracking a generation. Generations are specific instances of inference or computation.
 
     This should not be confused with specific results, which are the output of a generation. For example, a generation
@@ -148,12 +148,15 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
         with self._lock:
             self._registered_callbacks[state].append(callback)
 
+    _dispatch_result_ids: list[ID_TYPES] | None
+
     def __init__(
         self,
         *,
         generation_parameters: CompositeParametersBase,
         result_type: type[GenerationResultTypeVar] | None = None,
         generation_id: ID_TYPES | None = None,
+        dispatch_result_ids: Sequence[ID_TYPES] | None = None,
         result_ids: list[ID_TYPES] | None = None,
         requires_generation: bool = True,
         requires_post_processing: bool = False,
@@ -178,6 +181,8 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             result_type (type): The type of the result of the generation.
             generation_id (str | None): The unique identifier for the generation. \
                 If None, a new UUID will be generated.
+            dispatch_result_ids (Sequence[str | uuid.UUID] | None): Identifiers provided by the dispatch system for
+                each result slot. Defaults to None when the generation has no remote counterpart yet.
             result_ids (list[ID_TYPES] | None): The unique identifiers for the results of the generation.
                 If None, a new UUID will be generated for each generation in the batch.
             requires_generation (bool, optional): Whether or not the generation requires generation (inference, etc). \
@@ -223,6 +228,7 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
             generation_id = uuid.uuid4()
 
         self.generation_id = generation_id
+        self._dispatch_result_ids = list(dispatch_result_ids) if dispatch_result_ids is not None else None
         self.generation_parameters = generation_parameters
 
         self._result_type = result_type
@@ -308,6 +314,19 @@ class HordeSingleGeneration(ABC, Generic[GenerationResultTypeVar]):
 
     generation_id: ID_TYPES
     """Unique identifier for the generation."""
+
+    @property
+    def dispatch_result_ids(self) -> list[ID_TYPES] | None:
+        """Identifiers supplied by the dispatch source, if any."""
+        with self._lock:
+            if self._dispatch_result_ids is None:
+                return None
+            return self._dispatch_result_ids.copy()
+
+    def set_dispatch_result_ids(self, dispatch_result_ids: Sequence[ID_TYPES] | None) -> None:
+        """Bind the generation to the result identifiers supplied by dispatch."""
+        with self._lock:
+            self._dispatch_result_ids = list(dispatch_result_ids) if dispatch_result_ids is not None else None
 
     @property
     def short_id(self) -> str:

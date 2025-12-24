@@ -1,9 +1,8 @@
 from enum import auto
-from typing import Literal
+from typing import Literal, override
 
 from pydantic import Field
 from strenum import StrEnum
-from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,

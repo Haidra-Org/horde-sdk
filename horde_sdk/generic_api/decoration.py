@@ -3,7 +3,7 @@ from typing import Any, TypeVar
 T = TypeVar("T")
 
 
-def Unhashable(cls: type[T]) -> type[T]:
+def Unhashable[T](cls: type[T]) -> type[T]:
     """Make a class unhashable.
 
     Args:
@@ -33,7 +33,7 @@ def is_unhashable(obj: type | Any) -> bool:  # noqa: ANN401
     return getattr(cls, "_unhashable", False)
 
 
-def Unequatable(cls: type[T]) -> type[T]:
+def Unequatable[T](cls: type[T]) -> type[T]:
     """Mark a class as unequatable.
 
     Args:

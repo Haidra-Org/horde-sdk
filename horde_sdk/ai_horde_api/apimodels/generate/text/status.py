@@ -1,8 +1,8 @@
 import uuid
+from typing import override
 
 from loguru import logger
 from pydantic import Field, field_validator
-from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, GenMetadataEntry, JobRequestMixin
 from horde_sdk.ai_horde_api.apimodels.generate.progress import ResponseGenerationProgressInfoMixin

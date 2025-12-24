@@ -5,11 +5,10 @@ by providing additional type hints for the request and response payloads and val
 """
 
 import uuid
-from typing import Any, ClassVar
+from typing import Any, ClassVar, override
 
 from loguru import logger
 from pydantic import ConfigDict, RootModel, field_validator, model_serializer
-from typing_extensions import override
 
 
 class UUID_Identifier(RootModel[uuid.UUID]):

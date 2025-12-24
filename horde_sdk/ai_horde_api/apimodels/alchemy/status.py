@@ -1,6 +1,7 @@
+from typing import override
+
 from loguru import logger
 from pydantic import field_validator
-from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE

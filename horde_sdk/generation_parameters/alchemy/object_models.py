@@ -1,10 +1,14 @@
-from typing import Literal
+from __future__ import annotations
+
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
+from typing import Literal, override
 
 from pydantic import Field
-from typing_extensions import override
 
-from horde_sdk.consts import KNOWN_NSFW_DETECTOR
+from horde_sdk.consts import ID_TYPES, KNOWN_NSFW_DETECTOR
 from horde_sdk.generation_parameters.alchemy.consts import (
+    ALCHEMY_PARAMETER_FIELDS,
     KNOWN_ALCHEMY_FORMS,
     KNOWN_ALCHEMY_TYPES,
     KNOWN_CAPTION_MODELS,
@@ -14,6 +18,11 @@ from horde_sdk.generation_parameters.alchemy.consts import (
 )
 from horde_sdk.generation_parameters.generic import CompositeParametersBase
 from horde_sdk.generation_parameters.generic.object_models import GenerationFeatureFlags
+from horde_sdk.generation_parameters.utils import (
+    ResultIdAllocator,
+    finalize_template_for_parameters,
+    resolve_result_id_from_payload,
+)
 
 
 class AlchemyFeatureFlags(GenerationFeatureFlags):
@@ -43,6 +52,52 @@ class SingleAlchemyParametersTemplate(CompositeParametersBase):
     def get_number_expected_results(self) -> int:
         """Get the number of expected results."""
         return 1
+
+    def to_parameters(
+        self,
+        *,
+        result_id: ID_TYPES | None = None,
+        source_image: bytes | str | None = None,
+        default_form: KNOWN_ALCHEMY_FORMS | str | None = None,
+        allocator: ResultIdAllocator | None = None,
+        seed: str = "alchemy",
+    ) -> SingleAlchemyParameters:
+        """Convert this template into concrete alchemy generation parameters."""
+        overrides: dict[str, object] = {}
+        if source_image is not None:
+            overrides[ALCHEMY_PARAMETER_FIELDS.source_image] = source_image
+
+        current_form = self.form
+        if default_form is not None and current_form is None:
+            overrides[ALCHEMY_PARAMETER_FIELDS.form] = default_form
+
+        finalization = finalize_template_for_parameters(
+            self,
+            overrides=overrides,
+            exclude_none=False,
+            fingerprint_exclude_fields=(ALCHEMY_PARAMETER_FIELDS.result_id,),
+        )
+
+        resolved_result_id = resolve_result_id_from_payload(
+            explicit_id=result_id,
+            payload_value=finalization.payload.get(ALCHEMY_PARAMETER_FIELDS.result_id),
+            allocator=allocator,
+            seed=seed,
+            fingerprint=finalization.fingerprint,
+        )
+
+        finalized_template = finalization.template.model_copy(
+            update={ALCHEMY_PARAMETER_FIELDS.result_id: resolved_result_id},
+        )
+
+        return self._instantiate_alchemy_parameters(finalized_template)
+
+    @staticmethod
+    def _instantiate_alchemy_parameters(
+        payload: SingleAlchemyParametersTemplate | Mapping[str, object],
+    ) -> SingleAlchemyParameters:
+        """Instantiate the appropriate alchemy parameter model based on payload contents."""
+        return instantiate_alchemy_parameters(payload)
 
 
 class SingleAlchemyParameters(CompositeParametersBase):
@@ -173,3 +228,82 @@ class AlchemyParameters(CompositeParametersBase):
     def get_number_expected_results(self) -> int:
         """Get the number of expected results."""
         return len(self.all_alchemy_operations)
+
+
+Predicate = Callable[[Mapping[str, object]], bool]
+
+
+@dataclass(frozen=True)
+class ResolverRule:
+    """Ordered rule binding a predicate to the concrete parameter model it selects."""
+
+    predicate: Predicate
+    model: type[SingleAlchemyParameters]
+
+
+_ALCHEMY_PARAMETER_RULES: list[ResolverRule] = []
+
+
+def register_alchemy_parameter_rule(rule: ResolverRule, *, append: bool = True) -> None:
+    """Register a resolver rule that may select a concrete alchemy parameter model."""
+    if append:
+        _ALCHEMY_PARAMETER_RULES.append(rule)
+    else:
+        _ALCHEMY_PARAMETER_RULES.insert(0, rule)
+
+
+def unregister_alchemy_parameter_rule(rule: ResolverRule) -> None:
+    """Remove a previously registered resolver rule."""
+    _ALCHEMY_PARAMETER_RULES.remove(rule)
+
+
+def resolve_alchemy_parameter_model(
+    payload: Mapping[str, object] | SingleAlchemyParametersTemplate,
+) -> type[SingleAlchemyParameters]:
+    """Resolve the concrete alchemy parameter model for the supplied payload."""
+    payload_mapping: Mapping[str, object]
+    if isinstance(payload, CompositeParametersBase):
+        payload_mapping = payload.model_dump(exclude_none=False)
+    else:
+        payload_mapping = payload
+    for rule in _ALCHEMY_PARAMETER_RULES:
+        if rule.predicate(payload_mapping):
+            return rule.model
+    return SingleAlchemyParameters
+
+
+def instantiate_alchemy_parameters(
+    payload: Mapping[str, object] | SingleAlchemyParametersTemplate,
+) -> SingleAlchemyParameters:
+    """Instantiate the resolved alchemy parameter model with the given payload."""
+    model = resolve_alchemy_parameter_model(payload)
+    if isinstance(payload, CompositeParametersBase):
+        return model.model_validate(payload, from_attributes=True)
+    return model(**dict(payload))
+
+
+def _register_default_rules() -> None:
+    def _has_field(field_name: ALCHEMY_PARAMETER_FIELDS) -> Predicate:
+        return lambda payload: payload.get(field_name) is not None
+
+    def _is_post_process_without_upscaler(payload: Mapping[str, object]) -> bool:
+        form_value = payload.get(ALCHEMY_PARAMETER_FIELDS.form)
+        if form_value is None:
+            return False
+        if str(form_value) != str(KNOWN_ALCHEMY_FORMS.post_process):
+            return False
+        return ALCHEMY_PARAMETER_FIELDS.upscaler not in payload
+
+    default_rules = [
+        ResolverRule(predicate=_has_field(ALCHEMY_PARAMETER_FIELDS.upscaler), model=UpscaleAlchemyParameters),
+        ResolverRule(predicate=_has_field(ALCHEMY_PARAMETER_FIELDS.facefixer), model=FacefixAlchemyParameters),
+        ResolverRule(predicate=_has_field(ALCHEMY_PARAMETER_FIELDS.interrogator), model=InterrogateAlchemyParameters),
+        ResolverRule(predicate=_has_field(ALCHEMY_PARAMETER_FIELDS.caption_model), model=CaptionAlchemyParameters),
+        ResolverRule(predicate=_has_field(ALCHEMY_PARAMETER_FIELDS.nsfw_detector), model=NSFWAlchemyParameters),
+        ResolverRule(predicate=_is_post_process_without_upscaler, model=UpscaleAlchemyParameters),
+    ]
+
+    _ALCHEMY_PARAMETER_RULES.extend(default_rules)
+
+
+_register_default_rules()

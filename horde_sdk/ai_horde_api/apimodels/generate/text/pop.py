@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import uuid
+from typing import override
 
 import aiohttp
 from loguru import logger
 from pydantic import Field, field_validator, model_validator
-from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.apimodels.generate.pop import (

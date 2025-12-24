@@ -6,9 +6,9 @@ base model for generation parameters.
 
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
-from typing import TypeVar
+from typing import Any, ClassVar, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel, model_validator
 
 from horde_sdk.consts import ServiceInfo
 from horde_sdk.generation_parameters.generic.consts import UNDERLYING_GENERATION_SCHEME
@@ -25,7 +25,53 @@ class AbstractGenerationParameter:
     """
 
 
-class GenerationParameterBaseModel(BaseModel, AbstractGenerationParameter):
+class SchemaVersionedBaseModel(BaseModel):
+    """Base model that stamps serialized payloads with a schema version."""
+
+    SCHEMA_VERSION: ClassVar[str] = "1.0"
+    """Most recent schema version for this payload."""
+
+    LEGACY_SCHEMA_VERSION: ClassVar[str] = "1.0"
+    """Oldest schema version supported for deserialization when unspecified."""
+
+    schema_version: str = Field(
+        default="",
+        description="Schema version recorded when the payload was serialized.",
+    )
+
+    model_config = ConfigDict(
+        use_attribute_docstrings=True,
+        from_attributes=True,
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _assign_schema_version(cls, data: Any) -> Any: # noqa: ANN401
+        """Populate ``schema_version`` when omitted by callers."""
+        if data is None:
+            return {"schema_version": cls.SCHEMA_VERSION}
+
+        if isinstance(data, dict):
+            if "schema_version" not in data or not data["schema_version"]:
+                updated = dict(data)
+                updated["schema_version"] = cls.SCHEMA_VERSION
+                return updated
+            return data
+
+        return data
+
+    @classmethod
+    def current_schema_version(cls) -> str:
+        """Return the canonical schema version for newly created instances."""
+        return cls.SCHEMA_VERSION
+
+    @classmethod
+    def legacy_schema_version(cls) -> str:
+        """Return the version assumed for pre-metadata payloads."""
+        return getattr(cls, "LEGACY_SCHEMA_VERSION", cls.SCHEMA_VERSION)
+
+
+class GenerationParameterBaseModel(SchemaVersionedBaseModel, AbstractGenerationParameter):
     """Base class for all generation parameters models.
 
     Contrast this class with `GenerationParameterList`, which is a *collection* of components.
@@ -34,9 +80,7 @@ class GenerationParameterBaseModel(BaseModel, AbstractGenerationParameter):
     for a list of those LoRa entries.
     """
 
-    model_config = ConfigDict(
-        use_attribute_docstrings=True,
-    )
+
 
     underlying_generation_scheme: UNDERLYING_GENERATION_SCHEME | None = None
     """The underlying method the generation uses to produce results.
@@ -70,6 +114,7 @@ class GenerationParameterList(RootModel[list[T]], AbstractGenerationParameter):
 
     model_config = ConfigDict(
         use_attribute_docstrings=True,
+        from_attributes=True,
     )
 
     root: list[T] = Field(default_factory=list)
@@ -138,7 +183,7 @@ class GenerationByServiceParameters(GenerationParameterBaseModel):
         raise NotImplementedError()  # FIXME
 
 
-class CompositeParametersBase(ABC, BaseModel):
+class CompositeParametersBase(ABC, SchemaVersionedBaseModel):
     """Base class for all combined (composed) parameter sets.
 
     The top level classes which contain BasicModelGenerationParameters instance and/or other specific parameters
@@ -148,6 +193,7 @@ class CompositeParametersBase(ABC, BaseModel):
 
     model_config = ConfigDict(
         use_attribute_docstrings=True,
+        from_attributes=True,
         arbitrary_types_allowed=True,  # FIXME
     )
 

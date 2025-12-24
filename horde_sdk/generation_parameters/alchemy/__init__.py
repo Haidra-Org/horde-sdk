@@ -10,16 +10,26 @@ from horde_sdk.generation_parameters.alchemy.object_models import (
     FacefixAlchemyParameters,
     InterrogateAlchemyParameters,
     NSFWAlchemyParameters,
+    ResolverRule,
     SingleAlchemyParameters,
     UpscaleAlchemyParameters,
+    instantiate_alchemy_parameters,
+    register_alchemy_parameter_rule,
+    resolve_alchemy_parameter_model,
+    unregister_alchemy_parameter_rule,
 )
 
 __all__ = [
     "AlchemyParameters",
-    "SingleAlchemyParameters",
     "CaptionAlchemyParameters",
     "FacefixAlchemyParameters",
     "InterrogateAlchemyParameters",
     "NSFWAlchemyParameters",
+    "ResolverRule",
+    "SingleAlchemyParameters",
     "UpscaleAlchemyParameters",
+    "instantiate_alchemy_parameters",
+    "register_alchemy_parameter_rule",
+    "resolve_alchemy_parameter_model",
+    "unregister_alchemy_parameter_rule",
 ]

@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Generic
+from typing import Any
 
 from horde_sdk import KNOWN_DISPATCH_SOURCE
 from horde_sdk.consts import WORKER_TYPE
-from horde_sdk.worker.job_base import ComposedParameterSetTypeVar, HordeWorkerJob, SingleGenerationTypeVar
+from horde_sdk.generation_parameters.generic import CompositeParametersBase
+from horde_sdk.worker.generations_base import HordeSingleGeneration
+from horde_sdk.worker.job_base import HordeWorkerJob
 
 
-class JobPopStrategy(ABC, Generic[SingleGenerationTypeVar, ComposedParameterSetTypeVar]):
+class JobPopStrategyGeneric[SingleGenerationTypeVar, ComposedParameterSetTypeVar](ABC):
     """Abstract base class for job pop strategies."""
 
     _default_job_pop_time_spacing: float = 1.0
@@ -36,23 +38,23 @@ class JobPopStrategy(ABC, Generic[SingleGenerationTypeVar, ComposedParameterSetT
         """
 
     @abstractmethod
-    def pop_job(self) -> HordeWorkerJob[SingleGenerationTypeVar, ComposedParameterSetTypeVar] | None:
+    def pop_job(self) -> HordeWorkerJob[HordeSingleGeneration[Any], CompositeParametersBase] | None:
         """Pop a job synchronously from the dispatch source.
 
         Use `async_pop_job` for asynchronous operations.
 
         Returns:
-            HordeWorkerJob[SingleGenerationTypeVar, ComposedParameterSetTypeVar] | None: The popped job or `None` if
+            HordeWorkerJob[HordeSingleGeneration[Any], CompositeParametersBase] | None: The popped job or `None` if
             no job is available.
         """
 
     @abstractmethod
-    async def async_pop_job(self) -> HordeWorkerJob[SingleGenerationTypeVar, ComposedParameterSetTypeVar] | None:
+    async def async_pop_job(self) -> HordeWorkerJob[HordeSingleGeneration[Any], CompositeParametersBase] | None:
         """Pop a job asynchronously from the dispatch source.
 
         Use `pop_job` if you prefer synchronous operations.
 
         Returns:
-            HordeWorkerJob[SingleGenerationTypeVar, ComposedParameterSetTypeVar] | None: The popped job or `None` if
+            HordeWorkerJob[HordeSingleGeneration[Any], CompositeParametersBase] | None: The popped job or `None` if
             no job is available.
         """

@@ -1,9 +1,9 @@
 from enum import auto
+from typing import override
 
 from loguru import logger
 from pydantic import Field, field_validator
 from strenum import StrEnum
-from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.consts import MODEL_STATE

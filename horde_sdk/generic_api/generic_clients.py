@@ -7,7 +7,7 @@ import os
 import time
 from abc import ABC
 from ssl import SSLContext
-from typing import Any, TypeVar
+from typing import Any, TypeVar, override
 
 import aiohttp
 import logfire
@@ -15,7 +15,6 @@ import requests
 from loguru import logger
 from pydantic import BaseModel, Field, ValidationError
 from strenum import StrEnum
-from typing_extensions import override
 
 from horde_sdk import _default_sslcontext
 from horde_sdk._telemetry.metrics import (

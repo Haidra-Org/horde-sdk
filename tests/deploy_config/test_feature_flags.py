@@ -131,13 +131,18 @@ def test_reasons_minimal_worker_not_capable(
     assert IMAGE_WORKER_NOT_CAPABLE_REASON.schedulers in reasons_simple
     assert IMAGE_WORKER_NOT_CAPABLE_REASON.samplers in reasons_simple
 
+    tiling_parameters = simple_image_generation_parameters.model_copy(
+        update={
+            "base_params": simple_image_generation_parameters.base_params.model_copy(update={"tiling": True}),
+        },
+    )
     reasons_tiling = minimal_image_worker_feature_flags.reasons_not_capable_of_features(
-        image_parameters_to_feature_flags(simple_image_generation_parameters.model_copy(update={"tiling": True})),
+        image_parameters_to_feature_flags(tiling_parameters),
     )
     assert reasons_tiling is not None
     assert len(reasons_tiling) == 3
-    assert IMAGE_WORKER_NOT_CAPABLE_REASON.schedulers in reasons_simple
-    assert IMAGE_WORKER_NOT_CAPABLE_REASON.samplers in reasons_simple
+    assert IMAGE_WORKER_NOT_CAPABLE_REASON.schedulers in reasons_tiling
+    assert IMAGE_WORKER_NOT_CAPABLE_REASON.samplers in reasons_tiling
     assert IMAGE_WORKER_NOT_CAPABLE_REASON.tiling in reasons_tiling
 
     reasons_hires = minimal_image_worker_feature_flags.reasons_not_capable_of_features(
@@ -146,6 +151,6 @@ def test_reasons_minimal_worker_not_capable(
 
     assert reasons_hires is not None
     assert len(reasons_hires) == 3
-    assert IMAGE_WORKER_NOT_CAPABLE_REASON.schedulers in reasons_simple
-    assert IMAGE_WORKER_NOT_CAPABLE_REASON.samplers in reasons_simple
+    assert IMAGE_WORKER_NOT_CAPABLE_REASON.schedulers in reasons_hires
+    assert IMAGE_WORKER_NOT_CAPABLE_REASON.samplers in reasons_hires
     assert IMAGE_WORKER_NOT_CAPABLE_REASON.hires_fix in reasons_hires

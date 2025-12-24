@@ -1,10 +1,9 @@
 import base64
 import urllib.parse
-from typing import Any
+from typing import Any, override
 
 from loguru import logger
 from pydantic import field_validator
-from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.alchemy.status import AlchemyDeleteRequest, AlchemyStatusRequest
 from horde_sdk.ai_horde_api.apimodels.base import (

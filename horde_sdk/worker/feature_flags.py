@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import auto
-from typing import Generic, TypeVar, override
+from typing import TypeVar, override
 
 from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
 from loguru import logger
@@ -43,7 +43,7 @@ class RESULT_RETURN_METHOD(StrEnum):
     """Can write to the local filesystem for jobs originating locally or within a closed environment."""
 
 
-class WorkerFeatureFlags(ABC, BaseModel, Generic[ReasonTypeVar]):
+class WorkerFeatureFlags[ReasonTypeVar: str](ABC, BaseModel):
     """Feature flags for a worker."""
 
     model_config = get_default_frozen_model_config_dict()

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Mapping, Sequence
 from pathlib import Path
+from typing import override
 
 from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
 from pydantic import ConfigDict, Field, field_validator, model_validator
-from typing_extensions import override
 
 from horde_sdk.consts import ID_TYPES, get_default_frozen_model_config_dict
 from horde_sdk.generation_parameters.alchemy import AlchemyParameters
@@ -26,6 +26,11 @@ from horde_sdk.generation_parameters.image.consts import (
     KNOWN_IMAGE_WORKFLOWS,
     LORA_TRIGGER_INJECT_CHOICE,
     TI_TRIGGER_INJECT_CHOICE,
+)
+from horde_sdk.generation_parameters.utils import (
+    ResultIdAllocator,
+    finalize_template_for_parameters,
+    resolve_result_ids_from_payload,
 )
 
 DEFAULT_BASELINE_RESOLUTION: int = 512
@@ -251,6 +256,7 @@ class BasicImageGenerationParameters(BasicImageGenerationParametersTemplate):
 
     model_config = ConfigDict(
         frozen=True,
+        from_attributes=True,
     )
 
     prompt: str
@@ -426,6 +432,7 @@ class ImageGenerationComponentContainer(GenerationParameterBaseModel):
 
     model_config = ConfigDict(
         use_attribute_docstrings=True,
+        from_attributes=True,
     )
 
     components: list[
@@ -600,6 +607,73 @@ class ImageGenerationParametersTemplate(CompositeParametersBase):
         """
         return self.batch_size if self.batch_size is not None else 1
 
+    def to_parameters(
+        self,
+        *,
+        base_param_updates: Mapping[str, object] | None = None,
+        result_ids: Sequence[ID_TYPES] | None = None,
+        allocator: ResultIdAllocator | None = None,
+        seed: str = "image",
+    ) -> ImageGenerationParameters:
+        """Convert this template into concrete image generation parameters."""
+        base_params = self.base_params
+        if base_params is None:
+            raise ValueError("Image generation templates must define base_params before conversion.")
+
+        overrides: dict[str, object] | None = None
+        if base_param_updates:
+            overrides = {
+                "base_params": base_params.model_copy(update=dict(base_param_updates)),
+            }
+
+        finalization = finalize_template_for_parameters(
+            self,
+            overrides=overrides,
+            exclude_none=False,
+            fingerprint_exclude_fields=("result_ids",),
+        )
+
+        finalized_template = finalization.template
+        resolved_base_params = finalized_template.base_params
+        if resolved_base_params is None:
+            raise ValueError("Image generation templates must define base_params before conversion.")
+
+        batch_size = finalized_template.batch_size or 1
+
+        resolved_result_ids = resolve_result_ids_from_payload(
+            explicit_ids=result_ids,
+            payload_value=finalization.payload.get("result_ids"),
+            count=batch_size,
+            allocator=allocator,
+            seed=seed,
+            fingerprint=finalization.fingerprint,
+        )
+
+        concrete_base_params = BasicImageGenerationParameters.model_validate(
+            resolved_base_params,
+            from_attributes=True,
+        )
+
+        resolved_additional_params = (
+            finalized_template.additional_params
+            if finalized_template.additional_params is not None
+            else ImageGenerationComponentContainer()
+        )
+
+        parameter_payload = finalized_template.model_copy(
+            update={
+                "base_params": concrete_base_params,
+                "result_ids": resolved_result_ids,
+                "additional_params": resolved_additional_params,
+                "batch_size": batch_size,
+            },
+        )
+
+        return ImageGenerationParameters.model_validate(
+            parameter_payload,
+            from_attributes=True,
+        )
+
 
 class ImageGenerationParameters(ImageGenerationParametersTemplate):
     """Represents the common bare-minimum parameters for an image generation."""
@@ -638,9 +712,11 @@ def image_parameters_to_feature_flags(
     if parameters.alchemy_params is not None and parameters.alchemy_params._all_alchemy_operations is not None:
         all_alchemy_forms = [x.form for x in parameters.alchemy_params._all_alchemy_operations if x.form is not None]
 
-    baselines = (
-        [parameters.base_params.model_baseline] if parameters.base_params else [KNOWN_IMAGE_GENERATION_BASELINE.infer]
-    )
+    baselines: list[KNOWN_IMAGE_GENERATION_BASELINE | str]
+    if parameters.base_params and parameters.base_params.model_baseline is not None:
+        baselines = [parameters.base_params.model_baseline]
+    else:
+        baselines = [KNOWN_IMAGE_GENERATION_BASELINE.infer]
 
     schedulers = []
     samplers = []
@@ -651,7 +727,7 @@ def image_parameters_to_feature_flags(
         if parameters.base_params.sampler_name is not None:
             samplers.append(parameters.base_params.sampler_name)
 
-    source_processing = [parameters.source_processing]
+    source_processing = [parameters.source_processing] if parameters.source_processing is not None else []
 
     post_processing = all_alchemy_forms
 
@@ -659,9 +735,9 @@ def image_parameters_to_feature_flags(
 
     hires_fix = False
     controlnets_feature_flags = None
-    workflows = None
-    tis = None
-    loras = None
+    workflows: list[str] | None = None
+    tis: list[KNOWN_AUX_MODEL_SOURCE | str] | None = None
+    loras: list[KNOWN_AUX_MODEL_SOURCE | str] | None = None
 
     if parameters.additional_params:
         hires_fix = parameters.additional_params.hires_fix_params is not None
@@ -676,22 +752,17 @@ def image_parameters_to_feature_flags(
             else None
         )
 
-        workflows = None
         if parameters.additional_params.custom_workflows_params:
-            workflows = []
-            for workflow in parameters.additional_params.custom_workflows_params:
-                workflows.append(workflow.custom_workflow_name)
-
-        tis = []
-        loras = []
+            workflow_names = [wf.custom_workflow_name for wf in parameters.additional_params.custom_workflows_params]
+            workflows = workflow_names or None
 
         if parameters.additional_params.ti_params:
-            for ti in parameters.additional_params.ti_params:
-                tis.append(ti.name)
+            ti_names = [ti.name for ti in parameters.additional_params.ti_params if ti.name is not None]
+            tis = ti_names or None
 
         if parameters.additional_params.lora_params:
-            for lora in parameters.additional_params.lora_params:
-                loras.append(lora.name)
+            lora_names = [lora.name for lora in parameters.additional_params.lora_params if lora.name is not None]
+            loras = lora_names or None
 
     return ImageGenerationFeatureFlags(
         baselines=baselines,

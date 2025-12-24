@@ -4,15 +4,13 @@ from __future__ import annotations
 
 import abc
 import base64
-import os
 import time
 import uuid
-from typing import Any, TypeVar
+from typing import Any, TypeVar, override
 
 import aiohttp
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, RootModel, field_validator
-from typing_extensions import override
 
 from horde_sdk import _default_sslcontext
 from horde_sdk.consts import HTTPMethod, HTTPStatusCode, get_default_frozen_model_config_dict
@@ -133,19 +131,12 @@ class HordeResponseRootModel(RootModel[T], HordeResponse):
 
     """
 
-    model_config = (
-        ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            # `extra` is not allowed with RootModel
-        )
-        if not os.getenv("TESTS_ONGOING")
-        else ConfigDict(
-            frozen=True,
-            use_attribute_docstrings=True,
-            # `extra` is not allowed with RootModel
-        )
+    model_config = ConfigDict(
+        frozen=True,
+        use_attribute_docstrings=True,
+        # `extra` is not allowed with RootModel
     )
+
 
 
 class HordeResponseBaseModel(HordeResponse, BaseModel):
@@ -576,23 +567,23 @@ class RequestUsesWorkerMixin(HordeAPIData):
 
 
 __all__ = [
-    "HordeAPIObject",
-    "HordeAPIObjectBaseModel",
+    "APIKeyAllowedInRequestMixin",
+    "ContainsMessageResponseMixin",
+    "ContainsWarningsResponseMixin",
     "HordeAPIData",
     "HordeAPIMessage",
+    "HordeAPIObject",
+    "HordeAPIObjectBaseModel",
+    "HordeRequest",
     "HordeResponse",
-    "HordeResponseRootModel",
     "HordeResponseBaseModel",
+    "HordeResponseRootModel",
     "HordeResponseTypes",
+    "MessageSpecifiesUserIDMixin",
+    "RequestErrorResponse",
+    "RequestSingleWarning",
+    "RequestUsesWorkerMixin",
+    "ResponseRequiringDownloadMixin",
     "ResponseRequiringFollowUpMixin",
     "ResponseWithProgressMixin",
-    "ResponseRequiringDownloadMixin",
-    "ContainsMessageResponseMixin",
-    "RequestSingleWarning",
-    "ContainsWarningsResponseMixin",
-    "RequestErrorResponse",
-    "HordeRequest",
-    "APIKeyAllowedInRequestMixin",
-    "MessageSpecifiesUserIDMixin",
-    "RequestUsesWorkerMixin",
 ]

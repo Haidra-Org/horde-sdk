@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from enum import auto
+from typing import Self, override
 
 from pydantic import Field
 from strenum import StrEnum
-from typing_extensions import override
 
 from horde_sdk import get_default_frozen_model_config_dict
 from horde_sdk.consts import ID_TYPES
@@ -14,6 +15,12 @@ from horde_sdk.generation_parameters.generic import (
     GenerationWithModelParameters,
 )
 from horde_sdk.generation_parameters.generic.object_models import GenerationFeatureFlags
+from horde_sdk.generation_parameters.utils import (
+    ResultIdAllocator,
+    TemplateFinalization,
+    finalize_template_for_parameters,
+    resolve_result_ids_from_payload,
+)
 
 
 class FormatImplementationStandard(StrEnum):
@@ -205,6 +212,73 @@ class TextGenerationParametersTemplate(CompositeParametersBase):
             int: The number of expected results.
         """
         return 1
+
+    def to_parameters(
+        self,
+        *,
+        base_param_updates: Mapping[str, object] | None = None,
+        result_ids: Sequence[ID_TYPES] | None = None,
+        allocator: ResultIdAllocator | None = None,
+        seed: str = "text",
+    ) -> TextGenerationParameters:
+        """Convert this template into concrete text generation parameters."""
+        base_params = self.base_params
+        if base_params is None:
+            raise ValueError("Text generation templates must define base_params before conversion.")
+
+        overrides: dict[str, object] | None = None
+        if base_param_updates:
+            overrides = {
+                "base_params": base_params.model_copy(update=dict(base_param_updates)),
+            }
+
+        def _inject_base_params_into_fingerprint(
+            finalization: TemplateFinalization[Self],
+            fingerprint_payload: dict[str, object],
+        ) -> None:
+            fingerprint_base_params = finalization.template.base_params
+            if fingerprint_base_params is None:
+                raise ValueError("Text generation templates must define base_params before conversion.")
+            fingerprint_payload["base_params"] = fingerprint_base_params.model_dump(exclude_none=False)
+
+        finalization = finalize_template_for_parameters(
+            self,
+            overrides=overrides,
+            exclude_none=False,
+            fingerprint_exclude_fields=("result_ids",),
+            fingerprint_transform=_inject_base_params_into_fingerprint,
+        )
+
+        finalized_template = finalization.template
+        resolved_base_params = finalized_template.base_params
+        if resolved_base_params is None:
+            raise ValueError("Text generation templates must define base_params before conversion.")
+
+        resolved_result_ids = resolve_result_ids_from_payload(
+            explicit_ids=result_ids,
+            payload_value=finalization.payload.get("result_ids"),
+            count=1,
+            allocator=allocator,
+            seed=seed,
+            fingerprint=finalization.fingerprint,
+        )
+
+        concrete_base_params = BasicTextGenerationParameters.model_validate(
+            resolved_base_params,
+            from_attributes=True,
+        )
+
+        parameter_payload = finalized_template.model_copy(
+            update={
+                "base_params": concrete_base_params,
+                "result_ids": resolved_result_ids,
+            },
+        )
+
+        return TextGenerationParameters.model_validate(
+            parameter_payload,
+            from_attributes=True,
+        )
 
 
 class TextGenerationParameters(TextGenerationParametersTemplate):

@@ -30,12 +30,14 @@ def get_default_frozen_model_config_dict() -> ConfigDict:
         ConfigDict(
             frozen=True,
             use_attribute_docstrings=True,
+            from_attributes=True,
             extra="allow",
         )
         if not os.getenv("TESTS_ONGOING")
         else ConfigDict(
             frozen=True,
             use_attribute_docstrings=True,
+            from_attributes=True,
             extra="forbid",
         )
     )

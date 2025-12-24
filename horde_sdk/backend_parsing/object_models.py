@@ -1,5 +1,4 @@
 from abc import ABC
-from typing import Generic
 
 from strenum import StrEnum
 from typing_extensions import TypeVar
@@ -23,7 +22,7 @@ BackendControlnetsTypeVar = TypeVar("BackendControlnetsTypeVar", bound=StrEnum)
 MappingOutputTypeVar = TypeVar("MappingOutputTypeVar", bound=StrEnum)
 
 
-class BackendValuesMapper(ABC, Generic[SDKParameterSetTypeVar]):
+class BackendValuesMapper[SDKParameterSetTypeVar: CompositeParametersBase](ABC):
     """Base class for all backend values mappers.
 
     Value mappers provide a way to convert between the backend representations and the SDK representations of
@@ -80,13 +79,12 @@ class BackendValuesMapper(ABC, Generic[SDKParameterSetTypeVar]):
         return False
 
 
-class ImageBackendValuesMapper(
+class ImageBackendValuesMapper[
+    BackendSamplersTypeVar: StrEnum,
+    BackendSchedulersTypeVar: StrEnum,
+    BackendControlnetsTypeVar: StrEnum,
+](
     BackendValuesMapper[ImageGenerationParametersTemplate],
-    Generic[
-        BackendSamplersTypeVar,
-        BackendSchedulersTypeVar,
-        BackendControlnetsTypeVar,
-    ],
 ):
     """Base class for all image backend values mappers.
 

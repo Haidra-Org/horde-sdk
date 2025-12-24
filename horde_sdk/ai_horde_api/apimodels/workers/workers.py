@@ -1,7 +1,7 @@
 from collections.abc import Iterator
+from typing import override
 
 from pydantic import AliasChoices, Field
-from typing_extensions import override
 
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, WorkerRequestMixin, WorkerRequestNameMixin
 from horde_sdk.ai_horde_api.apimodels.workers.messages import ResponseModelMessage

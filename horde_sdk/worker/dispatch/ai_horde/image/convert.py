@@ -9,6 +9,7 @@ from loguru import logger
 
 from horde_sdk.ai_horde_api.apimodels.generate.pop import ImageGenerateJobPopResponse
 from horde_sdk.ai_horde_api.consts import DEFAULT_HIRES_DENOISE_STRENGTH
+from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import KNOWN_DISPATCH_SOURCE, KNOWN_INFERENCE_BACKEND
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.image import (
@@ -78,12 +79,23 @@ def _get_remix_params(api_response: ImageGenerateJobPopResponse) -> RemixGenerat
         if isinstance(api_response.source_image, str):
             source_image = base64_str_to_bytes(api_response.source_image)
 
+        if source_image is None:
+            raise ValueError("No source image found for remix generation.")
+
         remix_images: list[RemixImageEntry] = []
         if api_response.extra_source_images is not None:
             for remix_image in api_response.extra_source_images:
+                payload_image = remix_image.image
+
+                if isinstance(payload_image, str):
+                    payload_image = base64_str_to_bytes(payload_image)
+
+                if not payload_image:
+                    raise ValueError("Remix image payload is empty.")
+
                 remix_images.append(
                     RemixImageEntry(
-                        image=base64_str_to_bytes(remix_image.image),
+                        image=payload_image,
                         strength=remix_image.strength,
                     ),
                 )
@@ -148,14 +160,23 @@ def _get_hires_fix_params(
         ddim_steps=api_response.payload.ddim_steps,
     )
 
+    model = api_response.model
+
+    if not model or model.isspace():
+        raise ValueError("Model is required for hires fix generation.")
+
+    prompt = api_response.payload.prompt
+    if not prompt or prompt.isspace():
+        raise ValueError("Prompt is required for hires fix generation.")
+
     if api_response.payload.hires_fix:
         return HiresFixGenerationParameters(
             first_pass=BasicImageGenerationParameters(
-                model=api_response.model,
+                model=model,
                 model_baseline=model_baseline,
-                model_filename=None,  # TODO
-                model_hash=None,  # TODO
-                prompt=api_response.payload.prompt,
+                # model_filename=None,  # TODO
+                # model_hash=None,  # TODO
+                prompt=prompt,
                 seed=api_response.payload.seed,
                 width=first_pass_width,
                 height=first_pass_height,
@@ -169,11 +190,11 @@ def _get_hires_fix_params(
                 denoising_strength=api_response.payload.denoising_strength,
             ),
             second_pass=BasicImageGenerationParameters(
-                model=api_response.model,
+                model=model,
                 model_baseline=model_baseline,
-                model_filename=None,  # TODO
-                model_hash=None,  # TODO
-                prompt=api_response.payload.prompt,
+                # model_filename=None,  # TODO
+                # model_hash=None,  # TODO
+                prompt=prompt,
                 seed=api_response.payload.seed,
                 width=second_pass_width,
                 height=second_pass_height,
@@ -282,7 +303,7 @@ def convert_image_job_pop_response_to_parameters(
     if api_response.model is None:
         raise ValueError("Model is required for generation.")
 
-    model_record = model_reference_manager.stable_diffusion.root.get(api_response.model)
+    model_record = model_reference_manager.image_generation_models.get(api_response.model)
     model_baseline: KNOWN_IMAGE_GENERATION_BASELINE | None = None
 
     if model_record is not None:
@@ -294,15 +315,19 @@ def convert_image_job_pop_response_to_parameters(
             )
             model_baseline = None
 
-        model_version = model_record.version
+        # model_version = model_record.version # TODO
+
+    prompt = api_response.payload.prompt
+    if not prompt or prompt.isspace():
+        raise ValueError("Prompt is required for generation.")
 
     base_params = BasicImageGenerationParameters(
         model=api_response.model,
         model_baseline=model_baseline,
-        model_version=model_version,
-        model_filename=None,  # TODO
-        model_hash=None,  # TODO
-        prompt=api_response.payload.prompt,
+        # model_version=model_version,
+        # model_filename=None,  # TODO
+        # model_hash=None,  # TODO
+        prompt=prompt,
         seed=api_response.payload.seed,
         height=api_response.payload.height,
         width=api_response.payload.width,
@@ -312,6 +337,7 @@ def convert_image_job_pop_response_to_parameters(
         scheduler=KNOWN_IMAGE_SCHEDULERS.karras if api_response.payload.karras else KNOWN_IMAGE_SCHEDULERS.normal,
         clip_skip=api_response.payload.clip_skip,
         denoising_strength=api_response.payload.denoising_strength,
+        tiling=api_response.payload.tiling,
     )
 
     img2img_params: Image2ImageGenerationParameters | None = _get_img2img_params(api_response)
@@ -353,7 +379,6 @@ def convert_image_job_pop_response_to_parameters(
     image_generation_parameters = ImageGenerationParameters(
         result_ids=raw_uuids,
         batch_size=api_response.payload.n_iter,
-        tiling=api_response.payload.tiling,
         source_processing=api_response.source_processing,
         base_params=base_params,
         additional_params=ImageGenerationComponentContainer(
@@ -371,11 +396,11 @@ def convert_image_job_pop_response_to_parameters(
         raise ValueError("No R2 upload URL found in the API response.")
 
     ai_horde_dispatch_parameters = AIHordeR2DispatchParameters(
-        generation_ids=raw_uuids,
+        generation_ids=[GenerationID(root=uuid_) for uuid_ in raw_uuids],
         dispatch_source=KNOWN_DISPATCH_SOURCE.AI_HORDE_API_OFFICIAL,
         ttl=api_response.ttl,
         inference_backend=KNOWN_INFERENCE_BACKEND.COMFYUI,
-        inference_backend_constraints=REQUESTED_BACKEND_CONSTRAINTS.SPECIFIED,
+        requested_backend_constraints=REQUESTED_BACKEND_CONSTRAINTS.SPECIFIED,
         no_valid_request_found_reasons=api_response.skipped,
         source_image_fallback_choice=REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE.TXT2IMG_FALLBACK,
         r2_upload_url_map=r2_upload_url_map,

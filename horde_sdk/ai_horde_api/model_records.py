@@ -1,6 +1,6 @@
 from typing import override
 
-from horde_model_reference.model_reference_records import Generic_ModelRecord
+from horde_model_reference.model_reference_records import GenericModelRecord
 
 from horde_sdk.generation_parameters.generic.object_models import ModelRecordResolver
 
@@ -12,5 +12,5 @@ class AIHordeModelRecordResolver(ModelRecordResolver):
     def resolve_model_by_name(
         self,
         model_name: str,
-    ) -> Generic_ModelRecord | None:
+    ) -> GenericModelRecord | None:
         pass
