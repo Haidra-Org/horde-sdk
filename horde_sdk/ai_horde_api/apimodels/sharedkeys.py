@@ -108,7 +108,7 @@ class ExpiryStrSharedKeyDetailsResponse(
         - /v2/sharedkeys/{sharedkey_id} | SharedKeyDetailsRequest [GET] -> 200
         - /v2/sharedkeys | SharedKeyCreateRequest [PUT] -> 200
 
-    v2 API Model: `_MODEL_OVERLOADED`
+    v2 API Model: `_OVERLOADED_MODEL`
     """
 
     expiry: str | None = None  # FIXME - duplicated in SharedKeyDetailsResponse due to overloaded model
