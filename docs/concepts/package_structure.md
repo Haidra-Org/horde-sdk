@@ -150,6 +150,6 @@ By convention, the following files within an api support package should always c
 - `worker/generations.py`
     - Contains the concrete implementations of `HordeSingleGeneration` for each supported generation type.
     - These classes should generally be limited in terms of their own logic and when appropriate, delegate to the `HordeSingleGeneration` class's methods or implementations.
-- `worker/jobs_base.py`
+- `worker/job_base.py`
     - Contains the base class for all job types, `HordeWorkerJob`
         - `HordeWorkerJob` wraps `HordeSingleGeneration`

@@ -23,8 +23,8 @@
 
 ### First time setup
 
-- Install uv, as described [here](https://github.com/astral-sh/uv/#installation).
-- `uv python install 3.10 3.11 3.12 3.13`
+- Install uv, as described [in their documentation](https://github.com/astral-sh/uv/#installation).
+- `uv python install 3.12 3.13`
 - `uv self update`
 - `uv sync --all-groups`
 - The `.venv/` directory will now be created with all project, development and documentation dependencies installed.
@@ -34,7 +34,7 @@
 
 - [**tox**](https://tox.wiki/)
     - Creates virtual environments for CI or local pytest runs.
-        - Note that the CI does not current execute calls to the production API by default.
+        - Note that the CI does not currently execute calls to the production API by default.
     - Run `tox list` or see `tox.ini` for more info
 - [**pre-commit**](https://pre-commit.com/)
     - Creates virtual environments for formatting and linting tools
@@ -42,13 +42,10 @@
 
 > Note: Many of the tools below are run by `pre-commit` automatically, but can also be run manually if desired.
 
-- [**black**](https://github.com/psf/black)
-    - Whitespace formatter/code style formatter
-    - Run with `black .`
 - [**ruff**](https://github.com/astral-sh/ruff)
     - Linting rules from a wide variety of selectable rule sets
     - See `pyproject.toml` for the rules used.
-    - See all rules (but not necessarily used in the project) availible in rust [here](https://beta.ruff.rs/docs/rules/).
+    - See all rules (but not necessarily used in the project) [available in ruff here](https://beta.ruff.rs/docs/rules/).
     - Run with `ruff check .`
         - Note: When using autofixing (`ruff check . --fix`), changes may be made that require running black, which can then result in needing to run `ruff check . --fix` again.
         - Consider running `black . && ruff check . --fix && black . && ruff check . --fix` to avoid this.

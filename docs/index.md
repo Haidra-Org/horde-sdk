@@ -11,10 +11,9 @@ This library simplifies interfacing with any API created by [Haidra](https://git
 behind the free projects such as AI-Horde ([homepage](https://aihorde.net/), [github](https://github.com/db0/AI-Horde)).
 The goal is to minimize the amount of time it takes to develop applications in python that use our free, volunteer driven, services which include:
 
-- Stable Diffusion Image Generation (driven by [ComfyUI](https://github.com/comfyanonymous/ComfyUI))
-- Image captioning
-- Image rating (currently ratings are for [diffusiondb](https://poloclub.github.io/diffusiondb/), others coming in the future)
+- Image Generation (driven by [ComfyUI](https://github.com/comfyanonymous/ComfyUI))
 - Text Generation using LLMs (driven by [KoboldAI](https://github.com/KoboldAI/KoboldAI-Client))
+- Image captioning
 
 From anything to requesting your own images, or rolling your own [worker](https://github.com/Haidra-Org/AI-Horde-Worker) software, this package may suit your needs.
 
