@@ -1018,7 +1018,7 @@ requires-dist = [
     { name = "aiofiles", specifier = ">=24.1.0" },
     { name = "aiohttp", specifier = ">=3.11.13" },
     { name = "certifi", specifier = ">=2025.1.31" },
-    { name = "horde-model-reference", specifier = ">=0.10.0" },
+    { name = "horde-model-reference", specifier = ">=2.1.5" },
     { name = "logfire", specifier = ">=3.7.1" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "networkx", specifier = ">=3.4.2" },
