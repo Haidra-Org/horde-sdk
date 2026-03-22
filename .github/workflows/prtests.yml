@@ -18,6 +18,7 @@ on:
       - 'requirements.txt'
       - 'requirements.dev.txt'
       - 'requirements.docs.txt'
+      - 'uv.lock'
 jobs:
   build:
     env:
