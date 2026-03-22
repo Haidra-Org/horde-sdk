@@ -10,7 +10,7 @@ horde_sdk is in **beta**. Everything is subject to change. Please feel free to r
 
 ## About
 
-This library simplifies interfacing with any API created by [Haidra](https://github.com/Haidra-Org) - the community organization
+This library simplifies interfacing with any API created by [Haidra](https://haidra.net/) - the community organization
 behind the free projects such as AI-Horde ([homepage](https://aihorde.net/), [github](https://github.com/db0/AI-Horde)).
 The goal is to minimize the amount of time it takes to develop applications in python that use our free, volunteer driven, services which include:
 
