@@ -103,25 +103,6 @@ ignore = [
 "codegen/*" = ["D"] # Ignore D rules for codegen
 
 
-[tool.black]
-line-length = 119
-include = '\.pyi?$'
-exclude = '''
-/(
- \.git
- | \.hg
- | \.mypy_cache
- | \.ruff_cache
- | \.tox
- | \.venv.*
- | _build
- | buck-out
- | build
- | codegen
- | dist
-)/
-'''
-
 [tool.mypy]
 plugins = [
   "pydantic.mypy"
@@ -160,7 +141,6 @@ markers = [
 [dependency-groups]
 dev = [
     "babel>=2.17.0",
-    "black>=24.10.0",
     "build>=0.10.0",
     "coverage>=7.2.7",
     "datamodel-code-generator>=0.28.4",
