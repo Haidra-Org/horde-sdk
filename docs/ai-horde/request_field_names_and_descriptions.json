@@ -175,8 +175,9 @@
             ]
         },
         "result": {
-            "description": "The result of the alchemy job.",
+            "description": "The results of the alchemy job, keyed by form name. The API requires this field even for\nfaulted submissions, though it is ignored server-side in that case.\n\nThe API swagger doc declares this field as a string, but the server actually requires a\ndictionary and will reject string submissions; the `str` arm exists only for swagger\ncompatibility.",
             "types": [
+                "dict[str, object]",
                 "str"
             ]
         },
