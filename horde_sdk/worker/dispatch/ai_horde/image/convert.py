@@ -2,6 +2,7 @@
 
 from horde_model_reference.meta_consts import (
     KNOWN_IMAGE_GENERATION_BASELINE,
+    MODEL_REFERENCE_CATEGORY,
     get_baseline_native_resolution,
 )
 from horde_model_reference.model_reference_manager import ModelReferenceManager
@@ -304,7 +305,9 @@ def convert_image_job_pop_response_to_parameters(
     if api_response.model is None:
         raise ValueError("Model is required for generation.")
 
-    model_record = model_reference_manager.image_generation_models.get(api_response.model)
+    model_record = (
+        model_reference_manager.query(MODEL_REFERENCE_CATEGORY.image_generation).where(name=api_response.model).first()
+    )
     model_baseline: KNOWN_IMAGE_GENERATION_BASELINE | None = None
 
     if model_record is not None:

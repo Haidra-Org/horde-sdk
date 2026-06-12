@@ -78,7 +78,7 @@ async def async_one_image_generate_example(
 
         for image, gen_id in downloaded_images:
             filename_base = f"{gen_id}_simple_async_example"
-            save_image_and_json(image, generation, example_path, filename_base)
+            save_image_and_json(image, generation, Path(str(example_path)), filename_base)
 
 
 async def async_multi_image_generate_example(
@@ -134,7 +134,7 @@ async def async_multi_image_generate_example(
 
     for image, gen_id in downloaded_images:
         filename_base = f"{gen_id}_simple_async_example"
-        save_image_and_json(image, generation, example_path, filename_base)
+        save_image_and_json(image, generation, Path(str(example_path)), filename_base)
 
 
 async def async_simple_generate_example(apikey: str = ANON_API_KEY) -> None:
