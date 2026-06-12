@@ -223,12 +223,16 @@ class ResponseRequiringFollowUpMixin(abc.ABC):
         if not cleanup_request_type:
             raise ValueError("No cleanup request type defined")
 
-        self._cleanup_requests = []
+        # Only cache after every request builds successfully; caching a partially built list would
+        # silently return wrong (incomplete) cleanup requests on subsequent calls if a build failed.
+        cleanup_requests: list[HordeRequest] = []
 
         all_cleanup_params: list[dict[str, object]] = self.get_follow_up_all_params()
         for cleanup_params in all_cleanup_params:
             cleanup_params.update(self.get_follow_up_failure_cleanup_params())
-            self._cleanup_requests.append(cleanup_request_type.model_validate(cleanup_params))
+            cleanup_requests.append(cleanup_request_type.model_validate(cleanup_params))
+
+        self._cleanup_requests = cleanup_requests
 
         return self._cleanup_requests
 

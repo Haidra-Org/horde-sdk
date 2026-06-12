@@ -106,9 +106,19 @@ class AlchemyFormStatus(HordeAPIData):
         v: dict[str, object],
     ) -> dict[str, object] | None:
         """Ensure that the result is valid and convert it to the correct type, if possible."""
+        if not isinstance(v, dict):
+            return v
+
         if "additionalProp1" in v:
             logger.debug("Found additionalProp1 in result, this is a dummy result. Ignoring.")
             return None
+
+        # The API wraps interrogation results in an extra key ({"interrogation": {...}});
+        # unwrap so the union resolves to AlchemyInterrogationDetails (as
+        # `all_interrogation_results` expects).
+        interrogation_details = v.get("interrogation")
+        if isinstance(interrogation_details, dict):
+            return interrogation_details
 
         for key in list(v.keys()):
             if key in KNOWN_UPSCALERS.__members__:

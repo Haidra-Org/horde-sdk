@@ -15,7 +15,9 @@ from horde_sdk.ai_horde_api.apimodels.generate.pop import (
     PopResponseModelMessage,
 )
 from horde_sdk.ai_horde_api.apimodels.generate.text.async_ import ModelPayloadRootKobold
-from horde_sdk.ai_horde_api.apimodels.generate.text.status import DeleteTextGenerateRequest, TextGenerateStatusRequest
+from horde_sdk.ai_horde_api.apimodels.generate.text.status import TextGenerateStatusRequest
+from horde_sdk.ai_horde_api.apimodels.generate.text.submit import TextGenerationJobSubmitRequest
+from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
@@ -125,14 +127,32 @@ class TextGenerateJobPopResponse(
 
     @override
     @classmethod
-    def get_follow_up_failure_cleanup_request_type(cls) -> type[DeleteTextGenerateRequest]:
-        return DeleteTextGenerateRequest
+    def get_follow_up_failure_cleanup_request_type(cls) -> type[TextGenerationJobSubmitRequest]:
+        # Workers cannot delete a requester's generation request; the correct way for a worker to
+        # abandon a popped job is to submit it as faulted, mirroring the image worker behavior.
+        return TextGenerationJobSubmitRequest
+
+    @override
+    def get_follow_up_failure_cleanup_params(self) -> dict[str, object]:
+        return {
+            "state": GENERATION_STATE.faulted,
+            "generation": "Faulted",
+        }
+
+    @override
+    def ignore_failure(self) -> bool:
+        if self.id_ is None and not self.ids:
+            return True
+
+        return super().ignore_failure()
 
     @override
     def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:
-        if as_python_field_name:
-            return [{"id_": self.id_}]
-        return [{"id": self.id_}]
+        key = "id_" if as_python_field_name else "id"
+        if self.id_ is not None:
+            return [{key: self.id_}]
+
+        return [{key: id_} for id_ in self.ids]
 
     @override
     async def async_download_additional_data(self, client_session: aiohttp.ClientSession) -> None:
