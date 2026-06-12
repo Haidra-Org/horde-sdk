@@ -28,11 +28,11 @@ async def async_alchemy_example(
 
         input_image_path = Path(source_image_file_path)
 
-        if not input_image_path.exists():
+        if not input_image_path.exists():  # noqa: ASYNC240 : Pillow ops are blocking
             logger.error(f"Input image file not found: {input_image_path}")
             return
 
-        source_image_base64: str = base64.b64encode(input_image_path.read_bytes()).decode()
+        source_image_base64: str = base64.b64encode(input_image_path.read_bytes()).decode()  # noqa: ASYNC240 : Pillow ops are blocking
 
         status_response: AlchemyStatusResponse | RequestErrorResponse
         status_response, gen_id = await simple_client.alchemy_request(
@@ -55,7 +55,7 @@ async def async_alchemy_example(
             upscale_result_image: Image = await simple_client.download_image_from_url(upscale_result.url)
 
             example_path = Path("requested_images")
-            example_path.mkdir(exist_ok=True, parents=True)
+            example_path.mkdir(exist_ok=True, parents=True)  # noqa: ASYNC240 : Pillow ops are blocking
 
             upscale_result_image.save(example_path / f"{gen_id}_{upscale_result.upscaler_used}.webp")
 
