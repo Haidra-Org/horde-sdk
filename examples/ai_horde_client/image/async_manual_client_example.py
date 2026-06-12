@@ -2,10 +2,10 @@ import argparse
 import asyncio
 import sys
 import time
-from pathlib import Path
 
 import aiofiles
 import aiohttp
+import anyio
 from loguru import logger
 
 from horde_sdk import ANON_API_KEY, _default_sslcontext
@@ -97,8 +97,8 @@ async def main(apikey: str = ANON_API_KEY) -> None:
                 logger.error("Failed to download image.")
                 return
 
-            example_path = Path("requested_images")
-            example_path.mkdir(exist_ok=True, parents=True)
+            example_path = anyio.Path("requested_images")
+            await example_path.mkdir(exist_ok=True, parents=True)
 
             filepath_to_write_to = example_path / f"{image_gen.id_}_man_async_example.webp"
 

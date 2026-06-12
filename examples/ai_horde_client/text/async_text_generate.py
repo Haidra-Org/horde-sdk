@@ -1,10 +1,10 @@
 import argparse
 import asyncio
 import sys
-from pathlib import Path
 
 import aiofiles
 import aiohttp
+import anyio
 from loguru import logger
 
 from horde_sdk import ANON_API_KEY
@@ -84,8 +84,8 @@ async def async_text_generate_example(
 
     logger.debug(f"Generated Text: {text_generated}")
 
-    example_path = Path("requested_text")
-    example_path.mkdir(exist_ok=True, parents=True)
+    example_path = anyio.Path("requested_text")
+    await example_path.mkdir(exist_ok=True, parents=True)
 
     async with aiofiles.open(example_path / f"{gen_id}_async_example.txt", "w") as f:
         await f.write(status_response.model_dump_json(indent=4))
