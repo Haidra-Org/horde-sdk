@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 import aiohttp
+import anyio
 from loguru import logger
 from PIL.Image import Image
 
@@ -65,8 +66,8 @@ async def async_one_image_generate_example(
     if isinstance(single_generation_response, RequestErrorResponse):
         logger.error(f"Error: {single_generation_response.message}")
     else:
-        example_path = Path("requested_images")
-        example_path.mkdir(exist_ok=True, parents=True)
+        example_path = anyio.Path("requested_images")
+        await example_path.mkdir(exist_ok=True, parents=True)
 
         download_image_tasks: list[asyncio.Task[tuple[Image, GenerationID]]] = []
 
@@ -121,8 +122,8 @@ async def async_multi_image_generate_example(
         if isinstance(generation_response, RequestErrorResponse):
             logger.error(f"Error: {generation_response.message}")
         else:
-            example_path = Path("requested_images")
-            example_path.mkdir(exist_ok=True, parents=True)
+            example_path = anyio.Path("requested_images")
+            await example_path.mkdir(exist_ok=True, parents=True)
 
             for generation in generation_response.generations:
                 download_image_tasks.append(

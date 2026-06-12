@@ -710,7 +710,12 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
         """Enter the context manager."""
         return self
 
-    def __exit__(self, exc_type: type[BaseException], exc_val: Exception, exc_tb: object) -> bool:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> bool:
         """Exit the context manager."""
         # If there was no exception, return True.
         if exc_type is None:
@@ -912,7 +917,12 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
         """Enter the context manager asynchronously."""
         return self
 
-    async def __aexit__(self, exc_type: type[BaseException], exc_val: Exception, exc_tb: object) -> bool:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> bool:
         """Exit the context manager asynchronously."""
         # If there are any requests that haven't been returned yet, log a warning.
         if self._awaiting_requests:

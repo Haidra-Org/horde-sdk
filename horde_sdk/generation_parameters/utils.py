@@ -54,7 +54,7 @@ def apply_template_overrides[TemplateT: BaseModel](
     return TemplateFinalization(template=updated, payload=payload)
 
 
-def finalize_template_for_parameters(
+def finalize_template_for_parameters[TemplateT: BaseModel](
     template: TemplateT,
     *,
     overrides: Mapping[str, object] | None = None,
