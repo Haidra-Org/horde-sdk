@@ -10,6 +10,7 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,
     JobRequestMixin,
 )
+from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
@@ -166,6 +167,22 @@ class AlchemyJobPopResponse(HordeResponseBaseModel, ResponseRequiringFollowUpMix
     @classmethod
     def get_follow_up_failure_cleanup_request_type(cls) -> type[AlchemyJobSubmitRequest]:
         return AlchemyJobSubmitRequest
+
+    @override
+    def get_follow_up_failure_cleanup_params(self) -> dict[str, object]:
+        # The API requires `result` to be present even for faulted submissions, but it aborts the
+        # form without ever reading the result when the state is faulted, so an empty dict suffices.
+        return {
+            "state": GENERATION_STATE.faulted,
+            "result": {},
+        }
+
+    @override
+    def ignore_failure(self) -> bool:
+        if not self.forms:
+            return True
+
+        return super().ignore_failure()
 
     @override
     def get_follow_up_returned_params(self, *, as_python_field_name: bool = False) -> list[dict[str, object]]:

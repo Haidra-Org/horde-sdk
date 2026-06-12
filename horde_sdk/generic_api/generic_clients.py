@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import enum
 import os
 import time
 from abc import ABC
@@ -44,6 +45,33 @@ from horde_sdk.generic_api.metadata import (
 )
 
 """The default SSL context to use for aiohttp requests."""
+
+
+def _build_cleanup_requests_safely(response: ResponseRequiringFollowUpMixin) -> list[HordeRequest] | None:
+    """Build the failure-cleanup requests for a response without letting construction errors propagate.
+
+    Cleanup requests only matter if the session later exits with an exception, but they are built
+    eagerly as soon as the triggering response arrives. A response that was already successfully
+    received (and committed server-side) must never be lost because its *hypothetical* cleanup
+    request failed to validate. Returning `None` defers to the exit handlers, which log the
+    misconfiguration and treat the response as handled.
+
+    Args:
+        response (ResponseRequiringFollowUpMixin): The response to build cleanup requests for.
+
+    Returns:
+        list[HordeRequest] | None: The cleanup requests, or `None` if they could not be built.
+    """
+    try:
+        return response.get_follow_up_failure_cleanup_request()
+    except Exception as e:
+        logger.exception(e)
+        logger.critical(
+            "Failed to construct the failure-cleanup request(s) for a successful response! The response is "
+            "unaffected, but no automatic cleanup will occur if this session exits with an exception. "
+            f"This is a bug in `{type(response).__name__}`'s follow-up definitions; please report it!",
+        )
+        return None
 
 
 class ParsedRawRequest(BaseModel):
@@ -260,6 +288,11 @@ class BaseHordeAPIClient(ABC):
             if request_key in specified_paths:
                 continue
             if request_key in specified_headers:
+                # Coerce enum values (e.g. GenericAcceptTypes) to their string value; aiohttp
+                # stringifies them on the wire anyway, but header-capturing middleware
+                # (OpenTelemetry instrumentation) warns on every non-str header value.
+                if isinstance(request_value, enum.Enum):
+                    request_value = request_value.value
                 request_headers_dict[specified_headers[request_key]] = request_value
                 continue
             if request_key in specified_queries:
@@ -626,7 +659,7 @@ class GenericHordeAPISession(GenericHordeAPIManualClient):
 
         if isinstance(response, ResponseRequiringFollowUpMixin):
             self._pending_follow_ups.append(
-                (api_request, response, response.get_follow_up_failure_cleanup_request()),
+                (api_request, response, _build_cleanup_requests_safely(response)),
             )
         else:  # TODO: This whole else is duplicated in the asyncio version of this class. Refactor it out.
             # Check if this request is a cleanup or follow up request for a prior request
@@ -824,7 +857,7 @@ class GenericAsyncHordeAPISession(GenericAsyncHordeAPIManualClient):
                 # Add the follow-up request to the list of pending follow-ups.
                 if not response.ignore_failure():
                     self._pending_follow_ups.append(
-                        (api_request, response, response.get_follow_up_failure_cleanup_request()),
+                        (api_request, response, _build_cleanup_requests_safely(response)),
                     )
 
             else:

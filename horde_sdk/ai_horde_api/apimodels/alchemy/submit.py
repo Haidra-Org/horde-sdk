@@ -1,5 +1,8 @@
 from typing import override
 
+from loguru import logger
+from pydantic import model_validator
+
 from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest, JobRequestMixin
 from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
@@ -33,10 +36,26 @@ class AlchemyJobSubmitRequest(BaseAIHordeRequest, JobRequestMixin, APIKeyAllowed
     v2 API Model: `SubmitInputStable`
     """
 
-    result: str  # FIXME
-    """The result of the alchemy job."""
+    result: dict[str, object] | str
+    """The results of the alchemy job, keyed by form name. The API requires this field even for
+    faulted submissions, though it is ignored server-side in that case.
+
+    The API swagger doc declares this field as a string, but the server actually requires a
+    dictionary and will reject string submissions; the `str` arm exists only for swagger
+    compatibility."""
     state: GENERATION_STATE
     """The state of this generation. See `GENERATION_STATE` for more information."""
+
+    @model_validator(mode="after")
+    def warn_on_string_result(self) -> "AlchemyJobSubmitRequest":
+        """Warn that the server will reject a string `result` despite the swagger doc allowing it."""
+        if isinstance(self.result, str):
+            logger.warning(
+                "AlchemyJobSubmitRequest.result was given a string, but the server requires a dictionary "
+                "keyed by form name and will reject this submission.",
+            )
+
+        return self
 
     @override
     @classmethod
