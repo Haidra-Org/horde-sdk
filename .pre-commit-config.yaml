@@ -31,7 +31,3 @@ repos:
             StrEnum,
             horde_model_reference>=4.0.0
         ]
-- repo: https://github.com/gauge-sh/tach-pre-commit
-  rev: v0.29.0
-  hooks:
-    - id: tach
