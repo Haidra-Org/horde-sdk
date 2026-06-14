@@ -28,47 +28,48 @@ from horde_sdk.generation_parameters.alchemy.object_models import (
     unregister_alchemy_parameter_rule,
 )
 
+# Explicitly typed against the base classes so mypy checks each case against the
+# intended base type rather than the narrower type inferred from the first entry.
+_DISPATCH_CASES: list[tuple[SingleAlchemyParametersTemplate, type[SingleAlchemyParameters]]] = [
+    (
+        UpscaleAlchemyParametersTemplate(
+            form=KNOWN_ALCHEMY_FORMS.post_process,
+            upscaler=KNOWN_UPSCALERS.RealESRGAN_x4plus,
+        ),
+        UpscaleAlchemyParameters,
+    ),
+    (
+        FacefixAlchemyParametersTemplate(
+            form=KNOWN_ALCHEMY_FORMS.post_process,
+            facefixer=KNOWN_FACEFIXERS.GFPGAN,
+        ),
+        FacefixAlchemyParameters,
+    ),
+    (
+        InterrogateAlchemyParametersTemplate(
+            form=KNOWN_ALCHEMY_FORMS.interrogation,
+            interrogator=KNOWN_INTERROGATORS.BACKEND_DEFAULT,
+        ),
+        InterrogateAlchemyParameters,
+    ),
+    (
+        CaptionAlchemyParametersTemplate(
+            form=KNOWN_ALCHEMY_FORMS.caption,
+            caption_model=KNOWN_CAPTION_MODELS.BLIP_BASE_SALESFORCE,
+        ),
+        CaptionAlchemyParameters,
+    ),
+    (
+        NSFWAlchemyParametersTemplate(
+            form=KNOWN_ALCHEMY_FORMS.nsfw,
+            nsfw_detector="demo",
+        ),
+        NSFWAlchemyParameters,
+    ),
+]
 
-@pytest.mark.parametrize(
-    "template, expected_type",
-    [
-        (
-            UpscaleAlchemyParametersTemplate(
-                form=KNOWN_ALCHEMY_FORMS.post_process,
-                upscaler=KNOWN_UPSCALERS.RealESRGAN_x4plus,
-            ),
-            UpscaleAlchemyParameters,
-        ),
-        (
-            FacefixAlchemyParametersTemplate(
-                form=KNOWN_ALCHEMY_FORMS.post_process,
-                facefixer=KNOWN_FACEFIXERS.GFPGAN,
-            ),
-            FacefixAlchemyParameters,
-        ),
-        (
-            InterrogateAlchemyParametersTemplate(
-                form=KNOWN_ALCHEMY_FORMS.interrogation,
-                interrogator=KNOWN_INTERROGATORS.BACKEND_DEFAULT,
-            ),
-            InterrogateAlchemyParameters,
-        ),
-        (
-            CaptionAlchemyParametersTemplate(
-                form=KNOWN_ALCHEMY_FORMS.caption,
-                caption_model=KNOWN_CAPTION_MODELS.BLIP_BASE_SALESFORCE,
-            ),
-            CaptionAlchemyParameters,
-        ),
-        (
-            NSFWAlchemyParametersTemplate(
-                form=KNOWN_ALCHEMY_FORMS.nsfw,
-                nsfw_detector="demo",
-            ),
-            NSFWAlchemyParameters,
-        ),
-    ],
-)
+
+@pytest.mark.parametrize("template, expected_type", _DISPATCH_CASES)
 def test_template_dispatches_to_specialised_model(
     template: SingleAlchemyParametersTemplate,
     expected_type: type[SingleAlchemyParameters],

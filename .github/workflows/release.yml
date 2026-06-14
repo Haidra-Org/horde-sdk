@@ -2,8 +2,8 @@ name: horde_sdk build and publish
 
 on:
   push:
-    branches:
-      - releases
+    tags:
+      - "v*"
 
 jobs:
   build-n-publish:
@@ -16,67 +16,30 @@ jobs:
 
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
-      contents: write
-      pull-requests: read
+      contents: write  # needed to create the GitHub release
 
     steps:
-    - name: "📣 Release on push"
-      id: release
-      uses: rymndhng/release-on-push-action@v0.28.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        bump_version_scheme: patch
-        use_github_release_notes: true
-
     - name: "✔️ Checkout"
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
+        # Full history (including tags) is required so setuptools-scm can
+        # derive the version from the pushed tag.
         fetch-depth: 0
 
-    # Pass the version number in an env var to the below steps
-    - name: Set build version env var
-      run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ steps.release.outputs.version }}" >> $GITHUB_ENV
-
-    # We need python...
-    - name: "🐍 Set up Python 3.13"
-      if: ${{ steps.release.outputs.version != '' }}
-      uses: actions/setup-python@v4
+    - name: "📦 Install uv"
+      uses: astral-sh/setup-uv@v6
       with:
         python-version: "3.13"
-    # Install build deps
-    - name: "🛠 Install pypa/build"
-      if: ${{ steps.release.outputs.version != '' }}
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install build
 
-
-    # Build a pypi distribution using the env var version number
+    # setuptools-scm reads the version straight from the pushed tag (e.g.
+    # v1.2.3 -> 1.2.3), so no pretend-version env var is needed.
     - name: "🔧 Build a binary wheel and a source tarball"
-      if: ${{ steps.release.outputs.version != '' }}
-      run: >-
-        python -m build --sdist --wheel --outdir dist/ .
+      run: uv build
 
-    # # Publish the package
     - name: "📦 Publish distribution to PyPI"
-      if: ${{ steps.release.outputs.version != '' }}
       uses: pypa/gh-action-pypi-publish@release/v1
 
-    # # Update the badges (maybe, if we're lucky)
-    # - name: "📦 Refresh pypi badge cache"
-    #   run: >-
-    #     curl -X PURGE
-    #     url_here
-
-    # - name: "📦 Refresh downloads badge cache"
-    #   run: >-
-    #     curl -X PURGE
-    #     url_here
-
-    # - name: "Inform with Discord Webhook"
-    #   if: ${{ steps.release.outputs.version != '' }}
-    #   uses: tsickert/discord-webhook@v5.3.0
-    #   with:
-    #     webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-    #     content: "New version of horde_sdk has been published to pypi: ${{ steps.release.outputs.version }}."
+    - name: "📣 Create GitHub release"
+      uses: softprops/action-gh-release@v2
+      with:
+        generate_release_notes: true

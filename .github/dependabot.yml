@@ -9,3 +9,14 @@ updates:
     python-packages:
       patterns:
         - "*"
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: weekly
+  commit-message:
+    prefix: chore
+  groups:
+    # Roll all action bumps into a single PR to keep the noise down.
+    github-actions:
+      patterns:
+        - "*"
