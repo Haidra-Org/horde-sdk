@@ -157,9 +157,7 @@ async def _async_model_reference_manager() -> ModelReferenceManager:
 def model_reference_manager() -> ModelReferenceManager:
     import asyncio
 
-    loop = asyncio.get_event_loop()
-    return loop.run_until_complete(_async_model_reference_manager())
-
+    return asyncio.run(_async_model_reference_manager())
 
 @pytest.fixture(scope="session")
 def image_model_load_resolver() -> ImageModelLoadResolver:
