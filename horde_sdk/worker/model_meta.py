@@ -61,7 +61,7 @@ class ImageModelLoadResolver:
         """
         # Get model stats from the API
         stats_response = client.submit_request(
-            ImageStatsModelsRequest(api_model_state=MODEL_STATE.known),
+            ImageStatsModelsRequest(model_state=MODEL_STATE.known),
             ImageStatsModelsResponse,
         )
         if isinstance(stats_response, RequestErrorResponse):
