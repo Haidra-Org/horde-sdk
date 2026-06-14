@@ -20,7 +20,7 @@ if sys.platform == "win32":
 import PIL.Image
 import pytest
 from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
-from horde_model_reference.model_reference_manager import ModelReferenceManager
+from horde_model_reference.model_reference_manager import ModelReferenceManager, PrefetchStrategy
 from loguru import logger
 
 from horde_sdk.ai_horde_api.apimodels import (
@@ -138,9 +138,27 @@ def ai_horde_api_key() -> str:
     return dev_key if dev_key is not None else ANON_API_KEY
 
 
+async def _async_model_reference_manager() -> ModelReferenceManager:
+    """Asynchronously initialize and return the model reference manager."""
+    if ModelReferenceManager.has_instance():
+        return ModelReferenceManager.get_instance()
+
+    ModelReferenceManager(prefetch_strategy=PrefetchStrategy.ASYNC)
+    handle = ModelReferenceManager().get_instance().deferred_prefetch_handle
+    if not handle:
+        raise Exception("ModelReferenceManager instance was not properly initialized with a deferred prefetch handle.")
+
+    await handle
+
+    return ModelReferenceManager.get_instance()
+
+
 @pytest.fixture(scope="session")
 def model_reference_manager() -> ModelReferenceManager:
-    return ModelReferenceManager()
+    import asyncio
+
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(_async_model_reference_manager())
 
 
 @pytest.fixture(scope="session")

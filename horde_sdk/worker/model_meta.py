@@ -2,7 +2,7 @@ import os
 import re
 
 from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE, MODEL_REFERENCE_CATEGORY
-from horde_model_reference.model_reference_manager import ModelReferenceManager
+from horde_model_reference.model_reference_manager import ModelReferenceManager, PrefetchStrategy
 from horde_model_reference.model_reference_records import ImageGenerationModelRecord
 from loguru import logger
 
@@ -21,8 +21,27 @@ class ImageModelLoadResolver:
 
     _model_reference_manager: ModelReferenceManager
 
+    async def _initialize_model_reference_manager(self) -> ModelReferenceManager:
+        """Asynchronously initialize the model reference manager."""
+        if ModelReferenceManager.has_instance():
+            return ModelReferenceManager.get_instance()
+
+        ModelReferenceManager(prefetch_strategy=PrefetchStrategy.ASYNC)
+        handle = ModelReferenceManager().get_instance().deferred_prefetch_handle
+        if not handle:
+            raise Exception(
+                "ModelReferenceManager instance was not properly initialized with a deferred prefetch handle."
+            )
+
+        await handle
+
+        return ModelReferenceManager.get_instance()
+
     def __init__(self) -> None:  # noqa: D107
-        self._model_reference_manager = ModelReferenceManager()
+        import asyncio
+
+        loop = asyncio.get_event_loop()
+        self._model_reference_manager = loop.run_until_complete(self._initialize_model_reference_manager())
 
     def resolve_meta_instructions(
         self,
