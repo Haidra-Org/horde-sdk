@@ -144,7 +144,7 @@ async def _async_model_reference_manager() -> ModelReferenceManager:
         return ModelReferenceManager.get_instance()
 
     ModelReferenceManager(prefetch_strategy=PrefetchStrategy.ASYNC)
-    handle = ModelReferenceManager().get_instance().deferred_prefetch_handle
+    handle = ModelReferenceManager.get_instance().deferred_prefetch_handle
     if not handle:
         raise Exception("ModelReferenceManager instance was not properly initialized with a deferred prefetch handle.")
 
