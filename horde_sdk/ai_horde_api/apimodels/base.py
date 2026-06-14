@@ -243,7 +243,7 @@ class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
     """The sampler to use for this generation. Defaults to `KNOWN_IMAGE_SAMPLERS.k_lms`."""
     karras: bool = True
     """Set to True if you want to use the Karras scheduling."""
-    cfg_scale: float = Field(default=7.5, ge=0, le=10)
+    cfg_scale: float = Field(default=7.5, ge=0)
     """The cfg_scale to use for this generation. Defaults to 7.5."""
     denoising_strength: float | None = Field(default=1, ge=0, le=1)
     """The denoising strength to use for this generation. Defaults to 1."""
