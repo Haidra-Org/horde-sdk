@@ -159,6 +159,7 @@ def model_reference_manager() -> ModelReferenceManager:
 
     return asyncio.run(_async_model_reference_manager())
 
+
 @pytest.fixture(scope="session")
 def image_model_load_resolver() -> ImageModelLoadResolver:
     return ImageModelLoadResolver()
