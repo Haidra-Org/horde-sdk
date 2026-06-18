@@ -40,7 +40,18 @@ class ImageModelLoadResolver:
     def __init__(self) -> None:  # noqa: D107
         import asyncio
 
-        self._model_reference_manager = asyncio.run(self._initialize_model_reference_manager())
+        # Check to see if there is already a running asyncio loop, and use that if possible
+        try:
+            loop = asyncio.get_running_loop()
+            if loop.is_running():
+                logger.debug("Using existing running event loop to initialize model reference manager.")
+                self._model_reference_manager = loop.run_until_complete(self._initialize_model_reference_manager())
+            else:
+                logger.debug("No running event loop found. Initializing model reference manager with new event loop.")
+                self._model_reference_manager = asyncio.run(self._initialize_model_reference_manager())
+        except RuntimeError:
+            logger.debug("No running event loop found. Initializing model reference manager with new event loop.")
+            self._model_reference_manager = asyncio.run(self._initialize_model_reference_manager())
 
     def resolve_meta_instructions(
         self,
