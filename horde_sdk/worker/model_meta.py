@@ -37,7 +37,22 @@ class ImageModelLoadResolver:
 
         return ModelReferenceManager.get_instance()
 
-    def __init__(self) -> None:  # noqa: D107
+    def __init__(self, model_reference_manager: ModelReferenceManager | None = None) -> None:
+        """Initialise the resolver.
+
+        Args:
+            model_reference_manager: An already-initialised manager to read the reference from. Inject this
+                to reuse a caller-owned manager (for example an offline, disk-only one) instead of having
+                the resolver build its own. Reading the reference only needs records already on disk; left
+                as ``None`` the resolver constructs a network-fetching manager and awaits its prefetch,
+                which blocks the caller on a PRIMARY-API round-trip whose latency it cannot bound. A
+                process that must not stall on the network (or that already owns a manager) should pass it.
+        """
+        # Injected manager: use it as-is and skip all event-loop / network init below.
+        if model_reference_manager is not None:
+            self._model_reference_manager = model_reference_manager
+            return
+
         import asyncio
 
         # Check to see if there is already a running asyncio loop, and use that if possible
