@@ -25,6 +25,7 @@ from horde_sdk.ai_horde_api.apimodels.alchemy.status import (
     AlchemyStatusRequest,
     AlchemyStatusResponse,
     AlchemyUpscaleResult,
+    AlchemyVectorizeResult,
 )
 from horde_sdk.ai_horde_api.apimodels.alchemy.submit import AlchemyJobSubmitRequest, AlchemyJobSubmitResponse
 from horde_sdk.ai_horde_api.apimodels.base import (
@@ -341,6 +342,7 @@ __all__ = [
     "AlchemyStatusRequest",
     "AlchemyStatusResponse",
     "AlchemyUpscaleResult",
+    "AlchemyVectorizeResult",
     "AllCollectionsRequest",
     "AllCollectionsResponse",
     "AllIPTimeoutsRequest",
