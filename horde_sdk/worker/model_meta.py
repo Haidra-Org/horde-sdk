@@ -231,7 +231,10 @@ class ImageModelLoadResolver:
         """
         all_model_references = self._model_reference_manager.get_all_model_references()
 
-        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.image_generation]
+        # Use .get(), not [...]: a model reference manager may omit a category entirely when its
+        # reference failed to load (or simply is not present), not merely map it to None. An absent key
+        # would raise KeyError here; .get() yields None, which the guards below already handle.
+        sd_model_references = all_model_references.get(MODEL_REFERENCE_CATEGORY.image_generation)
 
         all_models = set(sd_model_references.keys()) if sd_model_references is not None else set()
 
@@ -253,7 +256,10 @@ class ImageModelLoadResolver:
         """
         all_model_references = self._model_reference_manager.get_all_model_references()
 
-        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.image_generation]
+        # Use .get(), not [...]: a model reference manager may omit a category entirely when its
+        # reference failed to load (or simply is not present), not merely map it to None. An absent key
+        # would raise KeyError here; .get() yields None, which the guards below already handle.
+        sd_model_references = all_model_references.get(MODEL_REFERENCE_CATEGORY.image_generation)
 
         found_models: set[str] = set()
 
@@ -295,7 +301,10 @@ class ImageModelLoadResolver:
         """
         all_model_references = self._model_reference_manager.get_all_model_references()
 
-        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.image_generation]
+        # Use .get(), not [...]: a model reference manager may omit a category entirely when its
+        # reference failed to load (or simply is not present), not merely map it to None. An absent key
+        # would raise KeyError here; .get() yields None, which the guards below already handle.
+        sd_model_references = all_model_references.get(MODEL_REFERENCE_CATEGORY.image_generation)
 
         found_models: set[str] = set()
 
@@ -324,7 +333,10 @@ class ImageModelLoadResolver:
         """
         all_model_references = self._model_reference_manager.get_all_model_references()
 
-        sd_model_references = all_model_references[MODEL_REFERENCE_CATEGORY.image_generation]
+        # Use .get(), not [...]: a model reference manager may omit a category entirely when its
+        # reference failed to load (or simply is not present), not merely map it to None. An absent key
+        # would raise KeyError here; .get() yields None, which the guards below already handle.
+        sd_model_references = all_model_references.get(MODEL_REFERENCE_CATEGORY.image_generation)
 
         found_models: set[str] = set()
 
