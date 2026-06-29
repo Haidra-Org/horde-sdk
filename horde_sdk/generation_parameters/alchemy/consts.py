@@ -30,6 +30,8 @@ class KNOWN_ALCHEMY_FORMS(StrEnum):
     """Interrogation (i.e., CLIP)."""
     post_process = auto()
     """Upscaling, facefixing, etc."""
+    vectorize = auto()
+    """Vectorization (raster image -> SVG)."""
 
 
 class KNOWN_UPSCALERS(StrEnum):
@@ -137,6 +139,8 @@ class KNOWN_ALCHEMY_TYPES(StrEnum):
 
     strip_background = KNOWN_MISC_POST_PROCESSORS.strip_background
 
+    vectorize = KNOWN_ALCHEMY_FORMS.vectorize
+
 
 def is_upscaler_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
     """Check if the form is an upscaler form."""
@@ -174,3 +178,8 @@ def is_nsfw_detector_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
 def is_strip_background_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
     """Check if the form is a strip background form."""
     return form == KNOWN_MISC_POST_PROCESSORS.strip_background
+
+
+def is_image_vectorizer_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
+    """Check if the form is an image vectorizer (raster -> SVG) form."""
+    return form == KNOWN_ALCHEMY_FORMS.vectorize

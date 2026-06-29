@@ -1,7 +1,12 @@
+from uuid import uuid4
+
+import pytest
+
 from horde_sdk.ai_horde_api.apimodels import (
     AlchemyJobPopResponse,
     NoValidAlchemyFound,
 )
+from horde_sdk.ai_horde_api.apimodels.alchemy.pop import AlchemyPopFormPayload
 from horde_sdk.consts import KNOWN_DISPATCH_SOURCE, KNOWN_NSFW_DETECTOR
 from horde_sdk.generation_parameters.alchemy import (
     AlchemyParameters,
@@ -14,12 +19,15 @@ from horde_sdk.generation_parameters.alchemy import (
 )
 from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_ALCHEMY_FORMS,
+    KNOWN_ALCHEMY_TYPES,
     KNOWN_CAPTION_MODELS,
     KNOWN_FACEFIXERS,
     KNOWN_INTERROGATORS,
     KNOWN_MISC_POST_PROCESSORS,
     KNOWN_UPSCALERS,
+    is_image_vectorizer_form,
 )
+from horde_sdk.utils.image_utils import base64_str_to_bytes
 from horde_sdk.worker.consts import REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE
 from horde_sdk.worker.dispatch.ai_horde.alchemy.convert import (
     convert_alchemy_job_pop_response_to_parameters,
@@ -257,3 +265,86 @@ def test_convert_alchemy_job_pop_response_to_parameters_strip_background(
     )
 
     assert generation_parameters.all_alchemy_operations[0].form == KNOWN_MISC_POST_PROCESSORS.strip_background
+
+
+def test_convert_alchemy_job_pop_response_to_parameters_vectorize(
+    simple_alchemy_gen_job_pop_response_vectorize: AlchemyJobPopResponse,
+) -> None:
+    """A vectorize pop is routed to the misc bucket as a bare SingleAlchemyParameters, not uploaded."""
+    assert simple_alchemy_gen_job_pop_response_vectorize.forms is not None
+    assert len(simple_alchemy_gen_job_pop_response_vectorize.forms) == 1
+    source_form = simple_alchemy_gen_job_pop_response_vectorize.forms[0]
+
+    generation_parameters, dispatch_parameters = convert_alchemy_job_pop_response_to_parameters(
+        simple_alchemy_gen_job_pop_response_vectorize,
+    )
+
+    assert_common_parameters(
+        generation_parameters,
+        dispatch_parameters,
+        simple_alchemy_gen_job_pop_response_vectorize,
+    )
+
+    # vectorize must not be mistaken for any of the typed (upscaler/facefixer/clip) categories: it
+    # lands only in the catch-all misc bucket.
+    assert generation_parameters.upscalers is None
+    assert generation_parameters.facefixers is None
+    assert generation_parameters.interrogators is None
+    assert generation_parameters.captions is None
+    assert generation_parameters.nsfw_detectors is None
+    assert generation_parameters.misc_post_processors is not None
+    assert len(generation_parameters.misc_post_processors) == 1
+
+    assert len(generation_parameters.all_alchemy_operations) == 1
+    operation = generation_parameters.all_alchemy_operations[0]
+    assert type(operation) is SingleAlchemyParameters
+    assert operation.form == KNOWN_ALCHEMY_FORMS.vectorize
+    assert is_image_vectorizer_form(operation.form)
+
+    # The source image must survive the base64 -> bytes round-trip the worker relies on.
+    assert source_form.source_image is not None
+    assert operation.source_image == base64_str_to_bytes(source_form.source_image)
+
+    # Text-output forms carry no R2 destination, so they must be absent from the upload map (and the
+    # map must contain no None values, which its `Mapping[..., str]` type forbids).
+    assert str(source_form.id_) not in dispatch_parameters.r2_upload_url_map
+    assert None not in dispatch_parameters.r2_upload_url_map.values()
+
+
+@pytest.mark.parametrize(
+    "form_type",
+    [
+        KNOWN_ALCHEMY_TYPES.caption,
+        KNOWN_ALCHEMY_TYPES.nsfw,
+        KNOWN_ALCHEMY_TYPES.interrogation,
+        KNOWN_ALCHEMY_TYPES.vectorize,
+    ],
+)
+def test_convert_text_output_form_without_r2_upload(
+    form_type: KNOWN_ALCHEMY_TYPES,
+    default_testing_image_base64: str,
+) -> None:
+    """Text-output forms pop without an r2_upload URL; conversion must not crash and must skip the map.
+
+    The server only mints an `r2_upload` for forms in KNOWN_POST_PROCESSORS, so every text-output
+    form (caption/nsfw/interrogation/vectorize) arrives with `r2_upload=None`. Storing None into the
+    `Mapping[GenerationID, str]` upload map raises a ValidationError, so the converter must omit it.
+    """
+    form_id = uuid4()
+    response = AlchemyJobPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=form_id,
+                form=form_type,
+                source_image=default_testing_image_base64,
+            ),
+        ],
+        skipped=NoValidAlchemyFound(),
+    )
+    assert response.forms is not None
+    assert response.forms[0].r2_upload is None
+
+    _, dispatch_parameters = convert_alchemy_job_pop_response_to_parameters(response)
+
+    assert str(form_id) not in dispatch_parameters.r2_upload_url_map
+    assert None not in dispatch_parameters.r2_upload_url_map.values()

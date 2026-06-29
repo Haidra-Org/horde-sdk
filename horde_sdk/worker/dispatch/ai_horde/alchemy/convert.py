@@ -17,6 +17,7 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_INTERROGATORS,
     is_caption_form,
     is_facefixer_form,
+    is_image_vectorizer_form,
     is_interrogator_form,
     is_nsfw_detector_form,
     is_upscaler_form,
@@ -52,7 +53,11 @@ def convert_alchemy_job_pop_response_to_parameters(
         if form.source_image is None:
             raise ValueError("The API response did not contain a source image for a form.")
 
-        r2_upload_url_map[str(form.id_)] = form.r2_upload
+        # Text-output forms (caption/nsfw/interrogation/vectorize) are not in the server's
+        # KNOWN_POST_PROCESSORS, so they pop without an r2_upload URL. Only image-output forms
+        # get a destination; keep those out of the map rather than storing None into it.
+        if form.r2_upload is not None:
+            r2_upload_url_map[str(form.id_)] = form.r2_upload
 
         if is_upscaler_form(form.form):
             parsed_upscalers.append(
@@ -101,6 +106,15 @@ def convert_alchemy_job_pop_response_to_parameters(
                     form=KNOWN_ALCHEMY_FORMS.nsfw,
                     source_image=base64_str_to_bytes(form.source_image),
                     nsfw_detector=KNOWN_NSFW_DETECTOR.HORDE_SAFETY,
+                ),
+            )
+
+        elif is_image_vectorizer_form(form.form):
+            parsed_unknown_forms.append(
+                SingleAlchemyParameters(
+                    result_id=str(form.id_),
+                    form=KNOWN_ALCHEMY_FORMS.vectorize,
+                    source_image=base64_str_to_bytes(form.source_image),
                 ),
             )
 

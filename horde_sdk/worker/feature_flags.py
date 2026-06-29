@@ -11,6 +11,7 @@ from horde_sdk import get_default_frozen_model_config_dict
 from horde_sdk.generation_parameters.alchemy.consts import (
     is_caption_form,
     is_facefixer_form,
+    is_image_vectorizer_form,
     is_interrogator_form,
     is_nsfw_detector_form,
     is_upscaler_form,
@@ -443,6 +444,9 @@ class ALCHEMY_WORKER_NOT_CAPABLE_REASON(StrEnum):
     unsupported_nsfw_detector = auto()
     """The worker does not support a requested NSFW detector."""
 
+    unsupported_vectorizer = auto()
+    """The worker does not support image vectorization."""
+
     unsupported_misc = auto()
     """The worker does not support a requested miscellaneous feature."""
 
@@ -488,6 +492,8 @@ class AlchemyWorkerFeatureFlags(WorkerFeatureFlags[ALCHEMY_WORKER_NOT_CAPABLE_RE
                     reasons.append(ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_caption_model)
                 elif is_nsfw_detector_form(alchemy_type):
                     reasons.append(ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_nsfw_detector)
+                elif is_image_vectorizer_form(alchemy_type):
+                    reasons.append(ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_vectorizer)
                 else:
                     reasons.append(ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_misc)
         return reasons if reasons else None

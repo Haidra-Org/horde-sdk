@@ -2,6 +2,7 @@ import pytest
 from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
 
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
+from horde_sdk.generation_parameters.alchemy.object_models import AlchemyFeatureFlags
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.image.consts import (
     CLIP_SKIP_REPRESENTATION,
@@ -18,8 +19,10 @@ from horde_sdk.generation_parameters.image.object_models import (
     image_parameters_to_feature_flags,
 )
 from horde_sdk.worker.feature_flags import (
+    ALCHEMY_WORKER_NOT_CAPABLE_REASON,
     IMAGE_WORKER_NOT_CAPABLE_REASON,
     RESULT_RETURN_METHOD,
+    AlchemyWorkerFeatureFlags,
     ImageWorkerFeatureFlags,
 )
 
@@ -154,3 +157,41 @@ def test_reasons_minimal_worker_not_capable(
     assert IMAGE_WORKER_NOT_CAPABLE_REASON.schedulers in reasons_hires
     assert IMAGE_WORKER_NOT_CAPABLE_REASON.samplers in reasons_hires
     assert IMAGE_WORKER_NOT_CAPABLE_REASON.hires_fix in reasons_hires
+
+
+def test_alchemy_worker_attributes_unsupported_vectorize_specifically() -> None:
+    """An unsupported vectorize request is flagged as `unsupported_vectorizer`, not `unsupported_misc`.
+
+    The reason is what the dispatcher surfaces to operators, so a vectorize gap must not be lumped in
+    with the generic misc bucket.
+    """
+    worker_without_vectorize = AlchemyWorkerFeatureFlags(
+        alchemy_feature_flags=AlchemyFeatureFlags(alchemy_types=[]),
+    )
+
+    reasons = worker_without_vectorize.reasons_not_capable_of_features(
+        AlchemyFeatureFlags(alchemy_types=[KNOWN_ALCHEMY_TYPES.vectorize]),
+    )
+    assert reasons == [ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_vectorizer]
+
+    # A worker that advertises vectorize is capable; no reason is returned.
+    worker_with_vectorize = AlchemyWorkerFeatureFlags(
+        alchemy_feature_flags=AlchemyFeatureFlags(alchemy_types=[KNOWN_ALCHEMY_TYPES.vectorize]),
+    )
+    assert (
+        worker_with_vectorize.reasons_not_capable_of_features(
+            AlchemyFeatureFlags(alchemy_types=[KNOWN_ALCHEMY_TYPES.vectorize]),
+        )
+        is None
+    )
+
+    # Mixed gaps keep their distinct reasons rather than collapsing into a single bucket.
+    mixed_reasons = worker_without_vectorize.reasons_not_capable_of_features(
+        AlchemyFeatureFlags(
+            alchemy_types=[KNOWN_ALCHEMY_TYPES.vectorize, KNOWN_ALCHEMY_TYPES.RealESRGAN_x4plus],
+        ),
+    )
+    assert mixed_reasons is not None
+    assert ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_vectorizer in mixed_reasons
+    assert ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_upscaler in mixed_reasons
+    assert ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_misc not in mixed_reasons

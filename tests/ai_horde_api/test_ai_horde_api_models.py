@@ -28,6 +28,14 @@ from horde_sdk.ai_horde_api.apimodels import (
     WorkerDetailItem,
     WorkerKudosDetails,
 )
+from horde_sdk.ai_horde_api.apimodels.alchemy.status import (
+    AlchemyCaptionResult,
+    AlchemyInterrogationDetails,
+    AlchemyNSFWResult,
+    AlchemyStatusResponse,
+    AlchemyUpscaleResult,
+    AlchemyVectorizeResult,
+)
 from horde_sdk.ai_horde_api.consts import (
     AI_HORDE_WORKER_TYPES,
     METADATA_TYPE,
@@ -828,3 +836,99 @@ def test_problem_gen_request_response() -> None:
     json_from_api = json.loads(example_json)
 
     ImageGenerateAsyncResponse.model_validate(json_from_api)
+
+
+def test_alchemy_status_parses_vectorize_result() -> None:
+    """A vectorize form result (`{"vectorize": "<svg>"}`) is parsed into an `AlchemyVectorizeResult`."""
+    svg = '<svg xmlns="http://www.w3.org/2000/svg"></svg>'
+    response = AlchemyStatusResponse.model_validate(
+        {
+            "state": "done",
+            "forms": [
+                {
+                    "form": KNOWN_ALCHEMY_TYPES.vectorize.value,
+                    "state": "done",
+                    "result": {"vectorize": svg},
+                },
+            ],
+        },
+    )
+
+    assert len(response.forms) == 1
+    assert isinstance(response.forms[0].result, AlchemyVectorizeResult)
+    assert response.forms[0].result.vectorize == svg
+
+    assert len(response.all_vectorize_results) == 1
+    assert response.all_vectorize_results[0].vectorize == svg
+
+
+def test_alchemy_status_union_does_not_cross_resolve_results() -> None:
+    """Each result accessor returns only its own type; adding vectorize must not perturb the others.
+
+    The `result` field is a union of single-string-field models (caption/vectorize especially), so
+    this guards against a regression where the smart union mis-resolves one shape into another.
+    """
+    svg = '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>'
+    empty_interrogation: dict[str, list[object]] = {
+        "tags": [],
+        "sites": [],
+        "artists": [],
+        "flavors": [],
+        "mediums": [],
+        "movements": [],
+        "techniques": [],
+    }
+    response = AlchemyStatusResponse.model_validate(
+        {
+            "state": "done",
+            "forms": [
+                {"form": KNOWN_ALCHEMY_TYPES.caption.value, "state": "done", "result": {"caption": "a cat"}},
+                {"form": KNOWN_ALCHEMY_TYPES.nsfw.value, "state": "done", "result": {"nsfw": False}},
+                {
+                    "form": KNOWN_ALCHEMY_TYPES.interrogation.value,
+                    "state": "done",
+                    "result": {"interrogation": empty_interrogation},
+                },
+                {
+                    "form": KNOWN_ALCHEMY_TYPES.RealESRGAN_x4plus.value,
+                    "state": "done",
+                    "result": {"RealESRGAN_x4plus": "https://not.a.real.url.internal/up.webp"},
+                },
+                {"form": KNOWN_ALCHEMY_TYPES.vectorize.value, "state": "done", "result": {"vectorize": svg}},
+            ],
+        },
+    )
+
+    results = [form.result for form in response.forms]
+    assert isinstance(results[0], AlchemyCaptionResult)
+    assert isinstance(results[1], AlchemyNSFWResult)
+    assert isinstance(results[2], AlchemyInterrogationDetails)
+    assert isinstance(results[3], AlchemyUpscaleResult)
+    assert isinstance(results[4], AlchemyVectorizeResult)
+
+    # A caption must never surface as a vectorize result (the single-string-field collision risk) and
+    # vice versa.
+    assert len(response.all_caption_results) == 1
+    assert len(response.all_nsfw_results) == 1
+    assert len(response.all_interrogation_results) == 1
+    assert len(response.all_upscale_results) == 1
+    assert len(response.all_vectorize_results) == 1
+    assert response.all_vectorize_results[0].vectorize == svg
+
+
+def test_alchemy_status_excludes_unfinished_vectorize_results() -> None:
+    """`all_vectorize_results` reflects only `done` forms, so in-progress work is not reported early."""
+    svg = "<svg/>"
+    response = AlchemyStatusResponse.model_validate(
+        {
+            "state": "processing",
+            "forms": [
+                {"form": KNOWN_ALCHEMY_TYPES.vectorize.value, "state": "done", "result": {"vectorize": svg}},
+                {"form": KNOWN_ALCHEMY_TYPES.vectorize.value, "state": "processing", "result": None},
+            ],
+        },
+    )
+
+    assert len(response.forms) == 2
+    assert len(response.all_vectorize_results) == 1
+    assert response.all_vectorize_results[0].vectorize == svg

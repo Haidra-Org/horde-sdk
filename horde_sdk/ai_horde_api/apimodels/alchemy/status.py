@@ -41,6 +41,13 @@ class AlchemyNSFWResult(HordeAPIData):
     """Whether the image is likely to be NSFW."""
 
 
+class AlchemyVectorizeResult(HordeAPIData):
+    """Represents the result of a vectorize (raster -> SVG) job."""
+
+    vectorize: str
+    """The resulting SVG markup of the image."""
+
+
 class AlchemyInterrogationResultItem(HordeAPIData):
     """Represents an item in the result of an interrogation job."""
 
@@ -83,7 +90,14 @@ class AlchemyFormStatus(HordeAPIData):
     """The form type."""
     state: GENERATION_STATE
     """The state of the form."""
-    result: AlchemyInterrogationDetails | AlchemyNSFWResult | AlchemyCaptionResult | AlchemyUpscaleResult | None = None
+    result: (
+        AlchemyInterrogationDetails
+        | AlchemyNSFWResult
+        | AlchemyCaptionResult
+        | AlchemyUpscaleResult
+        | AlchemyVectorizeResult
+        | None
+    ) = None
     """The result of the form."""
 
     @field_validator("form", mode="before")
@@ -165,6 +179,11 @@ class AlchemyStatusResponse(HordeResponseBaseModel, ResponseWithProgressMixin):
     def all_upscale_results(self) -> list[AlchemyUpscaleResult]:
         """Return all completed upscale results."""
         return [form.result for form in self.forms if form.done and isinstance(form.result, AlchemyUpscaleResult)]
+
+    @property
+    def all_vectorize_results(self) -> list[AlchemyVectorizeResult]:
+        """Return all completed vectorize results."""
+        return [form.result for form in self.forms if form.done and isinstance(form.result, AlchemyVectorizeResult)]
 
     @override
     @classmethod
