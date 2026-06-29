@@ -50,6 +50,15 @@ class KNOWN_UPSCALERS(StrEnum):
     four_4x_AnimeSharp = "4x_AnimeSharp"
     """AKA 4x_AnimeSharp"""
 
+    # Names begin with a digit (the upscale factor), so the member identifier prepends the
+    # spelled-out leading digit while the value keeps the on-disk file-stem form.
+    four_4xNomos8kSC = "4xNomos8kSC"
+    four_4xLSDIRplus = "4xLSDIRplus"
+    four_4xNomosWebPhoto_RealPLKSR = "4xNomosWebPhoto_RealPLKSR"
+    four_4xNomos2_realplksr_dysample = "4xNomos2_realplksr_dysample"
+    four_4xNomos2_hq_dat2 = "4xNomos2_hq_dat2"
+    two_2xModernSpanimationV1 = "2xModernSpanimationV1"
+
 
 class KNOWN_FACEFIXERS(StrEnum):
     """The facefixers that are known to the API.
@@ -133,6 +142,13 @@ class KNOWN_ALCHEMY_TYPES(StrEnum):
     RealESRGAN_x4plus_anime_6B = KNOWN_UPSCALERS.RealESRGAN_x4plus_anime_6B
     NMKD_Siax = KNOWN_UPSCALERS.NMKD_Siax
     fourx_AnimeSharp = KNOWN_UPSCALERS.four_4x_AnimeSharp
+
+    four_4xNomos8kSC = KNOWN_UPSCALERS.four_4xNomos8kSC
+    four_4xLSDIRplus = KNOWN_UPSCALERS.four_4xLSDIRplus
+    four_4xNomosWebPhoto_RealPLKSR = KNOWN_UPSCALERS.four_4xNomosWebPhoto_RealPLKSR
+    four_4xNomos2_realplksr_dysample = KNOWN_UPSCALERS.four_4xNomos2_realplksr_dysample
+    four_4xNomos2_hq_dat2 = KNOWN_UPSCALERS.four_4xNomos2_hq_dat2
+    two_2xModernSpanimationV1 = KNOWN_UPSCALERS.two_2xModernSpanimationV1
 
     GFPGAN = KNOWN_FACEFIXERS.GFPGAN
     CodeFormers = KNOWN_FACEFIXERS.GFPGAN
