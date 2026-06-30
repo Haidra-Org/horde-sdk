@@ -77,6 +77,8 @@ class METADATA_TYPE(StrEnum):
     """The index of the batch in a batch request."""
     information = auto()
     """Extra information about the image."""
+    aesthetic_score = auto()
+    """A LAION 0-10 aesthetic score for the image, carried as a float in the entry's ``ref`` field."""
 
 
 class METADATA_VALUE(StrEnum):

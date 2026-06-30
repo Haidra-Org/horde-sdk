@@ -32,6 +32,12 @@ class KNOWN_ALCHEMY_FORMS(StrEnum):
     """Upscaling, facefixing, etc."""
     vectorize = auto()
     """Vectorization (raster image -> SVG)."""
+    palette = auto()
+    """Dominant-colour palette extraction (raster image -> ordered colour list)."""
+    describe = auto()
+    """Technical-metadata bundle (blurhash, perceptual hashes, dimensions, dominant colour)."""
+    aesthetic = auto()
+    """LAION aesthetic score (raster image -> 0-10 quality float)."""
 
 
 class KNOWN_UPSCALERS(StrEnum):
@@ -163,6 +169,9 @@ class KNOWN_ALCHEMY_TYPES(StrEnum):
     strip_background = KNOWN_MISC_POST_PROCESSORS.strip_background
 
     vectorize = KNOWN_ALCHEMY_FORMS.vectorize
+    palette = KNOWN_ALCHEMY_FORMS.palette
+    describe = KNOWN_ALCHEMY_FORMS.describe
+    aesthetic = KNOWN_ALCHEMY_FORMS.aesthetic
 
 
 def is_upscaler_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
@@ -206,3 +215,18 @@ def is_strip_background_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
 def is_image_vectorizer_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
     """Check if the form is an image vectorizer (raster -> SVG) form."""
     return form == KNOWN_ALCHEMY_FORMS.vectorize
+
+
+def is_palette_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
+    """Check if the form is a colour-palette extraction form."""
+    return form == KNOWN_ALCHEMY_FORMS.palette
+
+
+def is_describe_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
+    """Check if the form is a technical-metadata (describe) form."""
+    return form == KNOWN_ALCHEMY_FORMS.describe
+
+
+def is_aesthetic_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
+    """Check if the form is a LAION aesthetic-score form."""
+    return form == KNOWN_ALCHEMY_FORMS.aesthetic
