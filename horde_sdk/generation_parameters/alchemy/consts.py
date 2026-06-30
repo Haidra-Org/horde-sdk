@@ -72,6 +72,11 @@ class KNOWN_FACEFIXERS(StrEnum):
     GFPGAN = auto()
     CodeFormers = auto()
 
+    GFPGANv1_3 = "GFPGANv1.3"
+    """GFPGANv1.3: the predecessor GFPGAN weight, more identity-faithful than the default v1.4."""
+    RestoreFormer = auto()
+    """RestoreFormer: an Apache-2.0 transformer-based blind face restorer, realism-oriented."""
+
 
 class KNOWN_MISC_POST_PROCESSORS(StrEnum):
     """The misc post processors that are known to the API.
@@ -151,7 +156,9 @@ class KNOWN_ALCHEMY_TYPES(StrEnum):
     two_2xModernSpanimationV1 = KNOWN_UPSCALERS.two_2xModernSpanimationV1
 
     GFPGAN = KNOWN_FACEFIXERS.GFPGAN
-    CodeFormers = KNOWN_FACEFIXERS.GFPGAN
+    CodeFormers = KNOWN_FACEFIXERS.CodeFormers
+    GFPGANv1_3 = KNOWN_FACEFIXERS.GFPGANv1_3
+    RestoreFormer = KNOWN_FACEFIXERS.RestoreFormer
 
     strip_background = KNOWN_MISC_POST_PROCESSORS.strip_background
 
