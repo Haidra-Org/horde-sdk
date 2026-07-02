@@ -137,11 +137,17 @@ class FacefixAlchemyParametersTemplate(SingleAlchemyParametersTemplate):
 
     facefixer: KNOWN_FACEFIXERS | str | None = None
 
+    codeformer_fidelity: float | None = None
+    """The requested facefixer strength (CodeFormer fidelity), if any. Executors may not honor it."""
+
 
 class FacefixAlchemyParameters(SingleAlchemyParameters):
     """Represents the parameters for a facefix alchemy generation."""
 
     facefixer: KNOWN_FACEFIXERS | str
+
+    codeformer_fidelity: float | None = None
+    """The requested facefixer strength (CodeFormer fidelity), if any. Executors may not honor it."""
 
 
 class InterrogateAlchemyParametersTemplate(SingleAlchemyParametersTemplate):

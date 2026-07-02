@@ -654,6 +654,10 @@ def simple_image_gen_job_pop_response_hires_fix(
             prompt="a cat in a hat",
             seed="42",
             hires_fix=True,
+            # Above the SD1 native resolution so the hires fix is meaningful (it is dropped
+            # from the generic parameters when the target fits in a single pass).
+            width=1024,
+            height=1024,
         ),
         skipped=ImageGenerateJobPopSkippedStatus(),
         model="Deliberate",
@@ -667,11 +671,11 @@ def simple_image_generation_parameters_hires_fix(
     model_reference_manager: ModelReferenceManager,
 ) -> ImageGenerationParameters:
     """Return a simple `ImageGenerationParameters` object."""
-    parameters, _ = convert_image_job_pop_response_to_parameters(
+    conversion_result = convert_image_job_pop_response_to_parameters(
         simple_image_gen_job_pop_response_hires_fix,
         model_reference_manager,
     )
-    return parameters
+    return conversion_result.generation_parameters
 
 
 @pytest.fixture(scope="function")
@@ -686,6 +690,10 @@ def simple_image_gen_job_pop_response_hires_fix_denoise(
             seed="42",
             hires_fix=True,
             hires_fix_denoising_strength=0.8,
+            # Above the SD1 native resolution so the hires fix is meaningful (it is dropped
+            # from the generic parameters when the target fits in a single pass).
+            width=1024,
+            height=1024,
         ),
         skipped=ImageGenerateJobPopSkippedStatus(),
         model="Deliberate",

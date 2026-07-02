@@ -181,6 +181,12 @@ class BasicImageGenerationParametersTemplate(GenerationWithModelParameters):
 
     prompt: str | None = None
     """The prompt to use for the generation."""
+    negative_prompt: str | None = None
+    """The negative prompt to use for the generation, if any.
+
+    Dispatch converters are responsible for splitting any combined prompt encoding
+    (such as AI-Horde's ``###`` separator) before constructing these parameters.
+    """
     seed: str | None = None
     """The seed to use for the generation."""
 
@@ -249,6 +255,9 @@ class BasicImageGenerationParametersTemplate(GenerationWithModelParameters):
 
     tiling: bool | None = None
     """If true, the generation will be generated with seamless tiling."""
+
+    transparent: bool | None = None
+    """If true, the generation will be generated with a transparent background (layer diffusion)."""
 
 
 class BasicImageGenerationParameters(BasicImageGenerationParametersTemplate):
@@ -412,6 +421,16 @@ class TIEntry(AuxModelEntry):
     """If true and if supported by the backend, inject a trigger term into the prompt."""
 
 
+class ExtraTextEntry(GenerationParameterBaseModel):
+    """Represents a single extra text input consumed by a custom workflow."""
+
+    text: str
+    """The text content."""
+
+    reference: str | None = None
+    """A reference identifying how the workflow should use this text."""
+
+
 class CustomWorkflowGenerationParameters(GenerationParameterBaseModel):
     """Represents the parameters for a custom workflow generation."""
 
@@ -423,6 +442,9 @@ class CustomWorkflowGenerationParameters(GenerationParameterBaseModel):
 
     custom_parameters: dict[ID_TYPES, str] | None = None
     """The custom parameters to use for the generation. Defaults to None."""
+
+    extra_texts: list[ExtraTextEntry] | None = None
+    """Extra text inputs consumed by the workflow (for example, the text encoded by a QR code workflow)."""
 
 
 class ImageGenerationComponentContainer(GenerationParameterBaseModel):

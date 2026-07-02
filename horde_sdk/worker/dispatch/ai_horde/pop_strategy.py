@@ -104,7 +104,7 @@ class AIHordeImageWorkerJobPopStrategy(JobPopStrategyGeneric[ImageSingleGenerati
             print(f"Error popping job: {job_pop_response.message}")
             return None
 
-        generation, ai_horde_dispatch_parameters = convert_image_job_pop_response_to_parameters(
+        conversion_result = convert_image_job_pop_response_to_parameters(
             api_response=job_pop_response,
             model_reference_manager=self._model_reference_manager,
         )
@@ -112,8 +112,8 @@ class AIHordeImageWorkerJobPopStrategy(JobPopStrategyGeneric[ImageSingleGenerati
         raise NotImplementedError("Conversion from job pop response to parameters is not implemented.")  # FIXME
 
         return ImageWorkerJob(
-            generation=generation,
-            ai_horde_dispatch_parameters=ai_horde_dispatch_parameters,
+            generation=conversion_result.generation_parameters,
+            ai_horde_dispatch_parameters=conversion_result.dispatch_parameters,
         )
 
     @override
