@@ -112,6 +112,15 @@ class SingleAlchemyParameters(CompositeParametersBase):
     source_image: bytes | str | None
     """The source image to use for the generation."""
 
+    @property
+    def operation_name(self) -> str:
+        """The concrete operation this parameter set requests.
+
+        Generic forms (e.g., ``post_process``) name a family of operations; subclasses override this to name the
+        specific model or detector involved.
+        """
+        return str(self.form)
+
     @override
     def get_number_expected_results(self) -> int:
         """Get the number of expected results."""
@@ -131,6 +140,12 @@ class UpscaleAlchemyParameters(SingleAlchemyParameters):
 
     upscaler: KNOWN_UPSCALERS | str
 
+    @property
+    @override
+    def operation_name(self) -> str:
+        """The name of the upscaler model."""
+        return str(self.upscaler)
+
 
 class FacefixAlchemyParametersTemplate(SingleAlchemyParametersTemplate):
     """Template for facefix alchemy parameters with all fields optional."""
@@ -149,6 +164,12 @@ class FacefixAlchemyParameters(SingleAlchemyParameters):
     codeformer_fidelity: float | None = None
     """The requested facefixer strength (CodeFormer fidelity), if any. Executors may not honor it."""
 
+    @property
+    @override
+    def operation_name(self) -> str:
+        """The name of the facefixer model."""
+        return str(self.facefixer)
+
 
 class InterrogateAlchemyParametersTemplate(SingleAlchemyParametersTemplate):
     """Template for interrogate alchemy parameters with all fields optional."""
@@ -160,6 +181,12 @@ class InterrogateAlchemyParameters(SingleAlchemyParameters):
     """Represents the parameters for an interrogation alchemy generation."""
 
     interrogator: KNOWN_INTERROGATORS | str
+
+    @property
+    @override
+    def operation_name(self) -> str:
+        """The name of the interrogator."""
+        return str(self.interrogator)
 
 
 class CaptionAlchemyParametersTemplate(SingleAlchemyParametersTemplate):
@@ -173,6 +200,12 @@ class CaptionAlchemyParameters(SingleAlchemyParameters):
 
     caption_model: KNOWN_CAPTION_MODELS | str
 
+    @property
+    @override
+    def operation_name(self) -> str:
+        """The name of the caption model."""
+        return str(self.caption_model)
+
 
 class NSFWAlchemyParametersTemplate(SingleAlchemyParametersTemplate):
     """Template for NSFW alchemy parameters with all fields optional."""
@@ -184,6 +217,12 @@ class NSFWAlchemyParameters(SingleAlchemyParameters):
     """Represents the parameters for a NSFW alchemy generation."""
 
     nsfw_detector: KNOWN_NSFW_DETECTOR | str
+
+    @property
+    @override
+    def operation_name(self) -> str:
+        """The name of the NSFW detector."""
+        return str(self.nsfw_detector)
 
 
 class AlchemyParameters(CompositeParametersBase):

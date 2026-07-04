@@ -180,6 +180,13 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
                 extra={"generation_id": generation_id},
             )
 
+        alchemy_params = generation_parameters.alchemy_params
+        post_processing_operations = (
+            [operation.operation_name for operation in alchemy_params.all_alchemy_operations]
+            if alchemy_params is not None
+            else None
+        )
+
         super().__init__(
             result_type=bytes,
             generation_parameters=generation_parameters,
@@ -188,6 +195,7 @@ class ImageSingleGeneration(HordeSingleGeneration[bytes]):
             result_ids=result_ids,
             requires_generation=ImageSingleGeneration.does_class_require_generation(),
             requires_post_processing=generation_parameters.alchemy_params is not None,
+            post_processing_operations=post_processing_operations,
             requires_safety_check=True,
             requires_submit=requires_submit,
             safety_rules=safety_rules,

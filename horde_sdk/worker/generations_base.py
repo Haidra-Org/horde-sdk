@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 import threading
 import time
 import uuid
@@ -17,6 +18,7 @@ from horde_sdk.generation_parameters.generic import CompositeParametersBase
 from horde_sdk.safety import SafetyResult, SafetyRules, default_safety_rules
 from horde_sdk.worker.consts import (
     GENERATION_PROGRESS,
+    GENERATION_RETRY_KIND,
     HordeWorkerConfigDefaults,
     base_generate_progress_no_submit_transitions,
     base_generate_progress_transitions,
@@ -160,6 +162,7 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
         result_ids: list[ID_TYPES] | None = None,
         requires_generation: bool = True,
         requires_post_processing: bool = False,
+        post_processing_operations: Sequence[str] | None = None,
         requires_safety_check: bool = True,
         requires_submit: bool = True,
         safety_rules: SafetyRules = default_safety_rules,
@@ -188,7 +191,10 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
             requires_generation (bool, optional): Whether or not the generation requires generation (inference, etc). \
                 Defaults to True.
             requires_post_processing (bool, optional): Whether or not the generation requires post-processing. \
-                Defaults to False.
+                Defaults to False. Implied True when post_processing_operations is non-empty.
+            post_processing_operations (Sequence[str] | None, optional): The names of the post-processing \
+                operations (e.g., upscalers or facefixers) to apply to the generated results, in order. \
+                Defaults to None.
             requires_safety_check (bool, optional): Whether or not the generation requires a safety check. \
                 Defaults to True.
             requires_submit (bool, optional): Whether or not the generation requires submission. \
@@ -253,6 +259,7 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
         self._result_ids = result_ids
 
         self._generation_results: OrderedDict[ID_TYPES, GenerationResultTypeVar | None] = OrderedDict()
+        self._intermediate_results: OrderedDict[ID_TYPES, GenerationResultTypeVar | None] = OrderedDict()
 
         self._extra_logging = extra_logging
 
@@ -260,7 +267,8 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
             raise ValueError("Generation class requires generation but requires_generation is False")
 
         self._requires_generation = requires_generation
-        self._requires_post_processing = requires_post_processing
+        self._post_processing_operations = tuple(post_processing_operations) if post_processing_operations else ()
+        self._requires_post_processing = requires_post_processing or bool(self._post_processing_operations)
 
         if self.does_class_require_safety_check() and not requires_safety_check:
             raise ValueError("Generation class requires safety check but requires_safety_check is False")
@@ -294,6 +302,8 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
 
         self._errored_states = []
         self._error_counts = {}
+        self._retry_events = []
+        self._retry_counts = {}
 
         self._state_error_limits = state_error_limits or {}
         self._generation_failed_messages = []
@@ -301,7 +311,7 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
 
         # This initialization is critical. The first state must be NOT_STARTED and ERROR must not be the next state.
         # Errors are only allowed after the first "action" state where something is done.
-        self._progress_history = [(GENERATION_PROGRESS.NOT_STARTED, time.time())]
+        self._progress_history = [(GENERATION_PROGRESS.NOT_STARTED, time.monotonic())]
 
         self._lock = threading.RLock()
 
@@ -357,6 +367,9 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
     _error_counts: dict[GENERATION_PROGRESS, int]
     _any_error_count_exceeded: bool = False
 
+    _retry_events: list[tuple[GENERATION_RETRY_KIND, GENERATION_PROGRESS, float]]
+    _retry_counts: dict[GENERATION_RETRY_KIND, int]
+
     @property
     def errored_states(self) -> list[tuple[GENERATION_PROGRESS, float]]:
         """Return a tuple of states which occurred just before an error state and the time they were set."""
@@ -369,10 +382,57 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
         with self._lock:
             return self._error_counts.copy()
 
+    @property
+    def retry_events(self) -> list[tuple[GENERATION_RETRY_KIND, GENERATION_PROGRESS, float]]:
+        """Return the recorded retries as (kind, retried state, monotonic time) tuples."""
+        with self._lock:
+            return self._retry_events.copy()
+
+    @property
+    def retry_counts(self) -> dict[GENERATION_RETRY_KIND, int]:
+        """Return the number of recorded retries per retry kind."""
+        with self._lock:
+            return self._retry_counts.copy()
+
+    def record_retry(
+        self,
+        kind: GENERATION_RETRY_KIND,
+        *,
+        error: Exception | None = None,
+    ) -> None:
+        """Record that the failed stage is being retried.
+
+        The decision to retry (and whether the retry is degraded) belongs to the caller; this method only keeps
+        the bookkeeping on the generation so retry pressure is visible alongside the error history.
+
+        Args:
+            kind (GENERATION_RETRY_KIND): Whether the retry repeats the stage as-is or with reduced demands.
+            error (Exception | None, optional): The exception that triggered the retry, if any. Defaults to None.
+        """
+        with self._lock:
+            retried_state = self.get_last_non_error_state()
+            self._retry_events.append((kind, retried_state, time.monotonic()))
+            self._retry_counts[kind] = self._retry_counts.get(kind, 0) + 1
+            if error is not None:
+                self._generation_failure_exceptions.append(error)
+
     def get_progress_history(self) -> list[tuple[GENERATION_PROGRESS, float]]:
         """Get the generation progress history."""
         with self._lock:
             return self._progress_history.copy()
+
+    def get_stage_durations(self) -> dict[GENERATION_PROGRESS, float]:
+        """Return the cumulative wall-clock seconds spent in each state so far.
+
+        Computed from the progress history; the current state's ongoing time is included. States revisited via
+        retries accumulate.
+        """
+        with self._lock:
+            durations: dict[GENERATION_PROGRESS, float] = {}
+            history = [*self._progress_history, (self._generation_progress, time.monotonic())]
+            for (state, entered), (_, exited) in itertools.pairwise(history):
+                durations[state] = durations.get(state, 0.0) + (exited - entered)
+            return durations
 
     _generation_progress: GENERATION_PROGRESS = GENERATION_PROGRESS.NOT_STARTED
 
@@ -387,6 +447,13 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
     def requires_post_processing(self) -> bool:
         """Whether or not the generation requires post-processing."""
         return self._requires_post_processing
+
+    _post_processing_operations: tuple[str, ...] = ()
+
+    @property
+    def post_processing_operations(self) -> tuple[str, ...]:
+        """The names of the post-processing operations to apply to the generated results, in order."""
+        return self._post_processing_operations
 
     _requires_generation: bool = False
 
@@ -704,12 +771,25 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
     ) -> GENERATION_PROGRESS:
         """Call when the generation work is complete, such as when inference is done.
 
-        This does not mean the generation is finalized, as calling this function means that safety checks and
-        submission may still be pending. Examples of when this function would be called are when comfyui has
-        just returned an image, interrogating an image has just completed or when a text backend has just generated
-        text.
+        This does not mean the generation is finalized, as calling this function means that post-processing,
+        safety checks and submission may still be pending. Examples of when this function would be called are when
+        comfyui has just returned an image, interrogating an image has just completed or when a text backend has
+        just generated text.
+
+        When post-processing is still pending, the result is stored as the intermediate result; the final result
+        is set when post-processing completes.
         """
-        if self.requires_post_processing and not self._black_box_mode:
+        if self._black_box_mode:
+            work_complete_progress = self._work_complete()
+            if result is not None:
+                self._set_generation_work_result(result)
+            return work_complete_progress
+
+        self._set_generation_progress(GENERATION_PROGRESS.GENERATION_COMPLETE)
+
+        if self.requires_post_processing:
+            if result is not None:
+                self.set_intermediate_work_result(result)
             return self._set_generation_progress(GENERATION_PROGRESS.PENDING_POST_PROCESSING)
 
         work_complete_progress = self._work_complete()
@@ -725,9 +805,23 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
         """Call when post-processing is about to begin."""
         return self._set_generation_progress(GENERATION_PROGRESS.POST_PROCESSING)
 
-    def on_post_processing_complete(self) -> GENERATION_PROGRESS:
-        """Call when post-processing is complete."""
-        return self._work_complete()
+    def on_post_processing_complete(
+        self,
+        result: GenerationResultTypeVar | Collection[GenerationResultTypeVar] | None = None,
+    ) -> GENERATION_PROGRESS:
+        """Call when post-processing is complete.
+
+        Args:
+            result (GenerationResultTypeVar | Collection[GenerationResultTypeVar] | None, optional): The
+                post-processed result, which becomes the final generation result. Defaults to None.
+        """
+        if not self._black_box_mode:
+            self._set_generation_progress(GENERATION_PROGRESS.POST_PROCESSING_COMPLETE)
+
+        work_complete_progress = self._work_complete()
+        if result is not None:
+            self._set_generation_work_result(result)
+        return work_complete_progress
 
     def on_pending_safety_check(self) -> GENERATION_PROGRESS:
         """Call when the generation is pending safety check."""
@@ -765,8 +859,6 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
                 return self.on_generating()
             case GENERATION_PROGRESS.POST_PROCESSING:
                 return self.on_post_processing()
-            case GENERATION_PROGRESS.PENDING_POST_PROCESSING:
-                return self.on_post_processing_complete()
             case GENERATION_PROGRESS.PENDING_SAFETY_CHECK:
                 return self.on_pending_safety_check()
             case GENERATION_PROGRESS.SAFETY_CHECKING:
@@ -796,6 +888,29 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
         with self._lock:
             return self._generation_results.copy()
 
+    _intermediate_results: OrderedDict[ID_TYPES, GenerationResultTypeVar | None]
+
+    @property
+    def intermediate_results(self) -> OrderedDict[ID_TYPES, GenerationResultTypeVar | None]:
+        """Get the intermediate (pre-post-processing) results of the generation."""
+        with self._lock:
+            return self._intermediate_results.copy()
+
+    def set_intermediate_work_result(
+        self,
+        result: GenerationResultTypeVar | Collection[GenerationResultTypeVar],
+    ) -> None:
+        """Set the intermediate result of the generation work.
+
+        Intermediate results are the raw outputs of the generation stage when post-processing is still pending;
+        the post-processed outputs become the final generation results.
+
+        Args:
+            result (GenerationResultTypeVar | Collection[GenerationResultTypeVar]): The intermediate result.
+        """
+        with self._lock:
+            self._store_work_result(result, self._intermediate_results)
+
     def _set_generation_work_result(
         self,
         result: GenerationResultTypeVar | Collection[GenerationResultTypeVar],
@@ -804,6 +919,21 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
 
         Args:
             result (GenerationResultTypeVar): The result of the generation work.
+        """
+        with self._lock:
+            self._store_work_result(result, self._generation_results)
+
+    def _store_work_result(
+        self,
+        result: GenerationResultTypeVar | Collection[GenerationResultTypeVar],
+        target_results: OrderedDict[ID_TYPES, GenerationResultTypeVar | None],
+    ) -> None:
+        """Validate a work result against the result type and batch size and record it in the target mapping.
+
+        Args:
+            result (GenerationResultTypeVar | Collection[GenerationResultTypeVar]): The result(s) to record.
+            target_results (OrderedDict[ID_TYPES, GenerationResultTypeVar | None]): The mapping to record into,
+                keyed by result ID in batch order.
         """
         if (not isinstance(result, self._result_type)) and isinstance(result, Collection):
             for item in result:
@@ -818,27 +948,27 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
             )
 
         with self._lock:
-            if len(self._generation_results) >= self.batch_size:
+            if len(target_results) >= self.batch_size:
                 raise ValueError(
-                    f"Generation result list is full ({len(self._generation_results)}), cannot add more results",
+                    f"Generation result list is full ({len(target_results)}), cannot add more results",
                 )
 
             if isinstance(result, self._result_type):
-                self._generation_results[self._result_ids[len(self._generation_results)]] = result
+                target_results[self._result_ids[len(target_results)]] = result
 
             elif isinstance(result, Collection):
-                if len(result) + len(self._generation_results) > self.batch_size:
+                if len(result) + len(target_results) > self.batch_size:
                     raise ValueError(
-                        f"Result list is full ({len(self._generation_results)}), cannot add more results",
+                        f"Result list is full ({len(target_results)}), cannot add more results",
                     )
                 if not all(isinstance(r, self.result_type) for r in result):
                     raise ValueError(
                         f"Result type {type(result)} does not match expected type {self.result_type}",
                     )
 
-                start = len(self._generation_results)
+                start = len(target_results)
                 for index, passed_result in enumerate(result):
-                    self._generation_results[self._result_ids[start + index]] = passed_result
+                    target_results[self._result_ids[start + index]] = passed_result
 
     _safety_rules: SafetyRules
     _safety_results: list[SafetyResult | None]
@@ -921,6 +1051,9 @@ class HordeSingleGeneration[GenerationResultTypeVar](ABC):
 
         if not self.is_safety_checking_done_on_all_batch():
             return GENERATION_PROGRESS.SAFETY_CHECKING
+
+        if not self._black_box_mode:
+            self._set_generation_progress(GENERATION_PROGRESS.SAFETY_CHECK_COMPLETE)
 
         if self._requires_submit:
             return self._set_generation_progress(GENERATION_PROGRESS.PENDING_SUBMIT)

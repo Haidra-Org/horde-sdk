@@ -110,6 +110,29 @@ class GENERATION_PROGRESS(StrEnum):
             GENERATION_PROGRESS.PENDING_SUBMIT,
         }
 
+    @staticmethod
+    def is_state_milestone(progress: GENERATION_PROGRESS) -> bool:
+        """Check if the state marks the completion of a work stage.
+
+        Milestone states are the stable handoff points between stages: the work of a stage is done and the
+        generation is ready to be routed to whatever comes next (post-processing, safety checking, submission).
+        """
+        return progress in {
+            GENERATION_PROGRESS.GENERATION_COMPLETE,
+            GENERATION_PROGRESS.POST_PROCESSING_COMPLETE,
+            GENERATION_PROGRESS.SAFETY_CHECK_COMPLETE,
+        }
+
+
+class GENERATION_RETRY_KIND(StrEnum):
+    """The kind of retry applied to a generation after an error."""
+
+    NORMAL = auto()
+    """The failed stage is retried with the same parameters."""
+
+    DEGRADED = auto()
+    """The failed stage is retried with reduced demands (e.g., lower batch size or a smaller working set)."""
+
 
 initial_generation_state = GENERATION_PROGRESS.NOT_STARTED
 
@@ -132,10 +155,12 @@ base_generate_progress_transitions: dict[GENERATION_PROGRESS, list[GENERATION_PR
         GENERATION_PROGRESS.ERROR,
     ],
     GENERATION_PROGRESS.GENERATING: [
+        GENERATION_PROGRESS.GENERATION_COMPLETE,
+        GENERATION_PROGRESS.ERROR,
+    ],
+    GENERATION_PROGRESS.GENERATION_COMPLETE: [
         GENERATION_PROGRESS.PENDING_POST_PROCESSING,
-        GENERATION_PROGRESS.POST_PROCESSING,
         GENERATION_PROGRESS.PENDING_SAFETY_CHECK,
-        GENERATION_PROGRESS.SAFETY_CHECKING,
         GENERATION_PROGRESS.ERROR,
     ],
     GENERATION_PROGRESS.PENDING_POST_PROCESSING: [
@@ -143,8 +168,11 @@ base_generate_progress_transitions: dict[GENERATION_PROGRESS, list[GENERATION_PR
         GENERATION_PROGRESS.ERROR,
     ],
     GENERATION_PROGRESS.POST_PROCESSING: [
+        GENERATION_PROGRESS.POST_PROCESSING_COMPLETE,
+        GENERATION_PROGRESS.ERROR,
+    ],
+    GENERATION_PROGRESS.POST_PROCESSING_COMPLETE: [
         GENERATION_PROGRESS.PENDING_SAFETY_CHECK,
-        GENERATION_PROGRESS.SAFETY_CHECKING,
         GENERATION_PROGRESS.ERROR,
     ],
     GENERATION_PROGRESS.PENDING_SAFETY_CHECK: [
@@ -152,6 +180,10 @@ base_generate_progress_transitions: dict[GENERATION_PROGRESS, list[GENERATION_PR
         GENERATION_PROGRESS.ERROR,
     ],
     GENERATION_PROGRESS.SAFETY_CHECKING: [
+        GENERATION_PROGRESS.SAFETY_CHECK_COMPLETE,
+        GENERATION_PROGRESS.ERROR,
+    ],
+    GENERATION_PROGRESS.SAFETY_CHECK_COMPLETE: [
         GENERATION_PROGRESS.PENDING_SUBMIT,
         GENERATION_PROGRESS.ERROR,
     ],
@@ -170,14 +202,27 @@ base_generate_progress_transitions: dict[GENERATION_PROGRESS, list[GENERATION_PR
         GENERATION_PROGRESS.ERROR,
     ],
     GENERATION_PROGRESS.REPORTED_FAILED: [],
-    GENERATION_PROGRESS.ERROR: [GENERATION_PROGRESS.ABORTED],
+    GENERATION_PROGRESS.ERROR: [
+        GENERATION_PROGRESS.ABORTED,
+        GENERATION_PROGRESS.NOT_STARTED,
+        GENERATION_PROGRESS.PRELOADING,
+        GENERATION_PROGRESS.GENERATING,
+        GENERATION_PROGRESS.POST_PROCESSING,
+        GENERATION_PROGRESS.SAFETY_CHECKING,
+        GENERATION_PROGRESS.SUBMITTING,
+    ],
     GENERATION_PROGRESS.USER_REQUESTED_ABORT: [
         GENERATION_PROGRESS.USER_ABORT_COMPLETE,
     ],
     GENERATION_PROGRESS.USER_ABORT_COMPLETE: [],
     GENERATION_PROGRESS.ABANDONED: [],
 }
-"""A map of the typical transitions between generation states."""
+"""A map of the typical transitions between generation states.
+
+The ``*_COMPLETE`` milestone states are the stable handoff points between stages; a generation always passes
+through the milestone before it is routed onward. The fan-out from ``ERROR`` expresses retries: a generation
+returns to the failed stage (or to ``NOT_STARTED`` for a fresh dispatch), bounded by the per-state error limits.
+"""
 
 # "black box" generations are connected to backends which have no internal observability. These transitions are
 # therefore limited to starting, erroring and completing.
@@ -217,7 +262,13 @@ black_box_generate_progress_transitions: dict[GENERATION_PROGRESS, list[GENERATI
         GENERATION_PROGRESS.ERROR,
     ],
     GENERATION_PROGRESS.REPORTED_FAILED: [],
-    GENERATION_PROGRESS.ERROR: [GENERATION_PROGRESS.ABORTED],
+    GENERATION_PROGRESS.ERROR: [
+        GENERATION_PROGRESS.ABORTED,
+        GENERATION_PROGRESS.NOT_STARTED,
+        GENERATION_PROGRESS.GENERATING,
+        GENERATION_PROGRESS.SAFETY_CHECKING,
+        GENERATION_PROGRESS.SUBMITTING,
+    ],
     GENERATION_PROGRESS.USER_REQUESTED_ABORT: [
         GENERATION_PROGRESS.USER_ABORT_COMPLETE,
         GENERATION_PROGRESS.ABANDONED,
@@ -247,36 +298,34 @@ def generate_transitions(
 
     if can_skip_safety_checks:
         for state in [
-            GENERATION_PROGRESS.GENERATING,
-            GENERATION_PROGRESS.POST_PROCESSING,
+            GENERATION_PROGRESS.GENERATION_COMPLETE,
+            GENERATION_PROGRESS.POST_PROCESSING_COMPLETE,
         ]:
-            transitions[state].append(
-                GENERATION_PROGRESS.PENDING_SUBMIT,
-            )
+            if state in transitions:
+                transitions[state].append(
+                    GENERATION_PROGRESS.PENDING_SUBMIT,
+                )
 
     if skip_submit:
-        for state in [
+        submit_states = {
             GENERATION_PROGRESS.PENDING_SUBMIT,
             GENERATION_PROGRESS.SUBMITTING,
             GENERATION_PROGRESS.SUBMIT_COMPLETE,
-        ]:
+        }
+        for state in submit_states:
             transitions.pop(state, None)
 
-        for transition_values in transitions.values():
-            for transition_value in transition_values:
-                found_transition_to_remove = False
-                if transition_value in [
-                    GENERATION_PROGRESS.PENDING_SUBMIT,
-                    GENERATION_PROGRESS.SUBMITTING,
-                    GENERATION_PROGRESS.SUBMIT_COMPLETE,
-                ]:
-                    transition_values.remove(transition_value)
-                    found_transition_to_remove = True
+        for parent_state, transition_values in transitions.items():
+            if not any(transition_value in submit_states for transition_value in transition_values):
+                continue
+            transitions[parent_state] = [
+                transition_value for transition_value in transition_values if transition_value not in submit_states
+            ]
+            # A retry fan-out that pointed at a submit stage loses that target; completion is only reachable
+            # from the milestone/pending states that previously led into submission.
+            if parent_state != GENERATION_PROGRESS.ERROR:
+                transitions[parent_state].append(GENERATION_PROGRESS.COMPLETE)
 
-            if found_transition_to_remove:
-                transition_values.append(
-                    GENERATION_PROGRESS.COMPLETE,
-                )
     if supports_safety_only:
         for state in [
             GENERATION_PROGRESS.NOT_STARTED,
@@ -368,30 +417,6 @@ def validate_generation_progress_transitions(
         return False
 
     return True
-
-
-class JobState(StrEnum):
-    """The state of a job."""
-
-    QUEUED = auto()
-    """The job has been received and is waiting to be processed."""
-    PREPARING = auto()
-    """The job is being prepared for processing."""
-    GENERATING = auto()
-    """The job is in the process of generating."""
-    PENDING_SAFETY_CHECK = auto()
-    """The job was generated and is pending safety check."""
-    PENDING_SUBMIT = auto()
-    """The job is pending submission."""
-    WAITING_ON_NETWORK = auto()
-    """The job is waiting on network IO."""
-    SUCCESSFULLY_COMPLETED = auto()
-    """The job finished successfully."""
-    FAULTED = auto()
-    """The job faulted. Faulted jobs are ones which failed catastrophically and will not be retried.
-
-    Note: This is different from a generation faulting, which can be submitted as a faulted generation.
-    """
 
 
 class HordeWorkerConfigDefaults:
@@ -499,32 +524,5 @@ class REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE(StrEnum):
     """Use a noise image if the source image is unusable."""
 
 
-class CHAIN_EDGE_KIND(StrEnum):
-    """The known chain edges."""
-
-    CUSTOM = auto()
-    """A custom chain edge."""
-
-    RESULTING_IMAGE_AS_SOURCE = auto()
-    """The resulting image of the previous generation is used as the source for the next generation."""
-
-    RESULTING_TEXT_AS_PROMPT = auto()
-    """The resulting text of the previous generation is used as the prompt for the next generation."""
-
-    RESULTING_IMAGE_AS_MASK = auto()
-    """The resulting image of the previous generation is used as the mask for the next generation."""
-
-    RESULTING_IMAGE_AS_CONTROL_MAP = auto()
-    """The resulting image of the previous generation is used as the control map for the next generation."""
-
-    IMAGE_TO_ALCHEMY_UPSCALE = auto()
-    """The resulting image from image generation is used as the source for alchemy upscaling."""
-
-    IMAGE_TO_ALCHEMY_FACEFIX = auto()
-    """The resulting image from image generation is used as the source for alchemy face fixing."""
-
-    ALCHEMY_TO_ALCHEMY = auto()
-    """The resulting image from one alchemy operation is used as the source for another alchemy operation."""
-
-    TEXT_TO_IMAGE_PROMPT = auto()
-    """The resulting text from text generation is used as the prompt for image generation."""
+# CHAIN_EDGE_KIND lives with the rest of the chaining system; re-exported here for import stability.
+from horde_sdk.worker.chaining.consts import CHAIN_EDGE_KIND as CHAIN_EDGE_KIND  # noqa: E402

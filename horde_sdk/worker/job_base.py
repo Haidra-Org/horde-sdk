@@ -261,8 +261,6 @@ class HordeWorkerJob[
     time_to_download_aux_models: float = 0.0
     """The time spent downloading user-specified auxiliary models specific to the job (i.e., LoRas) in seconds."""
 
-    # _job_state_api: GENERATION_STATE | None = None
-
     @property
     def job_identifier_string(self) -> str:
         """Returns a string that identifies the job."""
@@ -289,13 +287,6 @@ class HordeWorkerJob[
         """Whether or not the job has been marked as faulted."""
         with self._lock:
             return self._faulted
-
-    # TODO
-    # FIXME
-    # @property
-    # def job_state_api(self) -> GENERATION_STATE | None:
-    # """The state of the job using the codes used by the API or None if there is no comparable state."""
-    # return self._job_state_api
 
     _should_censor_nsfw: bool = False
     """Whether or not the user has requested that NSFW content be censored."""

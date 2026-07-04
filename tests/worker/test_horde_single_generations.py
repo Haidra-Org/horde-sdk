@@ -880,7 +880,7 @@ class TestHordeSingleGeneration:
 
         assert_raises_value_error(
             generation.on_generation_work_complete,
-            f"Invalid transition from {GENERATION_PROGRESS.NOT_STARTED} to {GENERATION_PROGRESS.PENDING_SAFETY_CHECK}",
+            f"Invalid transition from {GENERATION_PROGRESS.NOT_STARTED} to {GENERATION_PROGRESS.GENERATION_COMPLETE}",
         )
 
         # Normal progression to preloading
@@ -894,7 +894,7 @@ class TestHordeSingleGeneration:
 
         assert_raises_value_error(
             generation.on_generation_work_complete,
-            f"Invalid transition from {GENERATION_PROGRESS.PRELOADING} to {GENERATION_PROGRESS.PENDING_SAFETY_CHECK}",
+            f"Invalid transition from {GENERATION_PROGRESS.PRELOADING} to {GENERATION_PROGRESS.GENERATION_COMPLETE}",
         )
 
         # Normal progression to preloading complete
