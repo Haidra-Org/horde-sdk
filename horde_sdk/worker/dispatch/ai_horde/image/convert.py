@@ -1,7 +1,5 @@
 """Contains functions to convert API responses to image generation parameters."""
 
-from urllib.parse import urlparse
-
 from horde_model_reference.meta_consts import (
     KNOWN_IMAGE_GENERATION_BASELINE,
     MODEL_REFERENCE_CATEGORY,
@@ -59,6 +57,11 @@ from horde_sdk.worker.consts import (
     REQUESTED_BACKEND_CONSTRAINTS,
     REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE,
 )
+from horde_sdk.worker.dispatch.ai_horde.image.source_image import (
+    SOURCE_IMAGE_REQUIRING_PROCESSING,
+    _is_url,
+    _source_image_is_usable,
+)
 from horde_sdk.worker.dispatch.ai_horde_parameters import AIHordeR2DispatchParameters
 
 AI_HORDE_PROMPT_SEPARATOR = "###"
@@ -91,11 +94,6 @@ def _split_ai_horde_prompt(combined_prompt: str) -> tuple[str, str | None]:
         return positive_prompt, negative_prompt
 
     return combined_prompt, None
-
-
-def _is_url(value: str) -> bool:
-    """Check whether the value is an HTTP(S) URL rather than inline base64 data."""
-    return urlparse(value).scheme in ("http", "https")
 
 
 def _resolve_source_image_field(
@@ -638,18 +636,7 @@ def convert_image_job_pop_response_to_parameters(
 
     source_processing = api_response.source_processing
 
-    img2img_family_without_source = (
-        source_processing
-        in [
-            KNOWN_IMAGE_SOURCE_PROCESSING.img2img,
-            KNOWN_IMAGE_SOURCE_PROCESSING.inpainting,
-            KNOWN_IMAGE_SOURCE_PROCESSING.outpainting,
-        ]
-        and img2img_params is None
-    )
-    remix_without_source = source_processing == KNOWN_IMAGE_SOURCE_PROCESSING.remix and remix_params is None
-
-    if img2img_family_without_source or remix_without_source:
+    if source_processing in SOURCE_IMAGE_REQUIRING_PROCESSING and not _source_image_is_usable(api_response):
         # The source image is unusable; degrade to txt2img rather than abort, matching the
         # TXT2IMG_FALLBACK choice declared below.
         logger.warning(
