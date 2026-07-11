@@ -14,6 +14,7 @@ class ALCHEMY_PARAMETER_FIELDS(StrEnum):
     interrogator = auto()
     caption_model = auto()
     nsfw_detector = auto()
+    control_type = auto()
 
 
 class KNOWN_ALCHEMY_FORMS(StrEnum):
@@ -38,6 +39,51 @@ class KNOWN_ALCHEMY_FORMS(StrEnum):
     """Technical-metadata bundle (blurhash, perceptual hashes, dimensions, dominant colour)."""
     aesthetic = auto()
     """LAION aesthetic score (raster image -> 0-10 quality float)."""
+    annotation = auto()
+    """Controlnet annotation (raster image -> control map image). Parameterized by control type."""
+
+
+class KNOWN_ANNOTATION_CONTROL_TYPES(StrEnum):
+    """The controlnet control-map types the parameterized `annotation` alchemy form can produce.
+
+    This is the closed set the image-utilities backend can serve. It spells the line detector `mlsd`
+    (its real name), unlike :class:`horde_sdk.generation_parameters.image.consts.KNOWN_IMAGE_CONTROLNETS`,
+    which still spells the same detector `hough` for image-generation control_type compatibility.
+    """
+
+    canny = auto()
+    hed = auto()
+    depth = auto()
+    mlsd = auto()
+    openpose = auto()
+    normal = auto()
+    scribble = auto()
+    fakescribbles = auto()
+    seg = auto()
+    binary = auto()
+    standard_lineart = auto()
+    lineart = auto()
+    lineart_anime = auto()
+    lineart_anime_denoise = auto()
+    pidinet = auto()
+    scribble_xdog = auto()
+    scribble_pidinet = auto()
+    teed = auto()
+    pyracanny = auto()
+    midas_depth = auto()
+    zoe_depth = auto()
+    depth_anything = auto()
+    depth_anything_v2 = auto()
+    normal_bae = auto()
+    oneformer_ade20k = auto()
+    oneformer_coco = auto()
+    color = auto()
+    shuffle = auto()
+    recolor_luminance = auto()
+    recolor_intensity = auto()
+    tile = auto()
+    tile_ttplanet_guided = auto()
+    tile_ttplanet_simple = auto()
 
 
 class KNOWN_UPSCALERS(StrEnum):
@@ -172,6 +218,7 @@ class KNOWN_ALCHEMY_TYPES(StrEnum):
     palette = KNOWN_ALCHEMY_FORMS.palette
     describe = KNOWN_ALCHEMY_FORMS.describe
     aesthetic = KNOWN_ALCHEMY_FORMS.aesthetic
+    annotation = KNOWN_ALCHEMY_FORMS.annotation
 
 
 def is_upscaler_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
@@ -230,3 +277,8 @@ def is_describe_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
 def is_aesthetic_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
     """Check if the form is a LAION aesthetic-score form."""
     return form == KNOWN_ALCHEMY_FORMS.aesthetic
+
+
+def is_annotation_form(form: KNOWN_ALCHEMY_TYPES | str) -> bool:
+    """Check if the form is a controlnet annotation (raster -> control map) form."""
+    return form == KNOWN_ALCHEMY_FORMS.annotation

@@ -11,6 +11,7 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     ALCHEMY_PARAMETER_FIELDS,
     KNOWN_ALCHEMY_FORMS,
     KNOWN_ALCHEMY_TYPES,
+    KNOWN_ANNOTATION_CONTROL_TYPES,
     KNOWN_CAPTION_MODELS,
     KNOWN_FACEFIXERS,
     KNOWN_INTERROGATORS,
@@ -225,6 +226,26 @@ class NSFWAlchemyParameters(SingleAlchemyParameters):
         return str(self.nsfw_detector)
 
 
+class AnnotationAlchemyParametersTemplate(SingleAlchemyParametersTemplate):
+    """Template for controlnet annotation alchemy parameters with all fields optional."""
+
+    control_type: KNOWN_ANNOTATION_CONTROL_TYPES | str | None = None
+
+
+class AnnotationAlchemyParameters(SingleAlchemyParameters):
+    """Represents the parameters for a controlnet annotation alchemy generation."""
+
+    form: Literal[KNOWN_ALCHEMY_FORMS.annotation] = KNOWN_ALCHEMY_FORMS.annotation
+
+    control_type: KNOWN_ANNOTATION_CONTROL_TYPES | str
+
+    @property
+    @override
+    def operation_name(self) -> str:
+        """The name of the controlnet control-map type."""
+        return str(self.control_type)
+
+
 class AlchemyParameters(CompositeParametersBase):
     """Represents the parameters for an alchemy generation."""
 
@@ -345,6 +366,7 @@ def _register_default_rules() -> None:
         ResolverRule(predicate=_has_field(ALCHEMY_PARAMETER_FIELDS.interrogator), model=InterrogateAlchemyParameters),
         ResolverRule(predicate=_has_field(ALCHEMY_PARAMETER_FIELDS.caption_model), model=CaptionAlchemyParameters),
         ResolverRule(predicate=_has_field(ALCHEMY_PARAMETER_FIELDS.nsfw_detector), model=NSFWAlchemyParameters),
+        ResolverRule(predicate=_has_field(ALCHEMY_PARAMETER_FIELDS.control_type), model=AnnotationAlchemyParameters),
         ResolverRule(predicate=_is_post_process_without_upscaler, model=UpscaleAlchemyParameters),
     ]
 

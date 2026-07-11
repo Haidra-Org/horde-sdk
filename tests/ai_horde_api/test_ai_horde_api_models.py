@@ -19,6 +19,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
     ImageGenerateJobPopPayload,
+    ImageGenerateJobPopRequest,
     ImageGenerateJobPopResponse,
     ImageGenerateJobPopSkippedStatus,
     ImageGenerationInputPayload,
@@ -29,6 +30,7 @@ from horde_sdk.ai_horde_api.apimodels import (
     WorkerKudosDetails,
 )
 from horde_sdk.ai_horde_api.apimodels.alchemy.status import (
+    AlchemyAnnotationResult,
     AlchemyCaptionResult,
     AlchemyInterrogationDetails,
     AlchemyNSFWResult,
@@ -327,6 +329,28 @@ def test_GenMetadataEntry() -> None:
         type="test key",
         value="test value",
     )
+
+
+def test_ImageGenerateJobPopRequest_allow_extended_controlnet() -> None:
+    request = ImageGenerateJobPopRequest(
+        name="fake CI worker",
+        bridge_agent="AI Horde Worker reGen:8.0.1-citests:https://github.com/Haidra-Org/horde-worker-reGen",
+        max_pixels=262144,
+        models=["Deliberate"],
+    )
+    # Absent by default, so older servers keep their fail-closed behaviour.
+    assert request.allow_extended_controlnet is None
+    assert "allow_extended_controlnet" not in request.model_dump(exclude_none=True)
+
+    request = ImageGenerateJobPopRequest(
+        name="fake CI worker",
+        bridge_agent="AI Horde Worker reGen:8.0.1-citests:https://github.com/Haidra-Org/horde-worker-reGen",
+        max_pixels=262144,
+        models=["Deliberate"],
+        allow_extended_controlnet=True,
+    )
+    assert request.allow_extended_controlnet is True
+    assert request.model_dump()["allow_extended_controlnet"] is True
 
 
 def test_ImageGenerateJobPopResponse() -> None:
@@ -860,6 +884,33 @@ def test_alchemy_status_parses_vectorize_result() -> None:
 
     assert len(response.all_vectorize_results) == 1
     assert response.all_vectorize_results[0].vectorize == svg
+
+
+def test_alchemy_status_parses_annotation_result() -> None:
+    """An annotation form result (`{"annotation": "<url>"}`) is parsed into an `AlchemyAnnotationResult`."""
+    url = "https://not.a.real.url.internal/control_map.png"
+    response = AlchemyStatusResponse.model_validate(
+        {
+            "state": "done",
+            "forms": [
+                {
+                    "form": KNOWN_ALCHEMY_TYPES.annotation.value,
+                    "state": "done",
+                    "result": {"annotation": url},
+                },
+            ],
+        },
+    )
+
+    assert len(response.forms) == 1
+    assert isinstance(response.forms[0].result, AlchemyAnnotationResult)
+    assert response.forms[0].result.annotation == url
+
+    assert len(response.all_annotation_results) == 1
+    assert response.all_annotation_results[0].annotation == url
+    # The annotation result must never masquerade as a vectorize result (both are single-string-field
+    # models, the smart-union collision risk).
+    assert len(response.all_vectorize_results) == 0
 
 
 def test_alchemy_status_union_does_not_cross_resolve_results() -> None:

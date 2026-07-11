@@ -7,16 +7,22 @@ which contains fields such as `prompt`, `max_length`, `temperature`, etc.
 """
 
 from horde_sdk.consts import KNOWN_NSFW_DETECTOR
-from horde_sdk.generation_parameters.alchemy import AlchemyParameters, SingleAlchemyParameters
+from horde_sdk.generation_parameters.alchemy import (
+    AlchemyParameters,
+    AnnotationAlchemyParameters,
+    SingleAlchemyParameters,
+)
 from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_ALCHEMY_FORMS,
     KNOWN_ALCHEMY_TYPES,
+    KNOWN_ANNOTATION_CONTROL_TYPES,
     KNOWN_CAPTION_MODELS,
     KNOWN_CLIP_BLIP_TYPES,
     KNOWN_FACEFIXERS,
     KNOWN_INTERROGATORS,
     KNOWN_MISC_POST_PROCESSORS,
     KNOWN_UPSCALERS,
+    is_annotation_form,
     is_caption_form,
     is_facefixer_form,
     is_image_vectorizer_form,
@@ -59,6 +65,7 @@ __all__ = [
     "CLIP_SKIP_REPRESENTATION",
     "KNOWN_ALCHEMY_FORMS",
     "KNOWN_ALCHEMY_TYPES",
+    "KNOWN_ANNOTATION_CONTROL_TYPES",
     "KNOWN_AUX_MODEL_SOURCE",
     "KNOWN_CAPTION_MODELS",
     "KNOWN_CLIP_BLIP_TYPES",
@@ -75,6 +82,7 @@ __all__ = [
     "LORA_TRIGGER_INJECT_CHOICE",
     "TI_TRIGGER_INJECT_CHOICE",
     "AlchemyParameters",
+    "AnnotationAlchemyParameters",
     "BasicImageGenerationParameters",
     "BasicImageGenerationParametersTemplate",
     "BasicTextGenerationFormatParameters",
@@ -88,6 +96,7 @@ __all__ = [
     "KoboldAITextGenerationParameters",
     "SingleAlchemyParameters",
     "TextGenerationParameters",
+    "is_annotation_form",
     "is_caption_form",
     "is_facefixer_form",
     "is_image_vectorizer_form",

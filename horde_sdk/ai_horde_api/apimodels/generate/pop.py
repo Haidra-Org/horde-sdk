@@ -556,6 +556,8 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     """Whether this worker can do post-processing."""
     allow_controlnet: bool = False
     """Whether this worker can generate using controlnets."""
+    allow_extended_controlnet: bool | None = None
+    """Whether this worker can generate using the extended controlnet control types."""
     allow_sdxl_controlnet: bool = False
     """Whether this worker can generate using SDXL controlnets."""
     allow_lora: bool = False

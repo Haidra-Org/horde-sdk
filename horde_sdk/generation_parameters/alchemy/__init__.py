@@ -6,6 +6,8 @@ Alchemy parameters model.
 
 from horde_sdk.generation_parameters.alchemy.object_models import (
     AlchemyParameters,
+    AnnotationAlchemyParameters,
+    AnnotationAlchemyParametersTemplate,
     CaptionAlchemyParameters,
     FacefixAlchemyParameters,
     InterrogateAlchemyParameters,
@@ -21,6 +23,8 @@ from horde_sdk.generation_parameters.alchemy.object_models import (
 
 __all__ = [
     "AlchemyParameters",
+    "AnnotationAlchemyParameters",
+    "AnnotationAlchemyParametersTemplate",
     "CaptionAlchemyParameters",
     "FacefixAlchemyParameters",
     "InterrogateAlchemyParameters",

@@ -4,6 +4,7 @@ from horde_sdk.ai_horde_api.apimodels import AlchemyJobPopResponse, NoValidAlche
 from horde_sdk.consts import KNOWN_ALCHEMY_BACKEND, KNOWN_DISPATCH_SOURCE, KNOWN_NSFW_DETECTOR
 from horde_sdk.generation_parameters.alchemy import (
     AlchemyParameters,
+    AnnotationAlchemyParameters,
     CaptionAlchemyParameters,
     FacefixAlchemyParameters,
     InterrogateAlchemyParameters,
@@ -15,6 +16,7 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_ALCHEMY_FORMS,
     KNOWN_CAPTION_MODELS,
     KNOWN_INTERROGATORS,
+    is_annotation_form,
     is_caption_form,
     is_facefixer_form,
     is_image_vectorizer_form,
@@ -115,6 +117,18 @@ def convert_alchemy_job_pop_response_to_parameters(
                     result_id=str(form.id_),
                     form=KNOWN_ALCHEMY_FORMS.vectorize,
                     source_image=base64_str_to_bytes(form.source_image),
+                ),
+            )
+
+        elif is_annotation_form(form.form):
+            if form.payload is None or form.payload.control_type is None:
+                raise ValueError("The annotation form pop did not carry a payload.control_type.")
+            parsed_unknown_forms.append(
+                AnnotationAlchemyParameters(
+                    result_id=str(form.id_),
+                    form=KNOWN_ALCHEMY_FORMS.annotation,
+                    source_image=base64_str_to_bytes(form.source_image),
+                    control_type=form.payload.control_type,
                 ),
             )
 

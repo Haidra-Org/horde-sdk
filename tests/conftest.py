@@ -1006,6 +1006,32 @@ def simple_alchemy_gen_job_pop_response_vectorize(
 
 
 @pytest.fixture(scope="function")
+def simple_alchemy_gen_job_pop_response_annotation(
+    single_id: UUID,
+    default_testing_image_base64: str,
+) -> AlchemyJobPopResponse:
+    """Return an `AlchemyJobPopResponse` for `annotation`, shaped as the server really pops it.
+
+    annotation is an image-output form, so (like upscalers/facefixers) the server mints an
+    `r2_upload` URL for the result, and carries the parameterized control type in the form payload.
+    """
+    from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
+
+    return AlchemyJobPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=single_id,
+                form=KNOWN_ALCHEMY_TYPES.annotation,
+                payload={"control_type": "canny"},
+                r2_upload="r2 upload link",
+                source_image=default_testing_image_base64,
+            ),
+        ],
+        skipped=NoValidAlchemyFound(),
+    )
+
+
+@pytest.fixture(scope="function")
 def simple_alchemy_gen_job_pop_response_all(
     id_factory_str: Callable[[], str],
     default_testing_image_base64: str,

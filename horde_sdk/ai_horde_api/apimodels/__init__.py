@@ -15,6 +15,7 @@ from horde_sdk.ai_horde_api.apimodels.alchemy.pop import (
     NoValidAlchemyFound,
 )
 from horde_sdk.ai_horde_api.apimodels.alchemy.status import (
+    AlchemyAnnotationResult,
     AlchemyCaptionResult,
     AlchemyDeleteRequest,
     AlchemyFormStatus,
@@ -323,6 +324,7 @@ __all__ = [
     "ActiveModelLite",
     "AestheticRating",
     "AestheticsPayload",
+    "AlchemyAnnotationResult",
     "AlchemyAsyncRequest",
     "AlchemyAsyncRequestFormItem",
     "AlchemyAsyncResponse",

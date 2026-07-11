@@ -48,6 +48,13 @@ class AlchemyVectorizeResult(HordeAPIData):
     """The resulting SVG markup of the image."""
 
 
+class AlchemyAnnotationResult(HordeAPIData):
+    """Represents the result of a controlnet annotation (raster -> control map) job."""
+
+    annotation: str
+    """The URL of the annotated control-map image."""
+
+
 class AlchemyInterrogationResultItem(HordeAPIData):
     """Represents an item in the result of an interrogation job."""
 
@@ -96,6 +103,7 @@ class AlchemyFormStatus(HordeAPIData):
         | AlchemyCaptionResult
         | AlchemyUpscaleResult
         | AlchemyVectorizeResult
+        | AlchemyAnnotationResult
         | None
     ) = None
     """The result of the form."""
@@ -184,6 +192,11 @@ class AlchemyStatusResponse(HordeResponseBaseModel, ResponseWithProgressMixin):
     def all_vectorize_results(self) -> list[AlchemyVectorizeResult]:
         """Return all completed vectorize results."""
         return [form.result for form in self.forms if form.done and isinstance(form.result, AlchemyVectorizeResult)]
+
+    @property
+    def all_annotation_results(self) -> list[AlchemyAnnotationResult]:
+        """Return all completed controlnet annotation results."""
+        return [form.result for form in self.forms if form.done and isinstance(form.result, AlchemyAnnotationResult)]
 
     @override
     @classmethod

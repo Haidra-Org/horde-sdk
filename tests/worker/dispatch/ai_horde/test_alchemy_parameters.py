@@ -10,6 +10,7 @@ from horde_sdk.ai_horde_api.apimodels.alchemy.pop import AlchemyPopFormPayload
 from horde_sdk.consts import KNOWN_DISPATCH_SOURCE, KNOWN_NSFW_DETECTOR
 from horde_sdk.generation_parameters.alchemy import (
     AlchemyParameters,
+    AnnotationAlchemyParameters,
     CaptionAlchemyParameters,
     FacefixAlchemyParameters,
     InterrogateAlchemyParameters,
@@ -25,6 +26,7 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_INTERROGATORS,
     KNOWN_MISC_POST_PROCESSORS,
     KNOWN_UPSCALERS,
+    is_annotation_form,
     is_image_vectorizer_form,
 )
 from horde_sdk.utils.image_utils import base64_str_to_bytes
@@ -309,6 +311,70 @@ def test_convert_alchemy_job_pop_response_to_parameters_vectorize(
     # map must contain no None values, which its `Mapping[..., str]` type forbids).
     assert str(source_form.id_) not in dispatch_parameters.r2_upload_url_map
     assert None not in dispatch_parameters.r2_upload_url_map.values()
+
+
+def test_convert_alchemy_job_pop_response_to_parameters_annotation(
+    simple_alchemy_gen_job_pop_response_annotation: AlchemyJobPopResponse,
+) -> None:
+    """An annotation pop is routed to the misc bucket as an AnnotationAlchemyParameters, and uploaded.
+
+    Unlike text-output forms, annotation is image-output: the control type must be carried through and
+    the R2 destination must be recorded in the upload map.
+    """
+    assert simple_alchemy_gen_job_pop_response_annotation.forms is not None
+    source_form = simple_alchemy_gen_job_pop_response_annotation.forms[0]
+
+    generation_parameters, dispatch_parameters = convert_alchemy_job_pop_response_to_parameters(
+        simple_alchemy_gen_job_pop_response_annotation,
+    )
+
+    assert_common_parameters(
+        generation_parameters,
+        dispatch_parameters,
+        simple_alchemy_gen_job_pop_response_annotation,
+    )
+
+    # annotation must not be mistaken for any typed (upscaler/facefixer/clip) category.
+    assert generation_parameters.upscalers is None
+    assert generation_parameters.facefixers is None
+    assert generation_parameters.interrogators is None
+    assert generation_parameters.captions is None
+    assert generation_parameters.nsfw_detectors is None
+    assert generation_parameters.misc_post_processors is not None
+    assert len(generation_parameters.misc_post_processors) == 1
+
+    assert len(generation_parameters.all_alchemy_operations) == 1
+    operation = generation_parameters.all_alchemy_operations[0]
+    assert type(operation) is AnnotationAlchemyParameters
+    assert operation.form == KNOWN_ALCHEMY_FORMS.annotation
+    assert is_annotation_form(operation.form)
+    # The parameterized control type must survive the conversion for the worker to act on.
+    assert operation.control_type == "canny"
+    assert operation.operation_name == "canny"
+
+    assert source_form.source_image is not None
+    assert operation.source_image == base64_str_to_bytes(source_form.source_image)
+
+    # Image-output forms carry an R2 destination, so they must appear in the upload map.
+    assert source_form.r2_upload is not None
+    assert dispatch_parameters.r2_upload_url_map[source_form.id_] == source_form.r2_upload
+
+
+def test_convert_annotation_without_control_type_raises() -> None:
+    """An annotation pop that omits control_type is a server contract violation and must not be guessed."""
+    response = AlchemyJobPopResponse(
+        forms=[
+            AlchemyPopFormPayload(
+                id=uuid4(),
+                form=KNOWN_ALCHEMY_TYPES.annotation,
+                r2_upload="r2 upload link",
+                source_image="aGVsbG8=",
+            ),
+        ],
+        skipped=NoValidAlchemyFound(),
+    )
+    with pytest.raises(ValueError, match="control_type"):
+        convert_alchemy_job_pop_response_to_parameters(response)
 
 
 @pytest.mark.parametrize(

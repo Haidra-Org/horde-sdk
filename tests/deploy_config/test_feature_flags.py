@@ -195,3 +195,26 @@ def test_alchemy_worker_attributes_unsupported_vectorize_specifically() -> None:
     assert ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_vectorizer in mixed_reasons
     assert ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_upscaler in mixed_reasons
     assert ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_misc not in mixed_reasons
+
+
+def test_alchemy_worker_attributes_unsupported_annotation_specifically() -> None:
+    """An unsupported annotation request is flagged as `unsupported_annotation`, not `unsupported_misc`."""
+    worker_without_annotation = AlchemyWorkerFeatureFlags(
+        alchemy_feature_flags=AlchemyFeatureFlags(alchemy_types=[]),
+    )
+
+    reasons = worker_without_annotation.reasons_not_capable_of_features(
+        AlchemyFeatureFlags(alchemy_types=[KNOWN_ALCHEMY_TYPES.annotation]),
+    )
+    assert reasons == [ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_annotation]
+
+    # A worker that advertises annotation is capable; no reason is returned.
+    worker_with_annotation = AlchemyWorkerFeatureFlags(
+        alchemy_feature_flags=AlchemyFeatureFlags(alchemy_types=[KNOWN_ALCHEMY_TYPES.annotation]),
+    )
+    assert (
+        worker_with_annotation.reasons_not_capable_of_features(
+            AlchemyFeatureFlags(alchemy_types=[KNOWN_ALCHEMY_TYPES.annotation]),
+        )
+        is None
+    )

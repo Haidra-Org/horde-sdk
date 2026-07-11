@@ -14,7 +14,7 @@ from horde_sdk.ai_horde_api.consts import GENERATION_STATE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import HTTPMethod
-from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ALCHEMY_TYPES, KNOWN_ANNOTATION_CONTROL_TYPES
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     HordeAPIObjectBaseModel,
@@ -24,9 +24,8 @@ from horde_sdk.generic_api.apimodels import (
 from horde_sdk.generic_api.decoration import Unequatable, Unhashable
 
 
-# FIXME
 class AlchemyFormPayloadStable(HordeAPIObjectBaseModel):
-    """Currently unsupported.
+    """Per-form settings carried alongside an alchemy form.
 
     v2 API Model: `ModelInterrogationFormPayloadStable`
     """
@@ -36,15 +35,23 @@ class AlchemyFormPayloadStable(HordeAPIObjectBaseModel):
     def get_api_model_name(cls) -> str | None:
         return "ModelInterrogationFormPayloadStable"
 
-    additionalProp1: str = Field(
+    control_type: KNOWN_ANNOTATION_CONTROL_TYPES | str | None = None
+    """For the `annotation` form, the controlnet control-map type to produce."""
+
+    # The wildcard payload model historically surfaced only these placeholder keys; they carry no
+    # real data and remain optional so genuine per-form settings (e.g. control_type) can be parsed.
+    additionalProp1: str | None = Field(
+        default=None,
         validation_alias="additionalProp1",
     )
     """Currently unsupported."""
-    additionalProp2: str = Field(
+    additionalProp2: str | None = Field(
+        default=None,
         validation_alias="additionalProp2",
     )
     """Currently unsupported."""
-    additionalProp3: str = Field(
+    additionalProp3: str | None = Field(
+        default=None,
         validation_alias="additionalProp3",
     )
     """Currently unsupported."""
@@ -266,6 +273,8 @@ class AlchemyPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin):
     """The usernames that should be prioritized for this request."""
     forms: list[KNOWN_ALCHEMY_TYPES]
     """The types of alchemy that should be generated."""
+    annotation_types: list[KNOWN_ANNOTATION_CONTROL_TYPES] | None = None
+    """The annotation control types this worker can fulfil, when it offers the annotation form."""
     amount: int
     """The number of jobs to request."""
     threads: int = Field(

@@ -43,7 +43,13 @@ class KNOWN_IMAGE_SCHEDULERS(StrEnum):
 
 
 class KNOWN_IMAGE_CONTROLNETS(StrEnum):
-    """The controlnets that are known to the API."""
+    """The controlnets that are known to the API.
+
+    This is the full image-generation `control_type` surface: every member of
+    :class:`horde_sdk.generation_parameters.alchemy.consts.KNOWN_ANNOTATION_CONTROL_TYPES` plus `hough`,
+    the legacy image-generation spelling of the `mlsd` line detector. Both spellings validate; `hough`
+    is kept so existing clients keep working.
+    """
 
     canny = auto()
     hed = auto()
@@ -54,6 +60,31 @@ class KNOWN_IMAGE_CONTROLNETS(StrEnum):
     scribble = auto()
     fakescribbles = auto()
     hough = auto()
+    mlsd = auto()
+    binary = auto()
+    standard_lineart = auto()
+    lineart = auto()
+    lineart_anime = auto()
+    lineart_anime_denoise = auto()
+    pidinet = auto()
+    scribble_xdog = auto()
+    scribble_pidinet = auto()
+    teed = auto()
+    pyracanny = auto()
+    midas_depth = auto()
+    zoe_depth = auto()
+    depth_anything = auto()
+    depth_anything_v2 = auto()
+    normal_bae = auto()
+    oneformer_ade20k = auto()
+    oneformer_coco = auto()
+    color = auto()
+    shuffle = auto()
+    recolor_luminance = auto()
+    recolor_intensity = auto()
+    tile = auto()
+    tile_ttplanet_guided = auto()
+    tile_ttplanet_simple = auto()
 
 
 class KNOWN_IMAGE_SOURCE_PROCESSING(StrEnum):
