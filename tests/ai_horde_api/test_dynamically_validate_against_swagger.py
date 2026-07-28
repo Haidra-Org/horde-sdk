@@ -1,9 +1,6 @@
-import json
-from types import NoneType, UnionType
 from typing import Any
 
 import pytest
-from pydantic import BaseModel
 
 import horde_sdk.ai_horde_api.apimodels
 from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
@@ -16,44 +13,6 @@ from horde_sdk.generic_api.utils.swagger import (
     SwaggerEndpoint,
     SwaggerParser,
 )
-
-
-def get_fields_descriptions_and_types(class_type: type[BaseModel]) -> dict[str, dict[str, str | list[str] | None]]:
-    field_names_and_descriptions: dict[str, dict[str, str | list[str] | None]] = {}
-    for field_name, field_info in class_type.model_fields.items():
-        if field_info.description is not None:
-            field_names_and_descriptions[field_name] = {"description": field_info.description}
-        else:
-            field_names_and_descriptions[field_name] = {"description": None}
-
-        if field_info.annotation is not None:
-            # Builtin-types should use their simple name while horde_sdk classes should use their fully qualified name
-            # dict and list types should use their string representation
-            types_list = []
-            if isinstance(field_info.annotation, UnionType):
-                for anno_type in field_info.annotation.__args__:
-                    if "horde_sdk" in anno_type.__module__:
-                        types_list.append(anno_type.__module__ + "." + anno_type.__name__)
-                    elif hasattr(anno_type, "__origin__") and (
-                        anno_type.__origin__ is dict or anno_type.__origin__ is list
-                    ):
-                        types_list.append(str(anno_type))
-                    else:
-                        types_list.append(anno_type.__name__ if anno_type is not NoneType else "None")
-            else:
-                if "horde_sdk" in field_info.annotation.__module__:
-                    types_list.append(field_info.annotation.__module__ + "." + field_info.annotation.__name__)
-                elif hasattr(field_info.annotation, "__origin__") and (
-                    field_info.annotation.__origin__ is dict or field_info.annotation.__origin__ is list
-                ):
-                    types_list.append(str(field_info.annotation))
-                else:
-                    types_list.append(field_info.annotation.__name__)
-
-            field_names_and_descriptions[field_name]["types"] = types_list
-
-    return field_names_and_descriptions
-
 
 def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     """Ensure all models defined in ai_horde_api are defined in the swagger doc."""
@@ -69,12 +28,6 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
 
     swagger_defined_response_examples: dict[str, dict[HTTPMethod, dict[HTTPStatusCode, dict[str, object] | list[Any]]]]
     swagger_defined_response_examples = swagger_doc.get_all_response_examples()
-
-    api_to_sdk_payload_model_map: dict[str, dict[HTTPMethod, type[HordeRequest]]] = {}
-    api_to_sdk_response_model_map: dict[str, dict[HTTPStatusCode, type[HordeResponseTypes]]] = {}
-
-    request_field_names_and_descriptions: dict[str, dict[str, dict[str, str | list[str] | None]]] = {}
-    response_field_names_and_descriptions: dict[str, dict[str, dict[str, str | list[str] | None]]] = {}
 
     default_num_request_fields = len(HordeRequest.model_fields)
 
@@ -139,14 +92,6 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
             endpoint_http_status_code_responses = endpoint_http_method_examples.get(request_type.get_http_method())
             assert endpoint_http_status_code_responses, f"Failed to get example response for {request_type.__name__}"
 
-        if endpoint_subpath not in api_to_sdk_payload_model_map:
-            api_to_sdk_payload_model_map[endpoint_subpath] = {}
-
-        api_to_sdk_payload_model_map[endpoint_subpath][request_type.get_http_method()] = request_type
-
-        request_field_dict = get_fields_descriptions_and_types(request_type)
-        request_field_names_and_descriptions[request_type.__name__] = request_field_dict
-
         endpoint_success_http_status_codes: list[HTTPStatusCode] = []
 
         if endpoint_http_status_code_responses is not None:
@@ -168,15 +113,9 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
                 f"Failed to get default success response type for {request_type.__name__}"
             )
 
-        api_to_sdk_response_model_map[endpoint_subpath] = request_type.get_success_status_response_pairs()
-
         for response_type in request_type.get_success_status_response_pairs().values():
             if len(response_type.model_fields) == 0:
                 print(f"Response type {response_type.__name__} has no fields")
-                continue
-
-            response_field_dict = get_fields_descriptions_and_types(response_type)
-            response_field_names_and_descriptions[response_type.__name__] = response_field_dict
 
     endpoint_verbs_missing_from_sdk: dict[str, list[HTTPMethod]] = {}
     endpoint_verbs_missing_from_swagger: dict[str, list[HTTPMethod]] = {}
@@ -202,31 +141,6 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
         "The following endpoints are defined in the SDK but not in the Swagger documentation: "
         f"{endpoint_verbs_missing_from_swagger}"
     )
-
-    def json_serializer(obj: object) -> object:
-        if isinstance(obj, str):
-            return obj
-        if isinstance(obj, type):
-            # Return the fully qualified (with all namespaces) name of the type
-            return obj.__module__ + "." + obj.__name__
-        raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
-
-    with open("docs/ai-horde/api_to_sdk_payload_map.json", "w") as f:
-        f.write(json.dumps(api_to_sdk_payload_model_map, indent=4, default=json_serializer))
-        f.write("\n")
-
-    with open("docs/ai-horde/api_to_sdk_response_map.json", "w") as f:
-        f.write(json.dumps(api_to_sdk_response_model_map, indent=4, default=json_serializer))
-        f.write("\n")
-
-    with open("docs/ai-horde/request_field_names_and_descriptions.json", "w") as f:
-        f.write(json.dumps(request_field_names_and_descriptions, indent=4, default=json_serializer))
-        f.write("\n")
-
-    with open("docs/ai-horde/response_field_names_and_descriptions.json", "w") as f:
-        f.write(json.dumps(response_field_names_and_descriptions, indent=4, default=json_serializer))
-        f.write("\n")
-
 
 @pytest.mark.object_verify
 def test_all_ai_horde_model_defs_in_swagger_from_prod_swagger() -> None:

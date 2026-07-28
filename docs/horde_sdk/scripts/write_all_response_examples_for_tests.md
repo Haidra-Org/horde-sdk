@@ -1,2 +1,0 @@
-# write_all_response_examples_for_tests
-::: horde_sdk.scripts.write_all_response_examples_for_tests
