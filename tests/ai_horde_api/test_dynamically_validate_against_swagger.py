@@ -6,13 +6,14 @@ import horde_sdk.ai_horde_api.apimodels
 from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
 from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod, HTTPStatusCode, get_all_success_status_codes
 from horde_sdk.generic_api._reflection import get_all_request_types
-from horde_sdk.generic_api.apimodels import HordeRequest, HordeResponseTypes
+from horde_sdk.generic_api.apimodels import HordeRequest
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH
 from horde_sdk.generic_api.utils.swagger import (
     SwaggerDoc,
     SwaggerEndpoint,
     SwaggerParser,
 )
+
 
 def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
     """Ensure all models defined in ai_horde_api are defined in the swagger doc."""
@@ -141,6 +142,7 @@ def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
         "The following endpoints are defined in the SDK but not in the Swagger documentation: "
         f"{endpoint_verbs_missing_from_swagger}"
     )
+
 
 @pytest.mark.object_verify
 def test_all_ai_horde_model_defs_in_swagger_from_prod_swagger() -> None:

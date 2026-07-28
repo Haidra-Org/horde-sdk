@@ -39,6 +39,8 @@ def generate_image(api_key: str = ANON_API_KEY) -> bytes:
         raise RuntimeError("The request completed without an image")
     image = client.download_image_from_generation(status.generations[0])
     return image.tobytes()
+
+
 # --8<-- [end:image-request]
 
 
@@ -60,6 +62,8 @@ def generate_text(model: str, api_key: str = ANON_API_KEY) -> str:
     if not status.generations or status.generations[0].text is None:
         raise RuntimeError("The request completed without text")
     return status.generations[0].text
+
+
 # --8<-- [end:text-request]
 
 
@@ -73,6 +77,8 @@ async def generate_image_async(api_key: str = ANON_API_KEY) -> bytes:
             raise RuntimeError("The request completed without an image")
         image, _generation_id = await client.download_image_from_generation(status.generations[0])
         return image.tobytes()
+
+
 # --8<-- [end:async-request]
 
 
@@ -88,4 +94,6 @@ def caption_image(source_image_url: str, api_key: str = ANON_API_KEY) -> str:
     if not status.forms or not isinstance(status.forms[0].result, AlchemyCaptionResult):
         raise RuntimeError("The request completed without a caption")
     return status.forms[0].result.caption
+
+
 # --8<-- [end:alchemy-request]

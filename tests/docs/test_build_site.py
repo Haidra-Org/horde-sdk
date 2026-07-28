@@ -14,9 +14,7 @@ SPEC.loader.exec_module(build_site)
 
 
 def test_canonical_url_requires_absolute_http_and_adds_trailing_slash() -> None:
-    assert build_site.canonical_url("https://docs.example.test/en/latest") == (
-        "https://docs.example.test/en/latest/"
-    )
+    assert build_site.canonical_url("https://docs.example.test/en/latest") == ("https://docs.example.test/en/latest/")
     try:
         build_site.canonical_url("relative/path")
     except argparse.ArgumentTypeError:

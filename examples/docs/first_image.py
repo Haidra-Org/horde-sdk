@@ -43,6 +43,8 @@ def generate(client: AIHordeAPISimpleClient, output: Path) -> Path:
     with Image.open(output) as saved:
         saved.verify()
     return output
+
+
 # --8<-- [end:first-image]
 
 

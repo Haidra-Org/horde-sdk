@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
 
 import PIL.Image
 import pytest
@@ -14,15 +13,17 @@ from horde_sdk.ai_horde_api.apimodels import AlchemyCaptionResult
 
 
 class FakeSyncClient:
-    def image_generate_request_dry_run(self, request: Any) -> SimpleNamespace:
+    def image_generate_request_dry_run(self, request: object) -> SimpleNamespace:
+        assert hasattr(request, "dry_run")
         assert request.dry_run is True
         return SimpleNamespace(kudos=2.5)
 
-    def image_generate_request(self, request: Any) -> tuple[SimpleNamespace, str]:
+    def image_generate_request(self, request: object) -> tuple[SimpleNamespace, str]:
+        assert hasattr(request, "dry_run")
         assert request.dry_run is False
         return SimpleNamespace(generations=[SimpleNamespace(id_="generation")]), "request"
 
-    def download_image_from_generation(self, generation: Any) -> PIL.Image.Image:
+    def download_image_from_generation(self, generation: SimpleNamespace) -> PIL.Image.Image:
         assert generation.id_ == "generation"
         return PIL.Image.new("RGB", (2, 2), "blue")
 
@@ -47,16 +48,16 @@ def test_documented_request_builders_validate_locally() -> None:
 
 
 class FakeRecipeSyncClient:
-    def image_generate_request(self, request: Any) -> tuple[SimpleNamespace, str]:
+    def image_generate_request(self, _request: object) -> tuple[SimpleNamespace, str]:
         return SimpleNamespace(generations=[SimpleNamespace(id_="generation")]), "request"
 
-    def download_image_from_generation(self, generation: Any) -> PIL.Image.Image:
+    def download_image_from_generation(self, _generation: object) -> PIL.Image.Image:
         return PIL.Image.new("RGB", (2, 2), "green")
 
-    def text_generate_request(self, request: Any) -> tuple[SimpleNamespace, str]:
+    def text_generate_request(self, _request: object) -> tuple[SimpleNamespace, str]:
         return SimpleNamespace(generations=[SimpleNamespace(text="A result")]), "request"
 
-    def alchemy_request(self, request: Any) -> tuple[SimpleNamespace, str]:
+    def alchemy_request(self, _request: object) -> tuple[SimpleNamespace, str]:
         result = AlchemyCaptionResult(caption="A caption")
         return SimpleNamespace(forms=[SimpleNamespace(result=result)]), "request"
 
@@ -70,13 +71,13 @@ def test_sync_documentation_recipes_use_typed_results(monkeypatch: pytest.Monkey
 
 
 class FakeAsyncClient:
-    def __init__(self, **_kwargs: Any) -> None:
+    def __init__(self, **_kwargs: object) -> None:
         pass
 
-    async def image_generate_request(self, request: Any) -> tuple[SimpleNamespace, str]:
+    async def image_generate_request(self, _request: object) -> tuple[SimpleNamespace, str]:
         return SimpleNamespace(generations=[SimpleNamespace(id_="generation")]), "request"
 
-    async def download_image_from_generation(self, generation: Any) -> tuple[PIL.Image.Image, str]:
+    async def download_image_from_generation(self, _generation: object) -> tuple[PIL.Image.Image, str]:
         return PIL.Image.new("RGB", (2, 2), "red"), "generation"
 
 

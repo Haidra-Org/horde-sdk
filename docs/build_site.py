@@ -29,7 +29,7 @@ def temporary_config(site_url: str) -> Path:
     rendered, count = SITE_URL_PATTERN.subn(f'site_url = "{site_url}"', original, count=1)
     if count != 1:
         raise RuntimeError(f"Could not replace site_url in {CONFIG_PATH}")
-    handle = tempfile.NamedTemporaryFile(
+    with tempfile.NamedTemporaryFile(
         mode="w",
         encoding="utf-8",
         newline="\n",
@@ -37,10 +37,9 @@ def temporary_config(site_url: str) -> Path:
         suffix=".toml",
         dir=PROJECT_ROOT,
         delete=False,
-    )
-    with handle:
+    ) as handle:
         handle.write(rendered)
-    return Path(handle.name)
+        return Path(handle.name)
 
 
 def main(argv: list[str] | None = None) -> int:
