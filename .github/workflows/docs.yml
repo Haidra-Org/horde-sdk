@@ -1,0 +1,115 @@
+name: Horde SDK documentation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/docs.yml'
+      - '.pre-commit-config.yaml'
+      - '.readthedocs.yaml'
+      - 'docs/**'
+      - 'examples/docs/**'
+      - 'horde_sdk/**/*.py'
+      - 'pyproject.toml'
+      - 'tests/docs/**'
+      - 'uv.lock'
+      - 'zensical.toml'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/docs.yml'
+      - '.pre-commit-config.yaml'
+      - '.readthedocs.yaml'
+      - 'docs/**'
+      - 'examples/docs/**'
+      - 'horde_sdk/**/*.py'
+      - 'pyproject.toml'
+      - 'tests/docs/**'
+      - 'uv.lock'
+      - 'zensical.toml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: false
+
+      - name: Install locked documentation and test dependencies
+        run: uv sync --locked --group docs --group dev
+
+      - name: Shared documentation tooling tests pass
+        run: uv run pytest docs/haidra-assets/tools/tests -q
+
+      - name: Documentation examples and generators pass
+        run: uv run pytest tests/docs -q
+
+      - name: Generated output, metadata, navigation, references, and prose are current
+        run: uv run python docs/check_docs.py --fast
+
+      # Zensical 0.0.51 can occasionally report phantom strict-link warnings for
+      # identical input. Independent link validation follows this bounded retry.
+      - name: Site builds strictly
+        shell: bash
+        run: |
+          for attempt in 1 2 3; do
+            if uv run python docs/build_site.py --clean --strict; then
+              exit 0
+            fi
+            echo "Strict build attempt ${attempt} failed; retrying from a clean cache"
+          done
+          echo "::error::Strict Zensical build failed on every attempt."
+          exit 1
+
+      - name: Front matter is consumed rather than rendered
+        shell: bash
+        run: |
+          if grep -rnE --include='*.html' -e '<p>(title|summary|status|topics|order):' site; then
+            echo "::error::Front matter rendered as page content."
+            exit 1
+          fi
+
+      - name: Rendered links resolve
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --offline --no-progress site
+          fail: true
+
+      - name: Upload validated GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy the validated artifact
+        id: deployment
+        uses: actions/deploy-pages@v5

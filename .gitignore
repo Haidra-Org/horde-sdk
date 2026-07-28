@@ -120,8 +120,9 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
+# Generated documentation site
 /site
+.zensical-build-*.toml
 
 # mypy
 .mypy_cache/

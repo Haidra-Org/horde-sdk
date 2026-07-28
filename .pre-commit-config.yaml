@@ -3,7 +3,6 @@ repos:
     rev: v6.0.0
     hooks:
     -   id: check-yaml
-        exclude: ^mkdocs\.yml$
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
 -   repo: https://github.com/astral-sh/ruff-pre-commit
@@ -31,3 +30,11 @@ repos:
             StrEnum,
             horde_model_reference>=4.0.0
         ]
+-   repo: local
+    hooks:
+    -   id: docs-fast
+        name: documentation fast checks
+        entry: uv run python docs/check_docs.py --fast
+        language: system
+        pass_filenames: false
+        files: ^(docs/|examples/docs/|horde_sdk/.*\.py$|tests/docs/|zensical\.toml$)
