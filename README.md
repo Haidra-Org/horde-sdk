@@ -6,13 +6,14 @@
 
 ## Note
 
-horde_sdk is in **beta**. Everything is subject to change. Please feel free to report bugs or make suggestions on our [github issue page](https://https//github.com/Haidra-Org/horde-sdk)
+horde_sdk is in **beta**. Everything is subject to change. Please report bugs or suggestions on the
+[GitHub issue page](https://github.com/Haidra-Org/horde-sdk/issues).
 
 ## About
 
-This library simplifies interfacing with any API created by [Haidra](https://haidra.net/) - the community organization
-behind the free projects such as AI-Horde ([homepage](https://aihorde.net/), [github](https://github.com/db0/AI-Horde)).
-The goal is to minimize the amount of time it takes to develop applications in python that use our free, volunteer driven, services which include:
+This library provides typed interfaces for APIs and worker systems created by [Haidra](https://haidra.net/), the
+community organization behind [AI Horde](https://aihorde.net/). It supports Python applications that use volunteer-run
+services including:
 
 - Image Generation (driven by [ComfyUI](https://github.com/comfyanonymous/ComfyUI))
 - Text Generation using LLMs (driven by [KoboldAI](https://github.com/KoboldAI/KoboldAI-Client))
@@ -22,4 +23,5 @@ From anything to requesting your own images, or rolling your own [worker](https:
 
 ## Documentation
 
-See the complete documentation at <https://horde-sdk.readthedocs.io/en/latest/>.
+See the stable documentation at <https://horde-sdk.readthedocs.io/en/stable/>. Documentation for the current `main`
+branch is available under <https://horde-sdk.readthedocs.io/en/latest/>.

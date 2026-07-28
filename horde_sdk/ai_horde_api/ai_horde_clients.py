@@ -273,7 +273,7 @@ class AIHordeAPIAsyncManualClient(GenericAsyncHordeAPIManualClient, BaseAIHordeC
         *,
         ssl_context: SSLContext = _default_sslcontext,
     ) -> None:
-        """Create a new instance of the RatingsAPIClient."""
+        """Create an asynchronous manual AI Horde client."""
         super().__init__(
             aiohttp_session=aiohttp_session,
             path_fields=AIHordePathData,
@@ -359,7 +359,7 @@ class AIHordeAPIClientSession(GenericHordeAPISession):
     """
 
     def __init__(self) -> None:
-        """Create a new instance of the RatingsAPIClient."""
+        """Create a synchronous AI Horde client session."""
         super().__init__(
             path_fields=AIHordePathData,
             query_fields=AIHordeQueryData,
@@ -380,7 +380,7 @@ class AIHordeAPIAsyncClientSession(GenericAsyncHordeAPISession):
         ssl_context: SSLContext = _default_sslcontext,
         apikey: str | None = None,
     ) -> None:
-        """Create a new instance of the RatingsAPIClient."""
+        """Create an asynchronous AI Horde client session."""
         super().__init__(
             aiohttp_session=aiohttp_session,
             apikey=apikey,
@@ -740,7 +740,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
                 response.
 
         Returns:
-            list[ImageGeneration]: The completed images.
+            tuple[ImageGenerateStatusResponse, GenerationID]: The final status response and request ID.
 
         Raises:
             ClientResponseError: If the generation couldn't be downloaded.
@@ -1208,7 +1208,7 @@ class AIHordeAPISimpleClient(BaseAIHordeSimpleClient):
 
 
 class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
-    """An asyncio based simple client for the AI-Horde API. Start with this class if you want asyncio capabilities.."""
+    """An asyncio-based simple client that owns polling and cleanup for AI Horde requests."""
 
     _horde_client_session: AIHordeAPIAsyncClientSession
 
@@ -1218,7 +1218,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
         horde_client_session: AIHordeAPIAsyncClientSession | None = None,
         apikey: str | None = None,
     ) -> None:
-        """Create a new instance of the AIHordeAPISimpleClient."""
+        """Create an asynchronous simple AI Horde client around an existing session."""
         super().__init__()
 
         if aiohttp_session is None and horde_client_session is None:
@@ -1249,7 +1249,7 @@ class AIHordeAPIAsyncSimpleClient(BaseAIHordeSimpleClient):
             generation (ImageGeneration): The image generation to convert.
 
         Returns:
-            PIL.Image.Image: The converted image.
+            tuple[PIL.Image.Image, GenerationID]: The converted image and its generation ID.
 
         Raises:
             ClientResponseError: If the generation couldn't be downloaded.

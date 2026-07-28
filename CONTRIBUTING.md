@@ -62,7 +62,9 @@
 
 ## Code Style and System Design
 
-See the [style guide in the docs folder](docs/concepts/style_guide.md) or go to the [same place in the horde_sdk documentation](https://horde-sdk.readthedocs.io/en/latest/) for more information on the code style requirements and design patterns used in the SDK.
+See the shared [Python standard](docs/haidra-assets/docs/meta/python.md), the
+[contributor conventions](docs/reference/contributor-conventions.md), and the
+[package architecture](docs/explanation/package-architecture.md) for code and design requirements.
 
 ## Testing
 
@@ -95,12 +97,20 @@ With the top level directory (the one that contains `pyproject.toml`) as your wo
 ```bash
 python horde_sdk/scripts/write_all_payload_examples_for_tests.py
 python horde_sdk/scripts/write_all_response_examples_for_tests.py
-python docs/build_docs.py
+uv run python docs/build_docs.py generate
 ```
 
 This will update the data found in `tests/test_data/` from the default horde URL, or if any of the override environment variables are set, from there. This includes writing example payloads and responses extrapolated from the live APIs.
 
-Running `build_docs.py` will update any automatically generated mkdocs documentation stubs or resources (such as the API Model <-> SDK Model map).
+`build_docs.py` updates the tracked Zensical API pages and derives the endpoint map directly from SDK request metadata.
+It does not require the live Swagger document and does not write intermediate JSON files.
+
+For any documentation change, run the fast checks and a strict site build:
+
+```bash
+uv run python docs/check_docs.py --fast
+uv run python docs/build_site.py --clean --strict
+```
 
 Be sure to run the test suite (without any `*_api_calls.py` tests) after. You may also may want to just start with `pytest -m "object_verify"` (see also the section on verifying the horde SDK API surface).
 
