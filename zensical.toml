@@ -1,0 +1,146 @@
+[project]
+site_name = "Horde SDK"
+site_description = "Typed Python clients, models, generation parameters, and worker primitives for the Haidra ecosystem."
+site_url = "https://horde-sdk.readthedocs.io/en/latest/"
+repo_url = "https://github.com/Haidra-Org/horde-sdk"
+repo_name = "Haidra-Org/horde-sdk"
+edit_uri = "edit/main/docs/"
+copyright = "AGPL-3.0-or-later"
+extra_css = ["stylesheets/extra.css"]
+
+nav = [
+    { "Home" = "README.md" },
+    { "Tutorial" = [
+        { "Overview" = "tutorial/README.md" },
+        { "Create and verify your first image" = "tutorial/first-image.md" },
+        { "Build your first worker integration" = "tutorial/first-worker.md" },
+    ] },
+    { "How-to" = [
+        { "Overview" = "how-to/README.md" },
+        { "Generate images" = "how-to/generate-images.md" },
+        { "Generate text" = "how-to/generate-text.md" },
+        { "Use the asynchronous client" = "how-to/use-async-client.md" },
+        { "Estimate request cost" = "how-to/estimate-cost.md" },
+        { "Run an alchemy operation" = "how-to/run-alchemy.md" },
+        { "Clean up manual requests" = "how-to/clean-up-manual-requests.md" },
+        { "Implement a backend value mapper" = "how-to/implement-backend-mapper.md" },
+        { "Drive the worker state machine" = "how-to/drive-worker-state.md" },
+        { "Add an alchemy form" = "how-to/add-an-alchemy-form.md" },
+        { "Update endpoint models" = "how-to/update-endpoint-models.md" },
+        { "Implement a dispatch adapter" = "how-to/implement-dispatch-adapter.md" },
+        { "Build a chained worker flow" = "how-to/build-chained-flow.md" },
+        { "Use the ratings API" = "how-to/use-ratings-api.md" },
+    ] },
+    { "Reference" = [
+        { "Overview" = "reference/README.md" },
+        { "Client behavior and errors" = "reference/client-behavior.md" },
+        { "Request and response contracts" = "reference/request-response-contracts.md" },
+        { "Generation parameters" = "reference/generation-parameters.md" },
+        { "Worker transitions" = "reference/worker-transitions.md" },
+        { "Package and code map" = "reference/package-map.md" },
+        { "Glossary" = "reference/glossary.md" },
+        { "Troubleshooting" = "reference/troubleshooting.md" },
+        { "Contributor conventions" = "reference/contributor-conventions.md" },
+        { "Endpoint map" = "reference/endpoint-map.md" },
+        { "Python API" = "reference/api/horde_sdk/README.md" },
+        { "Backend parsing" = "reference/backend-parsing.md" },
+        { "Dispatch interfaces" = "reference/dispatch-interfaces.md" },
+        { "Chaining interfaces" = "reference/chaining-interfaces.md" },
+        { "Ratings API" = "reference/ratings-api.md" },
+        { "Deployment configuration" = "reference/deployment-configuration.md" },
+        { "Model-reference integration" = "reference/model-reference-integration.md" },
+        { "Logging" = "reference/logging.md" },
+        { "Safety and localization" = "reference/safety-localization.md" },
+        { "Image utilities" = "reference/image-utilities.md" },
+    ] },
+    { "Explanation" = [
+        { "Overview" = "explanation/README.md" },
+        { "Client layers and ownership" = "explanation/client-layers.md" },
+        { "Typed request and response design" = "explanation/typed-model-design.md" },
+        { "Generation parameters and templates" = "explanation/generation-parameters-and-templates.md" },
+        { "Worker jobs, generations, and state" = "explanation/worker-model.md" },
+        { "Package architecture" = "explanation/package-architecture.md" },
+        { "Backend normalization" = "explanation/backend-normalization.md" },
+        { "Dispatch normalization" = "explanation/dispatch-normalization.md" },
+        { "Operation chaining" = "explanation/chaining.md" },
+        { "Ratings integration" = "explanation/ratings-integration.md" },
+        { "Model-reference integration" = "explanation/model-reference-integration.md" },
+    ] },
+    { "Support" = [
+        { "Topics" = "topics.md" },
+        { "Horde concepts" = "haidra-assets/docs/README.md" },
+        { "Haidra documentation standard" = "haidra-assets/docs/meta/documentation.md" },
+        { "Haidra Python standard" = "haidra-assets/docs/meta/python.md" },
+        { "Haidra pull-request standard" = "haidra-assets/docs/meta/pull_requests.md" },
+    ] },
+]
+
+[project.extra.status]
+stub = "Not yet documented in full"
+
+[project.theme]
+variant = "modern"
+language = "en"
+logo = "haidra-assets/haidra-logo/haidra-logo-path.svg"
+favicon = "haidra-assets/haidra-logo/haidra-transparent-zoomed-in.png"
+features = [
+    "content.action.edit",
+    "content.action.view",
+    "content.code.copy",
+    "content.tooltips",
+    "navigation.footer",
+    "navigation.indexes",
+    "navigation.path",
+    "navigation.tabs",
+    "navigation.tabs.sticky",
+    "navigation.top",
+    "navigation.tracking",
+    "search.highlight",
+    "toc.follow",
+]
+
+[[project.theme.palette]]
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to light mode"
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["."]
+
+[project.plugins.mkdocstrings.handlers.python.options]
+docstring_style = "google"
+docstring_section_style = "list"
+inherited_members = false
+members_order = "source"
+separate_signature = true
+show_if_no_docstring = true
+show_signature_annotations = true
+
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.def_list]
+[project.markdown_extensions.footnotes]
+[project.markdown_extensions.md_in_html]
+[project.markdown_extensions.tables]
+[project.markdown_extensions.toc]
+permalink = true
+
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+line_spans = "__span"
+pygments_lang_class = true
+
+[project.markdown_extensions.pymdownx.inlinehilite]
+
+[project.markdown_extensions.pymdownx.snippets]
+base_path = ["."]
+
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+    { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
