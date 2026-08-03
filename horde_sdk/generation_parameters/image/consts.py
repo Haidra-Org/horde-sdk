@@ -7,6 +7,10 @@ class KNOWN_IMAGE_SAMPLERS(StrEnum):
     """The samplers that are known to the API.
 
     (k_lms, k_heun, DDIM, etc)
+
+    The members below `DDIM` are the extended solvers, which only bridges new enough to render them
+    are offered. They carry the image backend's own spelling rather than the `k_` prefix of the
+    k-diffusion block, because they are backend-native solvers rather than k-diffusion samplers.
     """
 
     k_lms = auto()
@@ -23,6 +27,19 @@ class KNOWN_IMAGE_SAMPLERS(StrEnum):
     k_dpmpp_sde = auto()
     lcm = auto()
     DDIM = "DDIM"
+
+    uni_pc = auto()
+    uni_pc_bh2 = auto()
+    dpmpp_2m_sde = auto()
+    dpmpp_3m_sde = auto()
+    ddpm = auto()
+    deis = auto()
+    ipndm = auto()
+    res_multistep = auto()
+    gradient_estimation = auto()
+    heunpp2 = auto()
+    er_sde = auto()
+    sa_solver = auto()
 
 
 class KNOWN_IMAGE_SCHEDULERS(StrEnum):

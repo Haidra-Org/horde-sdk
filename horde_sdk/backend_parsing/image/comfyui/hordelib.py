@@ -15,6 +15,10 @@ class KNOWN_COMFYUI_IMAGE_SAMPLERS(StrEnum):
     """The samplers that are known to the API.
 
     (k_lms, k_heun, DDIM, etc)
+
+    This mirrors ComfyUI's own sampler list and is not exhaustive of it: the `exp_heun_2_x0*`,
+    `dpmpp_2m_sde_heun*`, `gradient_estimation_cfg_pp`, `seeds_2`, `seeds_3` and `sa_solver_pece`
+    names ComfyUI also offers have no horde counterpart and are not listed here.
     """
 
     euler = auto()
@@ -48,6 +52,8 @@ class KNOWN_COMFYUI_IMAGE_SAMPLERS(StrEnum):
     res_multistep_ancestral = auto()
     res_multistep_ancestral_cfg_pp = auto()
     gradient_estimation = auto()
+    er_sde = auto()
+    sa_solver = auto()
 
     ddim = auto()
     uni_pc = auto()
@@ -81,6 +87,20 @@ class ComfyUIBackendValuesMapper(
         KNOWN_COMFYUI_IMAGE_SAMPLERS.dpmpp_2m: KNOWN_IMAGE_SAMPLERS.k_dpmpp_2m,
         KNOWN_COMFYUI_IMAGE_SAMPLERS.ddim: KNOWN_IMAGE_SAMPLERS.DDIM,
         KNOWN_COMFYUI_IMAGE_SAMPLERS.lcm: KNOWN_IMAGE_SAMPLERS.lcm,
+        # The extended solvers are spelled identically on both sides, so these pairs are identity
+        # mappings. They are listed anyway because the mapper converts by lookup, not by name equality.
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.uni_pc: KNOWN_IMAGE_SAMPLERS.uni_pc,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.uni_pc_bh2: KNOWN_IMAGE_SAMPLERS.uni_pc_bh2,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.dpmpp_2m_sde: KNOWN_IMAGE_SAMPLERS.dpmpp_2m_sde,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.dpmpp_3m_sde: KNOWN_IMAGE_SAMPLERS.dpmpp_3m_sde,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.ddpm: KNOWN_IMAGE_SAMPLERS.ddpm,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.deis: KNOWN_IMAGE_SAMPLERS.deis,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.ipndm: KNOWN_IMAGE_SAMPLERS.ipndm,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.res_multistep: KNOWN_IMAGE_SAMPLERS.res_multistep,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.gradient_estimation: KNOWN_IMAGE_SAMPLERS.gradient_estimation,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.heunpp2: KNOWN_IMAGE_SAMPLERS.heunpp2,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.er_sde: KNOWN_IMAGE_SAMPLERS.er_sde,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.sa_solver: KNOWN_IMAGE_SAMPLERS.sa_solver,
     }
 
     def __init__(self) -> None:
