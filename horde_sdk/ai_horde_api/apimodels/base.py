@@ -28,6 +28,7 @@ from horde_sdk.generation_parameters.alchemy.consts import (
 from horde_sdk.generation_parameters.image.consts import (
     KNOWN_IMAGE_CONTROLNETS,
     KNOWN_IMAGE_SAMPLERS,
+    KNOWN_IMAGE_SCHEDULERS,
     KNOWN_IMAGE_WORKFLOWS,
 )
 from horde_sdk.generic_api.apimodels import (
@@ -241,8 +242,18 @@ class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
 
     sampler_name: KNOWN_IMAGE_SAMPLERS | str = KNOWN_IMAGE_SAMPLERS.k_euler
     """The sampler to use for this generation. Defaults to `KNOWN_IMAGE_SAMPLERS.k_lms`."""
+    scheduler: KNOWN_IMAGE_SCHEDULERS | str | None = None
+    """The sigma schedule to use for this generation.
+
+    Takes precedence over `karras`, which can only express two of the schedules a backend supports.
+    When unset the schedule is derived from `karras` so that existing requests are unaffected.
+    """
     karras: bool = True
-    """Set to True if you want to use the Karras scheduling."""
+    """Set to True if you want to use the Karras scheduling.
+
+    Deprecated in favour of `scheduler`, and still honoured indefinitely: `True` means `karras` and
+    `False` means `normal`. Ignored outright when `scheduler` is set.
+    """
     cfg_scale: float = Field(default=7.5, ge=0)
     """The cfg_scale to use for this generation. Defaults to 7.5."""
     denoising_strength: float | None = Field(default=1, ge=0, le=1)

@@ -9,7 +9,7 @@ from horde_model_reference.model_reference_manager import ModelReferenceManager
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
 
-from horde_sdk.ai_horde_api.apimodels.base import GenMetadataEntry
+from horde_sdk.ai_horde_api.apimodels.base import GenMetadataEntry, ImageGenerateParamMixin
 from horde_sdk.ai_horde_api.apimodels.generate.pop import ImageGenerateJobPopResponse
 from horde_sdk.ai_horde_api.consts import DEFAULT_HIRES_DENOISE_STRENGTH, METADATA_TYPE, METADATA_VALUE
 from horde_sdk.ai_horde_api.fields import GenerationID
@@ -85,6 +85,18 @@ class ImageConversionResult(BaseModel):
 
     faults: list[GenMetadataEntry] = []
     """Metadata entries describing any degradations applied during conversion."""
+
+
+def resolve_scheduler(payload: ImageGenerateParamMixin) -> KNOWN_IMAGE_SCHEDULERS | str:
+    """Return the schedule a request asks for, preferring the field over the legacy flag.
+
+    `karras` can only name two of the schedules a backend implements, so an explicitly set `scheduler`
+    is the more specific statement of intent and wins. With no scheduler set the flag is honoured
+    exactly as it always was, which is what keeps existing requests rendering identically.
+    """
+    if payload.scheduler:
+        return payload.scheduler
+    return KNOWN_IMAGE_SCHEDULERS.karras if payload.karras else KNOWN_IMAGE_SCHEDULERS.normal
 
 
 def _split_ai_horde_prompt(combined_prompt: str) -> tuple[str, str | None]:
@@ -365,7 +377,7 @@ def _get_hires_fix_params(
     if not model or model.isspace():
         raise ValueError("Model is required for hires fix generation.")
 
-    scheduler = KNOWN_IMAGE_SCHEDULERS.karras if api_response.payload.karras else KNOWN_IMAGE_SCHEDULERS.normal
+    scheduler = resolve_scheduler(api_response.payload)
 
     return HiresFixGenerationParameters(
         first_pass=BasicImageGenerationParameters(
@@ -612,7 +624,7 @@ def convert_image_job_pop_response_to_parameters(
         steps=api_response.payload.ddim_steps,
         cfg_scale=api_response.payload.cfg_scale,
         sampler_name=api_response.payload.sampler_name,
-        scheduler=KNOWN_IMAGE_SCHEDULERS.karras if api_response.payload.karras else KNOWN_IMAGE_SCHEDULERS.normal,
+        scheduler=resolve_scheduler(api_response.payload),
         clip_skip=api_response.payload.clip_skip,
         denoising_strength=api_response.payload.denoising_strength,
         tiling=api_response.payload.tiling,

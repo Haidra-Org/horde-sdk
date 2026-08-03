@@ -103,6 +103,13 @@ class ComfyUIBackendValuesMapper(
         KNOWN_COMFYUI_IMAGE_SAMPLERS.sa_solver: KNOWN_IMAGE_SAMPLERS.sa_solver,
     }
 
+    # ComfyUI names its schedules exactly as the API does, so these pairs are identity mappings. They
+    # are declared rather than inferred because the mapper converts by lookup, and an absent entry is
+    # an unmappable value rather than a pass-through.
+    _COMFYUI_SCHEDULERS_CONVERT_MAP: ClassVar[dict[KNOWN_COMFYUI_IMAGE_SCHEDULERS | str, KNOWN_IMAGE_SCHEDULERS]] = {
+        schedule: schedule for schedule in KNOWN_IMAGE_SCHEDULERS
+    }
+
     def __init__(self) -> None:
         """Initialize the ComfyUI backend values mapper."""
         super().__init__(
@@ -110,6 +117,6 @@ class ComfyUIBackendValuesMapper(
             backend_schedulers_type=KNOWN_COMFYUI_IMAGE_SCHEDULERS,
             backend_controlnets_type=KNOWN_COMFYUI_CONTROLNETS,
             sdk_samplers_map=self._COMFYUI_SAMPLERS_CONVERT_MAP,
-            sdk_schedulers_map={},
+            sdk_schedulers_map=self._COMFYUI_SCHEDULERS_CONVERT_MAP,
             sdk_controlnets_map={},
         )
