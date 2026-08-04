@@ -1,0 +1,484 @@
+{
+  "$defs": {
+    "CONSTRAINT_PROVENANCE": {
+      "description": "Where a statement about a sampler came from, and therefore how much weight it carries.",
+      "enum": [
+        "upstream_author",
+        "community",
+        "measured",
+        "user_ruled"
+      ],
+      "title": "CONSTRAINT_PROVENANCE",
+      "type": "string"
+    },
+    "KNOWN_IMAGE_GENERATION_BASELINE": {
+      "description": "An enum of all the image generation baselines.",
+      "enum": [
+        "infer",
+        "stable_diffusion_1",
+        "stable_diffusion_2_768",
+        "stable_diffusion_2_512",
+        "stable_diffusion_xl",
+        "stable_cascade",
+        "flux_1",
+        "flux_schnell",
+        "flux_dev",
+        "qwen_image",
+        "z_image_turbo"
+      ],
+      "title": "KNOWN_IMAGE_GENERATION_BASELINE",
+      "type": "string"
+    },
+    "KNOWN_IMAGE_SAMPLERS": {
+      "description": "The samplers that are known to the API.\n\n(k_lms, k_heun, DDIM, etc)\n\nThe members below `DDIM` are the extended solvers, which only bridges new enough to render them\nare offered. They carry the image backend's own spelling rather than the `k_` prefix of the\nk-diffusion block, because they are backend-native solvers rather than k-diffusion samplers.\n\nThe members below `sa_solver` complete the backend's non-`_gpu` solver list. The `_gpu` variants\nare deliberately absent: they differ from their counterparts only in which device draws the noise,\nwhich is a worker-side concern rather than a request-side choice. Like the block above them these\nnames are shared letter for letter with the backend.",
+      "enum": [
+        "k_lms",
+        "k_heun",
+        "k_euler",
+        "k_euler_a",
+        "k_dpm_2",
+        "k_dpm_2_a",
+        "k_dpm_fast",
+        "k_dpm_adaptive",
+        "k_dpmpp_2s_a",
+        "k_dpmpp_2m",
+        "dpmsolver",
+        "k_dpmpp_sde",
+        "lcm",
+        "DDIM",
+        "uni_pc",
+        "uni_pc_bh2",
+        "dpmpp_2m_sde",
+        "dpmpp_3m_sde",
+        "ddpm",
+        "deis",
+        "ipndm",
+        "res_multistep",
+        "gradient_estimation",
+        "heunpp2",
+        "er_sde",
+        "sa_solver",
+        "euler_cfg_pp",
+        "euler_ancestral_cfg_pp",
+        "exp_heun_2_x0",
+        "exp_heun_2_x0_sde",
+        "dpmpp_2s_ancestral_cfg_pp",
+        "dpmpp_2m_cfg_pp",
+        "dpmpp_2m_sde_heun",
+        "ipndm_v",
+        "res_multistep_cfg_pp",
+        "res_multistep_ancestral",
+        "res_multistep_ancestral_cfg_pp",
+        "gradient_estimation_cfg_pp",
+        "seeds_2",
+        "seeds_3",
+        "sa_solver_pece"
+      ],
+      "title": "KNOWN_IMAGE_SAMPLERS",
+      "type": "string"
+    },
+    "KNOWN_IMAGE_SCHEDULERS": {
+      "description": "The schedulers that are known to the API.\n\n(normal, karras, exponential, etc)\n\n`align_your_steps` and `gits` are not schedules the backend names alongside the others: they are\nsigma generators supplied by separate nodes, and each is only defined for a subset of the known\nbaselines. See\n[`SCHEDULER_BASELINE_APPLICABILITY`][horde_sdk.generation_parameters.image.constraints.SCHEDULER_BASELINE_APPLICABILITY]\nfor where they may be requested.",
+      "enum": [
+        "normal",
+        "karras",
+        "exponential",
+        "sgm_uniform",
+        "simple",
+        "ddim_uniform",
+        "beta",
+        "linear_quadratic",
+        "kl_optimal",
+        "align_your_steps",
+        "gits"
+      ],
+      "title": "KNOWN_IMAGE_SCHEDULERS",
+      "type": "string"
+    },
+    "KNOWN_SAMPLER_SOLVER_TYPES": {
+      "description": "Every `solver_type` value any sampler accepts.\n\nNo sampler accepts all of them. The `midpoint`/`heun` pair and the `phi_1`/`phi_2` pair belong to\ndifferent solver families; see\n[`SamplerConstraints.solver_type_choices`][horde_sdk.generation_parameters.image.constraints.SamplerConstraints.solver_type_choices].",
+      "enum": [
+        "midpoint",
+        "heun",
+        "phi_1",
+        "phi_2"
+      ],
+      "title": "KNOWN_SAMPLER_SOLVER_TYPES",
+      "type": "string"
+    },
+    "PublishedAdvisories": {
+      "additionalProperties": false,
+      "description": "Represents the quality expectations the API warns about rather than enforcing.",
+      "properties": {
+        "cfg_pp_advised_max_cfg_scale": {
+          "description": "Above this `cfg_scale`, the CFG++ solvers oversaturate. The image still renders.",
+          "title": "Cfg Pp Advised Max Cfg Scale",
+          "type": "number"
+        }
+      },
+      "required": [
+        "cfg_pp_advised_max_cfg_scale"
+      ],
+      "title": "PublishedAdvisories",
+      "type": "object"
+    },
+    "PublishedCostBasis": {
+      "additionalProperties": false,
+      "description": "Represents what each published cost figure is, and which of them a request is charged against.\n\nServed as bare numbers the measured ratios would read like prices. They are one card's evidence that\nthe evaluation counts are right, and this block says so.",
+      "properties": {
+        "authoritative_field": {
+          "const": "evaluations_per_step",
+          "default": "evaluations_per_step",
+          "description": "Names the field a request is priced and time-budgeted on.",
+          "title": "Authoritative Field",
+          "type": "string"
+        },
+        "authoritative_note": {
+          "description": "What that field counts, and where it is read from.",
+          "title": "Authoritative Note",
+          "type": "string"
+        },
+        "measured_cost_ratio_provenance": {
+          "$ref": "#/$defs/CONSTRAINT_PROVENANCE",
+          "description": "The provenance both measured ratio columns carry."
+        },
+        "measured_cost_ratio_source": {
+          "description": "Filename of the measurement artifact both ratio columns were read from.",
+          "title": "Measured Cost Ratio Source",
+          "type": "string"
+        },
+        "measured_cost_ratio_note": {
+          "description": "How the ratios were derived, and why they corroborate the authoritative field rather than replace it.",
+          "title": "Measured Cost Ratio Note",
+          "type": "string"
+        },
+        "measured_cost_ratio_sdxl_note": {
+          "description": "The model and resolution the stable_diffusion_xl column was taken on, and how to read it.",
+          "title": "Measured Cost Ratio Sdxl Note",
+          "type": "string"
+        },
+        "measured_cost_ratio_sd15_note": {
+          "description": "The model and resolution the stable_diffusion_1 column was taken on, and the bias it carries.",
+          "title": "Measured Cost Ratio Sd15 Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "authoritative_note",
+        "measured_cost_ratio_provenance",
+        "measured_cost_ratio_source",
+        "measured_cost_ratio_note",
+        "measured_cost_ratio_sdxl_note",
+        "measured_cost_ratio_sd15_note"
+      ],
+      "title": "PublishedCostBasis",
+      "type": "object"
+    },
+    "PublishedHardConstraints": {
+      "additionalProperties": false,
+      "description": "Represents the sections that mirror the API's rejections exactly.\n\nA request honouring everything here cannot be one the API refuses on constraint grounds, which is\nwhat separates these from the advisory sections.",
+      "properties": {
+        "rejected_sampler_scheduler_pairings": {
+          "description": "Pairings that produce no usable image and are refused rather than substituted.",
+          "items": {
+            "$ref": "#/$defs/PublishedRejectedPairing"
+          },
+          "title": "Rejected Sampler Scheduler Pairings",
+          "type": "array"
+        },
+        "scheduler_baseline_applicability": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/KNOWN_IMAGE_GENERATION_BASELINE"
+            },
+            "type": "array"
+          },
+          "description": "Baselines each restricted scheduler is defined for. A scheduler absent here works on every baseline.",
+          "propertyNames": {
+            "$ref": "#/$defs/KNOWN_IMAGE_SCHEDULERS"
+          },
+          "title": "Scheduler Baseline Applicability",
+          "type": "object"
+        }
+      },
+      "required": [
+        "rejected_sampler_scheduler_pairings",
+        "scheduler_baseline_applicability"
+      ],
+      "title": "PublishedHardConstraints",
+      "type": "object"
+    },
+    "PublishedKnobRange": {
+      "additionalProperties": false,
+      "description": "Represents the accepted range of one numeric solver knob, as it is served.\n\nJSON has no literal for infinity, so an unbounded maximum, and a default meaning \"the solver applies\nno limit unless you set one\", are both served as null rather than as a number.",
+      "properties": {
+        "minimum": {
+          "description": "Smallest accepted value, inclusive.",
+          "title": "Minimum",
+          "type": "number"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Largest accepted value, inclusive. Null where the knob has no upper limit.",
+          "title": "Maximum"
+        },
+        "default": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The value the solver uses when the knob is left unset. Null where it applies no limit.",
+          "title": "Default"
+        },
+        "integer_only": {
+          "description": "Whether the knob accepts only whole numbers.",
+          "title": "Integer Only",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "minimum",
+        "maximum",
+        "default",
+        "integer_only"
+      ],
+      "title": "PublishedKnobRange",
+      "type": "object"
+    },
+    "PublishedPresentationTiers": {
+      "additionalProperties": false,
+      "description": "Represents the default-offer set, and the note saying the split restricts nothing.",
+      "properties": {
+        "note": {
+          "description": "States that every sampler is accepted, priced and dispatched identically whatever its tier.",
+          "title": "Note",
+          "type": "string"
+        },
+        "recommended": {
+          "description": "The samplers worth offering by default. Everything absent is advanced, not deprecated.",
+          "items": {
+            "$ref": "#/$defs/KNOWN_IMAGE_SAMPLERS"
+          },
+          "title": "Recommended",
+          "type": "array"
+        }
+      },
+      "required": [
+        "note",
+        "recommended"
+      ],
+      "title": "PublishedPresentationTiers",
+      "type": "object"
+    },
+    "PublishedRecommendation": {
+      "additionalProperties": false,
+      "description": "Represents one advisory statement, with the provenance that qualifies it.\n\nRecommendations never block a request. The provenance is served because these range from statements\nby the image backend's own author to third-party folklore, and a client cannot weigh them otherwise.",
+      "properties": {
+        "samplers": {
+          "description": "The samplers the statement applies to, empty when it applies to all of them.",
+          "items": {
+            "$ref": "#/$defs/KNOWN_IMAGE_SAMPLERS"
+          },
+          "title": "Samplers",
+          "type": "array"
+        },
+        "schedulers": {
+          "description": "The schedulers the statement recommends, empty when it recommends none.",
+          "items": {
+            "$ref": "#/$defs/KNOWN_IMAGE_SCHEDULERS"
+          },
+          "title": "Schedulers",
+          "type": "array"
+        },
+        "provenance": {
+          "$ref": "#/$defs/CONSTRAINT_PROVENANCE",
+          "description": "Whose statement this is."
+        },
+        "source": {
+          "description": "A human-readable citation.",
+          "title": "Source",
+          "type": "string"
+        },
+        "summary": {
+          "description": "The statement itself.",
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "samplers",
+        "schedulers",
+        "provenance",
+        "source",
+        "summary"
+      ],
+      "title": "PublishedRecommendation",
+      "type": "object"
+    },
+    "PublishedRejectedPairing": {
+      "additionalProperties": false,
+      "description": "Represents one sampler and scheduler pairing the API refuses outright.",
+      "properties": {
+        "sampler": {
+          "$ref": "#/$defs/KNOWN_IMAGE_SAMPLERS",
+          "description": "The sampler half of the refused pairing."
+        },
+        "scheduler": {
+          "$ref": "#/$defs/KNOWN_IMAGE_SCHEDULERS",
+          "description": "The scheduler half of the refused pairing."
+        }
+      },
+      "required": [
+        "sampler",
+        "scheduler"
+      ],
+      "title": "PublishedRejectedPairing",
+      "type": "object"
+    },
+    "PublishedSamplerRecord": {
+      "additionalProperties": false,
+      "description": "Represents one sampler's knobs, cost, tier and vocabulary as they are served.",
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/KNOWN_IMAGE_SAMPLERS",
+          "description": "The sampler this record describes, repeated here so an entry stands alone once read out of the map."
+        },
+        "evaluations_per_step": {
+          "description": "How many model evaluations one step performs, which is what the API prices a request on.",
+          "title": "Evaluations Per Step",
+          "type": "integer"
+        },
+        "measured_cost_ratio_sd15": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Per-step wall-clock cost relative to `k_euler` on a stable_diffusion_1 model, or null where a ratio\nis meaningless because the sampler chooses its own step count.",
+          "title": "Measured Cost Ratio Sd15"
+        },
+        "measured_cost_ratio_sdxl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The same ratio on a stable_diffusion_xl model, or null for the same reason.",
+          "title": "Measured Cost Ratio Sdxl"
+        },
+        "presentation_tier": {
+          "$ref": "#/$defs/SAMPLER_PRESENTATION_TIER",
+          "description": "How prominently the sampler is worth offering. A presentation hint that restricts nothing."
+        },
+        "solver_type_choices": {
+          "description": "The `solver_type` values this sampler accepts, empty when it takes none.",
+          "items": {
+            "$ref": "#/$defs/KNOWN_SAMPLER_SOLVER_TYPES"
+          },
+          "title": "Solver Type Choices",
+          "type": "array"
+        },
+        "accepted_settings": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PublishedKnobRange"
+          },
+          "description": "The numeric knobs this sampler accepts, keyed by the request field name a client sends them under.\n\nThe keys are the serving API's own request field names rather than the knob names the backend's\nsolvers use, because a client reads this to build a request.",
+          "title": "Accepted Settings",
+          "type": "object"
+        },
+        "applies_cfg_pp": {
+          "description": "Whether the sampler applies the CFG++ correction, which expects a much lower `cfg_scale`.",
+          "title": "Applies Cfg Pp",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "evaluations_per_step",
+        "measured_cost_ratio_sd15",
+        "measured_cost_ratio_sdxl",
+        "presentation_tier",
+        "solver_type_choices",
+        "accepted_settings",
+        "applies_cfg_pp"
+      ],
+      "title": "PublishedSamplerRecord",
+      "type": "object"
+    },
+    "SAMPLER_PRESENTATION_TIER": {
+      "description": "How prominently a sampler is worth offering, now that the vocabulary is long enough to overwhelm.\n\nThis is a presentation concern and nothing else: every sampler here is accepted, priced and\ndispatched identically whatever its tier. A client may default to showing only the recommended tier\nand put the rest behind an \"advanced\" affordance, which is what the split is for.",
+      "enum": [
+        "recommended",
+        "advanced"
+      ],
+      "title": "SAMPLER_PRESENTATION_TIER",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Represents the whole sampler constraints document an API serves.\n\nOnly samplers and schedulers the serving API accepts appear, so a client reading this never offers a\nname that API's request models would reject as unknown.\n\nExamples:\n    Parsing a response from the sampler constraints endpoint:\n\n    ```python\n    document = SamplerConstraintsDocument.model_validate(response.json())\n    euler = document.samplers[KNOWN_IMAGE_SAMPLERS.k_euler]\n    ```",
+  "properties": {
+    "samplers": {
+      "additionalProperties": {
+        "$ref": "#/$defs/PublishedSamplerRecord"
+      },
+      "description": "Every sampler the serving API accepts, keyed by name.",
+      "propertyNames": {
+        "$ref": "#/$defs/KNOWN_IMAGE_SAMPLERS"
+      },
+      "title": "Samplers",
+      "type": "object"
+    },
+    "hard_constraints": {
+      "$ref": "#/$defs/PublishedHardConstraints",
+      "description": "The sections that mirror the API's rejections. Honouring these avoids a refusal."
+    },
+    "recommendations": {
+      "description": "Advisory pairings and settings, each carrying the provenance of the claim.",
+      "items": {
+        "$ref": "#/$defs/PublishedRecommendation"
+      },
+      "title": "Recommendations",
+      "type": "array"
+    },
+    "advisories": {
+      "$ref": "#/$defs/PublishedAdvisories",
+      "description": "Quality expectations the API warns about rather than enforcing."
+    },
+    "cost_basis": {
+      "$ref": "#/$defs/PublishedCostBasis",
+      "description": "What each published cost figure is, and which of them a request is charged against."
+    },
+    "presentation_tiers": {
+      "$ref": "#/$defs/PublishedPresentationTiers",
+      "description": "Which samplers are worth offering by default, and the note saying the split restricts nothing."
+    }
+  },
+  "required": [
+    "samplers",
+    "hard_constraints",
+    "recommendations",
+    "advisories",
+    "cost_basis",
+    "presentation_tiers"
+  ],
+  "title": "SamplerConstraintsDocument",
+  "type": "object"
+}
