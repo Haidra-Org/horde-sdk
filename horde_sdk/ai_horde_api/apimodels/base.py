@@ -25,6 +25,7 @@ from horde_sdk.generation_parameters.alchemy.consts import (
     KNOWN_UPSCALERS,
     _all_valid_post_processors_names_and_values,
 )
+from horde_sdk.generation_parameters.image.constraints import KNOWN_SAMPLER_SOLVER_TYPES
 from horde_sdk.generation_parameters.image.consts import (
     KNOWN_IMAGE_CONTROLNETS,
     KNOWN_IMAGE_SAMPLERS,
@@ -254,6 +255,44 @@ class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
     Deprecated in favour of `scheduler`, and still honoured indefinitely: `True` means `karras` and
     `False` means `normal`. Ignored outright when `scheduler` is set.
     """
+
+    sampler_eta: float | None = Field(default=None, ge=0)
+    """The stochastic strength of the solver. At 0 an SDE solver collapses onto its deterministic twin.
+
+    Unset leaves the solver's own default in place. Only some samplers accept this; see
+    [`SAMPLER_CONSTRAINTS`][horde_sdk.generation_parameters.image.constraints.SAMPLER_CONSTRAINTS] for
+    which, and for the range each one allows.
+    """
+    sampler_s_noise: float | None = Field(default=None, ge=0)
+    """The multiplier on the noise the solver adds per step. Unset leaves the solver's own default."""
+    sampler_s_churn: float | None = Field(default=None, ge=0)
+    """The total extra noise injected across the run, spread over the steps inside the churn window.
+
+    Unset leaves the solver's own default. Accepted only by the solvers that take a churn window.
+    """
+    sampler_s_tmin: float | None = Field(default=None, ge=0)
+    """The lower sigma bound of the churn window. Only meaningful alongside `sampler_s_churn`."""
+    sampler_s_tmax: float | None = Field(default=None, ge=0)
+    """The upper sigma bound of the churn window. Only meaningful alongside `sampler_s_churn`."""
+    sampler_solver_type: KNOWN_SAMPLER_SOLVER_TYPES | str | None = None
+    """Which correction the solver applies. The accepted vocabulary differs per sampler.
+
+    Unset leaves the solver's own default. No sampler accepts every value of
+    [`KNOWN_SAMPLER_SOLVER_TYPES`][horde_sdk.generation_parameters.image.constraints.KNOWN_SAMPLER_SOLVER_TYPES].
+    """
+    sampler_order: int | None = Field(default=None, ge=1)
+    """The order of the solver. Unset leaves the solver's own default.
+
+    The accepted range is per-sampler and much narrower than this bound: a solver may accept 1 to 100
+    or only 2 to 3.
+    """
+
+    flow_shift: float | None = Field(default=None, ge=0)
+    """The timestep shift applied to a flow-matching model. Unset leaves the model's own default.
+
+    Only meaningful for the baselines built on flow matching; other baselines have nothing to shift.
+    """
+
     cfg_scale: float = Field(default=7.5, ge=0)
     """The cfg_scale to use for this generation. Defaults to 7.5."""
     denoising_strength: float | None = Field(default=1, ge=0, le=1)

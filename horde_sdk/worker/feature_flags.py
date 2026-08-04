@@ -113,7 +113,11 @@ class PerBaselineFeatureFlags(BaseModel):
         ],
     )
     """If set, the supported schedulers for each baseline. If unset, it is assumed that all baselines
-    support all schedulers."""
+    support all schedulers.
+
+    A populated map is exhaustive: a baseline absent from it advertises support for no schedulers at
+    all, not for the flat `schedulers` list. A worker setting this map must therefore cover every
+    baseline it serves."""
 
     samplers_map: dict[KNOWN_IMAGE_GENERATION_BASELINE | str, list[KNOWN_IMAGE_SAMPLERS | str]] | None = Field(
         default=None,
@@ -131,7 +135,11 @@ class PerBaselineFeatureFlags(BaseModel):
         ],
     )
     """If set, the supported samplers for each baseline. If unset, it is assumed that all baselines
-    support all samplers."""
+    support all samplers.
+
+    A populated map is exhaustive: a baseline absent from it advertises support for no samplers at
+    all, not for the flat `samplers` list. A worker setting this map must therefore cover every
+    baseline it serves."""
 
     tiling_map: dict[KNOWN_IMAGE_GENERATION_BASELINE | str, bool] | None = Field(
         default=None,

@@ -16,9 +16,9 @@ class KNOWN_COMFYUI_IMAGE_SAMPLERS(StrEnum):
 
     (k_lms, k_heun, DDIM, etc)
 
-    This mirrors ComfyUI's own sampler list and is not exhaustive of it: the `exp_heun_2_x0*`,
-    `dpmpp_2m_sde_heun*`, `gradient_estimation_cfg_pp`, `seeds_2`, `seeds_3` and `sa_solver_pece`
-    names ComfyUI also offers have no horde counterpart and are not listed here.
+    This mirrors ComfyUI's own sampler list. The `_gpu` variants are listed because ComfyUI offers
+    them, but they are intentionally not mapped onto an API sampler: they differ from their
+    counterparts only in which device draws the noise, so the choice belongs to the worker.
     """
 
     euler = auto()
@@ -27,6 +27,8 @@ class KNOWN_COMFYUI_IMAGE_SAMPLERS(StrEnum):
     euler_ancestral_cfg_pp = auto()
     heun = auto()
     heunpp2 = auto()
+    exp_heun_2_x0 = auto()
+    exp_heun_2_x0_sde = auto()
     dpm_2 = auto()
     dpm_2_ancestral = auto()
     lms = auto()
@@ -40,6 +42,8 @@ class KNOWN_COMFYUI_IMAGE_SAMPLERS(StrEnum):
     dpmpp_2m_cfg_pp = auto()
     dpmpp_2m_sde = auto()
     dpmpp_2m_sde_gpu = auto()
+    dpmpp_2m_sde_heun = auto()
+    dpmpp_2m_sde_heun_gpu = auto()
     dpmpp_3m_sde = auto()
     dpmpp_3m_sde_gpu = auto()
     ddpm = auto()
@@ -52,8 +56,12 @@ class KNOWN_COMFYUI_IMAGE_SAMPLERS(StrEnum):
     res_multistep_ancestral = auto()
     res_multistep_ancestral_cfg_pp = auto()
     gradient_estimation = auto()
+    gradient_estimation_cfg_pp = auto()
     er_sde = auto()
+    seeds_2 = auto()
+    seeds_3 = auto()
     sa_solver = auto()
+    sa_solver_pece = auto()
 
     ddim = auto()
     uni_pc = auto()
@@ -101,11 +109,32 @@ class ComfyUIBackendValuesMapper(
         KNOWN_COMFYUI_IMAGE_SAMPLERS.heunpp2: KNOWN_IMAGE_SAMPLERS.heunpp2,
         KNOWN_COMFYUI_IMAGE_SAMPLERS.er_sde: KNOWN_IMAGE_SAMPLERS.er_sde,
         KNOWN_COMFYUI_IMAGE_SAMPLERS.sa_solver: KNOWN_IMAGE_SAMPLERS.sa_solver,
+        # The remaining non-`_gpu` solvers, also spelled identically on both sides.
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.euler_cfg_pp: KNOWN_IMAGE_SAMPLERS.euler_cfg_pp,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.euler_ancestral_cfg_pp: KNOWN_IMAGE_SAMPLERS.euler_ancestral_cfg_pp,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.exp_heun_2_x0: KNOWN_IMAGE_SAMPLERS.exp_heun_2_x0,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.exp_heun_2_x0_sde: KNOWN_IMAGE_SAMPLERS.exp_heun_2_x0_sde,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.dpmpp_2s_ancestral_cfg_pp: KNOWN_IMAGE_SAMPLERS.dpmpp_2s_ancestral_cfg_pp,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.dpmpp_2m_cfg_pp: KNOWN_IMAGE_SAMPLERS.dpmpp_2m_cfg_pp,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.dpmpp_2m_sde_heun: KNOWN_IMAGE_SAMPLERS.dpmpp_2m_sde_heun,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.ipndm_v: KNOWN_IMAGE_SAMPLERS.ipndm_v,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.res_multistep_cfg_pp: KNOWN_IMAGE_SAMPLERS.res_multistep_cfg_pp,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.res_multistep_ancestral: KNOWN_IMAGE_SAMPLERS.res_multistep_ancestral,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.res_multistep_ancestral_cfg_pp: (
+            KNOWN_IMAGE_SAMPLERS.res_multistep_ancestral_cfg_pp
+        ),
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.gradient_estimation_cfg_pp: KNOWN_IMAGE_SAMPLERS.gradient_estimation_cfg_pp,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.seeds_2: KNOWN_IMAGE_SAMPLERS.seeds_2,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.seeds_3: KNOWN_IMAGE_SAMPLERS.seeds_3,
+        KNOWN_COMFYUI_IMAGE_SAMPLERS.sa_solver_pece: KNOWN_IMAGE_SAMPLERS.sa_solver_pece,
     }
 
-    # ComfyUI names its schedules exactly as the API does, so these pairs are identity mappings. They
-    # are declared rather than inferred because the mapper converts by lookup, and an absent entry is
-    # an unmappable value rather than a pass-through.
+    # Most of these pairs are identity mappings because ComfyUI names its schedules exactly as the API
+    # does. `align_your_steps` and `gits` are the exceptions: ComfyUI reaches them through dedicated
+    # sigma-generator nodes rather than through its scheduler list, and the backend accepts these names
+    # in its own scheduler vocabulary, so an identity pair is still the correct representation. They are
+    # declared rather than inferred because the mapper converts by lookup, and an absent entry is an
+    # unmappable value rather than a pass-through.
     _COMFYUI_SCHEDULERS_CONVERT_MAP: ClassVar[dict[KNOWN_COMFYUI_IMAGE_SCHEDULERS | str, KNOWN_IMAGE_SCHEDULERS]] = {
         schedule: schedule for schedule in KNOWN_IMAGE_SCHEDULERS
     }

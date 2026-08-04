@@ -53,8 +53,93 @@ def test_extended_solvers_share_their_backend_spelling() -> None:
         "heunpp2",
         "er_sde",
         "sa_solver",
+        "euler_cfg_pp",
+        "euler_ancestral_cfg_pp",
+        "exp_heun_2_x0",
+        "exp_heun_2_x0_sde",
+        "dpmpp_2s_ancestral_cfg_pp",
+        "dpmpp_2m_cfg_pp",
+        "dpmpp_2m_sde_heun",
+        "ipndm_v",
+        "res_multistep_cfg_pp",
+        "res_multistep_ancestral",
+        "res_multistep_ancestral_cfg_pp",
+        "gradient_estimation_cfg_pp",
+        "seeds_2",
+        "seeds_3",
+        "sa_solver_pece",
     ):
         assert KNOWN_IMAGE_SAMPLERS(name).value == KNOWN_COMFYUI_IMAGE_SAMPLERS(name).value
+
+
+def test_backend_sampler_vocabulary_matches_the_pinned_backend() -> None:
+    """The backend enum is a copy of a list that lives in another repo, so drift has to be caught here.
+
+    The set below is `comfy.samplers.SAMPLER_NAMES` at the pinned ComfyUI revision fb991e2c.
+    """
+    pinned_backend_samplers = {
+        "euler",
+        "euler_cfg_pp",
+        "euler_ancestral",
+        "euler_ancestral_cfg_pp",
+        "heun",
+        "heunpp2",
+        "exp_heun_2_x0",
+        "exp_heun_2_x0_sde",
+        "dpm_2",
+        "dpm_2_ancestral",
+        "lms",
+        "dpm_fast",
+        "dpm_adaptive",
+        "dpmpp_2s_ancestral",
+        "dpmpp_2s_ancestral_cfg_pp",
+        "dpmpp_sde",
+        "dpmpp_sde_gpu",
+        "dpmpp_2m",
+        "dpmpp_2m_cfg_pp",
+        "dpmpp_2m_sde",
+        "dpmpp_2m_sde_gpu",
+        "dpmpp_2m_sde_heun",
+        "dpmpp_2m_sde_heun_gpu",
+        "dpmpp_3m_sde",
+        "dpmpp_3m_sde_gpu",
+        "ddpm",
+        "lcm",
+        "ipndm",
+        "ipndm_v",
+        "deis",
+        "res_multistep",
+        "res_multistep_cfg_pp",
+        "res_multistep_ancestral",
+        "res_multistep_ancestral_cfg_pp",
+        "gradient_estimation",
+        "gradient_estimation_cfg_pp",
+        "er_sde",
+        "seeds_2",
+        "seeds_3",
+        "sa_solver",
+        "sa_solver_pece",
+        "ddim",
+        "uni_pc",
+        "uni_pc_bh2",
+    }
+
+    assert {member.value for member in KNOWN_COMFYUI_IMAGE_SAMPLERS} == pinned_backend_samplers
+
+
+def test_only_the_device_variants_are_left_unmapped() -> None:
+    """The `_gpu` names differ only in where noise is drawn, which is the worker's choice, not the caller's."""
+    mapper = ComfyUIBackendValuesMapper()
+    unmapped = {member.value for member in KNOWN_COMFYUI_IMAGE_SAMPLERS} - {
+        str(backend_name) for backend_name in mapper._COMFYUI_SAMPLERS_CONVERT_MAP
+    }
+
+    assert unmapped == {
+        "dpmpp_sde_gpu",
+        "dpmpp_2m_sde_gpu",
+        "dpmpp_2m_sde_heun_gpu",
+        "dpmpp_3m_sde_gpu",
+    }
 
 
 def test_classic_samplers_keep_their_translated_names() -> None:

@@ -17,6 +17,7 @@ from horde_sdk.generation_parameters.generic import (
 )
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.generic.object_models import GenerationFeatureFlags
+from horde_sdk.generation_parameters.image.constraints import KNOWN_SAMPLER_SOLVER_TYPES
 from horde_sdk.generation_parameters.image.consts import (
     CLIP_SKIP_REPRESENTATION,
     KNOWN_IMAGE_CONTROLNETS,
@@ -230,6 +231,65 @@ class BasicImageGenerationParametersTemplate(GenerationWithModelParameters):
         examples=[KNOWN_IMAGE_SCHEDULERS.normal],
     )
     """The scheduler to use for the generation."""
+
+    sampler_eta: float | None = Field(
+        default=None,
+        ge=0,
+        examples=[0.0, 1.0],
+    )
+    """The stochastic strength of the solver. Unset leaves the solver's own default in place.
+
+    Which solvers accept this, and over what range, is stated in
+    [`SAMPLER_CONSTRAINTS`][horde_sdk.generation_parameters.image.constraints.SAMPLER_CONSTRAINTS].
+    """
+
+    sampler_s_noise: float | None = Field(
+        default=None,
+        ge=0,
+        examples=[1.0],
+    )
+    """The multiplier on the noise the solver adds per step. Unset leaves the solver's own default."""
+
+    sampler_s_churn: float | None = Field(
+        default=None,
+        ge=0,
+        examples=[0.0],
+    )
+    """The extra noise injected across the run, spread over the steps inside the churn window."""
+
+    sampler_s_tmin: float | None = Field(
+        default=None,
+        ge=0,
+        examples=[0.0],
+    )
+    """The lower sigma bound of the churn window. Only meaningful alongside `sampler_s_churn`."""
+
+    sampler_s_tmax: float | None = Field(
+        default=None,
+        ge=0,
+        examples=[999.0],
+    )
+    """The upper sigma bound of the churn window. Only meaningful alongside `sampler_s_churn`."""
+
+    sampler_solver_type: KNOWN_SAMPLER_SOLVER_TYPES | str | None = Field(
+        default=None,
+        examples=[KNOWN_SAMPLER_SOLVER_TYPES.midpoint],
+    )
+    """Which correction the solver applies. The accepted vocabulary differs per sampler."""
+
+    sampler_order: int | None = Field(
+        default=None,
+        ge=1,
+        examples=[3, 4],
+    )
+    """The order of the solver. The accepted range is per-sampler and narrower than this bound."""
+
+    flow_shift: float | None = Field(
+        default=None,
+        ge=0,
+        examples=[3.0],
+    )
+    """The timestep shift applied to a flow-matching model. Unset leaves the model's own default."""
 
     clip_skip: int | None = Field(
         default=None,

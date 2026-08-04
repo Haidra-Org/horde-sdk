@@ -11,6 +11,11 @@ class KNOWN_IMAGE_SAMPLERS(StrEnum):
     The members below `DDIM` are the extended solvers, which only bridges new enough to render them
     are offered. They carry the image backend's own spelling rather than the `k_` prefix of the
     k-diffusion block, because they are backend-native solvers rather than k-diffusion samplers.
+
+    The members below `sa_solver` complete the backend's non-`_gpu` solver list. The `_gpu` variants
+    are deliberately absent: they differ from their counterparts only in which device draws the noise,
+    which is a worker-side concern rather than a request-side choice. Like the block above them these
+    names are shared letter for letter with the backend.
     """
 
     k_lms = auto()
@@ -41,11 +46,33 @@ class KNOWN_IMAGE_SAMPLERS(StrEnum):
     er_sde = auto()
     sa_solver = auto()
 
+    euler_cfg_pp = auto()
+    euler_ancestral_cfg_pp = auto()
+    exp_heun_2_x0 = auto()
+    exp_heun_2_x0_sde = auto()
+    dpmpp_2s_ancestral_cfg_pp = auto()
+    dpmpp_2m_cfg_pp = auto()
+    dpmpp_2m_sde_heun = auto()
+    ipndm_v = auto()
+    res_multistep_cfg_pp = auto()
+    res_multistep_ancestral = auto()
+    res_multistep_ancestral_cfg_pp = auto()
+    gradient_estimation_cfg_pp = auto()
+    seeds_2 = auto()
+    seeds_3 = auto()
+    sa_solver_pece = auto()
+
 
 class KNOWN_IMAGE_SCHEDULERS(StrEnum):
     """The schedulers that are known to the API.
 
     (normal, karras, exponential, etc)
+
+    `align_your_steps` and `gits` are not schedules the backend names alongside the others: they are
+    sigma generators supplied by separate nodes, and each is only defined for a subset of the known
+    baselines. See
+    [`SCHEDULER_BASELINE_APPLICABILITY`][horde_sdk.generation_parameters.image.constraints.SCHEDULER_BASELINE_APPLICABILITY]
+    for where they may be requested.
     """
 
     normal = auto()
@@ -57,6 +84,9 @@ class KNOWN_IMAGE_SCHEDULERS(StrEnum):
     beta = auto()
     linear_quadratic = auto()
     kl_optimal = auto()
+
+    align_your_steps = auto()
+    gits = auto()
 
 
 class KNOWN_IMAGE_CONTROLNETS(StrEnum):

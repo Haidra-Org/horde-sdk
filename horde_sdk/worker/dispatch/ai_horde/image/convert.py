@@ -1,5 +1,7 @@
 """Contains functions to convert API responses to image generation parameters."""
 
+from typing import TypedDict
+
 from horde_model_reference.meta_consts import (
     KNOWN_IMAGE_GENERATION_BASELINE,
     MODEL_REFERENCE_CATEGORY,
@@ -41,6 +43,7 @@ from horde_sdk.generation_parameters.image import (
     RemixImageEntry,
     TIEntry,
 )
+from horde_sdk.generation_parameters.image.constraints import KNOWN_SAMPLER_SOLVER_TYPES
 from horde_sdk.generation_parameters.image.consts import (
     KNOWN_IMAGE_SCHEDULERS,
     KNOWN_IMAGE_SOURCE_PROCESSING,
@@ -97,6 +100,39 @@ def resolve_scheduler(payload: ImageGenerateParamMixin) -> KNOWN_IMAGE_SCHEDULER
     if payload.scheduler:
         return payload.scheduler
     return KNOWN_IMAGE_SCHEDULERS.karras if payload.karras else KNOWN_IMAGE_SCHEDULERS.normal
+
+
+class SolverKnobArguments(TypedDict):
+    """Represents the solver knobs of a request, keyed as the generation parameters name them."""
+
+    sampler_eta: float | None
+    sampler_s_noise: float | None
+    sampler_s_churn: float | None
+    sampler_s_tmin: float | None
+    sampler_s_tmax: float | None
+    sampler_solver_type: KNOWN_SAMPLER_SOLVER_TYPES | str | None
+    sampler_order: int | None
+    flow_shift: float | None
+
+
+def solver_knob_arguments(payload: ImageGenerateParamMixin) -> SolverKnobArguments:
+    """Return the solver knobs a request set, ready to forward to the generation parameters.
+
+    Every knob passes through unexamined, including when it is unset. Deciding whether a knob means
+    anything for the chosen sampler belongs to
+    [`constraints`][horde_sdk.generation_parameters.image.constraints], which the API applies before a
+    request ever reaches a worker.
+    """
+    return SolverKnobArguments(
+        sampler_eta=payload.sampler_eta,
+        sampler_s_noise=payload.sampler_s_noise,
+        sampler_s_churn=payload.sampler_s_churn,
+        sampler_s_tmin=payload.sampler_s_tmin,
+        sampler_s_tmax=payload.sampler_s_tmax,
+        sampler_solver_type=payload.sampler_solver_type,
+        sampler_order=payload.sampler_order,
+        flow_shift=payload.flow_shift,
+    )
 
 
 def _split_ai_horde_prompt(combined_prompt: str) -> tuple[str, str | None]:
@@ -394,6 +430,7 @@ def _get_hires_fix_params(
             cfg_scale=api_response.payload.cfg_scale,
             sampler_name=api_response.payload.sampler_name,
             scheduler=scheduler,
+            **solver_knob_arguments(api_response.payload),
             clip_skip=api_response.payload.clip_skip,
             denoising_strength=api_response.payload.denoising_strength,
             transparent=api_response.payload.transparent,
@@ -412,6 +449,7 @@ def _get_hires_fix_params(
             cfg_scale=api_response.payload.cfg_scale,
             sampler_name=api_response.payload.sampler_name,
             scheduler=scheduler,
+            **solver_knob_arguments(api_response.payload),
             clip_skip=api_response.payload.clip_skip,
             denoising_strength=_get_hires_fix_second_pass_denoising_strength(api_response),
             transparent=api_response.payload.transparent,
@@ -625,6 +663,7 @@ def convert_image_job_pop_response_to_parameters(
         cfg_scale=api_response.payload.cfg_scale,
         sampler_name=api_response.payload.sampler_name,
         scheduler=resolve_scheduler(api_response.payload),
+        **solver_knob_arguments(api_response.payload),
         clip_skip=api_response.payload.clip_skip,
         denoising_strength=api_response.payload.denoising_strength,
         tiling=api_response.payload.tiling,
