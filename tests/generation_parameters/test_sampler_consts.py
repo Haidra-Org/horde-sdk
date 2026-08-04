@@ -26,7 +26,8 @@ def test_convert_map_sources_are_all_real_backend_samplers() -> None:
     backend_values = {member.value for member in KNOWN_COMFYUI_IMAGE_SAMPLERS}
 
     for backend_name in mapper._COMFYUI_SAMPLERS_CONVERT_MAP:
-        assert backend_name.value in backend_values, f"{backend_name} is not a known backend sampler"
+        backend_name_value = backend_name if isinstance(backend_name, str) else backend_name.value
+        assert backend_name_value in backend_values, f"{backend_name} is not a known backend sampler"
 
 
 def test_every_api_sampler_is_mapped_or_explicitly_exempt() -> None:

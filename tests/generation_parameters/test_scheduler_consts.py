@@ -7,8 +7,6 @@ exactly as they did.
 
 from horde_model_reference.meta_consts import (
     KNOWN_IMAGE_GENERATION_BASELINE,
-    KNOWN_IMAGE_SCHEDULER,
-    is_known_image_scheduler,
 )
 
 from horde_sdk.ai_horde_api.apimodels.base import ImageGenerateParamMixin
@@ -17,7 +15,9 @@ from horde_sdk.backend_parsing.image.comfyui.hordelib import (
     ComfyUIBackendValuesMapper,
 )
 from horde_sdk.generation_parameters.image.constraints import is_scheduler_applicable
-from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SCHEDULERS
+from horde_sdk.generation_parameters.image.consts import (
+    KNOWN_IMAGE_SCHEDULERS,
+)
 from horde_sdk.worker.dispatch.ai_horde.image.convert import resolve_scheduler
 
 
