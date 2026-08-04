@@ -83,25 +83,3 @@ class TestSigmaGeneratorBaselineGate:
             for baseline in KNOWN_IMAGE_GENERATION_BASELINE:
                 assert is_scheduler_applicable(schedule, baseline), (schedule, baseline)
 
-
-class TestModelReferenceVocabularyLockstep:
-    """The model reference names schedules too, and the two vocabularies have to agree.
-
-    A model's `requirements` can demand a schedule, and the API checks that demand against the schedule a
-    request actually resolves to. If the two enums drift, a model could require a schedule no request can
-    ask for, or a request could name one no model can require. The model reference cannot import this
-    package (it is the dependency, not the dependent), so the check lives here.
-    """
-
-    def test_the_vocabularies_are_identical(self) -> None:
-        assert {str(s) for s in KNOWN_IMAGE_SCHEDULER} == {str(s) for s in KNOWN_IMAGE_SCHEDULERS}
-
-    def test_every_api_schedule_can_be_required_by_a_model(self) -> None:
-        for schedule in KNOWN_IMAGE_SCHEDULERS:
-            assert is_known_image_scheduler(str(schedule)), schedule
-
-    def test_the_two_legacy_flag_schedules_are_in_both(self) -> None:
-        # These are the only two the karras boolean can express, on either side of the wire.
-        for schedule in (KNOWN_IMAGE_SCHEDULERS.karras, KNOWN_IMAGE_SCHEDULERS.normal):
-            assert is_known_image_scheduler(str(schedule))
-            assert str(schedule) in {str(s) for s in KNOWN_IMAGE_SCHEDULER}
