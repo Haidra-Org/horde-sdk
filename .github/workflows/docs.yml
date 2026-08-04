@@ -87,7 +87,7 @@ jobs:
       - name: Rendered links resolve
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --offline --no-progress site
+          args: --offline --no-progress --config lychee.toml site
           fail: true
 
       - name: Upload validated GitHub Pages artifact

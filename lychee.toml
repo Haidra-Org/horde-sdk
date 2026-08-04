@@ -1,0 +1,10 @@
+# Lychee link checker configuration
+# https://github.com/lycheeverse/lychee
+
+# Exclude patterns
+exclude_path = [
+    # Generated 404 page contains root-relative links to all pages.
+    # Those pages are already checked individually; no need to validate
+    # the error page's navigation links in offline mode.
+    "site/404.html",
+]
