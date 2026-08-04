@@ -82,4 +82,3 @@ class TestSigmaGeneratorBaselineGate:
                 continue
             for baseline in KNOWN_IMAGE_GENERATION_BASELINE:
                 assert is_scheduler_applicable(schedule, baseline), (schedule, baseline)
-
