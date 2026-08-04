@@ -27,6 +27,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Install uv and set the python version
         uses: astral-sh/setup-uv@v6
         with:
