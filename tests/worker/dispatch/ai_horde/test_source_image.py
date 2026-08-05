@@ -243,3 +243,45 @@ def test_converter_preserves_usable_source_agrees_with_helper(
         == resolve_effective_source_processing(response)
         == KNOWN_IMAGE_SOURCE_PROCESSING.img2img
     )
+
+
+def test_raw_outpainting_string_normalizes_and_keeps_its_source_image(
+    single_id: GenerationID,
+    img2img_testing_image_base64: str,
+    model_reference_manager: ModelReferenceManager,
+) -> None:
+    """The API spells outpainting as a raw string; it must normalize to its aliased member.
+
+    Without normalization the raw string fails every membership check against
+    ``KNOWN_IMAGE_SOURCE_PROCESSING`` (whose ``outpainting`` member carries the value
+    ``inpainting``), so the converter would build no image2image component and the job would
+    silently lose its source image while still running an inpainting-family pipeline.
+    """
+    response = _make_pop_response(
+        single_id,
+        source_image=img2img_testing_image_base64,
+        source_processing="outpainting",
+    )
+
+    assert response.source_processing == KNOWN_IMAGE_SOURCE_PROCESSING.outpainting
+    assert response.source_processing in SOURCE_IMAGE_REQUIRING_PROCESSING
+    assert job_requires_source_image_input(response)
+
+    conversion_result = convert_image_job_pop_response_to_parameters(
+        api_response=response,
+        model_reference_manager=model_reference_manager,
+    )
+    image2image_params = conversion_result.generation_parameters.additional_params.image2image_params
+    assert image2image_params is not None
+    assert image2image_params.source_image is not None
+
+
+def test_truly_unknown_source_processing_still_passes_through(single_id: GenerationID) -> None:
+    """A value that is neither a member value nor a member name keeps the warn-and-passthrough path."""
+    response = _make_pop_response(
+        single_id,
+        source_image=None,
+        source_processing="hologram",
+    )
+
+    assert response.source_processing == "hologram"

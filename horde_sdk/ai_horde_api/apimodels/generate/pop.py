@@ -302,7 +302,10 @@ class ImageGenerateJobPopResponse(
         try:
             KNOWN_IMAGE_SOURCE_PROCESSING(v)
         except ValueError:
-            logger.warning(f"Unknown source processing {v}. Is your SDK out of date or did the API change?")
+            try:
+                return KNOWN_IMAGE_SOURCE_PROCESSING[v]
+            except KeyError:
+                logger.warning(f"Unknown source processing {v}. Is your SDK out of date or did the API change?")
         return v
 
     @field_validator("id_", mode="before")

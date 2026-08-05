@@ -143,8 +143,7 @@ class KNOWN_IMAGE_SOURCE_PROCESSING(StrEnum):
     txt2img = auto()
     img2img = auto()
     inpainting = auto()
-    outpainting = "inpainting"
-    """Outpainting is just"""
+    outpainting = auto()
     remix = auto()
     """Stable Cascade Remix"""
 
