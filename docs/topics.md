@@ -61,7 +61,7 @@ Topics connect tutorials, procedures, contracts, and design explanations that co
 
 - Explanation: [Worker jobs, generations, and state](explanation/worker-model.md)
 - Explanation: [Backend normalization](explanation/backend-normalization.md)
-- Explanation: [Dispatch normalization](explanation/dispatch-normalization.md) (planned)
+- Explanation: [Dispatch normalization](explanation/dispatch-normalization.md)
 - How-to: [Implement a backend value mapper](how-to/implement-backend-mapper.md)
 - How-to: [Drive the worker generation state machine](how-to/drive-worker-state.md)
 - How-to: [Implement a dispatch adapter](how-to/implement-dispatch-adapter.md) (planned)
@@ -105,7 +105,7 @@ Topics connect tutorials, procedures, contracts, and design explanations that co
 ### dispatch
 
 - Explanation: [Backend normalization](explanation/backend-normalization.md)
-- Explanation: [Dispatch normalization](explanation/dispatch-normalization.md) (planned)
+- Explanation: [Dispatch normalization](explanation/dispatch-normalization.md)
 - How-to: [Drive the worker generation state machine](how-to/drive-worker-state.md)
 - How-to: [Add an alchemy form](how-to/add-an-alchemy-form.md) (planned)
 - How-to: [Implement a dispatch adapter](how-to/implement-dispatch-adapter.md) (planned)
@@ -199,7 +199,7 @@ Topics connect tutorials, procedures, contracts, and design explanations that co
 ### workers
 
 - Explanation: [Worker jobs, generations, and state](explanation/worker-model.md)
-- Explanation: [Dispatch normalization](explanation/dispatch-normalization.md) (planned)
+- Explanation: [Dispatch normalization](explanation/dispatch-normalization.md)
 - Explanation: [Operation chaining](explanation/chaining.md) (planned)
 - How-to: [Drive the worker generation state machine](how-to/drive-worker-state.md)
 - How-to: [Implement a dispatch adapter](how-to/implement-dispatch-adapter.md) (planned)

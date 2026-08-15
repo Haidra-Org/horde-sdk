@@ -17,7 +17,7 @@ from horde_sdk.generation_parameters.generic import (
 )
 from horde_sdk.generation_parameters.generic.consts import KNOWN_AUX_MODEL_SOURCE
 from horde_sdk.generation_parameters.generic.object_models import GenerationFeatureFlags
-from horde_sdk.generation_parameters.image.constraints import KNOWN_SAMPLER_SOLVER_TYPES
+from horde_sdk.generation_parameters.image.constraints import KNOWN_SAMPLER_SOLVER_TYPES, SAMPLER_SOLVER_KNOB
 from horde_sdk.generation_parameters.image.consts import (
     CLIP_SKIP_REPRESENTATION,
     KNOWN_IMAGE_CONTROLNETS,
@@ -41,7 +41,7 @@ HIRES_FIX_DENOISE_STRENGTH_DEFAULT: float = 0.65
 
 
 class ControlnetFeatureFlags(GenerationParameterBaseModel):
-    """Feature flags for controlnet."""
+    """Represents required or supported ControlNet render features."""
 
     model_config = get_default_frozen_model_config_dict()
 
@@ -61,7 +61,13 @@ class ControlnetFeatureFlags(GenerationParameterBaseModel):
 
 
 class ImageGenerationFeatureFlags(GenerationFeatureFlags):
-    """Feature flags for an image worker."""
+    """Represents portable image render features that are required or supported.
+
+    A generation uses this model to describe requirements. A worker advertises the same fields as
+    supported values inside `ImageWorkerFeatureFlags`. Compatibility is directional: every requested
+    value must appear in the worker's advertised set, while a false, empty, or absent request field
+    adds no requirement.
+    """
 
     baselines: list[KNOWN_IMAGE_GENERATION_BASELINE | str] = Field(
         examples=[
@@ -69,19 +75,19 @@ class ImageGenerationFeatureFlags(GenerationFeatureFlags):
             [KNOWN_IMAGE_GENERATION_BASELINE.infer, KNOWN_IMAGE_GENERATION_BASELINE.stable_diffusion_1],
         ],
     )
-    """The baselines supported for standard image generation.
+    """The baselines required by a generation or supported by a worker.
 
     If `infer`, the worker will attempt to infer the model type from the model name.
     """
 
     clip_skip: bool = Field(default=False)
-    """Whether there is support for clip skipping."""
+    """Whether clip skipping is required or supported."""
 
     hires_fix: bool = Field(default=False)
-    """Whether there is support for hires fix."""
+    """Whether hires fix is required or supported."""
 
     tiling: bool = Field(default=False)
-    """Whether there is support for seamless tiling."""
+    """Whether seamless tiling is required or supported."""
 
     schedulers: list[KNOWN_IMAGE_SCHEDULERS | str] = Field(
         examples=[
@@ -89,7 +95,7 @@ class ImageGenerationFeatureFlags(GenerationFeatureFlags):
             [KNOWN_IMAGE_SCHEDULERS.normal, KNOWN_IMAGE_SCHEDULERS.simple],
         ],
     )
-    """The schedulers supported."""
+    """The schedulers required or supported."""
 
     samplers: list[KNOWN_IMAGE_SAMPLERS | str] = Field(
         examples=[
@@ -97,7 +103,16 @@ class ImageGenerationFeatureFlags(GenerationFeatureFlags):
             [KNOWN_IMAGE_SAMPLERS.k_lms, KNOWN_IMAGE_SAMPLERS.k_euler],
         ],
     )
-    """The samplers supported."""
+    """The samplers required or supported."""
+
+    sampler_solver_knobs: list[SAMPLER_SOLVER_KNOB | str] | None = Field(default=None)
+    """The per-request sampler solver knobs required or supported."""
+
+    flow_shift: bool = Field(default=False)
+    """Whether a model-specific flow shift is required or supported."""
+
+    transparent: bool = Field(default=False)
+    """Whether transparent image generation is required or supported."""
 
     controlnets_feature_flags: ControlnetFeatureFlags | None = Field(
         default=None,
@@ -114,7 +129,7 @@ class ImageGenerationFeatureFlags(GenerationFeatureFlags):
             ),
         ],
     )
-    """The controlnet feature flags for the worker."""
+    """The ControlNet features required or supported."""
 
     post_processing: list[KNOWN_ALCHEMY_TYPES | str] | None = Field(
         default=None,
@@ -123,7 +138,7 @@ class ImageGenerationFeatureFlags(GenerationFeatureFlags):
             [KNOWN_ALCHEMY_TYPES.RealESRGAN_x4plus, KNOWN_ALCHEMY_TYPES.GFPGAN],
         ],
     )
-    """The post processing methods."""
+    """The exact post-processing operations required or supported."""
 
     source_processing: list[KNOWN_IMAGE_SOURCE_PROCESSING | str] = Field(
         examples=[
@@ -136,7 +151,7 @@ class ImageGenerationFeatureFlags(GenerationFeatureFlags):
             ],
         ],
     )
-    """The source processing methods."""
+    """The source-processing methods required or supported."""
 
     workflows: list[KNOWN_IMAGE_WORKFLOWS | str] | None = Field(
         default=None,
@@ -144,7 +159,7 @@ class ImageGenerationFeatureFlags(GenerationFeatureFlags):
             [KNOWN_IMAGE_WORKFLOWS.qr_code],
         ],
     )
-    """The workflows supported."""
+    """The workflows required or supported."""
 
     tis: list[KNOWN_AUX_MODEL_SOURCE | str] | None = Field(
         default=None,
@@ -797,13 +812,64 @@ class ImageGenerationParameters(ImageGenerationParametersTemplate):
         return self
 
 
+def sampler_solver_knobs_from_values(
+    *,
+    sampler_eta: float | None,
+    sampler_s_noise: float | None,
+    sampler_s_churn: float | None,
+    sampler_s_tmin: float | None,
+    sampler_s_tmax: float | None,
+    sampler_solver_type: KNOWN_SAMPLER_SOLVER_TYPES | str | None,
+    sampler_order: int | None,
+) -> list[SAMPLER_SOLVER_KNOB]:
+    """Return the solver-knob capabilities required by concrete parameter values.
+
+    Args:
+        sampler_eta: Requested stochastic strength.
+        sampler_s_noise: Requested noise multiplier.
+        sampler_s_churn: Requested churn strength.
+        sampler_s_tmin: Requested lower churn bound.
+        sampler_s_tmax: Requested upper churn bound.
+        sampler_solver_type: Requested second-order correction.
+        sampler_order: Requested solver order.
+
+    Returns:
+        The canonical knob identifiers for every explicitly supplied value.
+    """
+    requested_knobs: list[SAMPLER_SOLVER_KNOB] = []
+    if sampler_eta is not None:
+        requested_knobs.append(SAMPLER_SOLVER_KNOB.eta)
+    if sampler_s_noise is not None:
+        requested_knobs.append(SAMPLER_SOLVER_KNOB.s_noise)
+    if sampler_s_churn is not None:
+        requested_knobs.append(SAMPLER_SOLVER_KNOB.s_churn)
+    if sampler_s_tmin is not None:
+        requested_knobs.append(SAMPLER_SOLVER_KNOB.s_tmin)
+    if sampler_s_tmax is not None:
+        requested_knobs.append(SAMPLER_SOLVER_KNOB.s_tmax)
+    if sampler_solver_type is not None:
+        requested_knobs.append(SAMPLER_SOLVER_KNOB.solver_type)
+    if sampler_order is not None:
+        requested_knobs.append(SAMPLER_SOLVER_KNOB.order)
+    return requested_knobs
+
+
 def image_parameters_to_feature_flags(
     parameters: ImageGenerationParametersTemplate,
 ) -> ImageGenerationFeatureFlags:
-    """Create a feature flag object representing the features used in the parameters."""
-    all_alchemy_forms = None
+    """Create the canonical feature requirements used by image parameters.
+
+    Args:
+        parameters: Backend-agnostic image parameters to inspect.
+
+    Returns:
+        The exact portable render features required to execute the parameters.
+    """
+    all_alchemy_operations = None
     if parameters.alchemy_params is not None and parameters.alchemy_params._all_alchemy_operations is not None:
-        all_alchemy_forms = [x.form for x in parameters.alchemy_params._all_alchemy_operations if x.form is not None]
+        all_alchemy_operations = [
+            operation.operation_name for operation in parameters.alchemy_params._all_alchemy_operations
+        ]
 
     baselines: list[KNOWN_IMAGE_GENERATION_BASELINE | str]
     if parameters.base_params and parameters.base_params.model_baseline is not None:
@@ -813,24 +879,43 @@ def image_parameters_to_feature_flags(
 
     schedulers = []
     samplers = []
+    sampler_solver_knobs: list[SAMPLER_SOLVER_KNOB] = []
 
     if parameters.base_params is not None:
         if parameters.base_params.scheduler is not None:
             schedulers.append(parameters.base_params.scheduler)
         if parameters.base_params.sampler_name is not None:
             samplers.append(parameters.base_params.sampler_name)
+        sampler_solver_knobs = sampler_solver_knobs_from_values(
+            sampler_eta=parameters.base_params.sampler_eta,
+            sampler_s_noise=parameters.base_params.sampler_s_noise,
+            sampler_s_churn=parameters.base_params.sampler_s_churn,
+            sampler_s_tmin=parameters.base_params.sampler_s_tmin,
+            sampler_s_tmax=parameters.base_params.sampler_s_tmax,
+            sampler_solver_type=parameters.base_params.sampler_solver_type,
+            sampler_order=parameters.base_params.sampler_order,
+        )
 
     source_processing = [parameters.source_processing] if parameters.source_processing is not None else []
 
-    post_processing = all_alchemy_forms
+    post_processing = all_alchemy_operations
 
     tiling = bool(parameters.base_params and parameters.base_params.tiling)
+    flow_shift = bool(parameters.base_params and parameters.base_params.flow_shift is not None)
+    transparent = bool(parameters.base_params and parameters.base_params.transparent)
+    clip_skip = bool(
+        parameters.base_params
+        and parameters.base_params.clip_skip is not None
+        and abs(parameters.base_params.clip_skip) > 1
+    )
 
     hires_fix = False
     controlnets_feature_flags = None
-    workflows: list[str] | None = None
+    workflows: list[KNOWN_IMAGE_WORKFLOWS | str] | None = None
     tis: list[KNOWN_AUX_MODEL_SOURCE | str] | None = None
     loras: list[KNOWN_AUX_MODEL_SOURCE | str] | None = None
+    extra_texts = False
+    extra_source_images = False
 
     if parameters.additional_params:
         hires_fix = parameters.additional_params.hires_fix_params is not None
@@ -838,35 +923,208 @@ def image_parameters_to_feature_flags(
         controlnets_feature_flags = (
             ControlnetFeatureFlags(
                 controlnets=[parameters.additional_params.controlnet_params.controlnet_type],
-                image_is_control=parameters.additional_params.controlnet_params.source_image is not None,
+                image_is_control=parameters.additional_params.controlnet_params.control_map is not None,
                 return_control_map=parameters.additional_params.controlnet_params.return_control_map,
             )
             if parameters.additional_params.controlnet_params is not None
             else None
         )
 
-        if parameters.additional_params.custom_workflows_params:
-            workflow_names = [wf.custom_workflow_name for wf in parameters.additional_params.custom_workflows_params]
+        if parameters.additional_params.custom_workflow_entries:
+            workflow_names = [
+                workflow.custom_workflow_name for workflow in parameters.additional_params.custom_workflow_entries
+            ]
             workflows = workflow_names or None
+            extra_texts = any(
+                workflow.extra_texts for workflow in parameters.additional_params.custom_workflow_entries
+            )
 
-        if parameters.additional_params.ti_params:
-            ti_names = [ti.name for ti in parameters.additional_params.ti_params if ti.name is not None]
-            tis = ti_names or None
+        if parameters.additional_params.ti_entries:
+            ti_sources = list(dict.fromkeys(ti.source for ti in parameters.additional_params.ti_entries))
+            tis = ti_sources or None
 
-        if parameters.additional_params.lora_params:
-            lora_names = [lora.name for lora in parameters.additional_params.lora_params if lora.name is not None]
-            loras = lora_names or None
+        if parameters.additional_params.lora_entries:
+            lora_sources = list(dict.fromkeys(lora.source for lora in parameters.additional_params.lora_entries))
+            loras = lora_sources or None
+
+        remix_parameters = parameters.additional_params.remix_params
+        extra_source_images = bool(remix_parameters and remix_parameters.remix_images)
 
     return ImageGenerationFeatureFlags(
+        extra_texts=extra_texts,
+        extra_source_images=extra_source_images,
         baselines=baselines,
+        clip_skip=clip_skip,
         hires_fix=hires_fix,
         tiling=tiling,
         schedulers=schedulers,
         samplers=samplers,
+        sampler_solver_knobs=sampler_solver_knobs or None,
+        flow_shift=flow_shift,
+        transparent=transparent,
         controlnets_feature_flags=controlnets_feature_flags,
         post_processing=post_processing,
         source_processing=source_processing,
         workflows=workflows,
         tis=tis,
         loras=loras,
+    )
+
+
+def _ordered_feature_union[FeatureValue](
+    feature_collections: Sequence[Sequence[FeatureValue] | None],
+) -> list[FeatureValue]:
+    """Return all feature values once, preserving their first advertised order."""
+    union: list[FeatureValue] = []
+    for feature_collection in feature_collections:
+        for feature_value in feature_collection or []:
+            if feature_value not in union:
+                union.append(feature_value)
+    return union
+
+
+def _ordered_feature_intersection[FeatureValue](
+    feature_collections: Sequence[Sequence[FeatureValue] | None],
+) -> list[FeatureValue]:
+    """Return common feature values in the first collection's order."""
+    if not feature_collections or not feature_collections[0]:
+        return []
+    return [
+        feature_value
+        for feature_value in feature_collections[0]
+        if all(
+            feature_collection is not None and feature_value in feature_collection
+            for feature_collection in feature_collections[1:]
+        )
+    ]
+
+
+def _union_controlnet_feature_flags(
+    feature_sets: Sequence[ImageGenerationFeatureFlags],
+) -> ControlnetFeatureFlags | None:
+    """Return the union of advertised ControlNet features."""
+    controlnet_features = [
+        feature_set.controlnets_feature_flags
+        for feature_set in feature_sets
+        if feature_set.controlnets_feature_flags is not None
+    ]
+    if not controlnet_features:
+        return None
+    return ControlnetFeatureFlags(
+        controlnets=_ordered_feature_union([features.controlnets for features in controlnet_features]),
+        image_is_control=any(features.image_is_control for features in controlnet_features),
+        return_control_map=any(features.return_control_map for features in controlnet_features),
+    )
+
+
+def _intersect_controlnet_feature_flags(
+    feature_sets: Sequence[ImageGenerationFeatureFlags],
+) -> ControlnetFeatureFlags | None:
+    """Return the intersection of advertised ControlNet features."""
+    controlnet_features = [feature_set.controlnets_feature_flags for feature_set in feature_sets]
+    if any(features is None for features in controlnet_features):
+        return None
+
+    concrete_features = [features for features in controlnet_features if features is not None]
+    common_controlnets = _ordered_feature_intersection([features.controlnets for features in concrete_features])
+    if not common_controlnets:
+        return None
+    return ControlnetFeatureFlags(
+        controlnets=common_controlnets,
+        image_is_control=all(features.image_is_control for features in concrete_features),
+        return_control_map=all(features.return_control_map for features in concrete_features),
+    )
+
+
+def union_image_generation_feature_flags(
+    feature_sets: Sequence[ImageGenerationFeatureFlags],
+) -> ImageGenerationFeatureFlags:
+    """Return the axis-wise union of canonical image feature sets.
+
+    This operation combines each field independently. It does not preserve correlations between fields;
+    callers must not treat a heterogeneous union as proof that one worker can execute every combination.
+    Resource limits, model residency, queue state, and operator policy also remain separate constraints.
+
+    Args:
+        feature_sets: Canonical feature sets to combine.
+
+    Returns:
+        One canonical feature set containing every advertised feature.
+
+    Raises:
+        ValueError: If no feature sets are supplied.
+    """
+    if not feature_sets:
+        raise ValueError("At least one image generation feature set is required.")
+
+    return ImageGenerationFeatureFlags(
+        extra_texts=any(feature_set.extra_texts for feature_set in feature_sets),
+        extra_source_images=any(feature_set.extra_source_images for feature_set in feature_sets),
+        baselines=_ordered_feature_union([feature_set.baselines for feature_set in feature_sets]),
+        clip_skip=any(feature_set.clip_skip for feature_set in feature_sets),
+        hires_fix=any(feature_set.hires_fix for feature_set in feature_sets),
+        tiling=any(feature_set.tiling for feature_set in feature_sets),
+        schedulers=_ordered_feature_union([feature_set.schedulers for feature_set in feature_sets]),
+        samplers=_ordered_feature_union([feature_set.samplers for feature_set in feature_sets]),
+        sampler_solver_knobs=(
+            _ordered_feature_union([feature_set.sampler_solver_knobs for feature_set in feature_sets]) or None
+        ),
+        flow_shift=any(feature_set.flow_shift for feature_set in feature_sets),
+        transparent=any(feature_set.transparent for feature_set in feature_sets),
+        controlnets_feature_flags=_union_controlnet_feature_flags(feature_sets),
+        post_processing=(
+            _ordered_feature_union([feature_set.post_processing for feature_set in feature_sets]) or None
+        ),
+        source_processing=_ordered_feature_union([feature_set.source_processing for feature_set in feature_sets]),
+        workflows=_ordered_feature_union([feature_set.workflows for feature_set in feature_sets]) or None,
+        tis=_ordered_feature_union([feature_set.tis for feature_set in feature_sets]) or None,
+        loras=_ordered_feature_union([feature_set.loras for feature_set in feature_sets]) or None,
+    )
+
+
+def intersect_image_generation_feature_flags(
+    feature_sets: Sequence[ImageGenerationFeatureFlags],
+) -> ImageGenerationFeatureFlags:
+    """Return the intersection of canonical image feature sets.
+
+    Args:
+        feature_sets: Canonical feature sets to intersect.
+
+    Returns:
+        One canonical feature set containing only features every input advertises.
+
+    Raises:
+        ValueError: If no feature sets are supplied or they share no generation baseline.
+    """
+    if not feature_sets:
+        raise ValueError("At least one image generation feature set is required.")
+
+    common_baselines = _ordered_feature_intersection([feature_set.baselines for feature_set in feature_sets])
+    if not common_baselines:
+        raise ValueError("Image generation feature sets must share at least one baseline.")
+
+    return ImageGenerationFeatureFlags(
+        extra_texts=all(feature_set.extra_texts for feature_set in feature_sets),
+        extra_source_images=all(feature_set.extra_source_images for feature_set in feature_sets),
+        baselines=common_baselines,
+        clip_skip=all(feature_set.clip_skip for feature_set in feature_sets),
+        hires_fix=all(feature_set.hires_fix for feature_set in feature_sets),
+        tiling=all(feature_set.tiling for feature_set in feature_sets),
+        schedulers=_ordered_feature_intersection([feature_set.schedulers for feature_set in feature_sets]),
+        samplers=_ordered_feature_intersection([feature_set.samplers for feature_set in feature_sets]),
+        sampler_solver_knobs=(
+            _ordered_feature_intersection([feature_set.sampler_solver_knobs for feature_set in feature_sets]) or None
+        ),
+        flow_shift=all(feature_set.flow_shift for feature_set in feature_sets),
+        transparent=all(feature_set.transparent for feature_set in feature_sets),
+        controlnets_feature_flags=_intersect_controlnet_feature_flags(feature_sets),
+        post_processing=(
+            _ordered_feature_intersection([feature_set.post_processing for feature_set in feature_sets]) or None
+        ),
+        source_processing=_ordered_feature_intersection(
+            [feature_set.source_processing for feature_set in feature_sets],
+        ),
+        workflows=_ordered_feature_intersection([feature_set.workflows for feature_set in feature_sets]) or None,
+        tis=_ordered_feature_intersection([feature_set.tis for feature_set in feature_sets]) or None,
+        loras=_ordered_feature_intersection([feature_set.loras for feature_set in feature_sets]) or None,
     )

@@ -33,9 +33,10 @@ def reference_image_worker_feature_flags() -> ImageWorkerFeatureFlags:
     return ImageWorkerFeatureFlags(
         supported_result_return_methods=list(RESULT_RETURN_METHOD.__members__.values()),
         supports_threads=True,
+        backend_clip_skip_representation=CLIP_SKIP_REPRESENTATION.NEGATIVE_OFFSET,
         image_generation_feature_flags=ImageGenerationFeatureFlags(
             baselines=list(KNOWN_IMAGE_GENERATION_BASELINE.__members__.values()),
-            clip_skip_representation=CLIP_SKIP_REPRESENTATION.NEGATIVE_OFFSET,
+            clip_skip=True,
             hires_fix=True,
             schedulers=list(KNOWN_IMAGE_SCHEDULERS.__members__.values()),
             samplers=list(KNOWN_IMAGE_SAMPLERS.__members__.values()),
@@ -60,9 +61,10 @@ def minimal_image_worker_feature_flags() -> ImageWorkerFeatureFlags:
     return ImageWorkerFeatureFlags(
         supported_result_return_methods=[RESULT_RETURN_METHOD.base64_post_back],
         supports_threads=False,
+        backend_clip_skip_representation=CLIP_SKIP_REPRESENTATION.NEGATIVE_OFFSET,
         image_generation_feature_flags=ImageGenerationFeatureFlags(
             baselines=[KNOWN_IMAGE_GENERATION_BASELINE.stable_diffusion_1],
-            clip_skip_representation=CLIP_SKIP_REPRESENTATION.NEGATIVE_OFFSET,
+            clip_skip=False,
             hires_fix=False,
             schedulers=[KNOWN_IMAGE_SCHEDULERS.simple],
             samplers=[KNOWN_IMAGE_SAMPLERS.k_lms],
@@ -218,3 +220,19 @@ def test_alchemy_worker_attributes_unsupported_annotation_specifically() -> None
         )
         is None
     )
+
+
+def test_alchemy_worker_rejects_a_different_generation_feature_type() -> None:
+    """Treat requirements from another generation domain as incompatible."""
+    worker = AlchemyWorkerFeatureFlags(alchemy_feature_flags=AlchemyFeatureFlags(alchemy_types=[]))
+
+    reasons = worker.reasons_not_capable_of_features(
+        ImageGenerationFeatureFlags(
+            baselines=[KNOWN_IMAGE_GENERATION_BASELINE.stable_diffusion_1],
+            schedulers=[],
+            samplers=[],
+            source_processing=[],
+        ),
+    )
+
+    assert reasons == [ALCHEMY_WORKER_NOT_CAPABLE_REASON.unsupported_generation_type]

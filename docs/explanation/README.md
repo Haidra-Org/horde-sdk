@@ -14,6 +14,7 @@ before choosing an extension point or debugging an interaction.
 | [Worker jobs, generations, and state](worker-model.md) | Explain how worker jobs coordinate popped requests while generations own individual backend results. |
 | [Package architecture](package-architecture.md) | Explain package boundaries from generic API contracts through AI Horde models, workers, and backend adapters. |
 | [Backend normalization](backend-normalization.md) | Explain why backend-native names and shapes are converted at dispatch and parsing boundaries. |
+| [Dispatch normalization](dispatch-normalization.md) | Explain how feature requirements, worker advertisements, and parameter conversion select executable work. |
 
 ### Planned
 
@@ -22,7 +23,6 @@ the code that holds the behavior.
 
 | Document | Scope |
 | --- | --- |
-| [Dispatch normalization](dispatch-normalization.md) | Explain how pop strategies, capability checks, and parameter conversion select executable worker jobs. |
 | [Operation chaining](chaining.md) | Explain why worker operations are represented as dependency graphs with explicit shared context. |
 | [Ratings integration](ratings-integration.md) | Explain the separate ratings-service boundary and how its client relates to generation results. |
 | [Model-reference integration design](model-reference-integration.md) | Explain how static model metadata complements live worker availability without replacing it. |

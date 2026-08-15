@@ -39,3 +39,10 @@ the field's Pydantic bounds and docstring because zero, empty collections, and o
 
 Parameter validation is covered under `tests/generation_parameters`; dispatch conversion tests verify backend-facing
 representations.
+
+## Image feature sets
+
+`ImageGenerationFeatureFlags` is shared by generation requirements and worker support advertisements. The direction is
+determined by where the model is used; field names and serialized shapes remain identical. See
+[Dispatch normalization](../explanation/dispatch-normalization.md) for subset semantics, per-baseline restrictions,
+lifecycle-specific extraction, generation-feature union/intersection, and complete worker-profile union.

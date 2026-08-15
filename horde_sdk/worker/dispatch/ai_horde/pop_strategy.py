@@ -9,8 +9,13 @@ from horde_sdk.consts import WORKER_TYPE
 from horde_sdk.generation_parameters import ImageGenerationParameters
 from horde_sdk.utils import default_bridge_agent_string
 from horde_sdk.worker.dispatch.ai_horde.bridge_data import ImageWorkerBridgeData
-from horde_sdk.worker.dispatch.ai_horde.image.convert import convert_image_job_pop_response_to_parameters
+from horde_sdk.worker.dispatch.ai_horde.image.convert import (
+    apply_image_worker_feature_flags_to_pop_request,
+    convert_image_job_pop_response_to_parameters,
+    image_worker_bridge_data_to_feature_flags,
+)
 from horde_sdk.worker.dispatch.pop_strategy import JobPopStrategyGeneric
+from horde_sdk.worker.feature_flags import ImageWorkerFeatureFlags
 from horde_sdk.worker.generations import (
     ImageSingleGeneration,
 )
@@ -27,6 +32,7 @@ class AIHordeImageWorkerJobPopStrategy(JobPopStrategyGeneric[ImageSingleGenerati
     _async_client_session: AIHordeAPIAsyncClientSession | None
 
     _model_reference_manager: ModelReferenceManager
+    _image_worker_feature_flags: ImageWorkerFeatureFlags | None
 
     def __init__(
         self,
@@ -37,6 +43,7 @@ class AIHordeImageWorkerJobPopStrategy(JobPopStrategyGeneric[ImageSingleGenerati
         sync_client_session: AIHordeAPIClientSession | None = None,
         async_client_session: AIHordeAPIAsyncClientSession | None = None,
         model_reference_manager: ModelReferenceManager,
+        image_worker_feature_flags: ImageWorkerFeatureFlags | None = None,
     ) -> None:
         """Initialize the AI Horde image worker job pop strategy.
 
@@ -48,6 +55,9 @@ class AIHordeImageWorkerJobPopStrategy(JobPopStrategyGeneric[ImageSingleGenerati
             async_client_session (AIHordeAPIAsyncClientSession | None): Optional asynchronous client session for API
                 calls.
             model_reference_manager (ModelReferenceManager): The model reference manager for handling model references.
+            image_worker_feature_flags: Exact implementation capabilities. When supplied, bridge choices narrow this
+                canonical profile and the resulting profile controls every image-feature pop field. When omitted, the
+                legacy bridge-only projection is retained for compatibility.
         """
         super().__init__(default_job_pop_time_spacing)
 
@@ -59,6 +69,7 @@ class AIHordeImageWorkerJobPopStrategy(JobPopStrategyGeneric[ImageSingleGenerati
         self._async_client_session = async_client_session
 
         self._model_reference_manager = model_reference_manager
+        self._image_worker_feature_flags = image_worker_feature_flags
 
     @override
     def get_worker_type(self) -> WORKER_TYPE:
@@ -94,6 +105,12 @@ class AIHordeImageWorkerJobPopStrategy(JobPopStrategyGeneric[ImageSingleGenerati
             allow_lora=self._image_worker_bridge_data.allow_lora,
             amount=self._image_worker_bridge_data.max_batch,
         )
+        if self._image_worker_feature_flags is not None:
+            effective_profile = image_worker_bridge_data_to_feature_flags(
+                self._image_worker_bridge_data,
+                self._image_worker_feature_flags,
+            )
+            job_pop_request = apply_image_worker_feature_flags_to_pop_request(job_pop_request, effective_profile)
 
         job_pop_response = self._sync_client_session.submit_request(
             job_pop_request,

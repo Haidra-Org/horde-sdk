@@ -12,7 +12,7 @@ from loguru import logger
 from pydantic import BaseModel, ConfigDict
 
 from horde_sdk.ai_horde_api.apimodels.base import GenMetadataEntry, ImageGenerateParamMixin
-from horde_sdk.ai_horde_api.apimodels.generate.pop import ImageGenerateJobPopResponse
+from horde_sdk.ai_horde_api.apimodels.generate.pop import ImageGenerateJobPopRequest, ImageGenerateJobPopResponse
 from horde_sdk.ai_horde_api.consts import DEFAULT_HIRES_DENOISE_STRENGTH, METADATA_TYPE, METADATA_VALUE
 from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import KNOWN_DISPATCH_SOURCE, KNOWN_INFERENCE_BACKEND
@@ -45,12 +45,19 @@ from horde_sdk.generation_parameters.image import (
 )
 from horde_sdk.generation_parameters.image.constraints import KNOWN_SAMPLER_SOLVER_TYPES
 from horde_sdk.generation_parameters.image.consts import (
+    KNOWN_IMAGE_CONTROLNETS,
     KNOWN_IMAGE_SCHEDULERS,
     KNOWN_IMAGE_SOURCE_PROCESSING,
+    KNOWN_IMAGE_WORKFLOWS,
     LORA_TRIGGER_INJECT_CHOICE,
     TI_TRIGGER_INJECT_CHOICE,
 )
-from horde_sdk.generation_parameters.image.object_models import ImageGenerationComponentContainer
+from horde_sdk.generation_parameters.image.object_models import (
+    ControlnetFeatureFlags,
+    ImageGenerationComponentContainer,
+    ImageGenerationFeatureFlags,
+    sampler_solver_knobs_from_values,
+)
 from horde_sdk.utils.image_utils import (
     base64_str_to_bytes,
     calc_upscale_sampler_steps,
@@ -60,15 +67,35 @@ from horde_sdk.worker.consts import (
     REQUESTED_BACKEND_CONSTRAINTS,
     REQUESTED_SOURCE_IMAGE_FALLBACK_CHOICE,
 )
+from horde_sdk.worker.dispatch.ai_horde.bridge_data import ImageWorkerBridgeData
 from horde_sdk.worker.dispatch.ai_horde.image.source_image import (
     SOURCE_IMAGE_REQUIRING_PROCESSING,
     _is_url,
     _source_image_is_usable,
 )
 from horde_sdk.worker.dispatch.ai_horde_parameters import AIHordeR2DispatchParameters
+from horde_sdk.worker.feature_flags import ImageWorkerFeatureFlags, PerBaselineFeatureFlags
 
 AI_HORDE_PROMPT_SEPARATOR = "###"
 """The AI-Horde specific separator between the positive and negative prompt in a combined prompt string."""
+
+AI_HORDE_LEGACY_IMAGE_CONTROL_TYPES = frozenset(
+    {
+        KNOWN_IMAGE_CONTROLNETS.canny,
+        KNOWN_IMAGE_CONTROLNETS.hed,
+        KNOWN_IMAGE_CONTROLNETS.depth,
+        KNOWN_IMAGE_CONTROLNETS.normal,
+        KNOWN_IMAGE_CONTROLNETS.openpose,
+        KNOWN_IMAGE_CONTROLNETS.seg,
+        KNOWN_IMAGE_CONTROLNETS.scribble,
+        KNOWN_IMAGE_CONTROLNETS.fakescribbles,
+        KNOWN_IMAGE_CONTROLNETS.hough,
+    },
+)
+"""Control types the AI Horde may dispatch without the extended-ControlNet offer."""
+
+AI_HORDE_EXTENDED_IMAGE_CONTROL_TYPES = frozenset(KNOWN_IMAGE_CONTROLNETS) - AI_HORDE_LEGACY_IMAGE_CONTROL_TYPES
+"""Control types for which the AI Horde requires the extended-ControlNet offer."""
 
 
 class ImageConversionResult(BaseModel):
@@ -100,6 +127,203 @@ def resolve_scheduler(payload: ImageGenerateParamMixin) -> KNOWN_IMAGE_SCHEDULER
     if payload.scheduler:
         return payload.scheduler
     return KNOWN_IMAGE_SCHEDULERS.karras if payload.karras else KNOWN_IMAGE_SCHEDULERS.normal
+
+
+def image_job_pop_response_to_feature_flags(
+    api_response: ImageGenerateJobPopResponse,
+    *,
+    resolved_baseline: KNOWN_IMAGE_GENERATION_BASELINE | str | None = None,
+) -> ImageGenerationFeatureFlags:
+    """Convert an accepted image job's wire fields to canonical feature requirements.
+
+    This conversion describes the job before source-input validation or other fault-tolerant
+    normalization. Use `image_parameters_to_feature_flags` when the selected execution workload,
+    rather than the accepted wire request, is the relevant lifecycle point.
+
+    Args:
+        api_response: Accepted AI-Horde image job to describe.
+        resolved_baseline: Baseline resolved for the selected model, when known.
+
+    Returns:
+        The portable render features requested by the wire job.
+    """
+    controlnet_features: ControlnetFeatureFlags | None = None
+    if api_response.payload.control_type is not None:
+        controlnet_features = ControlnetFeatureFlags(
+            controlnets=[api_response.payload.control_type],
+            image_is_control=bool(api_response.payload.image_is_control),
+            return_control_map=bool(api_response.payload.return_control_map),
+        )
+
+    workflows = [api_response.payload.workflow] if api_response.payload.workflow is not None else None
+    lora_sources = [KNOWN_AUX_MODEL_SOURCE.CIVITAI] if api_response.payload.loras else None
+    ti_sources = [KNOWN_AUX_MODEL_SOURCE.HORDELING] if api_response.payload.tis else None
+    sampler_solver_knobs = sampler_solver_knobs_from_values(
+        sampler_eta=api_response.payload.sampler_eta,
+        sampler_s_noise=api_response.payload.sampler_s_noise,
+        sampler_s_churn=api_response.payload.sampler_s_churn,
+        sampler_s_tmin=api_response.payload.sampler_s_tmin,
+        sampler_s_tmax=api_response.payload.sampler_s_tmax,
+        sampler_solver_type=api_response.payload.sampler_solver_type,
+        sampler_order=api_response.payload.sampler_order,
+    )
+
+    return ImageGenerationFeatureFlags(
+        extra_texts=bool(api_response.payload.extra_texts),
+        extra_source_images=bool(api_response.extra_source_images),
+        baselines=[resolved_baseline or KNOWN_IMAGE_GENERATION_BASELINE.infer],
+        clip_skip=abs(api_response.payload.clip_skip) > 1,
+        hires_fix=api_response.payload.hires_fix,
+        tiling=api_response.payload.tiling,
+        schedulers=[resolve_scheduler(api_response.payload)],
+        samplers=[api_response.payload.sampler_name],
+        sampler_solver_knobs=sampler_solver_knobs or None,
+        flow_shift=api_response.payload.flow_shift is not None,
+        transparent=bool(api_response.payload.transparent),
+        controlnets_feature_flags=controlnet_features,
+        post_processing=list(api_response.payload.post_processing) or None,
+        source_processing=[api_response.source_processing],
+        workflows=workflows,
+        tis=ti_sources,
+        loras=lora_sources,
+    )
+
+
+def image_worker_bridge_data_to_feature_flags(
+    bridge_data: ImageWorkerBridgeData,
+    implementation_profile: ImageWorkerFeatureFlags,
+) -> ImageWorkerFeatureFlags:
+    """Narrow implementation support with an AI Horde image worker's operator choices.
+
+    Bridge data contains operator policy, not enough implementation detail to construct a truthful
+    capability profile by itself. The supplied profile remains the authority for exact values; bridge
+    choices can only remove support from it. Existing bridge validation continues to normalize dependent
+    choices before this function reads them.
+
+    Args:
+        bridge_data: Validated AI Horde image-worker configuration.
+        implementation_profile: Exact features the worker implementation can execute.
+
+    Returns:
+        A canonical profile narrowed by the operator's bridge choices.
+    """
+    implementation_features = implementation_profile.image_generation_feature_flags
+    source_processing = [
+        source_mode
+        for source_mode in implementation_features.source_processing
+        if source_mode == KNOWN_IMAGE_SOURCE_PROCESSING.txt2img
+        or (
+            bridge_data.allow_img2img
+            and source_mode in {KNOWN_IMAGE_SOURCE_PROCESSING.img2img, KNOWN_IMAGE_SOURCE_PROCESSING.remix}
+        )
+        or (
+            bridge_data.allow_img2img
+            and bridge_data.allow_inpainting
+            and source_mode in {KNOWN_IMAGE_SOURCE_PROCESSING.inpainting, KNOWN_IMAGE_SOURCE_PROCESSING.outpainting}
+        )
+    ]
+
+    controlnet_features = (
+        implementation_features.controlnets_feature_flags
+        if bridge_data.allow_img2img and bridge_data.allow_controlnet
+        else None
+    )
+    workflows = [
+        workflow
+        for workflow in implementation_features.workflows or []
+        if workflow != KNOWN_IMAGE_WORKFLOWS.qr_code or controlnet_features is not None
+    ] or None
+    narrowed_features = implementation_features.model_copy(
+        update={
+            "extra_source_images": implementation_features.extra_source_images and bridge_data.allow_img2img,
+            "source_processing": source_processing,
+            "controlnets_feature_flags": controlnet_features,
+            "post_processing": (
+                implementation_features.post_processing if bridge_data.allow_post_processing else None
+            ),
+            "workflows": workflows,
+            "loras": implementation_features.loras if bridge_data.allow_lora else None,
+        },
+    )
+
+    existing_per_baseline = implementation_profile.per_baseline_feature_flags
+    existing_controlnet_map = existing_per_baseline.controlnet_map if existing_per_baseline else None
+    controlnet_map = {
+        baseline: bool(
+            controlnet_features is not None
+            and (existing_controlnet_map is None or existing_controlnet_map.get(baseline, False))
+            and (baseline != KNOWN_IMAGE_GENERATION_BASELINE.stable_diffusion_xl or bridge_data.allow_sdxl_controlnet)
+        )
+        for baseline in implementation_features.baselines
+    }
+    narrowed_per_baseline = (existing_per_baseline or PerBaselineFeatureFlags()).model_copy(
+        update={"controlnet_map": controlnet_map},
+    )
+    return implementation_profile.model_copy(
+        update={
+            "image_generation_feature_flags": narrowed_features,
+            "per_baseline_feature_flags": narrowed_per_baseline,
+        },
+    )
+
+
+def apply_image_worker_feature_flags_to_pop_request(
+    pop_request: ImageGenerateJobPopRequest,
+    worker_profile: ImageWorkerFeatureFlags,
+) -> ImageGenerateJobPopRequest:
+    """Project a canonical worker profile onto AI Horde image-pop capability fields.
+
+    Non-feature request fields, including identity, models, policy, limits and batch size, are retained.
+    The extended-ControlNet bit is enabled only when the profile covers every currently known extended
+    control type because that wire bit cannot advertise a subset.
+
+    Args:
+        pop_request: Request carrying the non-feature pop fields to retain.
+        worker_profile: Canonical effective capability profile to advertise.
+
+    Returns:
+        A copy of the request whose feature fields reflect ``worker_profile``.
+    """
+    features = worker_profile.image_generation_feature_flags
+    source_processing = set(features.source_processing)
+    controlnet_features = features.controlnets_feature_flags
+    supported_control_types = set(controlnet_features.controlnets) if controlnet_features else set()
+    workflows = set(features.workflows or [])
+    supports_qr_workflow = KNOWN_IMAGE_WORKFLOWS.qr_code in workflows
+    needs_source_image_offer = bool(
+        features.extra_source_images
+        or controlnet_features
+        or workflows
+        or source_processing - {KNOWN_IMAGE_SOURCE_PROCESSING.txt2img}
+    )
+    needs_controlnet_offer = bool(controlnet_features or supports_qr_workflow)
+    per_baseline = worker_profile.per_baseline_feature_flags
+    controlnet_map = per_baseline.controlnet_map if per_baseline else None
+    supports_sdxl_controlnet = bool(
+        KNOWN_IMAGE_GENERATION_BASELINE.stable_diffusion_xl in features.baselines
+        and needs_controlnet_offer
+        and (controlnet_map is None or controlnet_map.get(KNOWN_IMAGE_GENERATION_BASELINE.stable_diffusion_xl, False))
+    )
+
+    return pop_request.model_copy(
+        update={
+            "allow_img2img": needs_source_image_offer,
+            "allow_painting": bool(
+                source_processing
+                & {
+                    KNOWN_IMAGE_SOURCE_PROCESSING.inpainting,
+                    KNOWN_IMAGE_SOURCE_PROCESSING.outpainting,
+                }
+            ),
+            "allow_post_processing": bool(features.post_processing),
+            "allow_controlnet": needs_controlnet_offer,
+            "allow_extended_controlnet": bool(
+                controlnet_features and AI_HORDE_EXTENDED_IMAGE_CONTROL_TYPES.issubset(supported_control_types)
+            ),
+            "allow_sdxl_controlnet": supports_sdxl_controlnet,
+            "allow_lora": bool(features.loras),
+        },
+    )
 
 
 class SolverKnobArguments(TypedDict):
