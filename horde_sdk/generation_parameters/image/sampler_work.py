@@ -165,9 +165,7 @@ SAMPLER_EXECUTION_CONTRACTS: Mapping[SamplerExecutionContractVersion, SamplerExe
 )
 """All SDK-defined sampler execution contracts, ordered by their cumulative version."""
 
-LATEST_SAMPLER_EXECUTION_CONTRACT_VERSION: Final[SamplerExecutionContractVersion] = (
-    SamplerExecutionContractVersion.V1
-)
+LATEST_SAMPLER_EXECUTION_CONTRACT_VERSION: Final[SamplerExecutionContractVersion] = SamplerExecutionContractVersion.V1
 """The most recent sampler execution contract defined by this SDK release."""
 
 _SAMPLER_EXECUTION_CONTRACT_ORDER: tuple[SamplerExecutionContractVersion, ...] = tuple(
