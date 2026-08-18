@@ -322,6 +322,7 @@ def apply_image_worker_feature_flags_to_pop_request(
             ),
             "allow_sdxl_controlnet": supports_sdxl_controlnet,
             "allow_lora": bool(features.loras),
+            "sampler_execution_contract_version": worker_profile.sampler_execution_contract_version,
         },
     )
 

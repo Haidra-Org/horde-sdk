@@ -30,6 +30,10 @@ from horde_sdk.generation_parameters.image.object_models import (
     ImageGenerationFeatureFlags,
     union_image_generation_feature_flags,
 )
+from horde_sdk.generation_parameters.image.sampler_work import (
+    SamplerExecutionContractVersion,
+    minimum_common_sampler_execution_contract_version,
+)
 
 ReasonTypeVar = TypeVar("ReasonTypeVar", bound=str)
 
@@ -307,6 +311,9 @@ class ImageWorkerFeatureFlags(WorkerFeatureFlags[IMAGE_WORKER_NOT_CAPABLE_REASON
 
     backend_clip_skip_representation: CLIP_SKIP_REPRESENTATION | None = None
     """The clip skip representation supported."""
+
+    sampler_execution_contract_version: SamplerExecutionContractVersion | None = None
+    """Cumulative SDK execution contract guaranteed by every backend path in this profile."""
 
     @override
     def get_not_capable_reason_type(self) -> type[IMAGE_WORKER_NOT_CAPABLE_REASON]:
@@ -753,6 +760,9 @@ def union_image_worker_feature_flags(
         ),
         per_baseline_feature_flags=_union_per_baseline_feature_flags(profiles),
         backend_clip_skip_representation=clip_skip_representation,
+        sampler_execution_contract_version=minimum_common_sampler_execution_contract_version(
+            [profile.sampler_execution_contract_version for profile in profiles],
+        ),
     )
 
 

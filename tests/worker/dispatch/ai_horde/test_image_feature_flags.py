@@ -17,6 +17,7 @@ from horde_sdk.generation_parameters.image.object_models import (
     ImageGenerationFeatureFlags,
     image_parameters_to_feature_flags,
 )
+from horde_sdk.generation_parameters.image.sampler_work import SamplerExecutionContractVersion
 from horde_sdk.worker.dispatch.ai_horde.bridge_data import ImageWorkerBridgeData
 from horde_sdk.worker.dispatch.ai_horde.image.convert import (
     AI_HORDE_EXTENDED_IMAGE_CONTROL_TYPES,
@@ -61,6 +62,7 @@ def _implementation_profile(
         per_baseline_feature_flags=PerBaselineFeatureFlags(
             controlnet_map=dict.fromkeys(baselines, True),
         ),
+        sampler_execution_contract_version=SamplerExecutionContractVersion.V1,
     )
 
 
@@ -213,6 +215,12 @@ def test_pop_projection_requires_complete_extended_controlnet_coverage() -> None
     assert partial_request.allow_extended_controlnet is False
     assert full_request.allow_extended_controlnet is True
     assert {control_type.value for control_type in AI_HORDE_EXTENDED_IMAGE_CONTROL_TYPES}
+
+
+def test_pop_projection_carries_sampler_execution_contract_version() -> None:
+    projected = apply_image_worker_feature_flags_to_pop_request(_pop_request(), _implementation_profile())
+
+    assert projected.sampler_execution_contract_version is SamplerExecutionContractVersion.V1
 
 
 def test_pop_projection_preserves_non_feature_fields_and_baseline_restrictions() -> None:

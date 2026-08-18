@@ -13,8 +13,8 @@ Critical public members:
   [`KNOWN_IMAGE_SAMPLERS`][horde_sdk.generation_parameters.image.consts.KNOWN_IMAGE_SAMPLERS].
 - [`list_constraint_violations`][horde_sdk.generation_parameters.image.constraints.list_constraint_violations]:
   the hard check, returning every reason a request cannot be served as asked.
-- [`evaluations_per_step`][horde_sdk.generation_parameters.image.constraints.evaluations_per_step]: the
-  number of model evaluations a sampler performs per step, which is what a step actually costs.
+- [`get_sampler_work_profile`][horde_sdk.generation_parameters.image.sampler_work.get_sampler_work_profile]:
+  the explicit relationship between requested trajectory steps and marginal sampler work.
 - [`SAMPLER_RECOMMENDATIONS`][horde_sdk.generation_parameters.image.constraints.SAMPLER_RECOMMENDATIONS]:
   advisory pairings, each carrying the provenance of the claim.
 
@@ -42,6 +42,10 @@ from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
 from strenum import StrEnum
 
 from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SAMPLERS, KNOWN_IMAGE_SCHEDULERS
+from horde_sdk.generation_parameters.image.sampler_work import (
+    SamplerWorkProfile,
+    get_sampler_work_profile,
+)
 
 
 class CONSTRAINT_PROVENANCE(StrEnum):
@@ -187,8 +191,8 @@ class SamplerConstraints:
         numeric_knob_ranges: The numeric knobs the sampler accepts, and their ranges. A knob absent
             from this mapping is one the sampler's solver function does not take.
         solver_type_choices: The `solver_type` values the sampler accepts, empty when it takes none.
-        evaluations_per_step: How many model evaluations one step performs. This, rather than the step
-            count alone, is what a run costs.
+        work_profile: The sampler's marginal work shape. It is deliberately distinct from trajectory
+            length and does not claim exact wall-clock cost.
         measured_cost_ratio_sd15: Measured per-step wall-clock cost relative to `k_euler` on a
             stable_diffusion_1 model at 512x512, or `None` where a ratio is meaningless. Carries a small
             positive bias on the one-evaluation samplers, because per-step host work is a visible
@@ -204,7 +208,7 @@ class SamplerConstraints:
     backend_solver_function: str
     numeric_knob_ranges: Mapping[SAMPLER_SOLVER_KNOB, NumericKnobRange]
     solver_type_choices: tuple[KNOWN_SAMPLER_SOLVER_TYPES, ...]
-    evaluations_per_step: int
+    work_profile: SamplerWorkProfile
     measured_cost_ratio_sd15: float | None
     measured_cost_ratio_sdxl: float | None
 
@@ -264,11 +268,9 @@ of an ordinary least-squares fit of median wall time against step count, divided
 the same model. Fitting the slope is what separates per-step cost from the fixed per-render overhead,
 which is around 0.29s at 512x512 and 1.40s at 1024x1024.
 
-The measurement corroborates
-[`evaluations_per_step`][horde_sdk.generation_parameters.image.constraints.evaluations_per_step]: at
-1024x1024 every sampler lands within a fifth of its evaluation family. Pricing and time budgeting still
-read `evaluations_per_step`, which is counted out of the backend's own solver implementations and holds
-on any hardware; these ratios are one card's evidence that the count is right.
+The measurement corroborates the fixed-rate sampler work profiles: at 1024x1024 every fixed sampler
+lands close to its marginal work family. These ratios are one card's evidence, not a portable price or
+an execution ceiling.
 """
 
 MEASURED_COST_RATIO_SOURCE = "sampler-cost-2026-08-03T23-02-56.165788Z.json"
@@ -349,17 +351,17 @@ def _constraints(
     backend_solver_function: str,
     numeric_knob_ranges: Mapping[SAMPLER_SOLVER_KNOB, NumericKnobRange] = _NO_NUMERIC_KNOBS,
     solver_type_choices: tuple[KNOWN_SAMPLER_SOLVER_TYPES, ...] = _NO_SOLVER_TYPES,
-    evaluations_per_step: int,
     measured_cost_ratio_sd15: float | None = None,
     measured_cost_ratio_sdxl: float | None = None,
 ) -> tuple[KNOWN_IMAGE_SAMPLERS, SamplerConstraints]:
     """Create one table entry, keyed by its sampler."""
+    work_profile = get_sampler_work_profile(sampler)
     return sampler, SamplerConstraints(
         sampler=sampler,
         backend_solver_function=backend_solver_function,
         numeric_knob_ranges=numeric_knob_ranges,
         solver_type_choices=solver_type_choices,
-        evaluations_per_step=evaluations_per_step,
+        work_profile=work_profile,
         measured_cost_ratio_sd15=measured_cost_ratio_sd15,
         measured_cost_ratio_sdxl=measured_cost_ratio_sdxl,
     )
@@ -375,7 +377,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.k_lms,
                 backend_solver_function="sample_lms",
                 numeric_knob_ranges=MappingProxyType({SAMPLER_SOLVER_KNOB.order: _LMS_ORDER_RANGE}),
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.02,
                 measured_cost_ratio_sdxl=1.00,
             ),
@@ -383,7 +384,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.k_heun,
                 backend_solver_function="sample_heun",
                 numeric_knob_ranges=_CHURN_KNOBS,
-                evaluations_per_step=2,
                 measured_cost_ratio_sd15=2.03,
                 measured_cost_ratio_sdxl=1.87,
             ),
@@ -391,7 +391,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.k_euler,
                 backend_solver_function="sample_euler",
                 numeric_knob_ranges=_CHURN_KNOBS,
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.00,
                 measured_cost_ratio_sdxl=1.00,
             ),
@@ -399,7 +398,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.k_euler_a,
                 backend_solver_function="sample_euler_ancestral",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.08,
                 measured_cost_ratio_sdxl=1.01,
             ),
@@ -407,7 +405,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.k_dpm_2,
                 backend_solver_function="sample_dpm_2",
                 numeric_knob_ranges=_CHURN_KNOBS,
-                evaluations_per_step=2,
                 measured_cost_ratio_sd15=2.17,
                 measured_cost_ratio_sdxl=1.94,
             ),
@@ -415,14 +412,12 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.k_dpm_2_a,
                 backend_solver_function="sample_dpm_2_ancestral",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
-                evaluations_per_step=2,
                 measured_cost_ratio_sd15=2.22,
                 measured_cost_ratio_sdxl=1.97,
             ),
             _constraints(
                 sampler=KNOWN_IMAGE_SAMPLERS.k_dpm_fast,
                 backend_solver_function="sample_dpm_fast",
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.16,
                 measured_cost_ratio_sdxl=0.97,
             ),
@@ -439,7 +434,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 # This solver chooses its own step size, so its true evaluation count is adaptive and is
                 # not a function of the requested step count at all. The 1 below is the pricing
                 # convention for it rather than a count read out of the solver.
-                evaluations_per_step=1,
                 # Both ratios are left unset for the same reason. Wall time per requested step is not a
                 # quantity this solver has: the measurement fits it at an r-squared near 0.6 on both
                 # baselines, against better than 0.97 for every other sampler, and attributes ten
@@ -450,21 +444,18 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.k_dpmpp_2s_a,
                 backend_solver_function="sample_dpmpp_2s_ancestral",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
-                evaluations_per_step=2,
                 measured_cost_ratio_sd15=2.35,
                 measured_cost_ratio_sdxl=2.01,
             ),
             _constraints(
                 sampler=KNOWN_IMAGE_SAMPLERS.k_dpmpp_2m,
                 backend_solver_function="sample_dpmpp_2m",
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.08,
                 measured_cost_ratio_sdxl=0.98,
             ),
             _constraints(
                 sampler=KNOWN_IMAGE_SAMPLERS.dpmsolver,
                 backend_solver_function="sample_dpmpp_2m",
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.12,
                 measured_cost_ratio_sdxl=1.00,
             ),
@@ -472,7 +463,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.k_dpmpp_sde,
                 backend_solver_function="sample_dpmpp_sde",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
-                evaluations_per_step=2,
                 measured_cost_ratio_sd15=2.58,
                 measured_cost_ratio_sdxl=2.22,
             ),
@@ -480,28 +470,24 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.lcm,
                 backend_solver_function="sample_lcm",
                 numeric_knob_ranges=_S_NOISE_ONLY,
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.21,
                 measured_cost_ratio_sdxl=0.96,
             ),
             _constraints(
                 sampler=KNOWN_IMAGE_SAMPLERS.DDIM,
                 backend_solver_function="sample_euler",
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.13,
                 measured_cost_ratio_sdxl=0.96,
             ),
             _constraints(
                 sampler=KNOWN_IMAGE_SAMPLERS.uni_pc,
                 backend_solver_function="sample_unipc",
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.34,
                 measured_cost_ratio_sdxl=0.98,
             ),
             _constraints(
                 sampler=KNOWN_IMAGE_SAMPLERS.uni_pc_bh2,
                 backend_solver_function="sample_unipc_bh2",
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.17,
                 measured_cost_ratio_sdxl=0.99,
             ),
@@ -510,7 +496,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 backend_solver_function="sample_dpmpp_2m_sde",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
                 solver_type_choices=_MIDPOINT_OR_HEUN,
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.33,
                 measured_cost_ratio_sdxl=1.14,
             ),
@@ -518,14 +503,12 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.dpmpp_3m_sde,
                 backend_solver_function="sample_dpmpp_3m_sde",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.18,
                 measured_cost_ratio_sdxl=1.12,
             ),
             _constraints(
                 sampler=KNOWN_IMAGE_SAMPLERS.ddpm,
                 backend_solver_function="sample_ddpm",
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.05,
                 measured_cost_ratio_sdxl=1.03,
             ),
@@ -533,7 +516,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.deis,
                 backend_solver_function="sample_deis",
                 numeric_knob_ranges=MappingProxyType({SAMPLER_SOLVER_KNOB.order: _DEIS_MAX_ORDER_RANGE}),
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.13,
                 measured_cost_ratio_sdxl=0.96,
             ),
@@ -541,7 +523,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.ipndm,
                 backend_solver_function="sample_ipndm",
                 numeric_knob_ranges=MappingProxyType({SAMPLER_SOLVER_KNOB.order: _IPNDM_MAX_ORDER_RANGE}),
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.01,
                 measured_cost_ratio_sdxl=1.00,
             ),
@@ -549,14 +530,12 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.res_multistep,
                 backend_solver_function="sample_res_multistep",
                 numeric_knob_ranges=_S_NOISE_ONLY,
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.01,
                 measured_cost_ratio_sdxl=0.98,
             ),
             _constraints(
                 sampler=KNOWN_IMAGE_SAMPLERS.gradient_estimation,
                 backend_solver_function="sample_gradient_estimation",
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.18,
                 measured_cost_ratio_sdxl=0.99,
             ),
@@ -564,7 +543,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.heunpp2,
                 backend_solver_function="sample_heunpp2",
                 numeric_knob_ranges=_CHURN_KNOBS,
-                evaluations_per_step=3,
                 measured_cost_ratio_sd15=3.21,
                 measured_cost_ratio_sdxl=2.93,
             ),
@@ -572,7 +550,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.er_sde,
                 backend_solver_function="sample_er_sde",
                 numeric_knob_ranges=_S_NOISE_ONLY,
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.07,
                 measured_cost_ratio_sdxl=0.98,
             ),
@@ -580,14 +557,12 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.sa_solver,
                 backend_solver_function="sample_sa_solver",
                 numeric_knob_ranges=_S_NOISE_ONLY,
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.08,
                 measured_cost_ratio_sdxl=0.94,
             ),
             _constraints(
                 sampler=KNOWN_IMAGE_SAMPLERS.euler_cfg_pp,
                 backend_solver_function="sample_euler_cfg_pp",
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.11,
                 measured_cost_ratio_sdxl=1.10,
             ),
@@ -600,7 +575,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                         SAMPLER_SOLVER_KNOB.s_noise: _S_NOISE_RANGE_NARROW,
                     },
                 ),
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.15,
                 measured_cost_ratio_sdxl=0.99,
             ),
@@ -608,7 +582,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.exp_heun_2_x0,
                 backend_solver_function="sample_exp_heun_2_x0",
                 solver_type_choices=_PHI_1_OR_PHI_2,
-                evaluations_per_step=2,
                 measured_cost_ratio_sd15=2.08,
                 measured_cost_ratio_sdxl=2.39,
             ),
@@ -617,7 +590,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 backend_solver_function="sample_exp_heun_2_x0_sde",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
                 solver_type_choices=_PHI_1_OR_PHI_2,
-                evaluations_per_step=2,
                 measured_cost_ratio_sd15=2.27,
                 measured_cost_ratio_sdxl=1.99,
             ),
@@ -625,14 +597,12 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.dpmpp_2s_ancestral_cfg_pp,
                 backend_solver_function="sample_dpmpp_2s_ancestral_cfg_pp",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
-                evaluations_per_step=2,
                 measured_cost_ratio_sd15=2.14,
                 measured_cost_ratio_sdxl=2.02,
             ),
             _constraints(
                 sampler=KNOWN_IMAGE_SAMPLERS.dpmpp_2m_cfg_pp,
                 backend_solver_function="sample_dpmpp_2m_cfg_pp",
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.01,
                 measured_cost_ratio_sdxl=1.05,
             ),
@@ -641,7 +611,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 backend_solver_function="sample_dpmpp_2m_sde_heun",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
                 solver_type_choices=_MIDPOINT_OR_HEUN,
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.27,
                 measured_cost_ratio_sdxl=1.10,
             ),
@@ -649,7 +618,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.ipndm_v,
                 backend_solver_function="sample_ipndm_v",
                 numeric_knob_ranges=MappingProxyType({SAMPLER_SOLVER_KNOB.order: _IPNDM_MAX_ORDER_RANGE}),
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.11,
                 measured_cost_ratio_sdxl=1.15,
             ),
@@ -657,7 +625,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.res_multistep_cfg_pp,
                 backend_solver_function="sample_res_multistep_cfg_pp",
                 numeric_knob_ranges=_S_NOISE_ONLY,
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.08,
                 measured_cost_ratio_sdxl=1.03,
             ),
@@ -665,7 +632,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.res_multistep_ancestral,
                 backend_solver_function="sample_res_multistep_ancestral",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.13,
                 measured_cost_ratio_sdxl=1.14,
             ),
@@ -673,14 +639,12 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.res_multistep_ancestral_cfg_pp,
                 backend_solver_function="sample_res_multistep_ancestral_cfg_pp",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.11,
                 measured_cost_ratio_sdxl=1.04,
             ),
             _constraints(
                 sampler=KNOWN_IMAGE_SAMPLERS.gradient_estimation_cfg_pp,
                 backend_solver_function="sample_gradient_estimation_cfg_pp",
-                evaluations_per_step=1,
                 measured_cost_ratio_sd15=1.20,
                 measured_cost_ratio_sdxl=1.02,
             ),
@@ -689,7 +653,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 backend_solver_function="sample_seeds_2",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
                 solver_type_choices=_PHI_1_OR_PHI_2,
-                evaluations_per_step=2,
                 measured_cost_ratio_sd15=2.26,
                 measured_cost_ratio_sdxl=1.88,
             ),
@@ -697,7 +660,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.seeds_3,
                 backend_solver_function="sample_seeds_3",
                 numeric_knob_ranges=_ANCESTRAL_KNOBS,
-                evaluations_per_step=3,
                 measured_cost_ratio_sd15=3.52,
                 measured_cost_ratio_sdxl=2.82,
             ),
@@ -705,7 +667,6 @@ SAMPLER_CONSTRAINTS: Mapping[KNOWN_IMAGE_SAMPLERS, SamplerConstraints] = Mapping
                 sampler=KNOWN_IMAGE_SAMPLERS.sa_solver_pece,
                 backend_solver_function="sample_sa_solver_pece",
                 numeric_knob_ranges=_S_NOISE_ONLY,
-                evaluations_per_step=2,
                 measured_cost_ratio_sd15=2.38,
                 measured_cost_ratio_sdxl=2.11,
             ),
@@ -983,25 +944,6 @@ def get_sampler_constraints(sampler: KNOWN_IMAGE_SAMPLERS) -> SamplerConstraints
 
     """
     return SAMPLER_CONSTRAINTS[sampler]
-
-
-def evaluations_per_step(sampler: KNOWN_IMAGE_SAMPLERS) -> int:
-    """Return how many model evaluations one step of this sampler performs.
-
-    This is the durable, code-derived cost fact: a second-order sampler evaluates the model twice per
-    step and therefore costs about twice as much as a first-order one at the same step count.
-
-    The one sampler this does not describe is `k_dpm_adaptive`, which chooses its own step size and so
-    performs a count unrelated to the requested steps. Its entry carries the pricing convention of 1.
-
-    Args:
-        sampler: The sampler to look up.
-
-    Returns:
-        The evaluation count for one step.
-
-    """
-    return SAMPLER_CONSTRAINTS[sampler].evaluations_per_step
 
 
 def is_knob_applicable(sampler: KNOWN_IMAGE_SAMPLERS, knob: SAMPLER_SOLVER_KNOB) -> bool:

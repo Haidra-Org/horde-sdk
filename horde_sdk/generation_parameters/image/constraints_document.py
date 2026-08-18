@@ -13,6 +13,8 @@ Critical public members:
   [`SamplerConstraintsDocument`][horde_sdk.generation_parameters.image.constraints_document.SamplerConstraintsDocument]
 - One sampler's knobs, cost, tier and vocabulary as they are served:
   [`PublishedSamplerRecord`][horde_sdk.generation_parameters.image.constraints_document.PublishedSamplerRecord]
+- One discoverable worker conformance profile:
+  [`PublishedSamplerExecutionContract`][horde_sdk.generation_parameters.image.constraints_document.PublishedSamplerExecutionContract]
 - The sections mirroring the API's rejections, which a client honouring them cannot construct against:
   [`PublishedHardConstraints`][horde_sdk.generation_parameters.image.constraints_document.PublishedHardConstraints]
 
@@ -23,10 +25,10 @@ request fields. Field names match the served JSON keys exactly, so renaming one 
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
 from horde_model_reference.meta_consts import KNOWN_IMAGE_GENERATION_BASELINE
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from horde_sdk.consts import get_default_frozen_model_config_dict
 from horde_sdk.generation_parameters.image.constraints import (
@@ -35,26 +37,41 @@ from horde_sdk.generation_parameters.image.constraints import (
     SAMPLER_PRESENTATION_TIER,
 )
 from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SAMPLERS, KNOWN_IMAGE_SCHEDULERS
+from horde_sdk.generation_parameters.image.sampler_work import (
+    SamplerExecutionContractVersion,
+    SamplerExecutionGuarantee,
+)
 
 __all__ = [
-    "AUTHORITATIVE_COST_FIELD",
+    "AUTHORITATIVE_WORK_FIELD",
+    "SAMPLER_CONSTRAINTS_DOCUMENT_SCHEMA_VERSION",
+    "PublishedAdaptiveIterationCeiling",
+    "PublishedAdaptiveWorkProfile",
     "PublishedAdvisories",
-    "PublishedCostBasis",
+    "PublishedBoundedAdaptiveSamplerExecutionGuarantee",
+    "PublishedFixedRateWorkProfile",
     "PublishedHardConstraints",
     "PublishedKnobRange",
     "PublishedPresentationTiers",
     "PublishedRecommendation",
     "PublishedRejectedPairing",
+    "PublishedSamplerExecutionContract",
+    "PublishedSamplerExecutionGuarantee",
     "PublishedSamplerRecord",
+    "PublishedSamplerWorkProfile",
+    "PublishedWorkAccounting",
     "SamplerConstraintsDocument",
 ]
 
-AUTHORITATIVE_COST_FIELD: Literal["evaluations_per_step"] = "evaluations_per_step"
-"""The name of the field a request is actually priced and time-budgeted on.
+AUTHORITATIVE_WORK_FIELD: Literal["work_profile"] = "work_profile"
+"""The sampler-record field carrying operational work-accounting semantics.
 
-Published alongside the measured cost ratios so a client cannot mistake a measurement taken on one card
-for the quantity the API charges against.
+Published alongside measured cost ratios so clients cannot mistake one-card timing evidence for the
+portable work quantity used by operational policy.
 """
+
+SAMPLER_CONSTRAINTS_DOCUMENT_SCHEMA_VERSION: Literal["1.0"] = "1.0"
+"""Identify the initial public JSON shape of the sampler constraints document."""
 
 
 class PublishedKnobRange(BaseModel):
@@ -79,6 +96,94 @@ class PublishedKnobRange(BaseModel):
     """Whether the knob accepts only whole numbers."""
 
 
+class PublishedFixedRateWorkProfile(BaseModel):
+    """A published sampler whose marginal work scales with requested trajectory length."""
+
+    model_config = get_default_frozen_model_config_dict()
+
+    kind: Literal["fixed_rate"] = "fixed_rate"
+    """The discriminator for trajectory-derived work."""
+
+    marginal_work_units_per_trajectory_step: int = Field(ge=1)
+    """First-order-equivalent marginal work units for one requested trajectory step."""
+
+
+class PublishedAdaptiveWorkProfile(BaseModel):
+    """A published adaptive sampler and the serving API's request-level estimate for it."""
+
+    model_config = get_default_frozen_model_config_dict()
+
+    kind: Literal["adaptive"] = "adaptive"
+    """The discriminator for solver-chosen iteration counts."""
+
+    estimated_work_units_per_request: int = Field(ge=0)
+    """The serving API's stable accounting estimate, independent of requested trajectory steps."""
+
+    finite_ceiling_contract_versions: list[SamplerExecutionContractVersion]
+    """Execution contracts that make this adaptive sampler's maximum work finite."""
+
+
+PublishedSamplerWorkProfile = Annotated[
+    PublishedFixedRateWorkProfile | PublishedAdaptiveWorkProfile,
+    Field(discriminator="kind"),
+]
+"""The discriminated wire representation of fixed and adaptive sampler work."""
+
+
+class PublishedAdaptiveIterationCeiling(BaseModel):
+    """Represents an adaptive solver's exact trajectory-derived iteration ceiling."""
+
+    model_config = get_default_frozen_model_config_dict()
+
+    trajectory_multiplier_numerator: int = Field(ge=1)
+    """Numerator of the exact multiplier applied to requested trajectory steps."""
+
+    trajectory_multiplier_denominator: int = Field(ge=1)
+    """Denominator of the exact multiplier applied to requested trajectory steps."""
+
+    rounding: Literal["ceiling"] = "ceiling"
+    """Require fractional iteration ceilings to round upward."""
+
+
+class PublishedBoundedAdaptiveSamplerExecutionGuarantee(BaseModel):
+    """Represents the atomic finite-iteration guarantee for the adaptive sampler."""
+
+    model_config = get_default_frozen_model_config_dict()
+
+    name: Literal[SamplerExecutionGuarantee.BOUNDED_DPM_ADAPTIVE_V1] = (
+        SamplerExecutionGuarantee.BOUNDED_DPM_ADAPTIVE_V1
+    )
+    """Stable SDK identifier for the atomic execution behavior."""
+
+    sampler: KNOWN_IMAGE_SAMPLERS
+    """Sampler whose runtime behavior this guarantee constrains."""
+
+    maximum_solver_iterations: PublishedAdaptiveIterationCeiling
+    """Exact formula for the maximum solver iterations the backend permits."""
+
+    work_units_per_solver_iteration_source: Literal["sampler_order"] = "sampler_order"
+    """Request setting that determines work units consumed by each solver iteration."""
+
+
+PublishedSamplerExecutionGuarantee = Annotated[
+    PublishedBoundedAdaptiveSamplerExecutionGuarantee,
+    Field(discriminator="name"),
+]
+"""The discriminated wire representation of atomic sampler execution guarantees."""
+
+
+class PublishedSamplerExecutionContract(BaseModel):
+    """Represents a cumulative execution behavior profile a worker can claim to implement."""
+
+    model_config = get_default_frozen_model_config_dict()
+
+    version: SamplerExecutionContractVersion
+    """Stable version workers advertise during check-in."""
+
+    guarantees: list[PublishedSamplerExecutionGuarantee]
+    """Atomic behavior guarantees contained by this cumulative contract version."""
+
+
 class PublishedSamplerRecord(BaseModel):
     """Represents one sampler's knobs, cost, tier and vocabulary as they are served."""
 
@@ -87,8 +192,8 @@ class PublishedSamplerRecord(BaseModel):
     name: KNOWN_IMAGE_SAMPLERS
     """The sampler this record describes, repeated here so an entry stands alone once read out of the map."""
 
-    evaluations_per_step: int
-    """How many model evaluations one step performs, which is what the API prices a request on."""
+    work_profile: PublishedSamplerWorkProfile
+    """How operational work relates—or does not relate—to requested trajectory steps."""
 
     measured_cost_ratio_sd15: float | None
     """Per-step wall-clock cost relative to `k_euler` on a stable_diffusion_1 model, or null where a ratio
@@ -176,17 +281,17 @@ class PublishedAdvisories(BaseModel):
     """Above this `cfg_scale`, the CFG++ solvers oversaturate. The image still renders."""
 
 
-class PublishedCostBasis(BaseModel):
-    """Represents what each published cost figure is, and which of them a request is charged against.
+class PublishedWorkAccounting(BaseModel):
+    """Explains operational work figures without claiming they are the learned Kudos price.
 
-    Served as bare numbers the measured ratios would read like prices. They are one card's evidence that
-    the evaluation counts are right, and this block says so.
+    Served as bare numbers, measured ratios would read like portable costs. They are one card's evidence
+    about marginal work. The API's learned Kudos model remains a separate sampler-plus-step calculation.
     """
 
     model_config = get_default_frozen_model_config_dict()
 
-    authoritative_field: Literal["evaluations_per_step"] = AUTHORITATIVE_COST_FIELD
-    """Names the field a request is priced and time-budgeted on."""
+    authoritative_field: Literal["work_profile"] = AUTHORITATIVE_WORK_FIELD
+    """Names the sampler-record field operational accounting and time budgeting consume."""
 
     authoritative_note: str
     """What that field counts, and where it is read from."""
@@ -237,6 +342,12 @@ class SamplerConstraintsDocument(BaseModel):
 
     model_config = get_default_frozen_model_config_dict()
 
+    schema_version: Literal["1.0"] = SAMPLER_CONSTRAINTS_DOCUMENT_SCHEMA_VERSION
+    """Version of this document's JSON shape, independent of execution conformance versions."""
+
+    execution_contracts: dict[SamplerExecutionContractVersion, PublishedSamplerExecutionContract]
+    """Discoverable execution profiles workers can claim to implement."""
+
     samplers: dict[KNOWN_IMAGE_SAMPLERS, PublishedSamplerRecord]
     """Every sampler the serving API accepts, keyed by name."""
 
@@ -249,8 +360,8 @@ class SamplerConstraintsDocument(BaseModel):
     advisories: PublishedAdvisories
     """Quality expectations the API warns about rather than enforcing."""
 
-    cost_basis: PublishedCostBasis
-    """What each published cost figure is, and which of them a request is charged against."""
+    work_accounting: PublishedWorkAccounting
+    """What work units, estimates, ceilings, and measured ratios mean."""
 
     presentation_tiers: PublishedPresentationTiers
     """Which samplers are worth offering by default, and the note saying the split restricts nothing."""

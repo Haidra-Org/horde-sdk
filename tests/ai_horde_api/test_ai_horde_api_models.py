@@ -12,6 +12,7 @@ import pytest
 from horde_sdk.ai_horde_api.apimodels import (
     AlchemyJobPopResponse,
     AlchemyPopFormPayload,
+    AlchemyPopRequest,
     AllWorkersDetailsResponse,
     ContributionsDetails,
     FindUserRequest,
@@ -50,6 +51,7 @@ from horde_sdk.generation_parameters.image.consts import (
     KNOWN_IMAGE_SAMPLERS,
     KNOWN_IMAGE_SOURCE_PROCESSING,
 )
+from horde_sdk.generation_parameters.image.sampler_work import SamplerExecutionContractVersion
 
 
 def test_api_endpoint() -> None:
@@ -186,6 +188,44 @@ def test_ImageGenerateAsyncRequest_unknown_sampler(ai_horde_api_key: str) -> Non
     )
     assert test_async_request.params is not None
     assert test_async_request.params.sampler_name == "unknown sampler"
+
+
+def test_ImageGenerateAsyncRequest_solver_fields_round_trip(ai_horde_api_key: str) -> None:
+    expected_params = {
+        "sampler_name": "exp_heun_2_x0_sde",
+        "scheduler": "normal",
+        "sampler_eta": 1.0,
+        "sampler_s_noise": 1.0,
+        "sampler_s_churn": 0.1,
+        "sampler_s_tmin": 0.0,
+        "sampler_s_tmax": 1.0,
+        "sampler_solver_type": "phi_1",
+        "sampler_order": 4,
+        "flow_shift": 1.1,
+    }
+    request = ImageGenerateAsyncRequest(
+        apikey=ai_horde_api_key,
+        models=["Flux.1-Schnell fp8 (Compact)"],
+        prompt="solver field serialization",
+        params=ImageGenerationInputPayload(**expected_params),
+    )
+
+    serialized_params = request.model_dump(by_alias=True, exclude_none=True, mode="json")["params"]
+    assert {field: serialized_params[field] for field in expected_params} == expected_params
+
+
+def test_AlchemyPopRequest_annotation_types_round_trip(ai_horde_api_key: str) -> None:
+    request = AlchemyPopRequest(
+        apikey=ai_horde_api_key,
+        name="fake CI alchemist",
+        priority_usernames=[],
+        forms=["annotation"],
+        annotation_types=["canny"],
+        amount=1,
+    )
+
+    serialized = request.model_dump(by_alias=True, exclude_none=True, mode="json")
+    assert serialized["annotation_types"] == ["canny"]
 
 
 def test_TeamDetailsLite() -> None:
@@ -351,6 +391,18 @@ def test_ImageGenerateJobPopRequest_allow_extended_controlnet() -> None:
     )
     assert request.allow_extended_controlnet is True
     assert request.model_dump()["allow_extended_controlnet"] is True
+
+
+def test_ImageGenerateJobPopRequest_sampler_execution_contract_round_trip() -> None:
+    request = ImageGenerateJobPopRequest(
+        name="bounded worker",
+        bridge_agent="bounded-worker:1:test",
+        max_pixels=262144,
+        models=["Deliberate"],
+        sampler_execution_contract_version=SamplerExecutionContractVersion.V1,
+    )
+
+    assert request.model_dump(mode="json")["sampler_execution_contract_version"] == "1.0"
 
 
 def test_ImageGenerateJobPopResponse() -> None:

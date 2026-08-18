@@ -24,6 +24,7 @@ from horde_sdk.ai_horde_api.fields import GenerationID
 from horde_sdk.consts import _OVERLOADED_MODEL, HTTPMethod
 from horde_sdk.generation_parameters.alchemy.consts import KNOWN_FACEFIXERS, KNOWN_UPSCALERS
 from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SOURCE_PROCESSING
+from horde_sdk.generation_parameters.image.sampler_work import SamplerExecutionContractVersion
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     HordeAPIObjectBaseModel,
@@ -502,6 +503,8 @@ class PopInput(HordeAPIObjectBaseModel):
     """Whether this worker can generate NSFW requests or not."""
     priority_usernames: list[str] | None = None
     """The usernames that should be prioritized by this worker."""
+    sampler_execution_contract_version: SamplerExecutionContractVersion | None = None
+    """Cumulative SDK sampler execution contract guaranteed by this worker process."""
     require_upfront_kudos: bool | None = Field(
         default=False,
         description=(
@@ -568,7 +571,7 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     extra_slow_worker: bool = False
     """Marks the worker as extra slow."""
     limit_max_steps: bool = False
-    """Prevents the worker picking up jobs with more steps than the model average."""
+    """Reject jobs whose guaranteed maximum sampler work exceeds the model-average budget."""
 
     @override
     @classmethod

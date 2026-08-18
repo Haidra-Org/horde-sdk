@@ -27,13 +27,17 @@ from horde_sdk.generation_parameters.image.constraints import (
     SAMPLER_SOLVER_KNOB,
     SCHEDULER_BASELINE_APPLICABILITY,
     applicable_knobs,
-    evaluations_per_step,
     get_sampler_constraints,
     is_knob_applicable,
     list_constraint_violations,
     presentation_tier,
 )
 from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SAMPLERS, KNOWN_IMAGE_SCHEDULERS
+from horde_sdk.generation_parameters.image.sampler_work import (
+    AdaptiveSamplerWorkProfile,
+    FixedRateSamplerWorkProfile,
+    get_sampler_work_profile,
+)
 
 _SNAPSHOT_PATH = Path(__file__).parent / "sampler_constraints_snapshot.json"
 
@@ -56,7 +60,16 @@ def _snapshot_of_table() -> dict[str, Any]:
                 for knob, knob_range in sorted(constraints.numeric_knob_ranges.items())
             },
             "solver_type_choices": [choice.value for choice in constraints.solver_type_choices],
-            "evaluations_per_step": constraints.evaluations_per_step,
+            "work_profile": (
+                {"kind": "adaptive"}
+                if isinstance(constraints.work_profile, AdaptiveSamplerWorkProfile)
+                else {
+                    "kind": "fixed_rate",
+                    "marginal_work_units_per_trajectory_step": (
+                        constraints.work_profile.marginal_work_units_per_trajectory_step
+                    ),
+                }
+            ),
             "measured_cost_ratio_sd15": constraints.measured_cost_ratio_sd15,
             "measured_cost_ratio_sdxl": constraints.measured_cost_ratio_sdxl,
             "presentation_tier": SAMPLER_PRESENTATION_TIERS[sampler].value,
@@ -73,9 +86,9 @@ class TestCoverage:
         for sampler, constraints in SAMPLER_CONSTRAINTS.items():
             assert constraints.sampler == sampler
 
-    def test_every_sampler_evaluates_the_model_at_least_once_per_step(self) -> None:
+    def test_every_sampler_has_an_explicit_work_profile(self) -> None:
         for sampler in KNOWN_IMAGE_SAMPLERS:
-            assert evaluations_per_step(sampler) >= 1, sampler
+            assert get_sampler_work_profile(sampler) is not None
 
     def test_every_declared_range_admits_its_own_default(self) -> None:
         for constraints in SAMPLER_CONSTRAINTS.values():
@@ -322,14 +335,15 @@ class TestMeasuredCostRatios:
         assert reference.measured_cost_ratio_sd15 == 1.00
         assert reference.measured_cost_ratio_sdxl == 1.00
 
-    def test_the_large_model_ratios_corroborate_the_evaluation_counts(self) -> None:
+    def test_the_large_model_ratios_corroborate_fixed_work_rates(self) -> None:
         # The claim the measurement supports: at 1024x1024, where per-step host work is a negligible
         # fraction of a step, every sampler lands within a fifth of its evaluation family.
         for sampler, constraints in SAMPLER_CONSTRAINTS.items():
             if constraints.measured_cost_ratio_sdxl is None:
                 continue
 
-            expected = float(constraints.evaluations_per_step)
+            assert isinstance(constraints.work_profile, FixedRateSamplerWorkProfile)
+            expected = float(constraints.work_profile.marginal_work_units_per_trajectory_step)
             assert abs(constraints.measured_cost_ratio_sdxl - expected) <= 0.2 * expected, sampler
 
     def test_the_small_model_ratios_are_biased_upwards_and_never_downwards(self) -> None:
@@ -339,7 +353,9 @@ class TestMeasuredCostRatios:
             if constraints.measured_cost_ratio_sd15 is None:
                 continue
 
-            assert constraints.measured_cost_ratio_sd15 >= float(constraints.evaluations_per_step), sampler
+            assert isinstance(constraints.work_profile, FixedRateSamplerWorkProfile)
+            expected = float(constraints.work_profile.marginal_work_units_per_trajectory_step)
+            assert constraints.measured_cost_ratio_sd15 >= expected, sampler
 
 
 class TestSnapshot:

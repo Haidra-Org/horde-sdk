@@ -156,7 +156,7 @@ class ImageWorkerBridgeData(SharedHordeBridgeData):
     """Marks the worker as extra slow."""
 
     limit_max_steps: bool = False
-    """Prevents the worker picking up jobs with more steps than the model average."""
+    """Reject jobs whose guaranteed maximum sampler work exceeds the model-average budget."""
 
     max_lora_cache_size: int = Field(
         default=10,

@@ -1,814 +1,936 @@
 {
-  "k_lms": {
-    "backend_solver_function": "sample_lms",
-    "numeric_knob_ranges": {
-      "order": {
-        "minimum": 1.0,
-        "maximum": 100.0,
-        "default": 4.0,
-        "integral": true,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.02,
-    "measured_cost_ratio_sdxl": 1.0,
-    "presentation_tier": "advanced"
-  },
-  "k_heun": {
-    "backend_solver_function": "sample_heun",
-    "numeric_knob_ranges": {
-      "s_churn": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 0.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_tmax": {
-        "minimum": 0.0,
-        "maximum": Infinity,
-        "default": Infinity,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_tmin": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 0.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 2,
-    "measured_cost_ratio_sd15": 2.03,
-    "measured_cost_ratio_sdxl": 1.87,
-    "presentation_tier": "advanced"
-  },
-  "k_euler": {
-    "backend_solver_function": "sample_euler",
-    "numeric_knob_ranges": {
-      "s_churn": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 0.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_tmax": {
-        "minimum": 0.0,
-        "maximum": Infinity,
-        "default": Infinity,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_tmin": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 0.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.0,
-    "measured_cost_ratio_sdxl": 1.0,
-    "presentation_tier": "recommended"
-  },
-  "k_euler_a": {
-    "backend_solver_function": "sample_euler_ancestral",
-    "numeric_knob_ranges": {
-      "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.08,
-    "measured_cost_ratio_sdxl": 1.01,
-    "presentation_tier": "recommended"
-  },
-  "k_dpm_2": {
-    "backend_solver_function": "sample_dpm_2",
-    "numeric_knob_ranges": {
-      "s_churn": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 0.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_tmax": {
-        "minimum": 0.0,
-        "maximum": Infinity,
-        "default": Infinity,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_tmin": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 0.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 2,
-    "measured_cost_ratio_sd15": 2.17,
-    "measured_cost_ratio_sdxl": 1.94,
-    "presentation_tier": "advanced"
-  },
-  "k_dpm_2_a": {
-    "backend_solver_function": "sample_dpm_2_ancestral",
-    "numeric_knob_ranges": {
-      "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 2,
-    "measured_cost_ratio_sd15": 2.22,
-    "measured_cost_ratio_sdxl": 1.97,
-    "presentation_tier": "advanced"
-  },
-  "k_dpm_fast": {
-    "backend_solver_function": "sample_dpm_fast",
-    "numeric_knob_ranges": {},
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.16,
-    "measured_cost_ratio_sdxl": 0.97,
-    "presentation_tier": "advanced"
-  },
-  "k_dpm_adaptive": {
-    "backend_solver_function": "sample_dpm_adaptive",
-    "numeric_knob_ranges": {
-      "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 0.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "order": {
-        "minimum": 2.0,
-        "maximum": 3.0,
-        "default": 3.0,
-        "integral": true,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": null,
-    "measured_cost_ratio_sdxl": null,
-    "presentation_tier": "advanced"
-  },
-  "k_dpmpp_2s_a": {
-    "backend_solver_function": "sample_dpmpp_2s_ancestral",
-    "numeric_knob_ranges": {
-      "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 2,
-    "measured_cost_ratio_sd15": 2.35,
-    "measured_cost_ratio_sdxl": 2.01,
-    "presentation_tier": "advanced"
-  },
-  "k_dpmpp_2m": {
-    "backend_solver_function": "sample_dpmpp_2m",
-    "numeric_knob_ranges": {},
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.08,
-    "measured_cost_ratio_sdxl": 0.98,
-    "presentation_tier": "recommended"
-  },
-  "dpmsolver": {
-    "backend_solver_function": "sample_dpmpp_2m",
-    "numeric_knob_ranges": {},
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.12,
-    "measured_cost_ratio_sdxl": 1.0,
-    "presentation_tier": "advanced"
-  },
-  "k_dpmpp_sde": {
-    "backend_solver_function": "sample_dpmpp_sde",
-    "numeric_knob_ranges": {
-      "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 2,
-    "measured_cost_ratio_sd15": 2.58,
-    "measured_cost_ratio_sdxl": 2.22,
-    "presentation_tier": "recommended"
-  },
-  "lcm": {
-    "backend_solver_function": "sample_lcm",
-    "numeric_knob_ranges": {
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.21,
-    "measured_cost_ratio_sdxl": 0.96,
-    "presentation_tier": "recommended"
-  },
   "DDIM": {
     "backend_solver_function": "sample_euler",
-    "numeric_knob_ranges": {},
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
     "measured_cost_ratio_sd15": 1.13,
     "measured_cost_ratio_sdxl": 0.96,
-    "presentation_tier": "recommended"
-  },
-  "uni_pc": {
-    "backend_solver_function": "sample_unipc",
     "numeric_knob_ranges": {},
+    "presentation_tier": "recommended",
     "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.34,
-    "measured_cost_ratio_sdxl": 0.98,
-    "presentation_tier": "recommended"
-  },
-  "uni_pc_bh2": {
-    "backend_solver_function": "sample_unipc_bh2",
-    "numeric_knob_ranges": {},
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.17,
-    "measured_cost_ratio_sdxl": 0.99,
-    "presentation_tier": "advanced"
-  },
-  "dpmpp_2m_sde": {
-    "backend_solver_function": "sample_dpmpp_2m_sde",
-    "numeric_knob_ranges": {
-      "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [
-      "midpoint",
-      "heun"
-    ],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.33,
-    "measured_cost_ratio_sdxl": 1.14,
-    "presentation_tier": "recommended"
-  },
-  "dpmpp_3m_sde": {
-    "backend_solver_function": "sample_dpmpp_3m_sde",
-    "numeric_knob_ranges": {
-      "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.18,
-    "measured_cost_ratio_sdxl": 1.12,
-    "presentation_tier": "advanced"
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
   },
   "ddpm": {
     "backend_solver_function": "sample_ddpm",
-    "numeric_knob_ranges": {},
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
     "measured_cost_ratio_sd15": 1.05,
     "measured_cost_ratio_sdxl": 1.03,
-    "presentation_tier": "advanced"
+    "numeric_knob_ranges": {},
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
   },
   "deis": {
     "backend_solver_function": "sample_deis",
-    "numeric_knob_ranges": {
-      "order": {
-        "minimum": 2.0,
-        "maximum": 4.0,
-        "default": 3.0,
-        "integral": true,
-        "backend_keyword": "max_order"
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
     "measured_cost_ratio_sd15": 1.13,
     "measured_cost_ratio_sdxl": 0.96,
-    "presentation_tier": "advanced"
-  },
-  "ipndm": {
-    "backend_solver_function": "sample_ipndm",
     "numeric_knob_ranges": {
       "order": {
-        "minimum": 2.0,
-        "maximum": 4.0,
-        "default": 4.0,
+        "backend_keyword": "max_order",
+        "default": 3.0,
         "integral": true,
-        "backend_keyword": "max_order"
+        "maximum": 4.0,
+        "minimum": 2.0
       }
     },
+    "presentation_tier": "advanced",
     "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.01,
-    "measured_cost_ratio_sdxl": 1.0,
-    "presentation_tier": "advanced"
-  },
-  "res_multistep": {
-    "backend_solver_function": "sample_res_multistep",
-    "numeric_knob_ranges": {
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.01,
-    "measured_cost_ratio_sdxl": 0.98,
-    "presentation_tier": "advanced"
-  },
-  "gradient_estimation": {
-    "backend_solver_function": "sample_gradient_estimation",
-    "numeric_knob_ranges": {},
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.18,
-    "measured_cost_ratio_sdxl": 0.99,
-    "presentation_tier": "advanced"
-  },
-  "heunpp2": {
-    "backend_solver_function": "sample_heunpp2",
-    "numeric_knob_ranges": {
-      "s_churn": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 0.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_tmax": {
-        "minimum": 0.0,
-        "maximum": Infinity,
-        "default": Infinity,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_tmin": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 0.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 3,
-    "measured_cost_ratio_sd15": 3.21,
-    "measured_cost_ratio_sdxl": 2.93,
-    "presentation_tier": "advanced"
-  },
-  "er_sde": {
-    "backend_solver_function": "sample_er_sde",
-    "numeric_knob_ranges": {
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.07,
-    "measured_cost_ratio_sdxl": 0.98,
-    "presentation_tier": "advanced"
-  },
-  "sa_solver": {
-    "backend_solver_function": "sample_sa_solver",
-    "numeric_knob_ranges": {
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.08,
-    "measured_cost_ratio_sdxl": 0.94,
-    "presentation_tier": "advanced"
-  },
-  "euler_cfg_pp": {
-    "backend_solver_function": "sample_euler_cfg_pp",
-    "numeric_knob_ranges": {},
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.11,
-    "measured_cost_ratio_sdxl": 1.1,
-    "presentation_tier": "advanced"
-  },
-  "euler_ancestral_cfg_pp": {
-    "backend_solver_function": "sample_euler_ancestral_cfg_pp",
-    "numeric_knob_ranges": {
-      "eta": {
-        "minimum": 0.0,
-        "maximum": 1.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 10.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.15,
-    "measured_cost_ratio_sdxl": 0.99,
-    "presentation_tier": "advanced"
-  },
-  "exp_heun_2_x0": {
-    "backend_solver_function": "sample_exp_heun_2_x0",
-    "numeric_knob_ranges": {},
-    "solver_type_choices": [
-      "phi_1",
-      "phi_2"
-    ],
-    "evaluations_per_step": 2,
-    "measured_cost_ratio_sd15": 2.08,
-    "measured_cost_ratio_sdxl": 2.39,
-    "presentation_tier": "advanced"
-  },
-  "exp_heun_2_x0_sde": {
-    "backend_solver_function": "sample_exp_heun_2_x0_sde",
-    "numeric_knob_ranges": {
-      "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [
-      "phi_1",
-      "phi_2"
-    ],
-    "evaluations_per_step": 2,
-    "measured_cost_ratio_sd15": 2.27,
-    "measured_cost_ratio_sdxl": 1.99,
-    "presentation_tier": "advanced"
-  },
-  "dpmpp_2s_ancestral_cfg_pp": {
-    "backend_solver_function": "sample_dpmpp_2s_ancestral_cfg_pp",
-    "numeric_knob_ranges": {
-      "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 2,
-    "measured_cost_ratio_sd15": 2.14,
-    "measured_cost_ratio_sdxl": 2.02,
-    "presentation_tier": "advanced"
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
   },
   "dpmpp_2m_cfg_pp": {
     "backend_solver_function": "sample_dpmpp_2m_cfg_pp",
-    "numeric_knob_ranges": {},
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
     "measured_cost_ratio_sd15": 1.01,
     "measured_cost_ratio_sdxl": 1.05,
-    "presentation_tier": "advanced"
+    "numeric_knob_ranges": {},
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
   },
-  "dpmpp_2m_sde_heun": {
-    "backend_solver_function": "sample_dpmpp_2m_sde_heun",
+  "dpmpp_2m_sde": {
+    "backend_solver_function": "sample_dpmpp_2m_sde",
+    "measured_cost_ratio_sd15": 1.33,
+    "measured_cost_ratio_sdxl": 1.14,
     "numeric_knob_ranges": {
       "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
+        "backend_keyword": null,
         "default": 1.0,
         "integral": false,
-        "backend_keyword": null
+        "maximum": 100.0,
+        "minimum": 0.0
       },
       "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
+        "backend_keyword": null,
         "default": 1.0,
         "integral": false,
-        "backend_keyword": null
+        "maximum": 100.0,
+        "minimum": 0.0
       }
     },
+    "presentation_tier": "recommended",
     "solver_type_choices": [
       "midpoint",
       "heun"
     ],
-    "evaluations_per_step": 1,
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "dpmpp_2m_sde_heun": {
+    "backend_solver_function": "sample_dpmpp_2m_sde_heun",
     "measured_cost_ratio_sd15": 1.27,
     "measured_cost_ratio_sdxl": 1.1,
-    "presentation_tier": "advanced"
-  },
-  "ipndm_v": {
-    "backend_solver_function": "sample_ipndm_v",
-    "numeric_knob_ranges": {
-      "order": {
-        "minimum": 2.0,
-        "maximum": 4.0,
-        "default": 4.0,
-        "integral": true,
-        "backend_keyword": "max_order"
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.11,
-    "measured_cost_ratio_sdxl": 1.15,
-    "presentation_tier": "advanced"
-  },
-  "res_multistep_cfg_pp": {
-    "backend_solver_function": "sample_res_multistep_cfg_pp",
-    "numeric_knob_ranges": {
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.08,
-    "measured_cost_ratio_sdxl": 1.03,
-    "presentation_tier": "advanced"
-  },
-  "res_multistep_ancestral": {
-    "backend_solver_function": "sample_res_multistep_ancestral",
     "numeric_knob_ranges": {
       "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
+        "backend_keyword": null,
         "default": 1.0,
         "integral": false,
-        "backend_keyword": null
+        "maximum": 100.0,
+        "minimum": 0.0
       },
       "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
+        "backend_keyword": null,
         "default": 1.0,
         "integral": false,
-        "backend_keyword": null
+        "maximum": 100.0,
+        "minimum": 0.0
       }
     },
-    "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.13,
-    "measured_cost_ratio_sdxl": 1.14,
-    "presentation_tier": "advanced"
+    "presentation_tier": "advanced",
+    "solver_type_choices": [
+      "midpoint",
+      "heun"
+    ],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
   },
-  "res_multistep_ancestral_cfg_pp": {
-    "backend_solver_function": "sample_res_multistep_ancestral_cfg_pp",
+  "dpmpp_2s_ancestral_cfg_pp": {
+    "backend_solver_function": "sample_dpmpp_2s_ancestral_cfg_pp",
+    "measured_cost_ratio_sd15": 2.14,
+    "measured_cost_ratio_sdxl": 2.02,
     "numeric_knob_ranges": {
       "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
+        "backend_keyword": null,
         "default": 1.0,
         "integral": false,
-        "backend_keyword": null
+        "maximum": 100.0,
+        "minimum": 0.0
       },
       "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
+        "backend_keyword": null,
         "default": 1.0,
         "integral": false,
-        "backend_keyword": null
+        "maximum": 100.0,
+        "minimum": 0.0
       }
     },
+    "presentation_tier": "advanced",
     "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.11,
-    "measured_cost_ratio_sdxl": 1.04,
-    "presentation_tier": "advanced"
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 2
+    }
   },
-  "gradient_estimation_cfg_pp": {
-    "backend_solver_function": "sample_gradient_estimation_cfg_pp",
+  "dpmpp_3m_sde": {
+    "backend_solver_function": "sample_dpmpp_3m_sde",
+    "measured_cost_ratio_sd15": 1.18,
+    "measured_cost_ratio_sdxl": 1.12,
+    "numeric_knob_ranges": {
+      "eta": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "dpmsolver": {
+    "backend_solver_function": "sample_dpmpp_2m",
+    "measured_cost_ratio_sd15": 1.12,
+    "measured_cost_ratio_sdxl": 1.0,
     "numeric_knob_ranges": {},
+    "presentation_tier": "advanced",
     "solver_type_choices": [],
-    "evaluations_per_step": 1,
-    "measured_cost_ratio_sd15": 1.2,
-    "measured_cost_ratio_sdxl": 1.02,
-    "presentation_tier": "advanced"
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
   },
-  "seeds_2": {
-    "backend_solver_function": "sample_seeds_2",
+  "er_sde": {
+    "backend_solver_function": "sample_er_sde",
+    "measured_cost_ratio_sd15": 1.07,
+    "measured_cost_ratio_sdxl": 0.98,
     "numeric_knob_ranges": {
-      "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      },
       "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
+        "backend_keyword": null,
         "default": 1.0,
         "integral": false,
-        "backend_keyword": null
+        "maximum": 100.0,
+        "minimum": 0.0
       }
     },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "euler_ancestral_cfg_pp": {
+    "backend_solver_function": "sample_euler_ancestral_cfg_pp",
+    "measured_cost_ratio_sd15": 1.15,
+    "measured_cost_ratio_sdxl": 0.99,
+    "numeric_knob_ranges": {
+      "eta": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 1.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 10.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "euler_cfg_pp": {
+    "backend_solver_function": "sample_euler_cfg_pp",
+    "measured_cost_ratio_sd15": 1.11,
+    "measured_cost_ratio_sdxl": 1.1,
+    "numeric_knob_ranges": {},
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "exp_heun_2_x0": {
+    "backend_solver_function": "sample_exp_heun_2_x0",
+    "measured_cost_ratio_sd15": 2.08,
+    "measured_cost_ratio_sdxl": 2.39,
+    "numeric_knob_ranges": {},
+    "presentation_tier": "advanced",
     "solver_type_choices": [
       "phi_1",
       "phi_2"
     ],
-    "evaluations_per_step": 2,
-    "measured_cost_ratio_sd15": 2.26,
-    "measured_cost_ratio_sdxl": 1.88,
-    "presentation_tier": "advanced"
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 2
+    }
   },
-  "seeds_3": {
-    "backend_solver_function": "sample_seeds_3",
+  "exp_heun_2_x0_sde": {
+    "backend_solver_function": "sample_exp_heun_2_x0_sde",
+    "measured_cost_ratio_sd15": 2.27,
+    "measured_cost_ratio_sdxl": 1.99,
     "numeric_knob_ranges": {
       "eta": {
-        "minimum": 0.0,
-        "maximum": 100.0,
+        "backend_keyword": null,
         "default": 1.0,
         "integral": false,
-        "backend_keyword": null
+        "maximum": 100.0,
+        "minimum": 0.0
       },
       "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
+        "backend_keyword": null,
         "default": 1.0,
         "integral": false,
-        "backend_keyword": null
+        "maximum": 100.0,
+        "minimum": 0.0
       }
     },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [
+      "phi_1",
+      "phi_2"
+    ],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 2
+    }
+  },
+  "gradient_estimation": {
+    "backend_solver_function": "sample_gradient_estimation",
+    "measured_cost_ratio_sd15": 1.18,
+    "measured_cost_ratio_sdxl": 0.99,
+    "numeric_knob_ranges": {},
+    "presentation_tier": "advanced",
     "solver_type_choices": [],
-    "evaluations_per_step": 3,
-    "measured_cost_ratio_sd15": 3.52,
-    "measured_cost_ratio_sdxl": 2.82,
-    "presentation_tier": "advanced"
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "gradient_estimation_cfg_pp": {
+    "backend_solver_function": "sample_gradient_estimation_cfg_pp",
+    "measured_cost_ratio_sd15": 1.2,
+    "measured_cost_ratio_sdxl": 1.02,
+    "numeric_knob_ranges": {},
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "heunpp2": {
+    "backend_solver_function": "sample_heunpp2",
+    "measured_cost_ratio_sd15": 3.21,
+    "measured_cost_ratio_sdxl": 2.93,
+    "numeric_knob_ranges": {
+      "s_churn": {
+        "backend_keyword": null,
+        "default": 0.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_tmax": {
+        "backend_keyword": null,
+        "default": Infinity,
+        "integral": false,
+        "maximum": Infinity,
+        "minimum": 0.0
+      },
+      "s_tmin": {
+        "backend_keyword": null,
+        "default": 0.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 3
+    }
+  },
+  "ipndm": {
+    "backend_solver_function": "sample_ipndm",
+    "measured_cost_ratio_sd15": 1.01,
+    "measured_cost_ratio_sdxl": 1.0,
+    "numeric_knob_ranges": {
+      "order": {
+        "backend_keyword": "max_order",
+        "default": 4.0,
+        "integral": true,
+        "maximum": 4.0,
+        "minimum": 2.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "ipndm_v": {
+    "backend_solver_function": "sample_ipndm_v",
+    "measured_cost_ratio_sd15": 1.11,
+    "measured_cost_ratio_sdxl": 1.15,
+    "numeric_knob_ranges": {
+      "order": {
+        "backend_keyword": "max_order",
+        "default": 4.0,
+        "integral": true,
+        "maximum": 4.0,
+        "minimum": 2.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "k_dpm_2": {
+    "backend_solver_function": "sample_dpm_2",
+    "measured_cost_ratio_sd15": 2.17,
+    "measured_cost_ratio_sdxl": 1.94,
+    "numeric_knob_ranges": {
+      "s_churn": {
+        "backend_keyword": null,
+        "default": 0.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_tmax": {
+        "backend_keyword": null,
+        "default": Infinity,
+        "integral": false,
+        "maximum": Infinity,
+        "minimum": 0.0
+      },
+      "s_tmin": {
+        "backend_keyword": null,
+        "default": 0.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 2
+    }
+  },
+  "k_dpm_2_a": {
+    "backend_solver_function": "sample_dpm_2_ancestral",
+    "measured_cost_ratio_sd15": 2.22,
+    "measured_cost_ratio_sdxl": 1.97,
+    "numeric_knob_ranges": {
+      "eta": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 2
+    }
+  },
+  "k_dpm_adaptive": {
+    "backend_solver_function": "sample_dpm_adaptive",
+    "measured_cost_ratio_sd15": null,
+    "measured_cost_ratio_sdxl": null,
+    "numeric_knob_ranges": {
+      "eta": {
+        "backend_keyword": null,
+        "default": 0.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "order": {
+        "backend_keyword": null,
+        "default": 3.0,
+        "integral": true,
+        "maximum": 3.0,
+        "minimum": 2.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "adaptive"
+    }
+  },
+  "k_dpm_fast": {
+    "backend_solver_function": "sample_dpm_fast",
+    "measured_cost_ratio_sd15": 1.16,
+    "measured_cost_ratio_sdxl": 0.97,
+    "numeric_knob_ranges": {},
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "k_dpmpp_2m": {
+    "backend_solver_function": "sample_dpmpp_2m",
+    "measured_cost_ratio_sd15": 1.08,
+    "measured_cost_ratio_sdxl": 0.98,
+    "numeric_knob_ranges": {},
+    "presentation_tier": "recommended",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "k_dpmpp_2s_a": {
+    "backend_solver_function": "sample_dpmpp_2s_ancestral",
+    "measured_cost_ratio_sd15": 2.35,
+    "measured_cost_ratio_sdxl": 2.01,
+    "numeric_knob_ranges": {
+      "eta": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 2
+    }
+  },
+  "k_dpmpp_sde": {
+    "backend_solver_function": "sample_dpmpp_sde",
+    "measured_cost_ratio_sd15": 2.58,
+    "measured_cost_ratio_sdxl": 2.22,
+    "numeric_knob_ranges": {
+      "eta": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "recommended",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 2
+    }
+  },
+  "k_euler": {
+    "backend_solver_function": "sample_euler",
+    "measured_cost_ratio_sd15": 1.0,
+    "measured_cost_ratio_sdxl": 1.0,
+    "numeric_knob_ranges": {
+      "s_churn": {
+        "backend_keyword": null,
+        "default": 0.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_tmax": {
+        "backend_keyword": null,
+        "default": Infinity,
+        "integral": false,
+        "maximum": Infinity,
+        "minimum": 0.0
+      },
+      "s_tmin": {
+        "backend_keyword": null,
+        "default": 0.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "recommended",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "k_euler_a": {
+    "backend_solver_function": "sample_euler_ancestral",
+    "measured_cost_ratio_sd15": 1.08,
+    "measured_cost_ratio_sdxl": 1.01,
+    "numeric_knob_ranges": {
+      "eta": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "recommended",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "k_heun": {
+    "backend_solver_function": "sample_heun",
+    "measured_cost_ratio_sd15": 2.03,
+    "measured_cost_ratio_sdxl": 1.87,
+    "numeric_knob_ranges": {
+      "s_churn": {
+        "backend_keyword": null,
+        "default": 0.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_tmax": {
+        "backend_keyword": null,
+        "default": Infinity,
+        "integral": false,
+        "maximum": Infinity,
+        "minimum": 0.0
+      },
+      "s_tmin": {
+        "backend_keyword": null,
+        "default": 0.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 2
+    }
+  },
+  "k_lms": {
+    "backend_solver_function": "sample_lms",
+    "measured_cost_ratio_sd15": 1.02,
+    "measured_cost_ratio_sdxl": 1.0,
+    "numeric_knob_ranges": {
+      "order": {
+        "backend_keyword": null,
+        "default": 4.0,
+        "integral": true,
+        "maximum": 100.0,
+        "minimum": 1.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "lcm": {
+    "backend_solver_function": "sample_lcm",
+    "measured_cost_ratio_sd15": 1.21,
+    "measured_cost_ratio_sdxl": 0.96,
+    "numeric_knob_ranges": {
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "recommended",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "res_multistep": {
+    "backend_solver_function": "sample_res_multistep",
+    "measured_cost_ratio_sd15": 1.01,
+    "measured_cost_ratio_sdxl": 0.98,
+    "numeric_knob_ranges": {
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "res_multistep_ancestral": {
+    "backend_solver_function": "sample_res_multistep_ancestral",
+    "measured_cost_ratio_sd15": 1.13,
+    "measured_cost_ratio_sdxl": 1.14,
+    "numeric_knob_ranges": {
+      "eta": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "res_multistep_ancestral_cfg_pp": {
+    "backend_solver_function": "sample_res_multistep_ancestral_cfg_pp",
+    "measured_cost_ratio_sd15": 1.11,
+    "measured_cost_ratio_sdxl": 1.04,
+    "numeric_knob_ranges": {
+      "eta": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "res_multistep_cfg_pp": {
+    "backend_solver_function": "sample_res_multistep_cfg_pp",
+    "measured_cost_ratio_sd15": 1.08,
+    "measured_cost_ratio_sdxl": 1.03,
+    "numeric_knob_ranges": {
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "sa_solver": {
+    "backend_solver_function": "sample_sa_solver",
+    "measured_cost_ratio_sd15": 1.08,
+    "measured_cost_ratio_sdxl": 0.94,
+    "numeric_knob_ranges": {
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
   },
   "sa_solver_pece": {
     "backend_solver_function": "sample_sa_solver_pece",
-    "numeric_knob_ranges": {
-      "s_noise": {
-        "minimum": 0.0,
-        "maximum": 100.0,
-        "default": 1.0,
-        "integral": false,
-        "backend_keyword": null
-      }
-    },
-    "solver_type_choices": [],
-    "evaluations_per_step": 2,
     "measured_cost_ratio_sd15": 2.38,
     "measured_cost_ratio_sdxl": 2.11,
-    "presentation_tier": "advanced"
+    "numeric_knob_ranges": {
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 2
+    }
+  },
+  "seeds_2": {
+    "backend_solver_function": "sample_seeds_2",
+    "measured_cost_ratio_sd15": 2.26,
+    "measured_cost_ratio_sdxl": 1.88,
+    "numeric_knob_ranges": {
+      "eta": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [
+      "phi_1",
+      "phi_2"
+    ],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 2
+    }
+  },
+  "seeds_3": {
+    "backend_solver_function": "sample_seeds_3",
+    "measured_cost_ratio_sd15": 3.52,
+    "measured_cost_ratio_sdxl": 2.82,
+    "numeric_knob_ranges": {
+      "eta": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      },
+      "s_noise": {
+        "backend_keyword": null,
+        "default": 1.0,
+        "integral": false,
+        "maximum": 100.0,
+        "minimum": 0.0
+      }
+    },
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 3
+    }
+  },
+  "uni_pc": {
+    "backend_solver_function": "sample_unipc",
+    "measured_cost_ratio_sd15": 1.34,
+    "measured_cost_ratio_sdxl": 0.98,
+    "numeric_knob_ranges": {},
+    "presentation_tier": "recommended",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
+  },
+  "uni_pc_bh2": {
+    "backend_solver_function": "sample_unipc_bh2",
+    "measured_cost_ratio_sd15": 1.17,
+    "measured_cost_ratio_sdxl": 0.99,
+    "numeric_knob_ranges": {},
+    "presentation_tier": "advanced",
+    "solver_type_choices": [],
+    "work_profile": {
+      "kind": "fixed_rate",
+      "marginal_work_units_per_trajectory_step": 1
+    }
   }
 }

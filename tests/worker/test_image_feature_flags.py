@@ -21,6 +21,7 @@ from horde_sdk.generation_parameters.image.object_models import (
     intersect_image_generation_feature_flags,
     union_image_generation_feature_flags,
 )
+from horde_sdk.generation_parameters.image.sampler_work import SamplerExecutionContractVersion
 from horde_sdk.worker.feature_flags import (
     ImageWorkerFeatureFlags,
     PerBaselineFeatureFlags,
@@ -48,6 +49,19 @@ def _worker(
     return ImageWorkerFeatureFlags(
         image_generation_feature_flags=supported_features,
         per_baseline_feature_flags=per_baseline_features,
+    )
+
+
+def test_union_only_retains_an_execution_contract_shared_by_every_backend_path() -> None:
+    conforming = _worker(_feature_flags()).model_copy(
+        update={"sampler_execution_contract_version": SamplerExecutionContractVersion.V1},
+    )
+    legacy = _worker(_feature_flags())
+
+    assert union_image_worker_feature_flags([conforming, legacy]).sampler_execution_contract_version is None
+    assert (
+        union_image_worker_feature_flags([conforming, conforming]).sampler_execution_contract_version
+        is SamplerExecutionContractVersion.V1
     )
 
 

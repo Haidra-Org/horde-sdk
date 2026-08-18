@@ -106,6 +106,70 @@
       "title": "KNOWN_SAMPLER_SOLVER_TYPES",
       "type": "string"
     },
+    "PublishedAdaptiveIterationCeiling": {
+      "additionalProperties": false,
+      "description": "Represents an adaptive solver's exact trajectory-derived iteration ceiling.",
+      "properties": {
+        "rounding": {
+          "const": "ceiling",
+          "default": "ceiling",
+          "description": "Require fractional iteration ceilings to round upward.",
+          "title": "Rounding",
+          "type": "string"
+        },
+        "trajectory_multiplier_denominator": {
+          "description": "Denominator of the exact multiplier applied to requested trajectory steps.",
+          "minimum": 1,
+          "title": "Trajectory Multiplier Denominator",
+          "type": "integer"
+        },
+        "trajectory_multiplier_numerator": {
+          "description": "Numerator of the exact multiplier applied to requested trajectory steps.",
+          "minimum": 1,
+          "title": "Trajectory Multiplier Numerator",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "trajectory_multiplier_numerator",
+        "trajectory_multiplier_denominator"
+      ],
+      "title": "PublishedAdaptiveIterationCeiling",
+      "type": "object"
+    },
+    "PublishedAdaptiveWorkProfile": {
+      "additionalProperties": false,
+      "description": "A published adaptive sampler and the serving API's request-level estimate for it.",
+      "properties": {
+        "estimated_work_units_per_request": {
+          "description": "The serving API's stable accounting estimate, independent of requested trajectory steps.",
+          "minimum": 0,
+          "title": "Estimated Work Units Per Request",
+          "type": "integer"
+        },
+        "finite_ceiling_contract_versions": {
+          "description": "Execution contracts that make this adaptive sampler's maximum work finite.",
+          "items": {
+            "$ref": "#/$defs/SamplerExecutionContractVersion"
+          },
+          "title": "Finite Ceiling Contract Versions",
+          "type": "array"
+        },
+        "kind": {
+          "const": "adaptive",
+          "default": "adaptive",
+          "description": "The discriminator for solver-chosen iteration counts.",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "estimated_work_units_per_request",
+        "finite_ceiling_contract_versions"
+      ],
+      "title": "PublishedAdaptiveWorkProfile",
+      "type": "object"
+    },
     "PublishedAdvisories": {
       "additionalProperties": false,
       "description": "Represents the quality expectations the API warns about rather than enforcing.",
@@ -122,56 +186,62 @@
       "title": "PublishedAdvisories",
       "type": "object"
     },
-    "PublishedCostBasis": {
+    "PublishedBoundedAdaptiveSamplerExecutionGuarantee": {
       "additionalProperties": false,
-      "description": "Represents what each published cost figure is, and which of them a request is charged against.\n\nServed as bare numbers the measured ratios would read like prices. They are one card's evidence that\nthe evaluation counts are right, and this block says so.",
+      "description": "Represents the atomic finite-iteration guarantee for the adaptive sampler.",
       "properties": {
-        "authoritative_field": {
-          "const": "evaluations_per_step",
-          "default": "evaluations_per_step",
-          "description": "Names the field a request is priced and time-budgeted on.",
-          "title": "Authoritative Field",
+        "maximum_solver_iterations": {
+          "$ref": "#/$defs/PublishedAdaptiveIterationCeiling",
+          "description": "Exact formula for the maximum solver iterations the backend permits."
+        },
+        "name": {
+          "const": "bounded_dpm_adaptive_v1",
+          "default": "bounded_dpm_adaptive_v1",
+          "description": "Stable SDK identifier for the atomic execution behavior.",
+          "title": "Name",
           "type": "string"
         },
-        "authoritative_note": {
-          "description": "What that field counts, and where it is read from.",
-          "title": "Authoritative Note",
-          "type": "string"
+        "sampler": {
+          "$ref": "#/$defs/KNOWN_IMAGE_SAMPLERS",
+          "description": "Sampler whose runtime behavior this guarantee constrains."
         },
-        "measured_cost_ratio_provenance": {
-          "$ref": "#/$defs/CONSTRAINT_PROVENANCE",
-          "description": "The provenance both measured ratio columns carry."
-        },
-        "measured_cost_ratio_source": {
-          "description": "Filename of the measurement artifact both ratio columns were read from.",
-          "title": "Measured Cost Ratio Source",
-          "type": "string"
-        },
-        "measured_cost_ratio_note": {
-          "description": "How the ratios were derived, and why they corroborate the authoritative field rather than replace it.",
-          "title": "Measured Cost Ratio Note",
-          "type": "string"
-        },
-        "measured_cost_ratio_sdxl_note": {
-          "description": "The model and resolution the stable_diffusion_xl column was taken on, and how to read it.",
-          "title": "Measured Cost Ratio Sdxl Note",
-          "type": "string"
-        },
-        "measured_cost_ratio_sd15_note": {
-          "description": "The model and resolution the stable_diffusion_1 column was taken on, and the bias it carries.",
-          "title": "Measured Cost Ratio Sd15 Note",
+        "work_units_per_solver_iteration_source": {
+          "const": "sampler_order",
+          "default": "sampler_order",
+          "description": "Request setting that determines work units consumed by each solver iteration.",
+          "title": "Work Units Per Solver Iteration Source",
           "type": "string"
         }
       },
       "required": [
-        "authoritative_note",
-        "measured_cost_ratio_provenance",
-        "measured_cost_ratio_source",
-        "measured_cost_ratio_note",
-        "measured_cost_ratio_sdxl_note",
-        "measured_cost_ratio_sd15_note"
+        "sampler",
+        "maximum_solver_iterations"
       ],
-      "title": "PublishedCostBasis",
+      "title": "PublishedBoundedAdaptiveSamplerExecutionGuarantee",
+      "type": "object"
+    },
+    "PublishedFixedRateWorkProfile": {
+      "additionalProperties": false,
+      "description": "A published sampler whose marginal work scales with requested trajectory length.",
+      "properties": {
+        "kind": {
+          "const": "fixed_rate",
+          "default": "fixed_rate",
+          "description": "The discriminator for trajectory-derived work.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "marginal_work_units_per_trajectory_step": {
+          "description": "First-order-equivalent marginal work units for one requested trajectory step.",
+          "minimum": 1,
+          "title": "Marginal Work Units Per Trajectory Step",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "marginal_work_units_per_trajectory_step"
+      ],
+      "title": "PublishedFixedRateWorkProfile",
       "type": "object"
     },
     "PublishedHardConstraints": {
@@ -212,23 +282,6 @@
       "additionalProperties": false,
       "description": "Represents the accepted range of one numeric solver knob, as it is served.\n\nJSON has no literal for infinity, so an unbounded maximum, and a default meaning \"the solver applies\nno limit unless you set one\", are both served as null rather than as a number.",
       "properties": {
-        "minimum": {
-          "description": "Smallest accepted value, inclusive.",
-          "title": "Minimum",
-          "type": "number"
-        },
-        "maximum": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "Largest accepted value, inclusive. Null where the knob has no upper limit.",
-          "title": "Maximum"
-        },
         "default": {
           "anyOf": [
             {
@@ -245,6 +298,23 @@
           "description": "Whether the knob accepts only whole numbers.",
           "title": "Integer Only",
           "type": "boolean"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Largest accepted value, inclusive. Null where the knob has no upper limit.",
+          "title": "Maximum"
+        },
+        "minimum": {
+          "description": "Smallest accepted value, inclusive.",
+          "title": "Minimum",
+          "type": "number"
         }
       },
       "required": [
@@ -285,6 +355,10 @@
       "additionalProperties": false,
       "description": "Represents one advisory statement, with the provenance that qualifies it.\n\nRecommendations never block a request. The provenance is served because these range from statements\nby the image backend's own author to third-party folklore, and a client cannot weigh them otherwise.",
       "properties": {
+        "provenance": {
+          "$ref": "#/$defs/CONSTRAINT_PROVENANCE",
+          "description": "Whose statement this is."
+        },
         "samplers": {
           "description": "The samplers the statement applies to, empty when it applies to all of them.",
           "items": {
@@ -300,10 +374,6 @@
           },
           "title": "Schedulers",
           "type": "array"
-        },
-        "provenance": {
-          "$ref": "#/$defs/CONSTRAINT_PROVENANCE",
-          "description": "Whose statement this is."
         },
         "source": {
           "description": "A human-readable citation.",
@@ -346,18 +416,56 @@
       "title": "PublishedRejectedPairing",
       "type": "object"
     },
+    "PublishedSamplerExecutionContract": {
+      "additionalProperties": false,
+      "description": "Represents a cumulative execution behavior profile a worker can claim to implement.",
+      "properties": {
+        "guarantees": {
+          "description": "Atomic behavior guarantees contained by this cumulative contract version.",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "bounded_dpm_adaptive_v1": "#/$defs/PublishedBoundedAdaptiveSamplerExecutionGuarantee"
+              },
+              "propertyName": "name"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/PublishedBoundedAdaptiveSamplerExecutionGuarantee"
+              }
+            ]
+          },
+          "title": "Guarantees",
+          "type": "array"
+        },
+        "version": {
+          "$ref": "#/$defs/SamplerExecutionContractVersion",
+          "description": "Stable version workers advertise during check-in."
+        }
+      },
+      "required": [
+        "version",
+        "guarantees"
+      ],
+      "title": "PublishedSamplerExecutionContract",
+      "type": "object"
+    },
     "PublishedSamplerRecord": {
       "additionalProperties": false,
       "description": "Represents one sampler's knobs, cost, tier and vocabulary as they are served.",
       "properties": {
-        "name": {
-          "$ref": "#/$defs/KNOWN_IMAGE_SAMPLERS",
-          "description": "The sampler this record describes, repeated here so an entry stands alone once read out of the map."
+        "accepted_settings": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PublishedKnobRange"
+          },
+          "description": "The numeric knobs this sampler accepts, keyed by the request field name a client sends them under.\n\nThe keys are the serving API's own request field names rather than the knob names the backend's\nsolvers use, because a client reads this to build a request.",
+          "title": "Accepted Settings",
+          "type": "object"
         },
-        "evaluations_per_step": {
-          "description": "How many model evaluations one step performs, which is what the API prices a request on.",
-          "title": "Evaluations Per Step",
-          "type": "integer"
+        "applies_cfg_pp": {
+          "description": "Whether the sampler applies the CFG++ correction, which expects a much lower `cfg_scale`.",
+          "title": "Applies Cfg Pp",
+          "type": "boolean"
         },
         "measured_cost_ratio_sd15": {
           "anyOf": [
@@ -383,6 +491,10 @@
           "description": "The same ratio on a stable_diffusion_xl model, or null for the same reason.",
           "title": "Measured Cost Ratio Sdxl"
         },
+        "name": {
+          "$ref": "#/$defs/KNOWN_IMAGE_SAMPLERS",
+          "description": "The sampler this record describes, repeated here so an entry stands alone once read out of the map."
+        },
         "presentation_tier": {
           "$ref": "#/$defs/SAMPLER_PRESENTATION_TIER",
           "description": "How prominently the sampler is worth offering. A presentation hint that restricts nothing."
@@ -395,23 +507,29 @@
           "title": "Solver Type Choices",
           "type": "array"
         },
-        "accepted_settings": {
-          "additionalProperties": {
-            "$ref": "#/$defs/PublishedKnobRange"
+        "work_profile": {
+          "description": "How operational work relates\u2014or does not relate\u2014to requested trajectory steps.",
+          "discriminator": {
+            "mapping": {
+              "adaptive": "#/$defs/PublishedAdaptiveWorkProfile",
+              "fixed_rate": "#/$defs/PublishedFixedRateWorkProfile"
+            },
+            "propertyName": "kind"
           },
-          "description": "The numeric knobs this sampler accepts, keyed by the request field name a client sends them under.\n\nThe keys are the serving API's own request field names rather than the knob names the backend's\nsolvers use, because a client reads this to build a request.",
-          "title": "Accepted Settings",
-          "type": "object"
-        },
-        "applies_cfg_pp": {
-          "description": "Whether the sampler applies the CFG++ correction, which expects a much lower `cfg_scale`.",
-          "title": "Applies Cfg Pp",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PublishedFixedRateWorkProfile"
+            },
+            {
+              "$ref": "#/$defs/PublishedAdaptiveWorkProfile"
+            }
+          ],
+          "title": "Work Profile"
         }
       },
       "required": [
         "name",
-        "evaluations_per_step",
+        "work_profile",
         "measured_cost_ratio_sd15",
         "measured_cost_ratio_sdxl",
         "presentation_tier",
@@ -422,6 +540,58 @@
       "title": "PublishedSamplerRecord",
       "type": "object"
     },
+    "PublishedWorkAccounting": {
+      "additionalProperties": false,
+      "description": "Explains operational work figures without claiming they are the learned Kudos price.\n\nServed as bare numbers, measured ratios would read like portable costs. They are one card's evidence\nabout marginal work. The API's learned Kudos model remains a separate sampler-plus-step calculation.",
+      "properties": {
+        "authoritative_field": {
+          "const": "work_profile",
+          "default": "work_profile",
+          "description": "Names the sampler-record field operational accounting and time budgeting consume.",
+          "title": "Authoritative Field",
+          "type": "string"
+        },
+        "authoritative_note": {
+          "description": "What that field counts, and where it is read from.",
+          "title": "Authoritative Note",
+          "type": "string"
+        },
+        "measured_cost_ratio_note": {
+          "description": "How the ratios were derived, and why they corroborate the authoritative field rather than replace it.",
+          "title": "Measured Cost Ratio Note",
+          "type": "string"
+        },
+        "measured_cost_ratio_provenance": {
+          "$ref": "#/$defs/CONSTRAINT_PROVENANCE",
+          "description": "The provenance both measured ratio columns carry."
+        },
+        "measured_cost_ratio_sd15_note": {
+          "description": "The model and resolution the stable_diffusion_1 column was taken on, and the bias it carries.",
+          "title": "Measured Cost Ratio Sd15 Note",
+          "type": "string"
+        },
+        "measured_cost_ratio_sdxl_note": {
+          "description": "The model and resolution the stable_diffusion_xl column was taken on, and how to read it.",
+          "title": "Measured Cost Ratio Sdxl Note",
+          "type": "string"
+        },
+        "measured_cost_ratio_source": {
+          "description": "Filename of the measurement artifact both ratio columns were read from.",
+          "title": "Measured Cost Ratio Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "authoritative_note",
+        "measured_cost_ratio_provenance",
+        "measured_cost_ratio_source",
+        "measured_cost_ratio_note",
+        "measured_cost_ratio_sdxl_note",
+        "measured_cost_ratio_sd15_note"
+      ],
+      "title": "PublishedWorkAccounting",
+      "type": "object"
+    },
     "SAMPLER_PRESENTATION_TIER": {
       "description": "How prominently a sampler is worth offering, now that the vocabulary is long enough to overwhelm.\n\nThis is a presentation concern and nothing else: every sampler here is accepted, priced and\ndispatched identically whatever its tier. A client may default to showing only the recommended tier\nand put the rest behind an \"advanced\" affordance, which is what the split is for.",
       "enum": [
@@ -430,11 +600,50 @@
       ],
       "title": "SAMPLER_PRESENTATION_TIER",
       "type": "string"
+    },
+    "SamplerExecutionContractVersion": {
+      "description": "Identify a cumulative SDK-defined sampler execution behavior contract.",
+      "enum": [
+        "1.0"
+      ],
+      "title": "SamplerExecutionContractVersion",
+      "type": "string"
     }
   },
   "additionalProperties": false,
   "description": "Represents the whole sampler constraints document an API serves.\n\nOnly samplers and schedulers the serving API accepts appear, so a client reading this never offers a\nname that API's request models would reject as unknown.\n\nExamples:\n    Parsing a response from the sampler constraints endpoint:\n\n    ```python\n    document = SamplerConstraintsDocument.model_validate(response.json())\n    euler = document.samplers[KNOWN_IMAGE_SAMPLERS.k_euler]\n    ```",
   "properties": {
+    "advisories": {
+      "$ref": "#/$defs/PublishedAdvisories",
+      "description": "Quality expectations the API warns about rather than enforcing."
+    },
+    "execution_contracts": {
+      "additionalProperties": {
+        "$ref": "#/$defs/PublishedSamplerExecutionContract"
+      },
+      "description": "Discoverable execution profiles workers can claim to implement.",
+      "propertyNames": {
+        "$ref": "#/$defs/SamplerExecutionContractVersion"
+      },
+      "title": "Execution Contracts",
+      "type": "object"
+    },
+    "hard_constraints": {
+      "$ref": "#/$defs/PublishedHardConstraints",
+      "description": "The sections that mirror the API's rejections. Honouring these avoids a refusal."
+    },
+    "presentation_tiers": {
+      "$ref": "#/$defs/PublishedPresentationTiers",
+      "description": "Which samplers are worth offering by default, and the note saying the split restricts nothing."
+    },
+    "recommendations": {
+      "description": "Advisory pairings and settings, each carrying the provenance of the claim.",
+      "items": {
+        "$ref": "#/$defs/PublishedRecommendation"
+      },
+      "title": "Recommendations",
+      "type": "array"
+    },
     "samplers": {
       "additionalProperties": {
         "$ref": "#/$defs/PublishedSamplerRecord"
@@ -446,37 +655,25 @@
       "title": "Samplers",
       "type": "object"
     },
-    "hard_constraints": {
-      "$ref": "#/$defs/PublishedHardConstraints",
-      "description": "The sections that mirror the API's rejections. Honouring these avoids a refusal."
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "description": "Version of this document's JSON shape, independent of execution conformance versions.",
+      "title": "Schema Version",
+      "type": "string"
     },
-    "recommendations": {
-      "description": "Advisory pairings and settings, each carrying the provenance of the claim.",
-      "items": {
-        "$ref": "#/$defs/PublishedRecommendation"
-      },
-      "title": "Recommendations",
-      "type": "array"
-    },
-    "advisories": {
-      "$ref": "#/$defs/PublishedAdvisories",
-      "description": "Quality expectations the API warns about rather than enforcing."
-    },
-    "cost_basis": {
-      "$ref": "#/$defs/PublishedCostBasis",
-      "description": "What each published cost figure is, and which of them a request is charged against."
-    },
-    "presentation_tiers": {
-      "$ref": "#/$defs/PublishedPresentationTiers",
-      "description": "Which samplers are worth offering by default, and the note saying the split restricts nothing."
+    "work_accounting": {
+      "$ref": "#/$defs/PublishedWorkAccounting",
+      "description": "What work units, estimates, ceilings, and measured ratios mean."
     }
   },
   "required": [
+    "execution_contracts",
     "samplers",
     "hard_constraints",
     "recommendations",
     "advisories",
-    "cost_basis",
+    "work_accounting",
     "presentation_tiers"
   ],
   "title": "SamplerConstraintsDocument",

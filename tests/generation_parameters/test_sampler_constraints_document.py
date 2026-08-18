@@ -18,18 +18,27 @@ from horde_sdk.generation_parameters.image.constraints import (
     SAMPLER_PRESENTATION_TIER,
 )
 from horde_sdk.generation_parameters.image.constraints_document import (
-    AUTHORITATIVE_COST_FIELD,
+    AUTHORITATIVE_WORK_FIELD,
+    SAMPLER_CONSTRAINTS_DOCUMENT_SCHEMA_VERSION,
+    PublishedAdaptiveIterationCeiling,
+    PublishedAdaptiveWorkProfile,
     PublishedAdvisories,
-    PublishedCostBasis,
+    PublishedBoundedAdaptiveSamplerExecutionGuarantee,
+    PublishedFixedRateWorkProfile,
     PublishedHardConstraints,
     PublishedKnobRange,
     PublishedPresentationTiers,
     PublishedRecommendation,
     PublishedRejectedPairing,
+    PublishedSamplerExecutionContract,
     PublishedSamplerRecord,
+    PublishedWorkAccounting,
     SamplerConstraintsDocument,
 )
 from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SAMPLERS, KNOWN_IMAGE_SCHEDULERS
+from horde_sdk.generation_parameters.image.sampler_work import (
+    SamplerExecutionContractVersion,
+)
 
 _SCHEMA_SNAPSHOT_PATH = Path(__file__).parent / "sampler_constraints_document_schema_snapshot.json"
 
@@ -40,7 +49,7 @@ def _example_document() -> SamplerConstraintsDocument:
         samplers={
             KNOWN_IMAGE_SAMPLERS.k_euler: PublishedSamplerRecord(
                 name=KNOWN_IMAGE_SAMPLERS.k_euler,
-                evaluations_per_step=1,
+                work_profile=PublishedFixedRateWorkProfile(marginal_work_units_per_trajectory_step=1),
                 measured_cost_ratio_sd15=1.0,
                 measured_cost_ratio_sdxl=1.0,
                 presentation_tier=SAMPLER_PRESENTATION_TIER.recommended,
@@ -55,9 +64,12 @@ def _example_document() -> SamplerConstraintsDocument:
                 },
                 applies_cfg_pp=False,
             ),
-            KNOWN_IMAGE_SAMPLERS.dpmpp_2m_sde: PublishedSamplerRecord(
-                name=KNOWN_IMAGE_SAMPLERS.dpmpp_2m_sde,
-                evaluations_per_step=1,
+            KNOWN_IMAGE_SAMPLERS.k_dpm_adaptive: PublishedSamplerRecord(
+                name=KNOWN_IMAGE_SAMPLERS.k_dpm_adaptive,
+                work_profile=PublishedAdaptiveWorkProfile(
+                    estimated_work_units_per_request=40,
+                    finite_ceiling_contract_versions=[SamplerExecutionContractVersion.V1],
+                ),
                 measured_cost_ratio_sd15=None,
                 measured_cost_ratio_sdxl=None,
                 presentation_tier=SAMPLER_PRESENTATION_TIER.advanced,
@@ -66,6 +78,20 @@ def _example_document() -> SamplerConstraintsDocument:
                     "sampler_eta": PublishedKnobRange(minimum=0.0, maximum=100.0, default=1.0, integer_only=False),
                 },
                 applies_cfg_pp=False,
+            ),
+        },
+        execution_contracts={
+            SamplerExecutionContractVersion.V1: PublishedSamplerExecutionContract(
+                version=SamplerExecutionContractVersion.V1,
+                guarantees=[
+                    PublishedBoundedAdaptiveSamplerExecutionGuarantee(
+                        sampler=KNOWN_IMAGE_SAMPLERS.k_dpm_adaptive,
+                        maximum_solver_iterations=PublishedAdaptiveIterationCeiling(
+                            trajectory_multiplier_numerator=5,
+                            trajectory_multiplier_denominator=4,
+                        ),
+                    ),
+                ],
             ),
         },
         hard_constraints=PublishedHardConstraints(
@@ -92,7 +118,7 @@ def _example_document() -> SamplerConstraintsDocument:
             ),
         ],
         advisories=PublishedAdvisories(cfg_pp_advised_max_cfg_scale=2.0),
-        cost_basis=PublishedCostBasis(
+        work_accounting=PublishedWorkAccounting(
             authoritative_note="what the authoritative field counts",
             measured_cost_ratio_provenance=CONSTRAINT_PROVENANCE.measured,
             measured_cost_ratio_source="an-artifact.json",
@@ -123,7 +149,7 @@ class TestRoundTrip:
     def test_the_enum_valued_fields_serialise_to_their_wire_spellings(self) -> None:
         served = _example_document().model_dump(mode="json")
 
-        assert set(served["samplers"]) == {"k_euler", "dpmpp_2m_sde"}
+        assert set(served["samplers"]) == {"k_euler", "k_dpm_adaptive"}
         assert served["samplers"]["k_euler"]["presentation_tier"] == "recommended"
         assert served["recommendations"][0]["provenance"] == "upstream_author"
         assert served["hard_constraints"]["rejected_sampler_scheduler_pairings"][0] == {
@@ -139,10 +165,14 @@ class TestRoundTrip:
         assert tmax["maximum"] is None
         assert tmax["default"] is None
 
-    def test_the_field_a_request_is_priced_on_needs_no_stating(self) -> None:
-        # It can only ever be the evaluation count, so it is a constant rather than something a server
-        # fills in and could fill in wrongly.
-        assert _example_document().cost_basis.authoritative_field == AUTHORITATIVE_COST_FIELD
+    def test_the_operational_work_field_is_constant(self) -> None:
+        assert _example_document().work_accounting.authoritative_field == AUTHORITATIVE_WORK_FIELD
+
+    def test_document_and_execution_contract_versions_are_independent(self) -> None:
+        document = _example_document()
+
+        assert document.schema_version == SAMPLER_CONSTRAINTS_DOCUMENT_SCHEMA_VERSION
+        assert set(document.execution_contracts) == {SamplerExecutionContractVersion.V1}
 
 
 class TestSchemaSnapshot:
