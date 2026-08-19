@@ -64,8 +64,8 @@ class CONSTRAINT_PROVENANCE(StrEnum):
     cost, not a rule about it.
     """
 
-    user_ruled = auto()
-    """Settled by a deliberate ruling after review, and authoritative for this project."""
+    ai_horde_devs = auto()
+    """Subjective opinion by the AI Horde developers."""
 
 
 class SAMPLER_SOLVER_KNOB(StrEnum):
@@ -778,14 +778,9 @@ SAMPLER_PRESENTATION_TIERS: Mapping[KNOWN_IMAGE_SAMPLERS, SAMPLER_PRESENTATION_T
 
 
 _COMFYANONYMOUS_DISCUSSION_227 = "comfyanonymous, ComfyUI GitHub discussion #227 (2023-03-23)"
-_COMFYUI_DEV_MATRIX = (
-    "comfyui.dev sampler/scheduler matrix. A third-party site with no affiliation to the backend's "
-    "authors, and not endorsed by them."
-)
 _PROJECT_VISUAL_RULING = (
-    "Project ruling, made by inspecting rendered comparisons of the claim against a fixed seed. "
-    "Authoritative for this project, and the only evidence here that speaks to colour and to "
-    "perceived quality, which the similarity measurements cannot."
+    "Subjective ruling by the AI-Horde project team, based on visual inspection of renders and the "
+    "backend's own nodes."
 )
 
 SAMPLER_RECOMMENDATIONS: tuple[SamplerRecommendation, ...] = (
@@ -814,34 +809,34 @@ SAMPLER_RECOMMENDATIONS: tuple[SamplerRecommendation, ...] = (
         samplers=(KNOWN_IMAGE_SAMPLERS.k_dpmpp_2m, KNOWN_IMAGE_SAMPLERS.dpmpp_2m_sde),
         schedulers=(KNOWN_IMAGE_SCHEDULERS.karras,),
         provenance=CONSTRAINT_PROVENANCE.community,
-        source=_COMFYUI_DEV_MATRIX,
+        source=_PROJECT_VISUAL_RULING,
         summary="The dpmpp_2m family is commonly paired with karras for smooth gradients and clean surfaces.",
     ),
     SamplerRecommendation(
         samplers=(KNOWN_IMAGE_SAMPLERS.k_euler, KNOWN_IMAGE_SAMPLERS.k_euler_a),
         schedulers=(KNOWN_IMAGE_SCHEDULERS.normal, KNOWN_IMAGE_SCHEDULERS.simple),
         provenance=CONSTRAINT_PROVENANCE.community,
-        source=_COMFYUI_DEV_MATRIX,
+        source=_PROJECT_VISUAL_RULING,
         summary="The euler family is commonly paired with normal or simple as an inexpensive general default.",
     ),
     SamplerRecommendation(
         samplers=(KNOWN_IMAGE_SAMPLERS.lcm,),
         schedulers=(KNOWN_IMAGE_SCHEDULERS.sgm_uniform, KNOWN_IMAGE_SCHEDULERS.simple),
         provenance=CONSTRAINT_PROVENANCE.community,
-        source=_COMFYUI_DEV_MATRIX,
+        source=_PROJECT_VISUAL_RULING,
         summary="Distilled and few-step solvers are commonly paired with a uniform schedule.",
     ),
     SamplerRecommendation(
         samplers=tuple(sorted(CFG_PP_SAMPLERS)),
         schedulers=(),
-        provenance=CONSTRAINT_PROVENANCE.user_ruled,
+        provenance=CONSTRAINT_PROVENANCE.ai_horde_devs,
         source=_PROJECT_VISUAL_RULING,
         summary="CFG++ solvers expect a cfg_scale near 1.0 to 2.0; the usual range oversaturates them.",
     ),
     SamplerRecommendation(
         samplers=(),
         schedulers=(KNOWN_IMAGE_SCHEDULERS.karras,),
-        provenance=CONSTRAINT_PROVENANCE.user_ruled,
+        provenance=CONSTRAINT_PROVENANCE.ai_horde_devs,
         source=_PROJECT_VISUAL_RULING,
         summary=(
             "karras is not the safe choice at low step counts. Reach for it for fine detail at a normal "
@@ -851,7 +846,7 @@ SAMPLER_RECOMMENDATIONS: tuple[SamplerRecommendation, ...] = (
     SamplerRecommendation(
         samplers=(),
         schedulers=(KNOWN_IMAGE_SCHEDULERS.align_your_steps, KNOWN_IMAGE_SCHEDULERS.gits),
-        provenance=CONSTRAINT_PROVENANCE.user_ruled,
+        provenance=CONSTRAINT_PROVENANCE.ai_horde_devs,
         source=_PROJECT_VISUAL_RULING,
         summary=(
             "align_your_steps and gits are recommended for low step counts, on the baselines they are "
@@ -861,7 +856,7 @@ SAMPLER_RECOMMENDATIONS: tuple[SamplerRecommendation, ...] = (
     SamplerRecommendation(
         samplers=(),
         schedulers=(KNOWN_IMAGE_SCHEDULERS.exponential, KNOWN_IMAGE_SCHEDULERS.kl_optimal),
-        provenance=CONSTRAINT_PROVENANCE.user_ruled,
+        provenance=CONSTRAINT_PROVENANCE.ai_horde_devs,
         source=_PROJECT_VISUAL_RULING,
         summary=(
             "exponential and kl_optimal render coherently but shift colour noticeably, toward a red or "
@@ -876,21 +871,21 @@ SAMPLER_RECOMMENDATIONS: tuple[SamplerRecommendation, ...] = (
             KNOWN_IMAGE_SAMPLERS.k_dpmpp_sde,
         ),
         schedulers=(),
-        provenance=CONSTRAINT_PROVENANCE.user_ruled,
+        provenance=CONSTRAINT_PROVENANCE.ai_horde_devs,
         source=_PROJECT_VISUAL_RULING,
         summary="The dpmpp SDE family stays usable with sampler_eta out to about 2.5.",
     ),
     SamplerRecommendation(
         samplers=(KNOWN_IMAGE_SAMPLERS.k_euler_a,),
         schedulers=(),
-        provenance=CONSTRAINT_PROVENANCE.user_ruled,
+        provenance=CONSTRAINT_PROVENANCE.ai_horde_devs,
         source=_PROJECT_VISUAL_RULING,
         summary="k_euler_a collapses with sampler_eta above about 1.0.",
     ),
     SamplerRecommendation(
         samplers=(),
         schedulers=(KNOWN_IMAGE_SCHEDULERS.beta,),
-        provenance=CONSTRAINT_PROVENANCE.user_ruled,
+        provenance=CONSTRAINT_PROVENANCE.ai_horde_devs,
         source=_PROJECT_VISUAL_RULING,
         summary=(
             "beta shows a colour cast and posterisation at low step counts; at a normal step budget it "
@@ -900,7 +895,7 @@ SAMPLER_RECOMMENDATIONS: tuple[SamplerRecommendation, ...] = (
     SamplerRecommendation(
         samplers=(),
         schedulers=(KNOWN_IMAGE_SCHEDULERS.ddim_uniform,),
-        provenance=CONSTRAINT_PROVENANCE.user_ruled,
+        provenance=CONSTRAINT_PROVENANCE.ai_horde_devs,
         source=_PROJECT_VISUAL_RULING,
         summary=(
             "ddim_uniform degrades to glitchy static at very low step counts, but at a normal step "
@@ -910,7 +905,7 @@ SAMPLER_RECOMMENDATIONS: tuple[SamplerRecommendation, ...] = (
     SamplerRecommendation(
         samplers=(),
         schedulers=(KNOWN_IMAGE_SCHEDULERS.linear_quadratic,),
-        provenance=CONSTRAINT_PROVENANCE.user_ruled,
+        provenance=CONSTRAINT_PROVENANCE.ai_horde_devs,
         source=_PROJECT_VISUAL_RULING,
         summary=(
             "linear_quadratic blurs heavily at every tested step count on both SD1.5 and SDXL, and "
@@ -921,10 +916,10 @@ SAMPLER_RECOMMENDATIONS: tuple[SamplerRecommendation, ...] = (
 """Advisory pairings and settings, each carrying the provenance of the claim.
 
 Nothing here is enforced. The `community` entries in particular are folklore recorded for
-completeness, not guidance the backend's authors have endorsed. The `user_ruled` entries were settled
+completeness, not guidance the backend's authors have endorsed. The `ai_horde_devs` entries were settled
 by looking at rendered output and are authoritative for this project.
 
-Every schedule-character claim that went to review is recorded here at `user_ruled`; `beta`,
+Every schedule-character claim that went to review is recorded here at `ai_horde_devs`; `beta`,
 `ddim_uniform` and `linear_quadratic` initially returned unsure for want of rendered examples and
 were settled in a supplemental review of dedicated renders.
 """

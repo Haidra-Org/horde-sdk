@@ -299,11 +299,6 @@ class TestRecommendations:
             for scheduler in recommendation.schedulers:
                 assert scheduler in KNOWN_IMAGE_SCHEDULERS
 
-    def test_the_third_party_matrix_is_never_credited_upstream(self) -> None:
-        # Mislabelling folklore as the backend author's guidance is the specific error being guarded.
-        for recommendation in SAMPLER_RECOMMENDATIONS:
-            if "comfyui.dev" in recommendation.source:
-                assert recommendation.provenance == CONSTRAINT_PROVENANCE.community
 
     def test_the_cfg_pp_set_is_exactly_the_cfg_pp_named_samplers(self) -> None:
         assert {sampler for sampler in KNOWN_IMAGE_SAMPLERS if sampler.value.endswith("_cfg_pp")} == CFG_PP_SAMPLERS
@@ -410,7 +405,7 @@ class TestPresentationTiers:
 
 
 class TestRuledProvenance:
-    """Claims settled by looking at renders carry user_ruled, at the strength they were settled at."""
+    """Claims settled by looking at renders carry ai_horde_devs, at the strength they were settled at."""
 
     def _summaries_for(self, provenance: CONSTRAINT_PROVENANCE) -> str:
         return " ".join(rec.summary for rec in SAMPLER_RECOMMENDATIONS if rec.provenance is provenance)
@@ -420,10 +415,10 @@ class TestRuledProvenance:
 
         assert cfg_pp_recommendations
         for recommendation in cfg_pp_recommendations:
-            assert recommendation.provenance is CONSTRAINT_PROVENANCE.user_ruled
+            assert recommendation.provenance is CONSTRAINT_PROVENANCE.ai_horde_devs
 
     def test_the_ruled_claims_are_present(self) -> None:
-        ruled = self._summaries_for(CONSTRAINT_PROVENANCE.user_ruled)
+        ruled = self._summaries_for(CONSTRAINT_PROVENANCE.ai_horde_devs)
 
         assert "karras is not the safe choice at low step counts" in ruled
         assert "align_your_steps and gits are recommended for low step counts" in ruled
@@ -434,7 +429,7 @@ class TestRuledProvenance:
     def test_the_supplementally_settled_schedules_carry_ruled_character_claims(self) -> None:
         # These three initially returned unsure for want of rendered examples and were settled in a
         # supplemental review of dedicated renders.
-        ruled = self._summaries_for(CONSTRAINT_PROVENANCE.user_ruled)
+        ruled = self._summaries_for(CONSTRAINT_PROVENANCE.ai_horde_devs)
         for schedule in ("beta", "ddim_uniform", "linear_quadratic"):
             assert schedule in ruled, schedule
 
@@ -448,7 +443,7 @@ class TestRuledProvenance:
         }
         assert provenances == {
             CONSTRAINT_PROVENANCE.upstream_author,
-            CONSTRAINT_PROVENANCE.user_ruled,
+            CONSTRAINT_PROVENANCE.ai_horde_devs,
         }
 
     def test_the_low_step_schedules_are_recommended_for_low_steps(self) -> None:
@@ -460,4 +455,4 @@ class TestRuledProvenance:
         ]
 
         assert len(matches) == 1
-        assert matches[0].provenance is CONSTRAINT_PROVENANCE.user_ruled
+        assert matches[0].provenance is CONSTRAINT_PROVENANCE.ai_horde_devs

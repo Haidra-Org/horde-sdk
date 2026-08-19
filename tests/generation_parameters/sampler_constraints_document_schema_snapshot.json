@@ -6,7 +6,7 @@
         "upstream_author",
         "community",
         "measured",
-        "user_ruled"
+        "ai_horde_devs"
       ],
       "title": "CONSTRAINT_PROVENANCE",
       "type": "string"
