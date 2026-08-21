@@ -557,8 +557,9 @@ def _hires_fix_applies(
     """Check whether the requested hires fix is meaningful for this generation.
 
     Hires fix is a two-pass upscale; it is disabled when the target resolution does not exceed
-    the baseline's native resolution, and for inpainting/outpainting where the dimensions come
-    from the source image.
+    the baseline's native resolution, for inpainting/outpainting where the dimensions come
+    from the source image, and for masked img2img, whose graph is single-pass (a controlnet
+    keeps it, as the controlnet hires graph has a real second pass).
     """
     if not api_response.payload.hires_fix:
         return False
@@ -567,6 +568,13 @@ def _hires_fix_applies(
         KNOWN_IMAGE_SOURCE_PROCESSING.inpainting,
         KNOWN_IMAGE_SOURCE_PROCESSING.outpainting,
     ]:
+        return False
+
+    if (
+        api_response.source_processing == KNOWN_IMAGE_SOURCE_PROCESSING.img2img
+        and api_response.source_mask is not None
+        and api_response.payload.control_type is None
+    ):
         return False
 
     width = api_response.payload.width

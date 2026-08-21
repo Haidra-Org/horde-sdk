@@ -661,6 +661,98 @@ def test_convert_image_job_pop_response_hires_fix_disabled_for_inpainting(
     assert_features_selected(conversion_result.generation_parameters, img2img=True)
 
 
+def test_convert_image_job_pop_response_hires_fix_disabled_for_masked_img2img(
+    single_id: UUID,
+    inpainting_source_image_and_mask_base64: tuple[str, str],
+    model_reference_manager: ModelReferenceManager,
+) -> None:
+    """Confirm that hires fix is dropped for masked img2img, whose graph is single-pass."""
+    source_image, source_mask = inpainting_source_image_and_mask_base64
+    api_response = _make_job_pop_response(
+        single_id,
+        ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+            hires_fix=True,
+            width=1024,
+            height=1024,
+        ),
+        source_image=source_image,
+        source_mask=source_mask,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.img2img,
+    )
+
+    conversion_result = convert_image_job_pop_response_to_parameters(
+        api_response=api_response,
+        model_reference_manager=model_reference_manager,
+    )
+
+    assert_features_selected(conversion_result.generation_parameters, img2img=True)
+
+
+def test_convert_image_job_pop_response_hires_fix_kept_for_unmasked_img2img(
+    single_id: UUID,
+    inpainting_source_image_and_mask_base64: tuple[str, str],
+    model_reference_manager: ModelReferenceManager,
+) -> None:
+    """Confirm that img2img without a mask keeps its hires fix."""
+    source_image, _source_mask = inpainting_source_image_and_mask_base64
+    api_response = _make_job_pop_response(
+        single_id,
+        ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+            hires_fix=True,
+            width=1024,
+            height=1024,
+        ),
+        source_image=source_image,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.img2img,
+    )
+
+    conversion_result = convert_image_job_pop_response_to_parameters(
+        api_response=api_response,
+        model_reference_manager=model_reference_manager,
+    )
+
+    assert_features_selected(conversion_result.generation_parameters, img2img=True, hires_fix=True)
+
+
+def test_convert_image_job_pop_response_hires_fix_kept_for_masked_controlnet(
+    single_id: UUID,
+    inpainting_source_image_and_mask_base64: tuple[str, str],
+    model_reference_manager: ModelReferenceManager,
+) -> None:
+    """Confirm that a masked controlnet job keeps hires fix; that graph has a real second pass."""
+    source_image, source_mask = inpainting_source_image_and_mask_base64
+    api_response = _make_job_pop_response(
+        single_id,
+        ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+            hires_fix=True,
+            width=1024,
+            height=1024,
+            control_type=KNOWN_IMAGE_CONTROLNETS.canny,
+        ),
+        source_image=source_image,
+        source_mask=source_mask,
+        source_processing=KNOWN_IMAGE_SOURCE_PROCESSING.img2img,
+    )
+
+    conversion_result = convert_image_job_pop_response_to_parameters(
+        api_response=api_response,
+        model_reference_manager=model_reference_manager,
+    )
+
+    assert_features_selected(
+        conversion_result.generation_parameters,
+        control_net=True,
+        img2img=True,
+        hires_fix=True,
+    )
+
+
 def test_convert_image_job_pop_response_carries_transparent(
     single_id: UUID,
     model_reference_manager: ModelReferenceManager,
