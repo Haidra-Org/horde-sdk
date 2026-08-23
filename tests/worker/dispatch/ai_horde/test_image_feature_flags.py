@@ -41,7 +41,7 @@ def _implementation_profile(
     return ImageWorkerFeatureFlags(
         image_generation_feature_flags=ImageGenerationFeatureFlags(
             extra_source_images=True,
-            baselines=baselines,
+            baselines=baselines,  # type: ignore[assignment]
             schedulers=[],
             samplers=[],
             controlnets_feature_flags=(
@@ -180,7 +180,7 @@ def test_bridge_choices_only_narrow_exact_implementation_support() -> None:
     bridge_data = ImageWorkerBridgeData(
         models_to_load=["model-a"],
         allow_img2img=False,
-        allow_painting=True,
+        allow_inpainting=True,
         allow_controlnet=True,
         allow_sdxl_controlnet=True,
         allow_post_processing=False,
@@ -198,6 +198,7 @@ def test_bridge_choices_only_narrow_exact_implementation_support() -> None:
     assert features.loras is None
     assert features.tis == [KNOWN_AUX_MODEL_SOURCE.HORDELING]
     assert effective.per_baseline_feature_flags is not None
+    assert effective.per_baseline_feature_flags.controlnet_map is not None
     assert not any(effective.per_baseline_feature_flags.controlnet_map.values())
 
 
