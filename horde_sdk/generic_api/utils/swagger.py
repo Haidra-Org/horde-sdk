@@ -17,22 +17,16 @@ from strenum import StrEnum
 from horde_sdk.consts import PAYLOAD_HTTP_METHODS, HTTPMethod, HTTPStatusCode, is_error_status_code
 
 
-class SwaggerModelAdditionalProperty(BaseModel):
-    """An additional property of a model (data structure) used in the API."""
-
-    # TODO: Is this actually a recursive SwaggerModelDefinitionProperty?
-    model_config = {"extra": "forbid"}
-
-    type_: str | None = Field(default=None, alias="type")
-    description: str | None = None
-
-
 class SwaggerModelProperty(BaseModel):
     """A property of a model (data structure) used in the API.
 
     This might also be referred to as a "field" or an "attribute" of the model.
 
     See https://swagger.io/docs/specification/data-models/data-types/#objects
+
+    The swagger spec reuses the same schema-object shape for `properties`, `items`,
+    `additionalProperties`, and the members of `allOf`/`oneOf`/`anyOf`, so this model is recursive
+    and covers every position a schema object can occupy.
     """
 
     model_config = {"extra": "forbid"}
@@ -51,8 +45,15 @@ class SwaggerModelProperty(BaseModel):
     maxLength: int | None = None
     multipleOf: float | None = None
     uniqueItems: bool | None = None
-    additionalProperties: SwaggerModelAdditionalProperty | None = None
+    additionalProperties: bool | SwaggerModelProperty | None = None
     items: SwaggerModelProperty | list[SwaggerModelProperty] | None = None
+    properties: dict[str, SwaggerModelProperty] | None = None
+    required: list[str] | None = None
+    allOf: list[SwaggerModelDefinition | SwaggerModelRef] | None = None
+    oneOf: list[SwaggerModelDefinition | SwaggerModelRef] | None = None
+    anyOf: list[SwaggerModelDefinition | SwaggerModelRef] | None = None
+    discriminator: str | None = None
+    x_nullable: bool | None = Field(default=None, alias="x-nullable")
 
 
 class SwaggerModelRef(BaseModel):
@@ -79,6 +80,9 @@ class SwaggerModelDefinition(SwaggerModelEntry):
     type_: str | None = Field(default=None, alias="type")
     properties: dict[str, SwaggerModelProperty] | None = None
     required: list[str] | None = None
+    description: str | None = None
+    title: str | None = None
+    additionalProperties: bool | None = None
 
 
 class SwaggerSchemaValidationMethod(StrEnum):
@@ -814,7 +818,7 @@ class SwaggerDoc(BaseModel):
 
                 # If the property is a wildcard property with additionalProperties, add default values for
                 # three additional properties
-                if prop_name == "*" and prop.additionalProperties:
+                if prop_name == "*" and isinstance(prop.additionalProperties, SwaggerModelProperty):
                     assert prop.additionalProperties.type_
                     default = default_swagger_value_from_type_name(prop.additionalProperties.type_)
                     return_list.append(

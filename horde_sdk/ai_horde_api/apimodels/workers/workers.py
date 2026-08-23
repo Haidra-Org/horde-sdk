@@ -9,6 +9,7 @@ from horde_sdk.ai_horde_api.consts import AI_HORDE_WORKER_TYPES
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.ai_horde_api.fields import TeamID, WorkerID
 from horde_sdk.consts import HTTPMethod
+from horde_sdk.generation_parameters.alchemy.consts import KNOWN_ANNOTATION_CONTROL_TYPES
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     HordeAPIObjectBaseModel,
@@ -160,6 +161,10 @@ class WorkerDetailItem(HordeAPIObjectBaseModel):
     """If True, this worker supports and allows controlnet requests."""
     sdxl_controlnet: bool | None = Field(default=None, examples=[False])
     """If True, this worker supports and allows sdxl controlnet requests."""
+    extended_controlnet: bool | None = Field(default=None, examples=[False])
+    """If True, this worker supports and allows extended controlnet control types."""
+    annotation_types: list[KNOWN_ANNOTATION_CONTROL_TYPES] | None = None
+    """Which annotation control types this worker is offering."""
 
     messages: list[ResponseModelMessage] | None = None
     """The messages that have been sent to this worker."""

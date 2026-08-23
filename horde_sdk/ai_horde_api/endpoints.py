@@ -72,6 +72,8 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
 
     v2_status_performance = "/v2/status/performance"
 
+    v2_status_sampler_constraints = "/v2/status/sampler_constraints"
+
     v2_teams_all = "/v2/teams"
     v2_teams_single = "/v2/teams/{team_id}"
 

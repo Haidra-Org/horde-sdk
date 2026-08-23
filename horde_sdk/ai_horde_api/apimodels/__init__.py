@@ -203,6 +203,8 @@ from horde_sdk.ai_horde_api.apimodels.status import (
     Newspiece,
     NewsRequest,
     NewsResponse,
+    SamplerConstraintsRequest,
+    SamplerConstraintsResponse,
 )
 from horde_sdk.ai_horde_api.apimodels.styles import (
     AllStylesImageRequest,
@@ -494,6 +496,8 @@ __all__ = [
     "ResponseRequiringDownloadMixin",
     "ResponseRequiringFollowUpMixin",
     "ResponseWithProgressMixin",
+    "SamplerConstraintsRequest",
+    "SamplerConstraintsResponse",
     "SharedKeyCreateRequest",
     "SharedKeyDeleteRequest",
     "SharedKeyDeleteResponse",

@@ -24,6 +24,13 @@ class ResponseGenerationProgressInfoMixin(HordeAPIObjectBaseModel):
     """The amount of total Kudos this request has consumed until now."""
     is_possible: bool = True
     """If False, this request will not be able to be completed with the pool of workers currently available."""
+    eligible_workers: int = 0
+    """The number of recently active workers that currently pass all known capability gates for this request."""
+    eligible_worker_threads: int = 0
+    """The total advertised generation threads across eligible workers."""
+    might_stall: bool = False
+    """True when newly arrived compatible work has persistently entered ahead of this request faster than eligible
+    workers clear it."""
 
 
 class ResponseGenerationProgressCombinedMixin(ResponseWithProgressMixin, ResponseGenerationProgressInfoMixin):

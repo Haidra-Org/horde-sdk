@@ -1,18 +1,29 @@
-from typing import Any
+from typing import Any, cast, get_args
 
 import pytest
+from pydantic import AliasChoices, BaseModel, RootModel
 
 import horde_sdk.ai_horde_api.apimodels
+from horde_sdk import HordeAPIObject
 from horde_sdk.ai_horde_api.endpoints import get_ai_horde_swagger_url
-from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod, HTTPStatusCode, get_all_success_status_codes
+from horde_sdk.consts import (
+    _ANONYMOUS_MODEL,
+    _OVERLOADED_MODEL,
+    HTTPMethod,
+    HTTPStatusCode,
+    get_all_success_status_codes,
+)
 from horde_sdk.generic_api._reflection import get_all_request_types
 from horde_sdk.generic_api.apimodels import HordeRequest
 from horde_sdk.generic_api.endpoints import GENERIC_API_ENDPOINT_SUBPATH
 from horde_sdk.generic_api.utils.swagger import (
     SwaggerDoc,
     SwaggerEndpoint,
+    SwaggerModelDefinition,
+    SwaggerModelRef,
     SwaggerParser,
 )
+from horde_sdk.meta import find_subclasses
 
 
 def all_ai_horde_model_defs_in_swagger(swagger_doc: SwaggerDoc) -> None:
@@ -154,3 +165,130 @@ def test_all_ai_horde_model_defs_in_swagger_from_prod_swagger() -> None:
     assert swagger_doc, "Failed to get SwaggerDoc"
     assert swagger_doc.definitions, "Failed to get SwaggerDoc definitions"
     all_ai_horde_model_defs_in_swagger(swagger_doc)
+
+
+def _swagger_definition_property_names(swagger_doc: SwaggerDoc, definition_name: str) -> set[str]:
+    """Return every property a swagger definition declares, following ``allOf`` references."""
+    properties: set[str] = set()
+
+    def _collect(name: str, seen: set[str]) -> None:
+        if name in seen:
+            return
+        seen.add(name)
+
+        definition = swagger_doc.definitions.get(name)
+        if definition is None:
+            return
+
+        if isinstance(definition, SwaggerModelDefinition):
+            if definition.properties:
+                properties.update(definition.properties.keys())
+            return
+
+        _method, sub_definitions = definition.get_model_definitions()
+        for sub_definition in sub_definitions:
+            if isinstance(sub_definition, SwaggerModelRef) and sub_definition.ref:
+                ref = sub_definition.ref
+                if ref.startswith("#/definitions/"):
+                    ref = ref[len("#/definitions/") :]
+                _collect(ref, seen)
+            elif isinstance(sub_definition, SwaggerModelDefinition) and sub_definition.properties:
+                properties.update(sub_definition.properties.keys())
+
+    _collect(definition_name, set())
+    # A `*` property is a wildcard for additionalProperties, not a concrete field.
+    return properties - {"*"}
+
+
+def _inner_base_models(annotation: object) -> list[type[BaseModel]]:
+    """Return the pydantic model types reachable through a (possibly generic) field annotation."""
+    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+        return [annotation]
+
+    inner: list[type[BaseModel]] = []
+    for arg in get_args(annotation):
+        inner.extend(_inner_base_models(arg))
+    return inner
+
+
+def _sdk_field_names(model: type[BaseModel], seen: set[type[BaseModel]] | None = None) -> set[str]:
+    """Return every wire name (field name and aliases) a model can accept."""
+    if seen is None:
+        seen = set()
+    if model in seen:
+        return set()
+    seen.add(model)
+
+    # A RootModel exposes its wire fields through its `root` type.
+    if issubclass(model, RootModel):
+        root_names: set[str] = set()
+        root_annotation = model.model_fields["root"].annotation
+        for inner_model in _inner_base_models(root_annotation):
+            root_names.update(_sdk_field_names(inner_model, seen))
+        return root_names
+
+    names: set[str] = set()
+    for field_name, field_info in model.model_fields.items():
+        names.add(field_name)
+        if field_info.alias is not None:
+            names.add(field_info.alias)
+        validation_alias = field_info.validation_alias
+        if isinstance(validation_alias, AliasChoices):
+            for choice in validation_alias.choices:
+                if isinstance(choice, str):
+                    names.add(choice)
+        elif isinstance(validation_alias, str):
+            names.add(validation_alias)
+        if field_info.serialization_alias is not None:
+            names.add(field_info.serialization_alias)
+    return names
+
+
+_KNOWN_FIELD_MISMATCHES: dict[str, set[str]] = {
+    # The API reuses the image `SubmitInputStable` schema for alchemy submissions; the SDK models only the
+    # fields alchemy actually consumes.
+    "AlchemyJobSubmitRequest": {"seed", "censored", "gen_metadata", "generation"},
+    # Privileged/admin fields that the public client cannot use.
+    "UserDetailsResponse": {"proxy_passkey"},
+    "ModifyUserResponse": {"proxy_passkey"},
+    "ModifyUserRequest": {"generate_proxy_passkey"},
+}
+
+
+def all_ai_horde_model_fields_in_swagger(swagger_doc: SwaggerDoc) -> None:
+    """Ensure every SDK model covers every field its swagger definition declares."""
+    all_classes = find_subclasses(horde_sdk.ai_horde_api.apimodels, HordeAPIObject)
+
+    missing_fields: dict[str, set[str]] = {}
+
+    for class_type in all_classes:
+        if not issubclass(class_type, HordeAPIObject):
+            continue
+        model_name = class_type.get_api_model_name()
+        if model_name in (None, _ANONYMOUS_MODEL, _OVERLOADED_MODEL):
+            continue
+        if model_name not in swagger_doc.definitions:
+            continue
+
+        swagger_fields = _swagger_definition_property_names(swagger_doc, model_name)
+        sdk_fields = _sdk_field_names(cast(type[BaseModel], class_type))
+
+        missing = (swagger_fields - sdk_fields) - _KNOWN_FIELD_MISMATCHES.get(class_type.__name__, set())
+        if missing:
+            missing_fields[class_type.__name__] = missing
+
+    assert not missing_fields, (
+        f"The following SDK models are missing fields that their swagger definitions declare: {missing_fields}"
+    )
+
+
+@pytest.mark.object_verify
+def test_all_ai_horde_model_fields_match_swagger_from_prod_swagger() -> None:
+    swagger_doc: SwaggerDoc | None = None
+    try:
+        swagger_doc = SwaggerParser(swagger_doc_url=get_ai_horde_swagger_url()).get_swagger_doc()
+    except RuntimeError as e:
+        raise RuntimeError(f"Failed to get swagger doc: {e}") from e
+    assert swagger_doc, "Failed to get SwaggerDoc"
+    assert swagger_doc.definitions, "Failed to get SwaggerDoc definitions"
+    all_ai_horde_model_fields_in_swagger(swagger_doc)

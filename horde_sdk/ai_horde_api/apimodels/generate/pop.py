@@ -501,6 +501,9 @@ class PopInput(HordeAPIObjectBaseModel):
         default=False,
     )
     """Whether this worker can generate NSFW requests or not."""
+    extra_slow_worker: bool = True
+    """If True, marks the worker as very slow. Extra slow workers are excluded from normal requests but users can opt
+    in to use them."""
     priority_usernames: list[str] | None = None
     """The usernames that should be prioritized by this worker."""
     sampler_execution_contract_version: SamplerExecutionContractVersion | None = None
@@ -568,8 +571,6 @@ class ImageGenerateJobPopRequest(BaseAIHordeRequest, APIKeyAllowedInRequestMixin
     """Whether this worker can generate using SDXL controlnets."""
     allow_lora: bool = False
     """Whether this worker can generate using Loras."""
-    extra_slow_worker: bool = False
-    """Marks the worker as extra slow."""
     limit_max_steps: bool = False
     """Reject jobs whose guaranteed maximum sampler work exceeds the model-average budget."""
 

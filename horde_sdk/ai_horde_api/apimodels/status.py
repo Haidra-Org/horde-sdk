@@ -7,6 +7,7 @@ from horde_sdk.ai_horde_api.apimodels.base import ActiveModel, BaseAIHordeReques
 from horde_sdk.ai_horde_api.consts import MODEL_STATE, MODEL_TYPE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod
+from horde_sdk.generation_parameters.image.constraints_document import SamplerConstraintsDocument
 from horde_sdk.generic_api.apimodels import (
     ContainsMessageResponseMixin,
     HordeAPIObjectBaseModel,
@@ -425,3 +426,49 @@ class HordeModes(HordeAPIObjectBaseModel):
     @classmethod
     def get_api_model_name(cls) -> str | None:
         return "HordeModes"
+
+
+@Unhashable
+@Unequatable
+class SamplerConstraintsResponse(HordeResponseRootModel[SamplerConstraintsDocument]):
+    """The sampler constraints document this API publishes.
+
+    Represents the data returned from the /v2/status/sampler_constraints endpoint with http status code 200.
+
+    v2 API Model: `SamplerConstraintsDocument`
+    """
+
+    root: SamplerConstraintsDocument
+    """The whole sampler constraints document, keyed by the API's own request field names."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "SamplerConstraintsDocument"
+
+
+class SamplerConstraintsRequest(BaseAIHordeRequest):
+    """Request the sampler constraints document describing which sampler settings this API accepts.
+
+    Represents a GET request to the /v2/status/sampler_constraints endpoint.
+    """
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
+
+    @override
+    @classmethod
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_status_sampler_constraints
+
+    @override
+    @classmethod
+    def get_default_success_response_type(cls) -> type[SamplerConstraintsResponse]:
+        return SamplerConstraintsResponse

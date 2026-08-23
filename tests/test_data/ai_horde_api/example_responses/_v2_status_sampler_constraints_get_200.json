@@ -1,0 +1,113 @@
+{
+    "schema_version": "1.0",
+    "execution_contracts": {
+        "1.0": {
+            "version": "1.0",
+            "guarantees": [
+                {
+                    "name": "bounded_dpm_adaptive_v1",
+                    "sampler": "k_dpm_adaptive",
+                    "maximum_solver_iterations": {
+                        "trajectory_multiplier_numerator": 5,
+                        "trajectory_multiplier_denominator": 4,
+                        "rounding": "ceiling"
+                    },
+                    "work_units_per_solver_iteration_source": "sampler_order"
+                }
+            ]
+        }
+    },
+    "samplers": {
+        "k_euler": {
+            "name": "k_euler",
+            "work_profile": {
+                "kind": "fixed_rate",
+                "marginal_work_units_per_trajectory_step": 1
+            },
+            "measured_cost_ratio_sd15": 1.0,
+            "measured_cost_ratio_sdxl": 1.0,
+            "presentation_tier": "recommended",
+            "solver_type_choices": [],
+            "accepted_settings": {
+                "sampler_s_tmax": {
+                    "minimum": 0.0,
+                    "maximum": null,
+                    "default": null,
+                    "integer_only": false
+                }
+            },
+            "applies_cfg_pp": false
+        },
+        "k_dpm_adaptive": {
+            "name": "k_dpm_adaptive",
+            "work_profile": {
+                "kind": "adaptive",
+                "estimated_work_units_per_request": 40,
+                "finite_ceiling_contract_versions": [
+                    "1.0"
+                ]
+            },
+            "measured_cost_ratio_sd15": null,
+            "measured_cost_ratio_sdxl": null,
+            "presentation_tier": "advanced",
+            "solver_type_choices": [
+                "midpoint",
+                "heun"
+            ],
+            "accepted_settings": {
+                "sampler_eta": {
+                    "minimum": 0.0,
+                    "maximum": 100.0,
+                    "default": 1.0,
+                    "integer_only": false
+                }
+            },
+            "applies_cfg_pp": false
+        }
+    },
+    "hard_constraints": {
+        "rejected_sampler_scheduler_pairings": [
+            {
+                "sampler": "dpmpp_3m_sde",
+                "scheduler": "normal"
+            }
+        ],
+        "scheduler_baseline_applicability": {
+            "align_your_steps": [
+                "stable_diffusion_1",
+                "stable_diffusion_xl"
+            ]
+        }
+    },
+    "recommendations": [
+        {
+            "samplers": [
+                "k_euler"
+            ],
+            "schedulers": [
+                "normal"
+            ],
+            "provenance": "upstream_author",
+            "source": "a citation",
+            "summary": "a statement"
+        }
+    ],
+    "advisories": {
+        "cfg_pp_advised_max_cfg_scale": 2.0
+    },
+    "work_accounting": {
+        "authoritative_field": "work_profile",
+        "authoritative_note": "what the authoritative field counts",
+        "measured_cost_ratio_provenance": "measured",
+        "measured_cost_ratio_source": "an-artifact.json",
+        "measured_cost_ratio_note": "how the ratios were derived",
+        "measured_cost_ratio_sdxl_note": "the large model figure",
+        "measured_cost_ratio_sd15_note": "the small model figure"
+    },
+    "presentation_tiers": {
+        "note": "the tier restricts nothing",
+        "recommended": [
+            "k_euler"
+        ]
+    }
+}

@@ -73,6 +73,7 @@ their module or class, which keeps model reference pages compact.
 - [`horde_sdk.generation_parameters.image.constraints_document`](generation_parameters/image/constraints_document.md)
 - [`horde_sdk.generation_parameters.image.consts`](generation_parameters/image/consts.md)
 - [`horde_sdk.generation_parameters.image.object_models`](generation_parameters/image/object_models.md)
+- [`horde_sdk.generation_parameters.image.sampler_work`](generation_parameters/image/sampler_work.md)
 - [`horde_sdk.generation_parameters.text.consts`](generation_parameters/text/consts.md)
 - [`horde_sdk.generation_parameters.text.object_models`](generation_parameters/text/object_models.md)
 - [`horde_sdk.generation_parameters.utils`](generation_parameters/utils.md)
