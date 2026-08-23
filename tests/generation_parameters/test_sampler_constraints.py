@@ -299,7 +299,6 @@ class TestRecommendations:
             for scheduler in recommendation.schedulers:
                 assert scheduler in KNOWN_IMAGE_SCHEDULERS
 
-
     def test_the_cfg_pp_set_is_exactly_the_cfg_pp_named_samplers(self) -> None:
         assert {sampler for sampler in KNOWN_IMAGE_SAMPLERS if sampler.value.endswith("_cfg_pp")} == CFG_PP_SAMPLERS
 
