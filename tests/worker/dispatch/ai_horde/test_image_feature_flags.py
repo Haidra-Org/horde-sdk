@@ -41,7 +41,7 @@ def _implementation_profile(
     return ImageWorkerFeatureFlags(
         image_generation_feature_flags=ImageGenerationFeatureFlags(
             extra_source_images=True,
-            baselines=baselines,  # type: ignore[assignment]
+            baselines=baselines,
             schedulers=[],
             samplers=[],
             controlnets_feature_flags=(
