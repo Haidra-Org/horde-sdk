@@ -38,6 +38,10 @@ SOLVER_KNOB_FIELD_NAMES = (
     "flow_shift",
 )
 
+# Every optional field the mixin gained after the snapshots below were taken. The knobs are the bulk of
+# it; control strength arrived later and is optional on the same terms.
+MIXIN_FIELDS_ADDED_SINCE_SNAPSHOT = (*SOLVER_KNOB_FIELD_NAMES, "control_strength")
+
 # The serialization of a default-constructed mixin immediately before these fields were introduced.
 _MIXIN_JSON_BEFORE = (
     '{"height":512,"width":512,"sampler_name":"k_euler","scheduler":null,"karras":true,'
@@ -112,11 +116,11 @@ class TestSerializationIsUnchangedForOldRequests:
         for key, value in before.items():
             assert after[key] == value, key
 
-    def test_the_only_new_mixin_keys_are_the_knobs(self) -> None:
+    def test_the_only_new_mixin_keys_are_the_expected_optional_fields(self) -> None:
         before = json.loads(_MIXIN_JSON_BEFORE)
         after = json.loads(ImageGenerateParamMixin().model_dump_json())
 
-        assert set(after) - set(before) == set(SOLVER_KNOB_FIELD_NAMES)
+        assert set(after) - set(before) == set(MIXIN_FIELDS_ADDED_SINCE_SNAPSHOT)
 
     def test_every_pre_existing_generation_parameter_key_is_untouched(self) -> None:
         before = json.loads(_TEMPLATE_JSON_BEFORE)

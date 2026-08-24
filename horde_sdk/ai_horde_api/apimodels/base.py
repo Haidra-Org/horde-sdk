@@ -293,6 +293,12 @@ class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
     Only meaningful for the baselines built on flow matching; other baselines have nothing to shift.
     """
 
+    control_strength: float | None = Field(default=None, ge=0.01, le=3.0)
+    """The strength of the ControlNet guidance. Unset means the worker's own default of 1.0.
+
+    Only meaningful alongside a control type; without one there is no guidance to weight.
+    """
+
     cfg_scale: float = Field(default=7.5, ge=0)
     """The cfg_scale to use for this generation. Defaults to 7.5."""
     denoising_strength: float | None = Field(default=1, ge=0, le=1)

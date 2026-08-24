@@ -533,6 +533,7 @@ def _get_controlnet_params(
     source_image = _decode_source_image_field(resolved_source_image, METADATA_TYPE.source_image, faults)
 
     return_control_map = bool(api_response.payload.return_control_map)
+    control_strength = api_response.payload.control_strength
 
     if api_response.payload.image_is_control:
         return ControlnetGenerationParameters(
@@ -540,6 +541,7 @@ def _get_controlnet_params(
             controlnet_type=api_response.payload.control_type,
             control_map=source_image,
             return_control_map=return_control_map,
+            control_strength=control_strength,
         )
 
     return ControlnetGenerationParameters(
@@ -547,6 +549,7 @@ def _get_controlnet_params(
         controlnet_type=api_response.payload.control_type,
         control_map=None,
         return_control_map=return_control_map,
+        control_strength=control_strength,
     )
 
 

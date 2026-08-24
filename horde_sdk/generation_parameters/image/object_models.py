@@ -432,6 +432,9 @@ class ControlnetGenerationParameters(GenerationParameterBaseModel):
     return_control_map: bool = False
     """If true, return the control map created by the controlnet pre-processor."""
 
+    control_strength: float | None = None
+    """The strength of the controlnet guidance. Unset leaves the backend's own default of 1.0."""
+
 
 class HiresFixGenerationParameters(GenerationParameterBaseModel):
     """Represents the parameters for a high-resolution fix generation."""

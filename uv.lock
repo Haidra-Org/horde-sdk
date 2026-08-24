@@ -900,7 +900,7 @@ wheels = [
 
 [[package]]
 name = "horde-model-reference"
-version = "7.4.0"
+version = "7.6.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -915,9 +915,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "ujson" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/77/a8/df562604efa87f1a430ae848993d52351800d421de66672815f54f59960c/horde_model_reference-7.4.0.tar.gz", hash = "sha256:f2bae5ca39292db718fd3d2d335f46b9c4c4e1091feeb4cfc722617a6dfff0e3", size = 873222, upload-time = "2026-07-07T02:34:59.496Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1a/3c/714fdd7b04a572f2be6fd1dc0b555232d01650c7c47a9fc4828588251940/horde_model_reference-7.6.1.tar.gz", hash = "sha256:6e4fd0b7650640b66672337bb31877a4c93c2240c5e26bd7547c0f410e340b32", size = 884122, upload-time = "2026-08-04T01:09:34.763Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7d/e4/157b88d35d87dac2c484d144ce44be690158e979c38c5dcd0af4491eb964/horde_model_reference-7.4.0-py3-none-any.whl", hash = "sha256:a5b78c8ab864e0a6b6c86d50fd7152a39d0452736e71fa5069bbf9ffdb854a24", size = 389684, upload-time = "2026-07-07T02:34:57.72Z" },
+    { url = "https://files.pythonhosted.org/packages/dc/a7/e84fb34611e85341989e8aa53daa358d8668c04454cbd68d32fb44107801/horde_model_reference-7.6.1-py3-none-any.whl", hash = "sha256:72ad6cfa55b9938267a0cbd5f5fdeb719f3768a511bad65810154d1095eeb48d", size = 393153, upload-time = "2026-08-04T01:09:32.696Z" },
 ]
 
 [[package]]
@@ -978,7 +978,7 @@ requires-dist = [
     { name = "aiofiles", specifier = ">=24.1.0" },
     { name = "aiohttp", specifier = ">=3.11.13" },
     { name = "certifi", specifier = ">=2025.1.31" },
-    { name = "horde-model-reference", specifier = ">=5.1.0,<8.0.0" },
+    { name = "horde-model-reference", specifier = ">=7.6.1,<8.0.0" },
     { name = "logfire", specifier = ">=3.7.1" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "networkx", specifier = ">=3.4.2" },

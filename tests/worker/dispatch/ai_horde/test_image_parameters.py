@@ -606,6 +606,61 @@ def test_convert_image_job_pop_response_wires_return_control_map(
     assert controlnet_params.control_map is not None
 
 
+def test_convert_image_job_pop_response_wires_control_strength(
+    single_id: UUID,
+    openpose_control_map_base64: str,
+    model_reference_manager: ModelReferenceManager,
+) -> None:
+    """Confirm that control_strength is carried into the controlnet parameters."""
+    api_response = _make_job_pop_response(
+        single_id,
+        ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+            control_type=KNOWN_IMAGE_CONTROLNETS.openpose,
+            image_is_control=True,
+            control_strength=0.45,
+        ),
+        source_image=openpose_control_map_base64,
+    )
+
+    conversion_result = convert_image_job_pop_response_to_parameters(
+        api_response=api_response,
+        model_reference_manager=model_reference_manager,
+    )
+
+    controlnet_params = conversion_result.generation_parameters.additional_params.controlnet_params
+    assert controlnet_params is not None
+    assert controlnet_params.control_strength == 0.45
+
+
+def test_convert_image_job_pop_response_leaves_control_strength_unset(
+    single_id: UUID,
+    openpose_control_map_base64: str,
+    model_reference_manager: ModelReferenceManager,
+) -> None:
+    """Confirm that a pop which names no control strength leaves the backend default in place."""
+    api_response = _make_job_pop_response(
+        single_id,
+        ImageGenerateJobPopPayload(
+            prompt="a cat in a hat",
+            seed="42",
+            control_type=KNOWN_IMAGE_CONTROLNETS.openpose,
+            image_is_control=False,
+        ),
+        source_image=openpose_control_map_base64,
+    )
+
+    conversion_result = convert_image_job_pop_response_to_parameters(
+        api_response=api_response,
+        model_reference_manager=model_reference_manager,
+    )
+
+    controlnet_params = conversion_result.generation_parameters.additional_params.controlnet_params
+    assert controlnet_params is not None
+    assert controlnet_params.control_strength is None
+
+
 def test_convert_image_job_pop_response_hires_fix_disabled_at_native_resolution(
     single_id: UUID,
     model_reference_manager: ModelReferenceManager,

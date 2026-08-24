@@ -8,6 +8,7 @@ from uuid import UUID
 import aiohttp
 import PIL.Image
 import pytest
+from pydantic import ValidationError
 
 from horde_sdk.ai_horde_api.apimodels import (
     AlchemyJobPopResponse,
@@ -212,6 +213,26 @@ def test_ImageGenerateAsyncRequest_solver_fields_round_trip(ai_horde_api_key: st
 
     serialized_params = request.model_dump(by_alias=True, exclude_none=True, mode="json")["params"]
     assert {field: serialized_params[field] for field in expected_params} == expected_params
+
+
+def test_ImageGenerateAsyncRequest_control_strength_round_trips(ai_horde_api_key: str) -> None:
+    request = ImageGenerateAsyncRequest(
+        apikey=ai_horde_api_key,
+        models=["Deliberate"],
+        prompt="control strength serialization",
+        params=ImageGenerationInputPayload(control_type=KNOWN_IMAGE_CONTROLNETS.canny, control_strength=0.6),
+    )
+
+    serialized_params = request.model_dump(by_alias=True, exclude_none=True, mode="json")["params"]
+    assert serialized_params["control_strength"] == 0.6
+
+
+def test_ImageGenerateAsyncRequest_control_strength_is_bounded(ai_horde_api_key: str) -> None:
+    with pytest.raises(ValidationError):
+        ImageGenerationInputPayload(control_strength=3.5)
+
+    with pytest.raises(ValidationError):
+        ImageGenerationInputPayload(control_strength=0.0)
 
 
 def test_AlchemyPopRequest_annotation_types_round_trip(ai_horde_api_key: str) -> None:
