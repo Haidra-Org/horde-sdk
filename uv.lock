@@ -273,6 +273,15 @@ wheels = [
 ]
 
 [[package]]
+name = "boolean-py"
+version = "5.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/cf/85379f13b76f3a69bca86b60237978af17d6aa0bc5998978c3b8cf05abb2/boolean_py-5.0.tar.gz", hash = "sha256:60cbc4bad079753721d32649545505362c754e121570ada4658b852a3a318d95", size = 37047, upload-time = "2025-04-03T10:39:49.734Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e5/ca/78d423b324b8d77900030fa59c4aa9054261ef0925631cd2501dd015b7b7/boolean_py-5.0-py3-none-any.whl", hash = "sha256:ef28a70bd43115208441b53a045d1549e2f0ec6e3d08a9d142cbc41c1938e8d9", size = 26577, upload-time = "2025-04-03T10:39:48.449Z" },
+]
+
+[[package]]
 name = "build"
 version = "1.5.1"
 source = { registry = "https://pypi.org/simple" }
@@ -900,12 +909,13 @@ wheels = [
 
 [[package]]
 name = "horde-model-reference"
-version = "7.6.1"
+version = "8.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
     { name = "haidra-core" },
     { name = "httpx" },
+    { name = "license-expression" },
     { name = "loguru" },
     { name = "pydantic" },
     { name = "python-dotenv" },
@@ -915,9 +925,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "ujson" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1a/3c/714fdd7b04a572f2be6fd1dc0b555232d01650c7c47a9fc4828588251940/horde_model_reference-7.6.1.tar.gz", hash = "sha256:6e4fd0b7650640b66672337bb31877a4c93c2240c5e26bd7547c0f410e340b32", size = 884122, upload-time = "2026-08-04T01:09:34.763Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/90/63/eb7e70dc5d5db2f7128f9de6ca15b8cc02e5e4168512c9d55c6d8b5a1802/horde_model_reference-8.4.0.tar.gz", hash = "sha256:a3fa0b358a69064dbb463c6f5ca2a81fca2aafab11de4e8a54e77c313922c4ad", size = 982579, upload-time = "2026-08-26T19:35:56.869Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/a7/e84fb34611e85341989e8aa53daa358d8668c04454cbd68d32fb44107801/horde_model_reference-7.6.1-py3-none-any.whl", hash = "sha256:72ad6cfa55b9938267a0cbd5f5fdeb719f3768a511bad65810154d1095eeb48d", size = 393153, upload-time = "2026-08-04T01:09:32.696Z" },
+    { url = "https://files.pythonhosted.org/packages/32/53/bb01ff925aba602b6ac414c2869ec87c7e6a275d10c466870ba4666a4cc6/horde_model_reference-8.4.0-py3-none-any.whl", hash = "sha256:abc31b5dc6fa65225edb852b231fb99e94cda13626f53557017a0ec5fd123ae0", size = 450028, upload-time = "2026-08-26T19:35:55.309Z" },
 ]
 
 [[package]]
@@ -978,7 +988,7 @@ requires-dist = [
     { name = "aiofiles", specifier = ">=24.1.0" },
     { name = "aiohttp", specifier = ">=3.11.13" },
     { name = "certifi", specifier = ">=2025.1.31" },
-    { name = "horde-model-reference", specifier = ">=7.6.1,<8.0.0" },
+    { name = "horde-model-reference", specifier = ">=8.4.0,<9.0.0" },
     { name = "logfire", specifier = ">=3.7.1" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "networkx", specifier = ">=3.4.2" },
@@ -1171,6 +1181,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/0c/99/6203ce619dee940d6bfbe099ec3fe4be00a68e9d60f70abf906cf124fe66/librt-0.13.0-cp314-cp314t-win32.whl", hash = "sha256:5fdcf34f86de8fb66d7dc7589f96ba91c4aa46671200d400e6fd6f109a483f18", size = 104357, upload-time = "2026-07-08T12:26:09.828Z" },
     { url = "https://files.pythonhosted.org/packages/52/dd/843b6314087c41657c7036d7914d8f294bdf9b580aa8513ea0588c8e9a3d/librt-0.13.0-cp314-cp314t-win_amd64.whl", hash = "sha256:260c33e92263fa629b4f6d3c51967a1c2158fe6c33237aaa3ebeac586b085259", size = 126998, upload-time = "2026-07-08T12:26:10.975Z" },
     { url = "https://files.pythonhosted.org/packages/5f/5d/3dcec2884ba1b0806d1408612555c38dd5d68e90156b59f75f6e36435c3a/librt-0.13.0-cp314-cp314t-win_arm64.whl", hash = "sha256:2f281549a4c52ac7bb97997f14353f8bd0e53a34ca0dad1c905cfd0b4a58ae99", size = 110771, upload-time = "2026-07-08T12:26:12.303Z" },
+]
+
+[[package]]
+name = "license-expression"
+version = "30.4.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "boolean-py" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/40/71/d89bb0e71b1415453980fd32315f2a037aad9f7f70f695c7cec7035feb13/license_expression-30.4.4.tar.gz", hash = "sha256:73448f0aacd8d0808895bdc4b2c8e01a8d67646e4188f887375398c761f340fd", size = 186402, upload-time = "2025-07-22T11:13:32.17Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/af/40/791891d4c0c4dab4c5e187c17261cedc26285fd41541577f900470a45a4d/license_expression-30.4.4-py3-none-any.whl", hash = "sha256:421788fdcadb41f049d2dc934ce666626265aeccefddd25e162a26f23bcbf8a4", size = 120615, upload-time = "2025-07-22T11:13:31.217Z" },
 ]
 
 [[package]]
