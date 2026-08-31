@@ -15,7 +15,7 @@ Use the async client inside an existing `asyncio` application. The caller owns t
 is the observable end of its connection pool and must happen after all Horde calls finish.
 
 ```python
---8<-- "examples/docs/client_recipes.py:async-request"
+--8 < --"examples/docs/client_recipes.py:async-request"
 ```
 
 Verify that the coroutine returns non-empty bytes and that no unclosed-session warning appears. For multiple requests,
