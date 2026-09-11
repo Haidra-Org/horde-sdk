@@ -81,3 +81,10 @@ then projects the effective canonical profile onto the AI Horde's coarse image-p
 identity, model, policy, and numeric fields. Source-image and ControlNet bits include implicit workflow requirements;
 the SDXL bit requires SDXL support; and the all-extended bit is emitted only when every control type currently behind
 that protocol bit is supported. Runtime readiness and pressure may narrow those projected booleans further.
+
+Source-image parse metadata follows the original requested features. Plain txt2img does
+not decode unused source fields. ControlNet consumes its source even when the processing
+mode is txt2img; malformed base64 is recorded as `source_image / parse_failed`. An img2img
+or remix request degraded to txt2img retains its source warning. Malformed remix extras
+are skipped with indexed `extra_source_images / parse_failed` metadata. The converter
+requests exceptions from the base64 decoder so failures reach these metadata handlers.

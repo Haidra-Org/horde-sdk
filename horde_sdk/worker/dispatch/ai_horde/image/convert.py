@@ -403,7 +403,7 @@ def _decode_source_image_field(
         return None
 
     try:
-        return base64_str_to_bytes(base64_value)
+        return base64_str_to_bytes(base64_value, except_on_parse_fail=True)
     except Exception as err:
         faults.append(GenMetadataEntry(type=metadata_type, value=METADATA_VALUE.parse_failed))
         logger.warning(f"Failed to decode {metadata_type} data: {err}")
@@ -470,7 +470,7 @@ def _get_remix_images(
             continue
 
         try:
-            remix_image_bytes = base64_str_to_bytes(extra_source_image.image)
+            remix_image_bytes = base64_str_to_bytes(extra_source_image.image, except_on_parse_fail=True)
         except Exception as err:
             faults.append(
                 GenMetadataEntry(

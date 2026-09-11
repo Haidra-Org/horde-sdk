@@ -285,3 +285,56 @@ def test_truly_unknown_source_processing_still_passes_through(single_id: Generat
     )
 
     assert response.source_processing == "hologram"
+
+
+@pytest.mark.parametrize(
+    "mode,control,expected",
+    [
+        ("txt2img", None, False),
+        ("txt2img", "canny", True),
+        ("img2img", None, True),
+        ("remix", None, True),
+    ],
+)
+def test_source_faults_follow_requested_features(
+    single_id: GenerationID,
+    model_reference_manager: ModelReferenceManager,
+    mode: str,
+    control: str | None,
+    expected: bool,
+) -> None:
+    """Malformed input is a fault only when the original request consumes it."""
+    from horde_sdk.ai_horde_api.consts import METADATA_TYPE, METADATA_VALUE
+    from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_CONTROLNETS
+
+    response = _make_pop_response(single_id, source_image=UNDECODABLE_SOURCE_IMAGE, source_processing=mode)
+    response = response.model_copy(
+        update={
+            "payload": response.payload.model_copy(
+                update={"control_type": KNOWN_IMAGE_CONTROLNETS(control) if control else None},
+            )
+        }
+    )
+    result = convert_image_job_pop_response_to_parameters(response, model_reference_manager)
+    source_faults = [fault for fault in result.faults if fault.type_ == METADATA_TYPE.source_image]
+    assert len(source_faults) == int(expected)
+    assert all(fault.value == METADATA_VALUE.parse_failed for fault in source_faults)
+    assert result.generation_parameters.source_processing == KNOWN_IMAGE_SOURCE_PROCESSING.txt2img
+
+
+def test_malformed_remix_extra_is_skipped_with_fault() -> None:
+    """The decoder's failure must not become a RemixImageEntry with None bytes."""
+    from unittest.mock import Mock
+
+    from horde_sdk.ai_horde_api.apimodels import ExtraSourceImageEntry
+    from horde_sdk.ai_horde_api.consts import METADATA_TYPE, METADATA_VALUE
+    from horde_sdk.worker.dispatch.ai_horde.image.convert import _get_remix_images
+
+    response = Mock(spec=ImageGenerateJobPopResponse)
+    response.extra_source_images = [ExtraSourceImageEntry(image=UNDECODABLE_SOURCE_IMAGE)]
+    response.get_downloaded_extra_source_images.return_value = None
+    faults = []
+    assert _get_remix_images(response, faults) == []
+    assert [(fault.type_, fault.value, fault.ref) for fault in faults] == [
+        (METADATA_TYPE.extra_source_images, METADATA_VALUE.parse_failed, "0"),
+    ]
