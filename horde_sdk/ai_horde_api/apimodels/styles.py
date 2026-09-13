@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import auto
 from typing import Literal, override
 
@@ -8,7 +9,7 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,
     _BaseImageGenerateParamMixin,
 )
-from horde_sdk.ai_horde_api.apimodels.generate.text.async_ import _BasePayloadKoboldMixin
+from horde_sdk.ai_horde_api.apimodels.generate.text.async_ import ContextFit, _BasePayloadKoboldMixin
 from horde_sdk.ai_horde_api.apimodels.sharedkeys import (
     ExpiryStrSharedKeyDetailsResponse,
 )
@@ -96,6 +97,201 @@ class ModelStyleInputParamsStable(_BaseImageGenerateParamMixin):
         return "ModelStyleInputParamsStable"
 
 
+class StyleParameterOverride(StrEnum):
+    """How much of a request's own params survive the style it generates under."""
+
+    none = auto()
+    """The style's params win outright and a request's params body is ignored."""
+
+    listed = auto()
+    """Only the params named in `overridable` may come from the request.
+
+    Any other param the request sets is ignored without error, because clients commonly send every param
+    that has a default."""
+
+    all = auto()
+    """Every param may come from the request. The ceilings still apply."""
+
+
+class StyleParameterPolicy(HordeAPIObjectBaseModel):
+    """What a style permits a request to say about the params it generates under.
+
+    v2 API Model: `StyleParameterPolicy`
+    """
+
+    override_: StyleParameterOverride = Field(
+        default=StyleParameterOverride.none,
+        alias="override",
+    )
+    """Which of the request's params survive this style."""
+
+    overridable: list[str] | None = Field(
+        default=None,
+        examples=[
+            ["steps"],
+        ],
+    )
+    """The params a request may set. Only read under the `listed` override mode."""
+
+    ceilings: dict[str, int] | None = Field(
+        default=None,
+        examples=[
+            {"steps": 30},
+        ],
+    )
+    """The largest value a request under this style may ask for, per param.
+
+    A request above a ceiling is refused with `StyleParameterAboveCeiling` rather than trimmed. Which
+    params can be capped depends on the style's type: a text style can cap `max_length`,
+    `max_context_length` and `n`, and an image style `width`, `height`, `steps` and `n`.
+
+    A ceiling is accepted only on a param the override mode hands to the request, since no other value is
+    ever measured against it. `n` always comes from the request and may be capped under every mode. Under
+    `listed` a ceiling may also sit on a param in `overridable`, and under `all` on any param the style's
+    type can cap. The horde rejects any other ceiling when the style is written."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "StyleParameterPolicy"
+
+
+class StyleTemplateField(HordeAPIObjectBaseModel):
+    """One named placeholder a style's prompt accepts from the request.
+
+    v2 API Model: `StyleTemplateField`
+    """
+
+    name: str = Field(
+        min_length=1,
+        max_length=32,
+        examples=[
+            "caption",
+        ],
+    )
+    """The placeholder in the style's prompt this fills, written without braces."""
+
+    description: str = Field(
+        min_length=1,
+        max_length=200,
+        examples=[
+            "What the picture shows",
+        ],
+    )
+    """What the style expects in this placeholder."""
+
+    required: bool = False
+    """When true, a request using this style has to supply this field."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "StyleTemplateField"
+
+
+STYLE_CONTRACT_SCHEMA_VERSION: Literal[1] = 1
+"""Identify the version of the style contract this SDK understands.
+
+The API raises its own version whenever what it publishes changes meaning, so a contract served under
+a different version is not parsed against these models.
+"""
+
+
+class StyleContractProtectedPattern(HordeAPIObjectBaseModel):
+    """A run of template text the API leaves exactly as it was written.
+
+    v2 API Model: `StyleContractProtectedPattern`
+    """
+
+    pattern: str = Field(
+        examples=[
+            r"\{\{\[[A-Z_]+\]\}\}",
+        ],
+    )
+    """The pattern as a regular expression, matched against the style's prompt."""
+
+    description: str
+    """What the matching text is for."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "StyleContractProtectedPattern"
+
+
+class StyleContractParameterCeiling(HordeAPIObjectBaseModel):
+    """The range a ceiling on one param may be set to.
+
+    The API publishes these inside an untyped object, so they have no model name of their own.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
+    """
+
+    minimum: int | None = None
+    """The lowest value a ceiling on this param may take, or `None` when the param has no lower bound."""
+
+    maximum: int | None = None
+    """The highest value a ceiling on this param may take, or `None` when the param has no upper bound."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return _ANONYMOUS_MODEL
+
+
+@Unhashable
+@Unequatable
+class StyleContractStyleType(HordeAPIObjectBaseModel):
+    """What one type of style may declare, and what becomes of the braces in its prompt.
+
+    v2 API Model: `StyleContractStyleType`
+    """
+
+    placeholders: list[str] = Field(
+        examples=[
+            ["p"],
+        ],
+    )
+    """The placeholders the API fills in itself, written without braces. None of them can be declared as a
+    template field."""
+
+    declared_fields_are_placeholders: bool
+    """Whether a placeholder declared in `template_fields` is filled from the request's own `template_fields`."""
+
+    protected_patterns: list[StyleContractProtectedPattern]
+    """Template text the API leaves alone, empty for a type that protects nothing."""
+
+    brace_handling: str
+    """What the braces in this type's prompt template mean."""
+
+    overridable_parameters: list[str] = Field(
+        examples=[
+            ["steps"],
+        ],
+    )
+    """Every param a policy of this type may put in `overridable`. Anything outside this list is refused
+    when the style is written."""
+
+    ceiling_parameters: dict[str, StyleContractParameterCeiling]
+    """The params a policy of this type may cap, each with the range its ceiling may be set to."""
+
+    context_fit_modes: list[ContextFit] | None = None
+    """How a request of this type may be sized against its prompt, or `None` for a type that cannot be sized."""
+
+    style_write_rate_limits: list[str] = Field(
+        examples=[
+            ["20/hour", "2/second"],
+        ],
+    )
+    """Every limit a client writing a style of this type is held to. All of them apply at once, and a
+    whitelisted service address is allowed more."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "StyleContractStyleType"
+
+
 @Unhashable
 @Unequatable
 class _StyleMixin(HordeAPIObjectBaseModel):
@@ -137,6 +333,12 @@ class _StyleMixin(HordeAPIObjectBaseModel):
     models: list[str] | None = None
     """The models which this style will attempt to use."""
 
+    parameter_policy: StyleParameterPolicy | None = None
+    """What a request using this style may say about the params it generates under."""
+
+    template_fields: list[StyleTemplateField] | None = None
+    """The named placeholders this style's prompt accepts from the request, at most 16 of them."""
+
 
 class _StyleResponseMixin(_StyleMixin):
     """A mixin representing the common fields of a style endpoint response."""
@@ -152,6 +354,9 @@ class _StyleResponseMixin(_StyleMixin):
 
     use_count: int | None = None
     """The amount of times this style has been used in generations."""
+
+    updated: datetime | None = None
+    """When this style was last modified, so a client can notice a style it cached has changed."""
 
     sharedkey: str | None = Field(
         default=None,
@@ -182,7 +387,10 @@ class StyleStable(HordeResponseBaseModel, _StyleResponseMixin):
     examples: list[StyleExample] | None = None
     """A list of examples of images generated by this style."""
     shared_key: ExpiryStrSharedKeyDetailsResponse | None = None
-    """The shared key backing this style, if any."""
+    """The shared key backing this style, if any.
+
+    Served only to the style's owner, by the single-style routes (by id or by name) when the request's
+    `apikey` resolves to that owner. The list routes and every other caller get null."""
 
     @override
     @classmethod
@@ -259,8 +467,11 @@ class AllStylesImageRequest(
 
 class SingleStyleImageByIDRequest(
     BaseAIHordeRequest,
+    APIKeyAllowedInRequestMixin,
 ):
     """Request to get a single image style by its ID.
+
+    The response's `shared_key` is filled only when `apikey` belongs to the style's owner.
 
     Represents a GET request to the /v2/styles/image/{style_id} endpoint.
     """
@@ -288,11 +499,19 @@ class SingleStyleImageByIDRequest(
     def get_default_success_response_type(cls) -> type[StyleStable]:
         return StyleStable
 
+    @override
+    @classmethod
+    def is_api_key_required(cls) -> bool:
+        return False
+
 
 class SingleStyleImageByNameRequest(
     BaseAIHordeRequest,
+    APIKeyAllowedInRequestMixin,
 ):
     """Request to get a single image style by its name.
+
+    The response's `shared_key` is filled only when `apikey` belongs to the style's owner.
 
     Represents a GET request to the /v2/styles/image_by_name/{style_name} endpoint.
     """
@@ -319,6 +538,11 @@ class SingleStyleImageByNameRequest(
     @classmethod
     def get_default_success_response_type(cls) -> type[StyleStable]:
         return StyleStable
+
+    @override
+    @classmethod
+    def is_api_key_required(cls) -> bool:
+        return False
 
 
 class ModifyStyleImageResponse(
@@ -647,6 +871,12 @@ class ModelStyleInputParamsKobold(HordeResponseBaseModel, _BasePayloadKoboldMixi
     v2 API Model: `ModelStyleInputParamsKobold`
     """
 
+    max_length: int | None = Field(default=None, ge=16, le=4096)
+    """Number of tokens to generate."""
+
+    max_context_length: int | None = Field(default=None, ge=80, le=1048576)
+    """Maximum number of tokens to send to the model."""
+
     @override
     @classmethod
     def get_api_model_name(cls) -> str:
@@ -665,6 +895,12 @@ class StyleKobold(HordeResponseBaseModel, _StyleResponseMixin):
 
     params: ModelStyleInputParamsKobold | None = None
     """The parameters to use for all generations using this style, if not set by the user."""
+
+    shared_key: ExpiryStrSharedKeyDetailsResponse | None = None
+    """The shared key backing this style, if any.
+
+    Served only to the style's owner, by the single-style routes (by id or by name) when the request's
+    `apikey` resolves to that owner. The list routes and every other caller get null."""
 
     @override
     @classmethod
@@ -739,8 +975,11 @@ class AllStylesTextRequest(
 
 class SingleStyleTextByIDRequest(
     BaseAIHordeRequest,
+    APIKeyAllowedInRequestMixin,
 ):
     """Request to get a single text style by its ID.
+
+    The response's `shared_key` is filled only when `apikey` belongs to the style's owner.
 
     Represents a GET request to the /v2/styles/text/{style_id} endpoint.
     """
@@ -768,11 +1007,19 @@ class SingleStyleTextByIDRequest(
     def get_default_success_response_type(cls) -> type[StyleKobold]:
         return StyleKobold
 
+    @override
+    @classmethod
+    def is_api_key_required(cls) -> bool:
+        return False
+
 
 class SingleStyleTextByNameRequest(
     BaseAIHordeRequest,
+    APIKeyAllowedInRequestMixin,
 ):
     """Request to get a single text style by its name.
+
+    The response's `shared_key` is filled only when `apikey` belongs to the style's owner.
 
     Represents a GET request to the /v2/styles/text_by_name/{style_name} endpoint.
     """
@@ -799,6 +1046,11 @@ class SingleStyleTextByNameRequest(
     @classmethod
     def get_default_success_response_type(cls) -> type[StyleKobold]:
         return StyleKobold
+
+    @override
+    @classmethod
+    def is_api_key_required(cls) -> bool:
+        return False
 
 
 class ModifyStyleTextResponse(

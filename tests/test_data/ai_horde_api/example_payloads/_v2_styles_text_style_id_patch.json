@@ -27,8 +27,24 @@
         "min_p": 0.0,
         "smoothing_factor": 0.0,
         "dynatemp_range": 0.0,
-        "dynatemp_exponent": 1.0
+        "dynatemp_exponent": 1.0,
+        "max_length": 80,
+        "max_context_length": 2048
     },
+    "parameter_policy": {
+        "override": "all",
+        "ceilings": {
+            "max_length": 512,
+            "max_context_length": 4096
+        }
+    },
+    "template_fields": [
+        {
+            "name": "caption",
+            "description": "What the picture shows",
+            "required": true
+        }
+    ],
     "public": true,
     "nsfw": false,
     "tags": [

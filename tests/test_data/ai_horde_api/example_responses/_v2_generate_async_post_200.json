@@ -1,3 +1,22 @@
 {
-    "kudos": 10
+    "kudos": 10,
+    "resolved": {
+        "prompt": "a lighthouse in a storm, stormy ### blurry",
+        "params": {
+            "sampler_name": "k_dpmpp_2m",
+            "cfg_scale": 7.5,
+            "height": 1024,
+            "width": 1024,
+            "steps": 30,
+            "n": 1
+        },
+        "models": [
+            "stable_diffusion"
+        ],
+        "style": {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "name": "My Awesome Image Style"
+        },
+        "negative_prompt": "blurry"
+    }
 }

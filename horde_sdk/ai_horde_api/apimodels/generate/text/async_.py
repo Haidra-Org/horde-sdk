@@ -1,15 +1,18 @@
 from __future__ import annotations
 
+from enum import auto
 from typing import override
 
 from loguru import logger
 from pydantic import Field, model_validator
+from strenum import StrEnum
 
 from horde_sdk.ai_horde_api.apimodels.base import (
     BaseAIHordeRequest,
     ExtraSourceImageEntry,
     JobResponseMixin,
     SingleWarningEntry,
+    _ResolvedRequestMixin,
 )
 from horde_sdk.ai_horde_api.apimodels.generate.text.status import DeleteTextGenerateRequest, TextGenerateStatusRequest
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
@@ -18,12 +21,29 @@ from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
     HordeAPIData,
+    HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
     HordeResponseTypes,
     RequestUsesWorkerMixin,
     ResponseRequiringFollowUpMixin,
 )
 from horde_sdk.generic_api.decoration import Unhashable
+
+
+class ContextFit(StrEnum):
+    """What the horde does when a request's prompt does not fit the context it asked for."""
+
+    ignore = auto()
+    """Send it anyway. The worker truncates the front of the prompt."""
+
+    reject = auto()
+    """Refuse the request rather than have the worker cut the front of the prompt away."""
+
+    grow = auto()
+    """Raise `max_context_length` until the prompt fits, and charge for the larger context.
+
+    When no online text worker serves the request's models there is nothing to grow into, so a prompt
+    that does not fit is refused with `PromptExceedsContext` at the requested size."""
 
 
 class TextGenerateAsyncResponse(
@@ -193,13 +213,13 @@ class ModelPayloadRootKobold(_BasePayloadKoboldMixin):
     n: int | None = Field(default=None, examples=[1], ge=1, le=20)
     """The number of generations to produce."""
 
-    max_length: int | None = Field(80, ge=16, le=1024)
+    max_length: int | None = Field(80, ge=16, le=4096)
     """Number of tokens to generate."""
 
     max_context_length: int | None = Field(
-        default=1024,
+        default=2048,
         ge=80,
-        le=32000,
+        le=1048576,
     )
     """Maximum number of tokens to send to the model."""
 
@@ -209,6 +229,31 @@ class ModelGenerationInputKobold(ModelPayloadRootKobold):
     """API Parity intermediate model for generation input."""
 
 
+@Unhashable
+class ResolvedTextRequest(_ResolvedRequestMixin, HordeAPIObjectBaseModel):
+    """What the horde turned a text request into, as reported by a dry run.
+
+    v2 API Model: `ResolvedRequestKobold`
+    """
+
+    params: ModelGenerationInputKobold | None = None
+    """The params the request will run under, after the style, its ceilings and any context growth."""
+
+    estimated_prompt_tokens: int | None = None
+    """What the prompt is estimated to be worth in tokens.
+
+    The horde runs no tokenizer, so this is a deliberately conservative character count."""
+
+    context_fit: ContextFit | None = None
+    """The context fit policy that was applied."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "ResolvedRequestKobold"
+
+
+@Unhashable
 class TextGenerateAsyncDryRunResponse(HordeResponseBaseModel):
     """Represents the data returned from the /v2/generate/text/async endpoint with http status code 200.
 
@@ -217,6 +262,9 @@ class TextGenerateAsyncDryRunResponse(HordeResponseBaseModel):
 
     kudos: float
     """The expected kudos consumption for this request."""
+
+    resolved: ResolvedTextRequest | None = None
+    """What the horde turned this request into."""
 
     @override
     @classmethod
@@ -250,6 +298,19 @@ class TextGenerateAsyncRequest(
         min_length=1,
     )
     """Specify which softprompt needs to be used to service this request."""
+
+    template_fields: dict[str, str] | None = Field(
+        default=None,
+        examples=[
+            {"caption": "a lighthouse in a storm"},
+        ],
+    )
+    """The named placeholders the requested style's prompt accepts, keyed by field name.
+
+    Only accepted alongside `style`, and only naming fields that style declares."""
+
+    context_fit: ContextFit | None = None
+    """What to do when the prompt does not fit the requested `max_context_length`."""
 
     @override
     @classmethod

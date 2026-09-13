@@ -42,6 +42,19 @@
         "transparent": false,
         "steps": 1.0
     },
+    "parameter_policy": {
+        "override": "all",
+        "ceilings": {
+            "steps": 30
+        }
+    },
+    "template_fields": [
+        {
+            "name": "caption",
+            "description": "What the picture shows",
+            "required": true
+        }
+    ],
     "public": true,
     "nsfw": false,
     "tags": [

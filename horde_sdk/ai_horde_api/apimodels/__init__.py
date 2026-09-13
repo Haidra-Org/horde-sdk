@@ -41,10 +41,12 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     JobSubmitResponse,
     LorasPayloadEntry,
     MessageSpecifiesSharedKeyMixin,
+    ResolvedRequestStyle,
     SingleWarningEntry,
     TIPayloadEntry,
     WorkerRequestMixin,
     WorkerRequestNameMixin,
+    _ResolvedRequestMixin,
 )
 from horde_sdk.ai_horde_api.apimodels.collections import (
     AllCollectionsRequest,
@@ -92,6 +94,7 @@ from horde_sdk.ai_horde_api.apimodels.generate.async_ import (
     ImageGenerateAsyncRequest,
     ImageGenerateAsyncResponse,
     ImageGenerationInputPayload,
+    ResolvedImageRequest,
 )
 from horde_sdk.ai_horde_api.apimodels.generate.check import ImageGenerateCheckRequest, ImageGenerateCheckResponse
 from horde_sdk.ai_horde_api.apimodels.generate.pop import (
@@ -124,8 +127,10 @@ from horde_sdk.ai_horde_api.apimodels.generate.submit import (
     ImageGenerationJobSubmitRequest,
 )
 from horde_sdk.ai_horde_api.apimodels.generate.text.async_ import (
+    ContextFit,
     ModelGenerationInputKobold,
     ModelPayloadRootKobold,
+    ResolvedTextRequest,
     TextGenerateAsyncDryRunResponse,
     TextGenerateAsyncRequest,
     TextGenerateAsyncResponse,
@@ -205,8 +210,11 @@ from horde_sdk.ai_horde_api.apimodels.status import (
     NewsResponse,
     SamplerConstraintsRequest,
     SamplerConstraintsResponse,
+    StyleContractRequest,
+    StyleContractResponse,
 )
 from horde_sdk.ai_horde_api.apimodels.styles import (
+    STYLE_CONTRACT_SCHEMA_VERSION,
     AllStylesImageRequest,
     AllStylesImageResponse,
     AllStylesTextRequest,
@@ -228,6 +236,9 @@ from horde_sdk.ai_horde_api.apimodels.styles import (
     SingleStyleImageByNameRequest,
     SingleStyleTextByIDRequest,
     SingleStyleTextByNameRequest,
+    StyleContractParameterCeiling,
+    StyleContractProtectedPattern,
+    StyleContractStyleType,
     StyleExample,
     StyleImageExampleAddRequest,
     StyleImageExampleDeleteRequest,
@@ -235,7 +246,10 @@ from horde_sdk.ai_horde_api.apimodels.styles import (
     StyleImageExampleModifyRequest,
     StyleImageExampleModifyResponse,
     StyleKobold,
+    StyleParameterOverride,
+    StyleParameterPolicy,
     StyleStable,
+    StyleTemplateField,
     StyleType,
 )
 from horde_sdk.ai_horde_api.apimodels.teams import (
@@ -314,6 +328,7 @@ JobPopResponseTypeVar = TypeVar(
 
 __all__ = [
     "KNOWN_ALCHEMY_TYPES",
+    "STYLE_CONTRACT_SCHEMA_VERSION",
     "AIHordeDocumentRequestMixin",
     "AIHordeGetPrivacyPolicyRequest",
     "AIHordeGetSponsorsRequest",
@@ -367,6 +382,7 @@ __all__ = [
     "CollectionByNameRequest",
     "ContainsMessageResponseMixin",
     "ContainsWarningsResponseMixin",
+    "ContextFit",
     "ContributionsDetails",
     "CreateCollectionRequest",
     "CreateCollectionResponse",
@@ -486,6 +502,9 @@ __all__ = [
     "RateRequest",
     "RateResponse",
     "RequestUsesWorkerMixin",
+    "ResolvedImageRequest",
+    "ResolvedRequestStyle",
+    "ResolvedTextRequest",
     "ResponseGenerationProgressCombinedMixin",
     "ResponseGenerationProgressInfoMixin",
     "ResponseModelCollection",
@@ -521,6 +540,11 @@ __all__ = [
     "SingleWorkerMessageRequest",
     "SingleWorkerNameDetailsRequest",
     "StatsModelsTimeframe",
+    "StyleContractParameterCeiling",
+    "StyleContractProtectedPattern",
+    "StyleContractRequest",
+    "StyleContractResponse",
+    "StyleContractStyleType",
     "StyleExample",
     "StyleImageExampleAddRequest",
     "StyleImageExampleDeleteRequest",
@@ -528,7 +552,10 @@ __all__ = [
     "StyleImageExampleModifyRequest",
     "StyleImageExampleModifyResponse",
     "StyleKobold",
+    "StyleParameterOverride",
+    "StyleParameterPolicy",
     "StyleStable",
+    "StyleTemplateField",
     "StyleType",
     "TIPayloadEntry",
     "TeamDetails",
@@ -562,4 +589,5 @@ __all__ = [
     "_InputModelCollectionMixin",
     "_ModifyUserBase",
     "_PopInputKobold",
+    "_ResolvedRequestMixin",
 ]

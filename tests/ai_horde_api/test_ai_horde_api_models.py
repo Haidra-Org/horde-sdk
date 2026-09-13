@@ -10,6 +10,7 @@ import PIL.Image
 import pytest
 from pydantic import ValidationError
 
+from horde_sdk.ai_horde_api.ai_horde_clients import AIHordeAPIManualClient
 from horde_sdk.ai_horde_api.apimodels import (
     AlchemyJobPopResponse,
     AlchemyPopFormPayload,
@@ -25,6 +26,10 @@ from horde_sdk.ai_horde_api.apimodels import (
     ImageGenerateJobPopResponse,
     ImageGenerateJobPopSkippedStatus,
     ImageGenerationInputPayload,
+    SingleStyleImageByIDRequest,
+    SingleStyleImageByNameRequest,
+    SingleStyleTextByIDRequest,
+    SingleStyleTextByNameRequest,
     TeamDetailsLite,
     UsageDetails,
     UserDetailsResponse,
@@ -40,6 +45,7 @@ from horde_sdk.ai_horde_api.apimodels.alchemy.status import (
     AlchemyUpscaleResult,
     AlchemyVectorizeResult,
 )
+from horde_sdk.ai_horde_api.apimodels.base import BaseAIHordeRequest
 from horde_sdk.ai_horde_api.consts import (
     AI_HORDE_WORKER_TYPES,
     METADATA_TYPE,
@@ -53,6 +59,7 @@ from horde_sdk.generation_parameters.image.consts import (
     KNOWN_IMAGE_SOURCE_PROCESSING,
 )
 from horde_sdk.generation_parameters.image.sampler_work import SamplerExecutionContractVersion
+from horde_sdk.generic_api.apimodels import APIKeyAllowedInRequestMixin
 
 
 def test_api_endpoint() -> None:
@@ -1087,3 +1094,26 @@ def test_alchemy_status_excludes_unfinished_vectorize_results() -> None:
     assert len(response.forms) == 2
     assert len(response.all_vectorize_results) == 1
     assert response.all_vectorize_results[0].vectorize == svg
+
+
+_SINGLE_STYLE_GET_REQUESTS: list[BaseAIHordeRequest] = [
+    SingleStyleImageByIDRequest(style_id="00000000-0000-0000-0000-000000000000"),
+    SingleStyleImageByNameRequest(style_name="db0#1::style::example"),
+    SingleStyleTextByIDRequest(style_id="00000000-0000-0000-0000-000000000000"),
+    SingleStyleTextByNameRequest(style_name="db0#1::style::example"),
+]
+
+
+@pytest.mark.parametrize("request_template", _SINGLE_STYLE_GET_REQUESTS, ids=lambda r: type(r).__name__)
+def test_single_style_get_requests_send_an_optional_apikey(request_template: BaseAIHordeRequest) -> None:
+    """A single-style GET carries an optional `apikey` header, since the horde fills `shared_key` for the owner."""
+    assert isinstance(request_template, APIKeyAllowedInRequestMixin)
+    assert type(request_template).is_api_key_required() is False
+
+    owner_key = "0123456789abcdefghijkl"
+    api_request = request_template.model_copy(update={"apikey": owner_key})
+    parsed = AIHordeAPIManualClient()._validate_and_prepare_request(api_request)
+
+    assert parsed.request_headers["apikey"] == owner_key
+    assert parsed.request_body is None
+    assert "{" not in parsed.endpoint_no_query

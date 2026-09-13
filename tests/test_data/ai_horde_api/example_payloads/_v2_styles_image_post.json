@@ -42,6 +42,31 @@
         "transparent": false,
         "steps": 1.0
     },
+    "parameter_policy": {
+        "override": "listed",
+        "overridable": [
+            "steps",
+            "width",
+            "height"
+        ],
+        "ceilings": {
+            "steps": 30,
+            "width": 1024,
+            "height": 1024
+        }
+    },
+    "template_fields": [
+        {
+            "name": "caption",
+            "description": "What the picture shows",
+            "required": true
+        },
+        {
+            "name": "mood",
+            "description": "The mood to render it in",
+            "required": false
+        }
+    ],
     "public": true,
     "nsfw": false,
     "tags": [

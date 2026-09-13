@@ -233,6 +233,37 @@ class SingleWarningEntry(HordeAPIObjectBaseModel):
         return "RequestSingleWarning"
 
 
+class ResolvedRequestStyle(HordeAPIObjectBaseModel):
+    """The style a dry run resolved a request under.
+
+    v2 API Model: `ResolvedRequestStyle`
+    """
+
+    id_: str = Field(alias="id")
+    """The UUID of the style that was applied."""
+
+    name: str
+    """The name of the style that was applied."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "ResolvedRequestStyle"
+
+
+class _ResolvedRequestMixin(HordeAPIData):
+    """The part of a dry run's resolved request that both generation types report."""
+
+    prompt: str
+    """The prompt as it will be sent, after any style templating."""
+
+    models: list[str] | None = None
+    """The models this request will accept."""
+
+    style: ResolvedRequestStyle | None = None
+    """The style that was applied, or `None` when none was."""
+
+
 class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):
     """Base class for all shared image generation parameters."""
 

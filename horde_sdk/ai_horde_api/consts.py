@@ -329,6 +329,21 @@ class RC(StrEnum):
     """The text request has an excessive stop sequence."""
     TokenOverflow = auto()
     MoreThanMinExtraSourceImage = auto()
+    PromptExceedsContext = auto()
+    """The prompt does not fit the context length the request would run under."""
+    SharedKeyAssignedStyles = auto()
+    """This shared key is restricted to specific styles."""
+    StyleDeclarationInvalid = auto()
+    """A style's stored parameter policy or template fields no longer pass validation, so the style cannot be
+    applied."""
+    StyleMismatch = auto()
+    """The style's type does not match the request, or a collection mixes image and text styles."""
+    StyleParameterAboveCeiling = auto()
+    """A requested parameter is above the ceiling the style puts on it."""
+    StylePolicyOverridableMisplaced = auto()
+    """A style's overridable list is only read under the 'listed' override mode."""
+    TemplateFieldsRequireStyle = auto()
+    """Template fields can only be sent alongside a style."""
 
 
 class PROGRESS_STATE(StrEnum):

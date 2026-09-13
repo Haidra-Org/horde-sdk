@@ -1,9 +1,13 @@
 from collections.abc import Iterator
-from typing import override
+from typing import Literal, override
 
 from pydantic import Field
 
 from horde_sdk.ai_horde_api.apimodels.base import ActiveModel, BaseAIHordeRequest
+from horde_sdk.ai_horde_api.apimodels.styles import (
+    STYLE_CONTRACT_SCHEMA_VERSION,
+    StyleContractStyleType,
+)
 from horde_sdk.ai_horde_api.consts import MODEL_STATE, MODEL_TYPE
 from horde_sdk.ai_horde_api.endpoints import AI_HORDE_API_ENDPOINT_SUBPATH
 from horde_sdk.consts import _ANONYMOUS_MODEL, HTTPMethod
@@ -472,3 +476,56 @@ class SamplerConstraintsRequest(BaseAIHordeRequest):
     @classmethod
     def get_default_success_response_type(cls) -> type[SamplerConstraintsResponse]:
         return SamplerConstraintsResponse
+
+
+@Unhashable
+@Unequatable
+class StyleContractResponse(HordeResponseBaseModel):
+    """What a style of either type may declare, and what becomes of the braces in its prompt.
+
+    Represents the data returned from the /v2/status/style_contract endpoint with http status code 200.
+
+    v2 API Model: `StyleContract`
+    """
+
+    schema_version: Literal[1] = STYLE_CONTRACT_SCHEMA_VERSION
+    """Which version of the contract is being served. It is raised whenever what is published changes
+    meaning, so a client pins it and re-reads the contract when it moves."""
+
+    text: StyleContractStyleType
+    """What a text style may declare."""
+
+    image: StyleContractStyleType
+    """What an image style may declare."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return "StyleContract"
+
+
+class StyleContractRequest(BaseAIHordeRequest):
+    """Request the style contract, which says what a style may declare and how its prompt is filled in.
+
+    Represents a GET request to the /v2/status/style_contract endpoint.
+    """
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return None
+
+    @override
+    @classmethod
+    def get_http_method(cls) -> HTTPMethod:
+        return HTTPMethod.GET
+
+    @override
+    @classmethod
+    def get_api_endpoint_subpath(cls) -> AI_HORDE_API_ENDPOINT_SUBPATH:
+        return AI_HORDE_API_ENDPOINT_SUBPATH.v2_status_style_contract
+
+    @override
+    @classmethod
+    def get_default_success_response_type(cls) -> type[StyleContractResponse]:
+        return StyleContractResponse

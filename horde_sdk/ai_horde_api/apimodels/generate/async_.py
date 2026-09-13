@@ -11,6 +11,7 @@ from horde_sdk.ai_horde_api.apimodels.base import (
     ImageGenerateParamMixin,
     JobResponseMixin,
     SingleWarningEntry,
+    _ResolvedRequestMixin,
 )
 from horde_sdk.ai_horde_api.apimodels.generate.check import ImageGenerateCheckRequest
 from horde_sdk.ai_horde_api.apimodels.generate.status import DeleteImageGenerateRequest, ImageGenerateStatusRequest
@@ -20,6 +21,7 @@ from horde_sdk.generation_parameters.image.consts import KNOWN_IMAGE_SOURCE_PROC
 from horde_sdk.generic_api.apimodels import (
     APIKeyAllowedInRequestMixin,
     ContainsMessageResponseMixin,
+    HordeAPIObjectBaseModel,
     HordeResponseBaseModel,
     HordeResponseTypes,
     RequestUsesWorkerMixin,
@@ -97,23 +99,6 @@ class ImageGenerateAsyncResponse(
         return isinstance(__value, ImageGenerateAsyncResponse) and self.id_ == __value.id_
 
 
-class ImageGenerateAsyncDryRunResponse(HordeResponseBaseModel):
-    """Request the expected cost of the job without actually starting the job.
-
-    Represents the data returned from the /v2/generate/async endpoint with http status code 200.
-
-    v2 API Model: `_ANONYMOUS_MODEL`
-    """
-
-    kudos: float
-    """The expected kudos consumption for this request."""
-
-    @override
-    @classmethod
-    def get_api_model_name(cls) -> str | None:
-        return _ANONYMOUS_MODEL
-
-
 class ImageGenerationInputPayload(ImageGenerateParamMixin):
     """Represents the 'params' field in the `/v2/generate/async` endpoint.
 
@@ -139,6 +124,46 @@ class ImageGenerationInputPayload(ImageGenerateParamMixin):
             return 1
 
         return value
+
+
+@Unhashable
+class ResolvedImageRequest(_ResolvedRequestMixin, HordeAPIObjectBaseModel):
+    """What the horde turned an image request into, as reported by a dry run.
+
+    v2 API Model: `ResolvedRequestStable`
+    """
+
+    params: ImageGenerationInputPayload | None = None
+    """The params the request will run under, after the style and its ceilings."""
+
+    negative_prompt: str | None = None
+    """The half of the prompt to keep away from, or `None` when the prompt carries no separator."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "ResolvedRequestStable"
+
+
+@Unhashable
+class ImageGenerateAsyncDryRunResponse(HordeResponseBaseModel):
+    """Request the expected cost of the job without actually starting the job.
+
+    Represents the data returned from the /v2/generate/async endpoint with http status code 200.
+
+    v2 API Model: `_ANONYMOUS_MODEL`
+    """
+
+    kudos: float
+    """The expected kudos consumption for this request."""
+
+    resolved: ResolvedImageRequest | None = None
+    """What the horde turned this request into."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str | None:
+        return _ANONYMOUS_MODEL
 
 
 @Unhashable
@@ -190,6 +215,16 @@ class ImageGenerateAsyncRequest(
     be embedded as alpha channel."""
     extra_source_images: list[ExtraSourceImageEntry] | None = None
     """Additional uploaded images which can be used for further operations."""
+
+    template_fields: dict[str, str] | None = Field(
+        default=None,
+        examples=[
+            {"caption": "a lighthouse in a storm"},
+        ],
+    )
+    """The named placeholders the requested style's prompt accepts, keyed by field name.
+
+    Only accepted alongside `style`, and only naming fields that style declares."""
 
     @model_validator(mode="after")
     def validate_censor_nsfw(self) -> ImageGenerateAsyncRequest:

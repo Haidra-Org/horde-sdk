@@ -1,0 +1,132 @@
+{
+    "schema_version": 1,
+    "text": {
+        "placeholders": [
+            "p"
+        ],
+        "declared_fields_are_placeholders": true,
+        "protected_patterns": [
+            {
+                "pattern": "\\{\\{\\[[A-Z_]+\\]\\}\\}",
+                "description": "An instruct placeholder a text backend fills in when it builds its own prompt, such as '{{[INPUT]}}' or '{{[OUTPUT]}}'."
+            }
+        ],
+        "brace_handling": "A doubled brace is one literal brace, '{p}' and the placeholders this style declares are filled in, and a placeholder nothing fills becomes the empty string. The protected patterns below are the exception and are left exactly as written.",
+        "overridable_parameters": [
+            "dynatemp_exponent",
+            "dynatemp_range",
+            "frmtadsnsp",
+            "frmtrmblln",
+            "frmtrmspch",
+            "frmttriminc",
+            "max_context_length",
+            "max_length",
+            "min_p",
+            "rep_pen",
+            "rep_pen_range",
+            "rep_pen_slope",
+            "sampler_order",
+            "singleline",
+            "smoothing_factor",
+            "stop_sequence",
+            "temperature",
+            "tfs",
+            "top_a",
+            "top_k",
+            "top_p",
+            "typical",
+            "use_default_badwordsids"
+        ],
+        "ceiling_parameters": {
+            "max_context_length": {
+                "minimum": 80,
+                "maximum": 1048576
+            },
+            "max_length": {
+                "minimum": 16,
+                "maximum": 4096
+            },
+            "n": {
+                "minimum": 1,
+                "maximum": 20
+            }
+        },
+        "context_fit_modes": [
+            "ignore",
+            "reject",
+            "grow"
+        ],
+        "style_write_rate_limits": [
+            "20/hour",
+            "2/second"
+        ]
+    },
+    "image": {
+        "placeholders": [
+            "p",
+            "np"
+        ],
+        "declared_fields_are_placeholders": true,
+        "protected_patterns": [],
+        "brace_handling": "Every brace is literal except '{p}', '{np}' and the placeholders this style declares, so a wildcard or a workflow string in braces reaches the worker as written.",
+        "overridable_parameters": [
+            "cfg_scale",
+            "clip_skip",
+            "control_strength",
+            "control_type",
+            "denoising_strength",
+            "extra_texts",
+            "facefixer_strength",
+            "flow_shift",
+            "height",
+            "hires_fix",
+            "hires_fix_denoising_strength",
+            "image_is_control",
+            "karras",
+            "loras",
+            "post_processing",
+            "return_control_map",
+            "sampler_eta",
+            "sampler_name",
+            "sampler_order",
+            "sampler_s_churn",
+            "sampler_s_noise",
+            "sampler_s_tmax",
+            "sampler_s_tmin",
+            "sampler_solver_type",
+            "scheduler",
+            "seed",
+            "seed_variation",
+            "special",
+            "steps",
+            "tiling",
+            "tis",
+            "transparent",
+            "width",
+            "workflow"
+        ],
+        "ceiling_parameters": {
+            "height": {
+                "minimum": 64,
+                "maximum": 3072
+            },
+            "n": {
+                "minimum": 1,
+                "maximum": 20
+            },
+            "steps": {
+                "minimum": 1,
+                "maximum": 500
+            },
+            "width": {
+                "minimum": 64,
+                "maximum": 3072
+            }
+        },
+        "context_fit_modes": null,
+        "style_write_rate_limits": [
+            "90/minute",
+            "2/second"
+        ]
+    }
+}

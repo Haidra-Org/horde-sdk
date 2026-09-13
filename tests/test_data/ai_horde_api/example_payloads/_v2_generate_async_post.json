@@ -82,5 +82,9 @@
     "disable_batching": false,
     "allow_downgrade": false,
     "webhook": "https://haidra.net/00000000-0000-0000-0000-000000000000",
-    "style": "00000000-0000-0000-0000-000000000000"
+    "style": "00000000-0000-0000-0000-000000000000",
+    "template_fields": {
+        "caption": "a lighthouse in a storm",
+        "mood": "stormy"
+    }
 }

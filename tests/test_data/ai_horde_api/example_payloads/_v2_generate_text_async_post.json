@@ -53,5 +53,10 @@
     "allow_downgrade": false,
     "webhook": "",
     "style": "00000000-0000-0000-0000-000000000000",
-    "extra_slow_workers": false
+    "extra_slow_workers": false,
+    "template_fields": {
+        "caption": "a lighthouse in a storm",
+        "tags": "storm, sea, night"
+    },
+    "context_fit": "grow"
 }
