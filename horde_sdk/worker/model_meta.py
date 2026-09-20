@@ -122,7 +122,20 @@ class ImageModelLoadResolver:
             if ImageModelLoadResolver.meta_instruction_regex_match(MetaInstruction.ALL_REGEX, possible_instruction):
                 return self.remove_large_models(set(self.resolve_all_model_names()))
 
-            # If the instruction is to load the top N models, add the top N model names
+            top_n_newest = ImageModelLoadResolver.meta_instruction_regex_match(
+                MetaInstruction.NEW_N_REGEX,
+                possible_instruction,
+            )
+
+            if top_n_newest:
+                logger.debug(f"Resolving top {top_n_newest.group(1)} newest models.")
+                return_list.extend(
+                    self.resolve_newest_n_model_names(
+                        number_of_newest_models=int(top_n_newest.group(1)),
+                    )
+                )
+                continue
+
             top_n_matches = ImageModelLoadResolver.meta_instruction_regex_match(
                 MetaInstruction.TOP_N_REGEX,
                 possible_instruction,
@@ -430,3 +443,41 @@ class ImageModelLoadResolver:
 
         # Get just the model names as a list
         return [model[0] for model in bottom_n_models]
+
+    def resolve_newest_n_model_names(
+        self,
+        number_of_newest_models: int,
+    ) -> list[str]:
+        """Get the names of the newest N models based on their creation date.
+
+        Args:
+            number_of_newest_models: An integer representing the number of newest models to return.
+
+        Returns:
+            A list of strings representing the names of the newest N models.
+        """
+        try:
+            sd_model_reference = self._model_reference_manager.get_model_reference(
+                MODEL_REFERENCE_CATEGORY.image_generation
+            )
+        except Exception as e:
+            logger.error(f"Error getting model reference: {e}")
+            return []
+
+        if not sd_model_reference:
+            return []
+
+        def by_created_at(
+            item: tuple[str, ImageGenerationModelRecord],
+        ) -> int:
+            created_at = item[1].metadata.created_at
+            if created_at is None:
+                raise ValueError("created_at must be set; sortable is pre-filtered")
+            return created_at
+
+        sortable = [
+            (name, record) for name, record in sd_model_reference.items() if record.metadata.created_at is not None
+        ]
+        newest = sorted(sortable, key=by_created_at, reverse=True)[:number_of_newest_models]
+
+        return [record.name for _, record in newest]

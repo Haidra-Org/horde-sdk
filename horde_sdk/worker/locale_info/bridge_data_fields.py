@@ -129,8 +129,8 @@ BRIDGE_DATA_FIELD_DESCRIPTIONS = {
             " you to generate images faster (without having to wait on reading from disk).\nHowever, if you are"
             " loading many models, you do get a bonus per model loaded (2 kudos/10 minutes per model),so there is a"
             " break-even point where it is better to load more models and use the disk-cache. Some other valid"
-            ' values:\n"ALL MODELS"\n"top 1"\n"top n" # where n is a number\n"ALL SFW MODELS"\n"ALL NSFW MODELS"\nThe'
-            " webui can give you an easier way to select models to load."
+            ' values:\n"ALL MODELS"\n"top 1"\n"top n" # where n is a number\n"new n"\n"ALL SFW MODELS"\n'
+            '"ALL NSFW MODELS.'
         ),
     ),
     "image_models_to_skip": _L(

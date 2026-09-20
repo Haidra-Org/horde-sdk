@@ -37,6 +37,9 @@ class MetaInstruction(StrEnum):
 
     BOTTOM_N_REGEX = r"^BOTTOM (\d+)$"
 
+    NEW_N_REGEX = r"^NEW (\d+)$"
+    """The regex to use to match the newest N models. The number is in a capture group on its own."""
+
 
 class BaseHordeBridgeData(BaseModel):
     """The base bridge data file for all worker types."""

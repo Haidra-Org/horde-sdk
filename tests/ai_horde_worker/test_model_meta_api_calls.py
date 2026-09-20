@@ -256,3 +256,14 @@ def test_resolve_all_models_of_baseline(
     resolved_model_names = image_model_load_resolver.resolve_all_models_of_baseline("stable_diffusion_xl")
 
     assert len(resolved_model_names) > 0
+
+
+def test_top_n_newest_models(
+    image_model_load_resolver: ImageModelLoadResolver,
+) -> None:
+    resolved_model_names = image_model_load_resolver.resolve_meta_instructions(
+        ["new 5"],
+        AIHordeAPIManualClient(),
+    )
+
+    assert len(resolved_model_names) == 5
