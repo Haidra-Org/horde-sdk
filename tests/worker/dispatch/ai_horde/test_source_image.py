@@ -7,6 +7,7 @@ import pytest
 from horde_model_reference.model_reference_manager import ModelReferenceManager
 
 from horde_sdk.ai_horde_api.apimodels import (
+    GenMetadataEntry,
     ImageGenerateJobPopPayload,
     ImageGenerateJobPopResponse,
     ImageGenerateJobPopSkippedStatus,
@@ -333,7 +334,7 @@ def test_malformed_remix_extra_is_skipped_with_fault() -> None:
     response = Mock(spec=ImageGenerateJobPopResponse)
     response.extra_source_images = [ExtraSourceImageEntry(image=UNDECODABLE_SOURCE_IMAGE)]
     response.get_downloaded_extra_source_images.return_value = None
-    faults = []
+    faults: list[GenMetadataEntry] = []  #
     assert _get_remix_images(response, faults) == []
     assert [(fault.type_, fault.value, fault.ref) for fault in faults] == [
         (METADATA_TYPE.extra_source_images, METADATA_VALUE.parse_failed, "0"),
