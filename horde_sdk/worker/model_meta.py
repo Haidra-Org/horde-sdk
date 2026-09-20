@@ -68,39 +68,57 @@ class ImageModelLoadResolver:
             logger.debug("No running event loop found. Initializing model reference manager with new event loop.")
             self._model_reference_manager = asyncio.run(self._initialize_model_reference_manager())
 
+    _cached_stats_response: ImageStatsModelsResponse | None = None
+
+    def _get_stats_response(
+        self,
+        client: AIHordeAPIManualClient,
+        use_cached: bool = False,
+    ) -> ImageStatsModelsResponse:
+        """Fetch model statistics, optionally reusing the previous resolution's response."""
+        if self._cached_stats_response is None or not use_cached:
+            response = client.submit_request(
+                ImageStatsModelsRequest(model_state=MODEL_STATE.known),
+                ImageStatsModelsResponse,
+            )
+            if isinstance(response, RequestErrorResponse):
+                raise Exception(f"Error getting stats for models: {response.message}")
+            self._cached_stats_response = response
+        return self._cached_stats_response
+
     def resolve_meta_instructions(
         self,
         possible_meta_instructions: list[str],
         client: AIHordeAPIManualClient,
         *,
         load_large_models: bool = True,
+        use_cached_stats_response: bool = False,
     ) -> set[str]:
         """Return a set of model names based on the given meta instructions.
 
         Args:
             possible_meta_instructions: A list of strings representing meta instructions.
             client: An AIHordeAPIManualClient object to use for making requests.
-            load_large_models: A boolean representing whether to load large models.
+            load_large_models: A boolean representing whether to load large models. Defaults to True.
+            use_cached_stats_response: Whether to use a cached stats response, if available. Defaults to False.
 
         Returns:
             A set of strings representing the names of models to load.
         """
-        # Get model stats from the API
-        stats_response = client.submit_request(
-            ImageStatsModelsRequest(model_state=MODEL_STATE.known),
-            ImageStatsModelsResponse,
-        )
-        if isinstance(stats_response, RequestErrorResponse):
-            raise Exception(f"Error getting stats for models: {stats_response.message}")
-
         return_list: list[str] = []
+        stats_response: ImageStatsModelsResponse | None = None
+
+        def get_stats_response() -> ImageStatsModelsResponse:
+            """Fetch at most one statistics snapshot for this resolution."""
+            nonlocal stats_response
+            if stats_response is None:
+                stats_response = self._get_stats_response(client, use_cached=use_cached_stats_response)
+            return stats_response
 
         found_top_n = False
         found_bottom_n = False
 
-        # Check each possible meta instruction and return the appropriate model names
         for possible_instruction in possible_meta_instructions:
-            # If the instruction is to load all models, return all model names
             if ImageModelLoadResolver.meta_instruction_regex_match(MetaInstruction.ALL_REGEX, possible_instruction):
                 return self.remove_large_models(set(self.resolve_all_model_names()))
 
@@ -113,7 +131,7 @@ class ImageModelLoadResolver:
                 return_list.extend(
                     ImageModelLoadResolver.resolve_top_n_model_names(
                         int(top_n_matches.group(1)),
-                        stats_response,
+                        get_stats_response(),
                         self.default_timeframe,
                     ),
                 )
@@ -122,7 +140,6 @@ class ImageModelLoadResolver:
                 found_top_n = True
                 continue
 
-            # If the instruction is to load the bottom N models, add the bottom N model names
             bottom_n_matches = ImageModelLoadResolver.meta_instruction_regex_match(
                 MetaInstruction.BOTTOM_N_REGEX,
                 possible_instruction,
@@ -131,7 +148,7 @@ class ImageModelLoadResolver:
                 return_list.extend(
                     ImageModelLoadResolver.resolve_bottom_n_model_names(
                         int(bottom_n_matches.group(1)),
-                        stats_response,
+                        get_stats_response(),
                         self.default_timeframe,
                     ),
                 )
