@@ -21,21 +21,21 @@ _UNREASONABLE_NUMBER_OF_MODELS = 1000
 class MetaInstruction(StrEnum):
     """Model load instructions which requiring further processing to resolve."""
 
-    ALL_REGEX = r"all$|all models?$"
+    ALL_REGEX = r"^all$|^all models?$"
 
-    ALL_SDXL_REGEX = r"all sdxl$|all sdxl models?$"
-    ALL_SD15_REGEX = r"all sd15$|all sd15 models?$"
-    ALL_SD21_REGEX = r"all sd21$|all sd21 models?$"
+    ALL_SDXL_REGEX = r"^all sdxl$|^all sdxl models?$"
+    ALL_SD15_REGEX = r"^all sd15$|^all sd15 models?$"
+    ALL_SD21_REGEX = r"^all sd21$|^all sd21 models?$"
 
-    ALL_SFW_REGEX = r"all sfw$|all sfw models?$"
-    ALL_NSFW_REGEX = r"all nsfw$|all nsfw models?$"
+    ALL_SFW_REGEX = r"^all sfw$|^all sfw models?$"
+    ALL_NSFW_REGEX = r"^all nsfw$|^all nsfw models?$"
 
-    ALL_INPAINTING_REGEX = r"all inpainting$|all inpainting models?$"
+    ALL_INPAINTING_REGEX = r"^all inpainting$|^all inpainting models?$"
 
-    TOP_N_REGEX = r"TOP (\d+)"
+    TOP_N_REGEX = r"^TOP (\d+)$"
     """The regex to use to match the top N models. The number is in a capture group on its own."""
 
-    BOTTOM_N_REGEX = r"BOTTOM (\d+)"
+    BOTTOM_N_REGEX = r"^BOTTOM (\d+)$"
 
 
 class BaseHordeBridgeData(BaseModel):
