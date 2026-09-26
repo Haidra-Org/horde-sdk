@@ -737,61 +737,92 @@ def test_ImageGenerateJobPopResponse_hashability() -> None:
 
 @pytest.mark.asyncio
 async def test_ImageGenerateJobPop_download_addtl_data() -> None:
+    from aiohttp import web
+    from aiohttp.test_utils import TestServer
+
     from horde_sdk.ai_horde_api.apimodels import ExtraSourceImageEntry
 
-    test_response = ImageGenerateJobPopResponse(
-        id=None,
-        ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
-        payload=ImageGenerateJobPopPayload(
-            post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
-            prompt="A cat in a hat",
-        ),
-        model="Deliberate",
-        source_image="https://raw.githubusercontent.com/db0/Stable-Horde/main/img_stable/0.jpg",
-        source_mask="https://raw.githubusercontent.com/db0/Stable-Horde/main/img_stable/1.jpg",
-        extra_source_images=[
-            ExtraSourceImageEntry(
-                image="https://raw.githubusercontent.com/db0/Stable-Horde/main/img_stable/2.jpg",
-                strength=1.0,
+    def _jpeg_bytes(color: tuple[int, int, int]) -> bytes:
+        buffer = io.BytesIO()
+        PIL.Image.new("RGB", (8, 8), color).save(buffer, format="JPEG")
+        return buffer.getvalue()
+
+    # Served locally so the download plumbing (concurrency, ordering, base64 encoding) is what is under test,
+    # rather than the availability of a third party host.
+    served_images = {
+        "/0.jpg": _jpeg_bytes((255, 0, 0)),
+        "/1.jpg": _jpeg_bytes((0, 255, 0)),
+        "/2.jpg": _jpeg_bytes((0, 0, 255)),
+        "/3.jpg": _jpeg_bytes((255, 255, 0)),
+    }
+
+    async def _serve_image(request: web.Request) -> web.StreamResponse:
+        return web.Response(body=served_images[request.path], content_type="image/jpeg")
+
+    app = web.Application()
+    for image_path in served_images:
+        app.router.add_get(image_path, _serve_image)
+
+    server = TestServer(app)
+    await server.start_server()
+
+    try:
+        base_url = str(server.make_url("/")).rstrip("/")
+
+        test_response = ImageGenerateJobPopResponse(
+            id=None,
+            ids=[GenerationID(root=UUID("00000000-0000-0000-0000-000000000000"))],
+            payload=ImageGenerateJobPopPayload(
+                post_processing=[KNOWN_UPSCALERS.RealESRGAN_x2plus],
+                prompt="A cat in a hat",
             ),
-            ExtraSourceImageEntry(
-                image="https://raw.githubusercontent.com/db0/Stable-Horde/main/img_stable/3.jpg",
-                strength=2.0,
-            ),
-        ],
-        skipped=ImageGenerateJobPopSkippedStatus(),
-    )
-
-    client_session = aiohttp.ClientSession()
-
-    await test_response.async_download_additional_data(client_session)
-
-    assert test_response._downloaded_source_image is not None
-    assert test_response._downloaded_source_mask is not None
-    assert test_response._downloaded_extra_source_images is not None
-    assert len(test_response._downloaded_extra_source_images) == 2
-
-    downloaded_source_image = test_response.get_downloaded_source_image()
-    assert downloaded_source_image is not None
-    assert PIL.Image.open(io.BytesIO(base64.b64decode(downloaded_source_image)))
-
-    downloaded_source_mask = test_response.get_downloaded_source_mask()
-    assert downloaded_source_mask is not None
-    assert PIL.Image.open(io.BytesIO(base64.b64decode(downloaded_source_mask)))
-
-    downloaded_extra_source_images = test_response.get_downloaded_extra_source_images()
-    assert downloaded_extra_source_images is not None
-    assert len(downloaded_extra_source_images) == 2
-    for extra_source_image in downloaded_extra_source_images:
-        assert extra_source_image is not None
-        assert extra_source_image.original_url is not None
-        assert extra_source_image.original_url.startswith(
-            "https://raw.githubusercontent.com/db0/Stable-Horde/main/img_stable/",
+            model="Deliberate",
+            source_image=f"{base_url}/0.jpg",
+            source_mask=f"{base_url}/1.jpg",
+            extra_source_images=[
+                ExtraSourceImageEntry(
+                    image=f"{base_url}/2.jpg",
+                    strength=1.0,
+                ),
+                ExtraSourceImageEntry(
+                    image=f"{base_url}/3.jpg",
+                    strength=2.0,
+                ),
+            ],
+            skipped=ImageGenerateJobPopSkippedStatus(),
         )
-        assert PIL.Image.open(io.BytesIO(base64.b64decode(extra_source_image.image)))
 
-    assert downloaded_extra_source_images[0].strength == 1.0
-    assert downloaded_extra_source_images[1].strength == 2.0
+        async with aiohttp.ClientSession() as client_session:
+            await test_response.async_download_additional_data(client_session)
+
+        assert test_response._downloaded_source_image is not None
+        assert test_response._downloaded_source_mask is not None
+        assert test_response._downloaded_extra_source_images is not None
+        assert len(test_response._downloaded_extra_source_images) == 2
+
+        downloaded_source_image = test_response.get_downloaded_source_image()
+        assert downloaded_source_image is not None
+        assert PIL.Image.open(io.BytesIO(base64.b64decode(downloaded_source_image)))
+
+        downloaded_source_mask = test_response.get_downloaded_source_mask()
+        assert downloaded_source_mask is not None
+        assert PIL.Image.open(io.BytesIO(base64.b64decode(downloaded_source_mask)))
+
+        downloaded_extra_source_images = test_response.get_downloaded_extra_source_images()
+        assert downloaded_extra_source_images is not None
+        assert len(downloaded_extra_source_images) == 2
+        for extra_source_image in downloaded_extra_source_images:
+            assert extra_source_image is not None
+            assert extra_source_image.original_url is not None
+            assert extra_source_image.original_url.startswith(base_url)
+            assert PIL.Image.open(io.BytesIO(base64.b64decode(extra_source_image.image)))
+
+        assert downloaded_extra_source_images[0].original_url == f"{base_url}/2.jpg"
+        assert downloaded_extra_source_images[1].original_url == f"{base_url}/3.jpg"
+        assert downloaded_extra_source_images[0].strength == 1.0
+        assert downloaded_extra_source_images[1].strength == 2.0
+    finally:
+        await server.close()
 
 
 def test_AlchemyJobPopResponse() -> None:
