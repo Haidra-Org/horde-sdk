@@ -36,7 +36,7 @@ The example builds one 512 by 512 request. The `dry_run` field is the only diffe
 submission.
 
 ```python
---8<-- "examples/docs/first_image.py:first-image"
+--8 < --"examples/docs/first_image.py:first-image"
 ```
 
 The simple client owns polling and best-effort cleanup. The request model validates its shape before the first network
