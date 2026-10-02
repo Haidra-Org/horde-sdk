@@ -56,8 +56,12 @@
             "reject",
             "grow"
         ],
-        "style_write_rate_limits": [
+        "style_create_rate_limits": [
             "20/hour",
+            "2/second"
+        ],
+        "style_modify_rate_limits": [
+            "90/minute",
             "2/second"
         ]
     },
@@ -124,7 +128,11 @@
             }
         },
         "context_fit_modes": null,
-        "style_write_rate_limits": [
+        "style_create_rate_limits": [
+            "20/hour",
+            "2/second"
+        ],
+        "style_modify_rate_limits": [
             "90/minute",
             "2/second"
         ]

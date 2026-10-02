@@ -333,15 +333,29 @@ class RC(StrEnum):
     """The prompt does not fit the context length the request would run under."""
     SharedKeyAssignedStyles = auto()
     """This shared key is restricted to specific styles."""
+    SharedKeyInvalid = auto()
+    """The shared key given for the style does not exist."""
     StyleDeclarationInvalid = auto()
     """A style's stored parameter policy or template fields no longer pass validation, so the style cannot be
     applied."""
+    StyleGetMistmatch = auto()
+    """The style exists, but its type does not match the route it was read through."""
     StyleMismatch = auto()
     """The style's type does not match the request, or a collection mixes image and text styles."""
     StyleParameterAboveCeiling = auto()
     """A requested parameter is above the ceiling the style puts on it."""
     StylePolicyOverridableMisplaced = auto()
     """A style's overridable list is only read under the 'listed' override mode."""
+    StylePromptFieldInvalid = auto()
+    """A text style prompt has a placeholder that is more than a bare name, or a brace that does not parse."""
+    StylePromptMissingVars = auto()
+    """A style prompt lacks the '{p}' placeholder, or an image style prompt lacks '{np}'."""
+    ExampleURLAlreadyInUse = auto()
+    """The image style already has an example at this URL."""
+    TooManyStyleExamples = auto()
+    """An image style can have at most 4 examples."""
+    TemplateFieldsMatchNoCollectionStyle = auto()
+    """None of the collection's styles accepts the template fields the request supplies."""
     TemplateFieldsRequireStyle = auto()
     """Template fields can only be sent alongside a style."""
 

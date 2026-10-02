@@ -278,13 +278,20 @@ class StyleContractStyleType(HordeAPIObjectBaseModel):
     context_fit_modes: list[ContextFit] | None = None
     """How a request of this type may be sized against its prompt, or `None` for a type that cannot be sized."""
 
-    style_write_rate_limits: list[str] = Field(
+    style_create_rate_limits: list[str] = Field(
         examples=[
             ["20/hour", "2/second"],
         ],
     )
-    """Every limit a client writing a style of this type is held to. All of them apply at once, and a
-    whitelisted service address is allowed more."""
+    """Every limit a client creating a style of this type is held to; all of them apply at once."""
+
+    style_modify_rate_limits: list[str] = Field(
+        examples=[
+            ["90/minute", "2/second"],
+        ],
+    )
+    """Every limit a client patching or deleting a style of this type is held to; all of them apply at once,
+    counted separately for each style and for PATCH and DELETE. A whitelisted service address is allowed more."""
 
     @override
     @classmethod
