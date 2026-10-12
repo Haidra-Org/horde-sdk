@@ -17,7 +17,7 @@ need a currently available model name; registered users should pass their API ke
 ## Submit a bounded request
 
 ```python
---8<-- "examples/docs/client_recipes.py:image-request"
+--8 < --"examples/docs/client_recipes.py:image-request"
 ```
 
 Pass `timeout=300` to `image_generate_request` when your application has a five-minute upper bound. The returned status
