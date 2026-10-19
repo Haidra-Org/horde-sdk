@@ -24,7 +24,9 @@
         "flux_schnell",
         "flux_dev",
         "qwen_image",
-        "z_image_turbo"
+        "z_image_turbo",
+        "krea2_turbo",
+        "anima"
       ],
       "title": "KNOWN_IMAGE_GENERATION_BASELINE",
       "type": "string"
