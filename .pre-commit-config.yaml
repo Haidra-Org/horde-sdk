@@ -17,6 +17,7 @@ repos:
         args: [., --strict, --ignore-missing-imports, --exclude=^codegen]
         pass_filenames: false
         additional_dependencies: [
+            aiohttp>=3.11.13,
             pytest,
             pydantic>=2.9.2,
             logfire,
