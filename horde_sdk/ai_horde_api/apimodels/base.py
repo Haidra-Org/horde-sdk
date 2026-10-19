@@ -38,6 +38,7 @@ from horde_sdk.generic_api.apimodels import (
     HordeRequest,
     HordeResponseBaseModel,
 )
+from horde_sdk.generic_api.decoration import Unhashable
 
 
 class BaseAIHordeRequest(HordeRequest):
@@ -262,6 +263,44 @@ class _ResolvedRequestMixin(HordeAPIData):
 
     style: ResolvedRequestStyle | None = None
     """The style that was applied, or `None` when none was."""
+
+
+@Unhashable
+class ResolvedRequest(_ResolvedRequestMixin, HordeAPIObjectBaseModel):
+    """Common resolved generation parameters published by the API.
+
+    v2 API Model: `ResolvedRequest`
+    """
+
+    params: dict[str, object] | None = None
+    """The effective parameters after style application."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "ResolvedRequest"
+
+
+@Unhashable
+class RequestAsync(HordeAPIObjectBaseModel):
+    """The common asynchronous submission response.
+
+    v2 API Model: `RequestAsync`
+    """
+
+    id_: str | None = Field(default=None, alias="id")
+    """The request UUID; absent for dry runs."""
+    kudos: float | None = None
+    """The expected cost of the request."""
+    message: str | None = None
+    """Additional information about the submission."""
+    warnings: list[SingleWarningEntry] | None = None
+    """Warnings reported by the API."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "RequestAsync"
 
 
 class _BaseImageGenerateParamMixin(HordeAPIObjectBaseModel):

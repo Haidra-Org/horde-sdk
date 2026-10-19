@@ -262,6 +262,8 @@ class ImageGenerateJobPopResponse(
     """(Obsolete) The UUID for this image generation."""
     ids: list[GenerationID]
     """A list of UUIDs for image generation."""
+    shared: bool | None = None
+    """Whether the generated images are intended for public sharing."""
 
     payload: ImageGenerateJobPopPayload
     """The parameters used to generate this image."""

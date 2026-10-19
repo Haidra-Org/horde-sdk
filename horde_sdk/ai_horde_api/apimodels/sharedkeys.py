@@ -54,6 +54,46 @@ class SharedKeySettings(_BaseSharedKeySettings):
     """The number of days until this key expires. -1 means never expires."""
 
 
+class SharedKeyActiveUsageByType(HordeAPIObjectBaseModel):
+    """Outstanding work for one generation type.
+
+    v2 API Model: `SharedKeyActiveUsageByType`
+    """
+
+    requests: int = 0
+    """Requests with queued or processing generations."""
+    queued: int = 0
+    """Generations awaiting assignment."""
+    processing: int = 0
+    """Generations assigned to workers."""
+    finished: int = 0
+    """Completed generations within these active requests."""
+    oldest_queued_age: int = 0
+    """Age in seconds of the oldest request with queued work."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "SharedKeyActiveUsageByType"
+
+
+class SharedKeyActiveUsage(HordeAPIObjectBaseModel):
+    """Aggregate outstanding image and text work for a shared key.
+
+    v2 API Model: `SharedKeyActiveUsage`
+    """
+
+    image: SharedKeyActiveUsageByType | None = None
+    """Outstanding image work."""
+    text: SharedKeyActiveUsageByType | None = None
+    """Outstanding text work."""
+
+    @override
+    @classmethod
+    def get_api_model_name(cls) -> str:
+        return "SharedKeyActiveUsage"
+
+
 class SharedKeyDetailsResponse(HordeResponseBaseModel, MessageSpecifiesSharedKeyMixin, SharedKeySettings):
     """Information about a SharedKey, including its creating user, settings and utilization.
 
@@ -71,6 +111,8 @@ class SharedKeyDetailsResponse(HordeResponseBaseModel, MessageSpecifiesSharedKey
     """The owning user's unique Username. It is a combination of their chosen alias plus their ID."""
     utilized: int
     """How much kudos has been utilized via this shared key until now."""
+    active_usage: SharedKeyActiveUsage | None = None
+    """Outstanding work, returned when the owner reads this key using their personal API key."""
 
     @override
     @classmethod
