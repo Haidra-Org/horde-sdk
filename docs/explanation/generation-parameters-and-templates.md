@@ -30,3 +30,11 @@ conversion boundary resolves only values it must know.
 
 The [parameter reference](../reference/generation-parameters.md) maps the implemented families, and the
 [backend normalization explanation](backend-normalization.md) covers the final conversion step.
+
+## Chat policy values
+
+The chat policy vocabulary and the chat route's request limits and defaults live in the SDK because three parties
+apply them: the AI Horde refuses and routes requests with them, workers declare against them, and clients check a
+request before sending it. With one definition they cannot disagree; a copy held by any one of them could differ
+from the others, and a client or worker would learn of it only when a request is refused or waits. Declared values are compared as strings across SDK
+releases, so the vocabulary grows by adding values and a value never changes meaning.

@@ -10,12 +10,14 @@ reversal behavior.
 | --- | --- |
 | [Generate images](generate-images.md) | Submit a typed image request, observe progress, download results, and handle a bounded timeout. |
 | [Generate text](generate-text.md) | Build a bounded Kobold request and retrieve the first completed text result with the simple client. |
+| [Check a chat request before sending it](check-chat-request.md) | Test an OpenAI-shaped chat request against the shared limits and a model's declared chat features locally. |
 | [Use the asynchronous client](use-async-client.md) | Share an aiohttp session with the async simple client and keep request polling off the event-loop blocking path. |
 | [Estimate request cost](estimate-cost.md) | Use dry-run request variants to obtain current kudos estimates without creating generation jobs. |
 | [Run an alchemy operation](run-alchemy.md) | Submit captioning or post-processing forms for a public image and inspect typed per-form results. |
 | [Clean up manual requests](clean-up-manual-requests.md) | Pair submission, polling, final retrieval, and cancellation when using manual Horde clients. |
 | [Implement a backend value mapper](implement-backend-mapper.md) | Normalize Horde-facing values at a backend boundary while preserving typed internal representations. |
 | [Drive the worker generation state machine](drive-worker-state.md) | Advance a worker generation through preparation, execution, submission, and terminal cleanup. |
+| [Declare and serve chat jobs from a worker](serve-chat-jobs.md) | Declare a chat backend on the text pop, read a popped chat job, and submit its reply or fault. |
 
 ### Planned
 

@@ -167,6 +167,7 @@ Topics connect tutorials, procedures, contracts, and design explanations that co
 - Explanation: [Typed request and response design](explanation/typed-model-design.md)
 - How-to: [Generate images](how-to/generate-images.md)
 - How-to: [Generate text](how-to/generate-text.md)
+- How-to: [Check a chat request before sending it](how-to/check-chat-request.md)
 - How-to: [Use the asynchronous client](how-to/use-async-client.md)
 - How-to: [Estimate request cost](how-to/estimate-cost.md)
 - How-to: [Run an alchemy operation](how-to/run-alchemy.md)
@@ -188,6 +189,8 @@ Topics connect tutorials, procedures, contracts, and design explanations that co
 
 - Explanation: [Generation parameters and templates](explanation/generation-parameters-and-templates.md)
 - How-to: [Generate text](how-to/generate-text.md)
+- How-to: [Check a chat request before sending it](how-to/check-chat-request.md)
+- How-to: [Declare and serve chat jobs from a worker](how-to/serve-chat-jobs.md)
 - Reference: [Generation parameters and features](reference/generation-parameters.md)
 
 ### utilities
@@ -202,6 +205,7 @@ Topics connect tutorials, procedures, contracts, and design explanations that co
 - Explanation: [Dispatch normalization](explanation/dispatch-normalization.md)
 - Explanation: [Operation chaining](explanation/chaining.md) (planned)
 - How-to: [Drive the worker generation state machine](how-to/drive-worker-state.md)
+- How-to: [Declare and serve chat jobs from a worker](how-to/serve-chat-jobs.md)
 - How-to: [Implement a dispatch adapter](how-to/implement-dispatch-adapter.md) (planned)
 - How-to: [Build a chained worker flow](how-to/build-chained-flow.md) (planned)
 - Reference: [Worker generation transitions](reference/worker-transitions.md)

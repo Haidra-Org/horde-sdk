@@ -1,6 +1,7 @@
 """Chat completion capability, fidelity, and conformance vocabulary shared by the AI-Horde and its workers.
 
-A chat worker declares, on each job pop, the names it supports and the numeric limits it operates within. A chat
+A chat worker declares, on each job pop, the capabilities and guarantees it supports and the numeric limits it
+operates within. A chat
 request is routed only to workers whose declarations cover what the request needs. The vocabulary separates three
 kinds of declaration:
 
@@ -12,16 +13,22 @@ kinds of declaration:
 - A limit ([`ChatWorkerLimits`][horde_sdk.generation_parameters.text.chat_policy.ChatWorkerLimits]) bounds the values
   the backend applies as sent.
 
-Capabilities and guarantees share one declared namespace on the wire, so their names never overlap.
+Capabilities and guarantees share one declared namespace on the wire, so their values never overlap.
 [`parse_chat_declaration`][horde_sdk.generation_parameters.text.chat_policy.parse_chat_declaration] resolves a
-declared name to either enum.
+declared value to either enum.
 
 Each request carries a [`ChatConformance`][horde_sdk.generation_parameters.text.chat_policy.ChatConformance] mode.
 [`required_chat_guarantees`][horde_sdk.generation_parameters.text.chat_policy.required_chat_guarantees] derives the
 guarantees a request needs under that mode from its
 [`ChatRequestTraits`][horde_sdk.generation_parameters.text.chat_policy.ChatRequestTraits], and
 [`violated_chat_limit`][horde_sdk.generation_parameters.text.chat_policy.violated_chat_limit] checks the limits that
-depend on request traits. Required capabilities depend on message content and are derived by the server.
+depend on request traits.
+
+A client can run the same derivation over an OpenAI-shaped request body before sending it:
+[`chat_request_requirements`][horde_sdk.generation_parameters.text.chat_policy.chat_request_requirements] returns the
+capabilities and guarantees the request needs, and
+[`chat_service_gap`][horde_sdk.generation_parameters.text.chat_policy.chat_service_gap] compares them with a model's
+declared feature union and a worker's limits, in the shape the server's ``impossible_reason`` reports.
 
 Operator configuration narrows a worker's declarations and never widens them: a worker declares a guarantee only when
 its backend implements the behavior.
@@ -29,22 +36,32 @@ its backend implements the behavior.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Final
+from typing import Any, Final
 
 from strenum import StrEnum
 
+from horde_sdk.generation_parameters.text.chat_limits import CHAT_SAMPLING_DEFAULTS, DEFAULT_PARALLEL_TOOL_CALLS
+
 __all__ = [
     "DEFAULT_CHAT_CONFORMANCE",
-    "KNOWN_CHAT_DECLARATION_NAMES",
+    "KNOWN_CHAT_DECLARATIONS",
     "ChatConformance",
     "ChatFeature",
     "ChatGuarantee",
-    "ChatLimitName",
+    "ChatLimitField",
     "ChatRequestTraits",
+    "ChatRequirements",
     "ChatResponseFormatType",
+    "ChatServiceGap",
+    "ChatServiceGapKind",
     "ChatToolChoiceMode",
     "ChatWorkerLimits",
+    "chat_request_conformance",
+    "chat_request_requirements",
+    "chat_request_traits",
+    "chat_service_gap",
     "parse_chat_declaration",
     "required_chat_guarantees",
     "violated_chat_limit",
@@ -54,7 +71,7 @@ __all__ = [
 class ChatFeature(StrEnum):
     """Identify one chat capability a worker declares and a request can require.
 
-    The vocabulary grows by adding names. A name never changes meaning once published, because workers and servers
+    The vocabulary grows by adding values; a value never changes meaning once published, because workers and servers
     built against different SDK releases compare the same strings.
     """
 
@@ -89,14 +106,15 @@ class ChatGuarantee(StrEnum):
     """Identify one atomic promise that a backend follows part of the OpenAI chat contract exactly.
 
     A backend that does not declare a guarantee may deviate from the corresponding behavior. Like
-    [`ChatFeature`][horde_sdk.generation_parameters.text.chat_policy.ChatFeature], the vocabulary grows by adding names
-    and a name never changes meaning.
+    [`ChatFeature`][horde_sdk.generation_parameters.text.chat_policy.ChatFeature], the vocabulary grows by adding
+    values; a value never changes meaning.
     """
 
     TOOL_CHOICE_ENFORCED = "tool_choice_enforced"
     """Under ``tool_choice: required`` the reply carries a call to an offered function, never prose alone.
 
-    Under a named ``tool_choice`` the reply carries a call to the named function, never prose alone. Under
+    Under a ``tool_choice`` that specifies one function the reply carries a call to that function, never prose
+    alone. Under
     ``tool_choice: none`` the reply carries no tool call.
     """
 
@@ -113,31 +131,31 @@ class ChatGuarantee(StrEnum):
     """A prompt that does not fit the declared context length faults the job instead of being trimmed."""
 
 
-KNOWN_CHAT_DECLARATION_NAMES: Final[frozenset[str]] = frozenset(
+KNOWN_CHAT_DECLARATIONS: Final[frozenset[str]] = frozenset(
     {
         *(feature.value for feature in ChatFeature),
         *(guarantee.value for guarantee in ChatGuarantee),
     },
 )
-"""Every capability and guarantee name this SDK release defines, as declared in one wire list."""
+"""Every capability and guarantee value this SDK release defines, as declared in one wire list."""
 
 
-def parse_chat_declaration(declared_name: str) -> ChatFeature | ChatGuarantee | None:
-    """Parse one declared chat name into the capability or guarantee it identifies.
+def parse_chat_declaration(declaration: str) -> ChatFeature | ChatGuarantee | None:
+    """Parse one declared chat value into the capability or guarantee it identifies.
 
-    A worker built against a newer SDK release can declare names this release does not define. Such names resolve
-    to ``None`` so the caller can ignore them; an undefined name never satisfies a requirement.
+    A worker built against a newer SDK release can declare values this release does not define. Such values resolve
+    to ``None`` so the caller can ignore them; an undefined value never satisfies a requirement.
 
     Args:
-        declared_name: One entry of a worker's declared chat feature list.
+        declaration: One entry of a worker's declared chat feature list.
 
     Returns:
-        The matching capability or guarantee, or ``None`` when this SDK release does not define the name.
+        The matching capability or guarantee, or ``None`` when this SDK release does not define the value.
     """
-    if declared_name in ChatFeature.__members__.values():
-        return ChatFeature(declared_name)
-    if declared_name in ChatGuarantee.__members__.values():
-        return ChatGuarantee(declared_name)
+    if declaration in ChatFeature.__members__.values():
+        return ChatFeature(declaration)
+    if declaration in ChatGuarantee.__members__.values():
+        return ChatGuarantee(declaration)
     return None
 
 
@@ -167,8 +185,9 @@ class ChatToolChoiceMode(StrEnum):
     REQUIRED = "required"
     """The model must call at least one offered tool."""
 
-    NAMED = "named"
-    """The model must call the one function the request specifies."""
+    FUNCTION = "function"
+    """The model must call the one function the request specifies. The value is the ``type`` OpenAI's ``tool_choice``
+    object carries for that choice; as a bare string it is not a valid ``tool_choice``."""
 
 
 class ChatResponseFormatType(StrEnum):
@@ -188,7 +207,9 @@ class ChatResponseFormatType(StrEnum):
 class ChatRequestTraits:
     """Represents the parts of a chat request that decide which guarantees and limits apply.
 
-    The traits are backend-neutral; the server derives them once from the request after applying API defaults.
+    The traits are backend-neutral; the server derives them once from the request after applying API defaults, and
+    [`chat_request_traits`][horde_sdk.generation_parameters.text.chat_policy.chat_request_traits] derives them from a
+    request body the same way.
     """
 
     offers_tools: bool
@@ -230,7 +251,7 @@ def required_chat_guarantees(
     no guarantee is required. Under
     [`ChatConformance.STRICT`][horde_sdk.generation_parameters.text.chat_policy.ChatConformance.STRICT]:
 
-    - forwarded tools with a ``required`` or named choice require
+    - forwarded tools with a ``required`` choice, or a choice that specifies one function, require
       [`TOOL_CHOICE_ENFORCED`][horde_sdk.generation_parameters.text.chat_policy.ChatGuarantee.TOOL_CHOICE_ENFORCED];
       ``tool_choice: none`` requires nothing because the server does not forward the definitions;
     - forwarded tools without parallel tool calls require
@@ -260,11 +281,11 @@ def required_chat_guarantees(
     return frozenset(required_guarantees)
 
 
-class ChatLimitName(StrEnum):
+class ChatLimitField(StrEnum):
     """Identify one numeric limit a chat worker declares.
 
-    Each value equals the field name in
-    [`ChatWorkerLimits`][horde_sdk.generation_parameters.text.chat_policy.ChatWorkerLimits] and the key in the
+    Each value equals a field of
+    [`ChatWorkerLimits`][horde_sdk.generation_parameters.text.chat_policy.ChatWorkerLimits] and a key of the
     worker's declared ``chat_limits``.
     """
 
@@ -309,13 +330,13 @@ class ChatWorkerLimits:
 def violated_chat_limit(
     traits: ChatRequestTraits,
     limits: ChatWorkerLimits,
-) -> ChatLimitName | None:
+) -> ChatLimitField | None:
     """Return the worker limit that would alter a request's values, if any.
 
     Only limits that depend on request traits are checked here. Context and reply lengths depend on tokenized
     message content and are compared by the server against the declared
-    [`MAX_CONTEXT_LENGTH`][horde_sdk.generation_parameters.text.chat_policy.ChatLimitName.MAX_CONTEXT_LENGTH] and
-    [`MAX_LENGTH`][horde_sdk.generation_parameters.text.chat_policy.ChatLimitName.MAX_LENGTH].
+    [`MAX_CONTEXT_LENGTH`][horde_sdk.generation_parameters.text.chat_policy.ChatLimitField.MAX_CONTEXT_LENGTH] and
+    [`MAX_LENGTH`][horde_sdk.generation_parameters.text.chat_policy.ChatLimitField.MAX_LENGTH].
 
     Limits apply under every conformance mode, because a clamped value changes the request rather than how faithfully
     the reply follows it.
@@ -332,5 +353,271 @@ def violated_chat_limit(
         and limits.tools_max_temperature is not None
         and traits.temperature > limits.tools_max_temperature
     ):
-        return ChatLimitName.TOOLS_MAX_TEMPERATURE
+        return ChatLimitField.TOOLS_MAX_TEMPERATURE
     return None
+
+
+_TOOL_ROLE: Final[str] = "tool"
+"""The role of a message answering a tool call."""
+
+_IMAGE_URL_CONTENT_PART_TYPE: Final[str] = "image_url"
+"""The content part type carrying an image."""
+
+_TEXT_RESPONSE_FORMAT_TYPE: Final[str] = "text"
+"""The unconstrained ``response_format`` type, the same as sending none."""
+
+_PENALTY_FEATURES: Final[tuple[ChatFeature, ...]] = (
+    ChatFeature.FREQUENCY_PENALTY,
+    ChatFeature.PRESENCE_PENALTY,
+)
+"""The capabilities whose value equals the request key of the penalty they apply."""
+
+
+def _tool_choice_mode(tool_choice: object) -> ChatToolChoiceMode:
+    """Return the policy mode of a request's ``tool_choice``; an unset choice is OpenAI's ``auto``.
+
+    Raises:
+        ValueError: The value is neither an object nor one of OpenAI's mode strings.
+    """
+    if tool_choice is None:
+        return ChatToolChoiceMode.AUTO
+    if isinstance(tool_choice, Mapping):
+        return ChatToolChoiceMode.FUNCTION
+    if isinstance(tool_choice, str) and tool_choice != ChatToolChoiceMode.FUNCTION.value:
+        return ChatToolChoiceMode(tool_choice)
+    raise ValueError(f"'tool_choice' is not a mode string or a function choice: {tool_choice!r}")
+
+
+def chat_request_traits(body: Mapping[str, Any]) -> ChatRequestTraits:
+    """Derive the traits of an OpenAI chat completions request body, after OpenAI's defaults.
+
+    The derivation matches the server's: ``tool_choice`` and ``parallel_tool_calls`` count only when the request
+    offers tools; an unset tool choice is ``auto``; parallel tool calls default to
+    [`DEFAULT_PARALLEL_TOOL_CALLS`][horde_sdk.generation_parameters.text.chat_limits.DEFAULT_PARALLEL_TOOL_CALLS]; a
+    ``text`` response format is the same as none; an unset temperature is the default in
+    [`CHAT_SAMPLING_DEFAULTS`][horde_sdk.generation_parameters.text.chat_limits.CHAT_SAMPLING_DEFAULTS].
+
+    Args:
+        body: The request body as a client builds it, such as the keyword arguments of the OpenAI SDK's
+            ``chat.completions.create``.
+
+    Returns:
+        The request's policy-relevant traits.
+
+    Raises:
+        ValueError: ``tool_choice`` or the ``response_format`` type holds a value OpenAI does not define.
+    """
+    offers_tools = bool(body.get("tools"))
+    tool_choice_mode = ChatToolChoiceMode.AUTO
+    parallel_tool_calls = DEFAULT_PARALLEL_TOOL_CALLS
+    if offers_tools:
+        tool_choice_mode = _tool_choice_mode(body.get("tool_choice"))
+        requested_parallel_tool_calls = body.get("parallel_tool_calls")
+        if requested_parallel_tool_calls is not None:
+            parallel_tool_calls = bool(requested_parallel_tool_calls)
+
+    response_format_type: ChatResponseFormatType | None = None
+    strict_schema = False
+    response_format = body.get("response_format")
+    if isinstance(response_format, Mapping) and response_format.get("type") != _TEXT_RESPONSE_FORMAT_TYPE:
+        response_format_type = ChatResponseFormatType(str(response_format.get("type")))
+        json_schema = response_format.get("json_schema")
+        strict_schema = (
+            response_format_type is ChatResponseFormatType.JSON_SCHEMA
+            and isinstance(json_schema, Mapping)
+            and bool(json_schema.get("strict"))
+        )
+
+    temperature = body.get("temperature")
+    if temperature is None:
+        temperature = CHAT_SAMPLING_DEFAULTS["temperature"]
+
+    return ChatRequestTraits(
+        offers_tools=offers_tools,
+        tool_choice_mode=tool_choice_mode,
+        parallel_tool_calls=parallel_tool_calls,
+        response_format_type=response_format_type,
+        strict_schema=strict_schema,
+        temperature=float(temperature),
+    )
+
+
+def chat_request_conformance(body: Mapping[str, Any]) -> ChatConformance:
+    """Return the conformance mode a request body selects in ``horde.conformance``.
+
+    Args:
+        body: The request body as a client builds it.
+
+    Returns:
+        The selected mode, or
+        [`DEFAULT_CHAT_CONFORMANCE`][horde_sdk.generation_parameters.text.chat_policy.DEFAULT_CHAT_CONFORMANCE] when
+        the body selects none.
+
+    Raises:
+        ValueError: ``horde.conformance`` holds a value this SDK release does not define.
+    """
+    horde_options = body.get("horde")
+    if not isinstance(horde_options, Mapping) or horde_options.get("conformance") is None:
+        return DEFAULT_CHAT_CONFORMANCE
+    return ChatConformance(horde_options["conformance"])
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ChatRequirements:
+    """Represents what a worker must declare to serve one chat request."""
+
+    features: frozenset[ChatFeature]
+    """The capabilities the request needs, under every conformance mode."""
+
+    guarantees: frozenset[ChatGuarantee]
+    """The guarantees the request needs under its conformance mode; empty under ``best_effort``."""
+
+    conformance: ChatConformance
+    """The conformance mode the request selected or defaulted to."""
+
+    traits: ChatRequestTraits
+    """The traits the requirements and the trait-dependent limits derive from."""
+
+    @property
+    def declarations(self) -> frozenset[str]:
+        """Return the capabilities and guarantees together, as the wire values a worker declares."""
+        return frozenset(
+            {
+                *(feature.value for feature in self.features),
+                *(guarantee.value for guarantee in self.guarantees),
+            },
+        )
+
+
+def _carries_image_part(message: Mapping[str, Any]) -> bool:
+    """Return whether a message's content holds an image part."""
+    content = message.get("content")
+    if not isinstance(content, list):
+        return False
+    return any(
+        isinstance(content_part, Mapping) and content_part.get("type") == _IMAGE_URL_CONTENT_PART_TYPE
+        for content_part in content
+    )
+
+
+def _carries_tool_turn(message: Mapping[str, Any]) -> bool:
+    """Return whether a message answers a tool call or carries tool calls, which the template has to render."""
+    return message.get("role") == _TOOL_ROLE or bool(message.get("tool_calls"))
+
+
+def chat_request_requirements(body: Mapping[str, Any]) -> ChatRequirements:
+    """Derive what a worker must declare to serve an OpenAI chat completions request body.
+
+    The derivation mirrors the server's, so a client's answer and the server's routing agree. A value at its
+    documented default needs no capability, so a zero penalty is served by any chat worker. The capabilities are:
+
+    - ``seed`` when a seed is set;
+    - each penalty whose value is not zero;
+    - ``vision`` when a message carries an ``image_url`` part;
+    - ``tools`` when the request forwards tool definitions, or any message is a ``tool`` message or carries tool
+      calls, since the worker's template has to render those turns;
+    - ``json_object`` or ``json_schema`` by the response format's type;
+    - ``tools_with_response_format`` when the request forwards tool definitions and sets a response format.
+
+    The guarantees are those
+    [`required_chat_guarantees`][horde_sdk.generation_parameters.text.chat_policy.required_chat_guarantees] derives
+    under the body's conformance mode.
+
+    Args:
+        body: The request body as a client builds it, such as the keyword arguments of the OpenAI SDK's
+            ``chat.completions.create``.
+
+    Returns:
+        The capabilities, guarantees, conformance mode and traits of the request.
+
+    Raises:
+        ValueError: ``tool_choice``, the ``response_format`` type or ``horde.conformance`` holds a value this SDK
+            release does not define.
+    """
+    traits = chat_request_traits(body)
+    conformance = chat_request_conformance(body)
+    messages = [message for message in body.get("messages") or () if isinstance(message, Mapping)]
+
+    features: set[ChatFeature] = set()
+    if body.get("seed") is not None:
+        features.add(ChatFeature.SEED)
+    for penalty_feature in _PENALTY_FEATURES:
+        default_penalty = CHAT_SAMPLING_DEFAULTS[penalty_feature.value]
+        penalty = body.get(penalty_feature.value)
+        if penalty is not None and penalty != default_penalty:
+            features.add(penalty_feature)
+    if any(_carries_image_part(message) for message in messages):
+        features.add(ChatFeature.VISION)
+    if traits.forwards_tools or any(_carries_tool_turn(message) for message in messages):
+        features.add(ChatFeature.TOOLS)
+    if traits.response_format_type is not None:
+        features.add(ChatFeature(traits.response_format_type.value))
+        if traits.forwards_tools:
+            features.add(ChatFeature.TOOLS_WITH_RESPONSE_FORMAT)
+
+    return ChatRequirements(
+        features=frozenset(features),
+        guarantees=required_chat_guarantees(traits, conformance),
+        conformance=conformance,
+        traits=traits,
+    )
+
+
+class ChatServiceGapKind(StrEnum):
+    """Identify why no worker can serve a chat request, as the server's ``impossible_reason.kind`` reports it."""
+
+    DECLARATION_GAP = "declaration_gap"
+    """The workers lack a capability or guarantee the request needs, or apply a declared limit the request exceeds."""
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ChatServiceGap:
+    """Represents why a set of declarations cannot serve a chat request.
+
+    The fields match the server's chat status ``impossible_reason``, so a client's local answer and the server's
+    answer read the same.
+    """
+
+    kind: ChatServiceGapKind = ChatServiceGapKind.DECLARATION_GAP
+    """The cause."""
+
+    missing_declarations: tuple[str, ...] = ()
+    """The capabilities and guarantees the request needs that are not declared, sorted."""
+
+    exceeded_limits: tuple[str, ...] = ()
+    """The declared limits the request exceeds, such as ``tools_max_temperature``, sorted."""
+
+
+def chat_service_gap(
+    requirements: ChatRequirements,
+    declared: Iterable[str],
+    limits: ChatWorkerLimits,
+) -> ChatServiceGap | None:
+    """Return what keeps a worker's declarations from serving a request, or ``None`` when they serve it.
+
+    ``declared`` is typically a model's declared feature union, as the Horde's model list and the OpenAI-compatible
+    front's model cards report it. A union says that some worker declares each value, not that one worker declares
+    them all, so ``None`` here is necessary for service and not sufficient.
+
+    The server also reports ``image_transports`` as missing for a worker that declares ``vision`` without a way to
+    receive images. A feature list carries no transports, so this check does not report it.
+
+    Args:
+        requirements: The request's requirements, from
+            [`chat_request_requirements`][horde_sdk.generation_parameters.text.chat_policy.chat_request_requirements].
+        declared: The declared capability and guarantee values; values this SDK release does not define are ignored.
+        limits: The declared limits checked with
+            [`violated_chat_limit`][horde_sdk.generation_parameters.text.chat_policy.violated_chat_limit].
+
+    Returns:
+        The missing declarations and exceeded limits, or ``None`` when there are neither.
+    """
+    missing_declarations = tuple(sorted(requirements.declarations - set(declared)))
+    violated_limit = violated_chat_limit(requirements.traits, limits)
+    exceeded_limits = () if violated_limit is None else (violated_limit.value,)
+    if not missing_declarations and not exceeded_limits:
+        return None
+    return ChatServiceGap(
+        missing_declarations=missing_declarations,
+        exceeded_limits=exceeded_limits,
+    )
