@@ -1,0 +1,94 @@
+{
+    "promotion_threshold": 0.0,
+    "suspicion_threshold": 0,
+    "worker_suspicion_threshold": 0,
+    "promotion_blocked_users": [
+        {
+            "id": 0,
+            "username": "",
+            "last_active": "2021-01-01T00:00:00Z",
+            "account_age": 60,
+            "kudos": 0.0,
+            "evaluating_kudos": 0.0,
+            "suspicious": 0,
+            "suspicion_reasons": [
+                {
+                    "id": 0,
+                    "name": "",
+                    "description": "",
+                    "count": 0
+                }
+            ],
+            "flagged": false,
+            "deleted": false,
+            "vpn": false,
+            "worker_count": 0,
+            "paused_worker_count": 0,
+            "worker_kudos": 0.0,
+            "worker_fulfilments": 0,
+            "contact": "email@example.com",
+            "admin_comment": "User is sus"
+        }
+    ],
+    "promotion_eligible_users": [
+        {
+            "id": 0,
+            "username": "",
+            "last_active": "2021-01-01T00:00:00Z",
+            "account_age": 60,
+            "kudos": 0.0,
+            "evaluating_kudos": 0.0,
+            "suspicious": 0,
+            "suspicion_reasons": [
+                {
+                    "id": 0,
+                    "name": "",
+                    "description": "",
+                    "count": 0
+                }
+            ],
+            "flagged": false,
+            "deleted": false,
+            "vpn": false,
+            "worker_count": 0,
+            "paused_worker_count": 0,
+            "worker_kudos": 0.0,
+            "worker_fulfilments": 0,
+            "contact": "email@example.com",
+            "admin_comment": "User is sus"
+        }
+    ],
+    "paused_workers": [
+        {
+            "type": "image",
+            "name": "",
+            "id": "00000000-0000-0000-0000-000000000000",
+            "online": false,
+            "owner_id": 0,
+            "owner": "username#1",
+            "last_check_in": "2021-01-01T00:00:00Z",
+            "maintenance_mode": false,
+            "maintenance_msg": "",
+            "suspicious": 0,
+            "suspicion_reasons": [
+                {
+                    "id": 0,
+                    "name": "",
+                    "description": "",
+                    "count": 0
+                }
+            ],
+            "owner_suspicion": 0,
+            "owner_trusted": false,
+            "owner_flagged": false,
+            "requests_fulfilled": 0,
+            "aborted_jobs": 0,
+            "bridge_agent": "AI Horde Worker reGen:4.1.0:https://github.com/Haidra-Org/horde-worker-reGen",
+            "models": [
+                ""
+            ],
+            "contact": "email@example.com"
+        }
+    ],
+    "paused_workers_total": 0
+}

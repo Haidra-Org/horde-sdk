@@ -31,6 +31,7 @@ their module or class, which keeps model reference pages compact.
 - [`horde_sdk.ai_horde_api.apimodels.generate.text.status`](ai_horde_api/apimodels/generate/text/status.md)
 - [`horde_sdk.ai_horde_api.apimodels.generate.text.submit`](ai_horde_api/apimodels/generate/text/submit.md)
 - [`horde_sdk.ai_horde_api.apimodels.kudos`](ai_horde_api/apimodels/kudos.md)
+- [`horde_sdk.ai_horde_api.apimodels.moderation`](ai_horde_api/apimodels/moderation.md)
 - [`horde_sdk.ai_horde_api.apimodels.operations`](ai_horde_api/apimodels/operations.md)
 - [`horde_sdk.ai_horde_api.apimodels.sharedkeys`](ai_horde_api/apimodels/sharedkeys.md)
 - [`horde_sdk.ai_horde_api.apimodels.stats`](ai_horde_api/apimodels/stats.md)

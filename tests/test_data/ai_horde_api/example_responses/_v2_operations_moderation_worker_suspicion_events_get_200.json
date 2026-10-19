@@ -1,0 +1,15 @@
+{
+    "events": [
+        {
+            "id": 0,
+            "created": "2021-01-01T00:00:00Z",
+            "worker_id": "",
+            "worker_name": "",
+            "user_id": 0,
+            "suspicion_id": 0,
+            "reason": "",
+            "detail": ""
+        }
+    ],
+    "next_cursor": 0
+}

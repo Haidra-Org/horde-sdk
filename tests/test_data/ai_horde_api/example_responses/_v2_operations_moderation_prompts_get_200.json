@@ -1,0 +1,42 @@
+{
+    "events": [
+        {
+            "id": 0,
+            "created": "2021-01-01T00:00:00Z",
+            "user_id": 0,
+            "request_id": "",
+            "worker_id": "",
+            "proxied_account": "",
+            "ipaddr": "",
+            "ip_subject_key": "",
+            "origin_text": "",
+            "models": [
+                ""
+            ],
+            "reason": "filter_rejection",
+            "outcome": "rejected",
+            "submitted_prompt": "",
+            "moderation_prompt": "",
+            "effective_prompt": "",
+            "text_state": "pending",
+            "text_url": "",
+            "text_sha256": "",
+            "text_chars": 0,
+            "text_truncated": false,
+            "text_redacted": false,
+            "ipaddr_redacted": false,
+            "anonymized": false,
+            "hold_source": "note",
+            "notes": [
+                {
+                    "id": 0,
+                    "author_id": 0,
+                    "note": "",
+                    "created": "2021-01-01T00:00:00Z"
+                }
+            ]
+        }
+    ],
+    "next_cursor": 0,
+    "retention": null
+}

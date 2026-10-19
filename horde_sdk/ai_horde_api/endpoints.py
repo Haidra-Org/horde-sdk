@@ -95,6 +95,10 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
 
     v2_operations_block_worker_ipaddr_single = "/v2/operations/block_worker_ipaddr/{worker_id}"
     v2_operations_ipaddr = "/v2/operations/ipaddr"
+    v2_operations_moderation = "/v2/operations/moderation"
+    v2_operations_moderation_prompts = "/v2/operations/moderation/prompts"
+    v2_operations_moderation_prompt_notes = "/v2/operations/moderation/prompts/{event_id}/notes"
+    v2_operations_worker_suspicion_events = "/v2/operations/moderation/worker_suspicion_events"
     v2_generate_request = "/v2/generate/request/{id}"
     v2_generate_text_request = "/v2/generate/text/request/{id}"
     v2_operations_ipaddr_single = "/v2/operations/ipaddr/{ipaddr}"

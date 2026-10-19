@@ -37,6 +37,8 @@ class AIHordePathData(GenericPathFields):
     """The ID of a collection."""
     example_id = auto()
     """The ID of an example."""
+    event_id = auto()
+    """The integer identifier of a retained moderation event."""
 
 
 _dummy_uuid = str(UUID(int=0))
@@ -52,6 +54,7 @@ _default_path_values: dict[GenericPathFields, str] = {
     AIHordePathData.style_id: _dummy_uuid,
     AIHordePathData.collection_id: _dummy_uuid,
     AIHordePathData.example_id: _dummy_uuid,
+    AIHordePathData.event_id: "1",
     AIHordePathData.ipaddr: "8.8.8.8",
     AIHordePathData.model_name: "dummy model name",
     AIHordePathData.worker_name: "dummy worker name",
