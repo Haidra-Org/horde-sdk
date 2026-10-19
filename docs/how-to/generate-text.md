@@ -15,7 +15,7 @@ Choose a text model currently reported by AI Horde and decide the maximum output
 the request. The simple client polls the text status endpoint and returns typed generations.
 
 ```python
---8<-- "examples/docs/client_recipes.py:text-request"
+--8 < --"examples/docs/client_recipes.py:text-request"
 ```
 
 Call `generate_text(model="CURRENT_MODEL_NAME")` and verify that the returned string is non-empty. A model name can
