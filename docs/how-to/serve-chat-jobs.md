@@ -51,7 +51,9 @@ pop_body = {
 if pop_response.get("chat") is True:
     chat_job = ChatJobPayload.from_pop(pop_response)
     if chat_job.undeclared_features(declaration):
-        submit_body = build_chat_fault_submit(chat_job.job_id, "koboldcpp/Example-8B", ChatFaultReason.GENERATION_ERROR)
+        submit_body = build_chat_fault_submit(
+            chat_job.job_id, "koboldcpp/Example-8B", ChatFaultReason.GENERATION_ERROR
+        )
     else:
         reply_text = run_backend(chat_job)  # the worker's own generation call
         submit_body = build_chat_reply_submit(

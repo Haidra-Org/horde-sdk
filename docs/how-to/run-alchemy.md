@@ -15,7 +15,7 @@ The source image must be a public HTTP(S) URL or a base64 string. Choose one or 
 `KNOWN_ALCHEMY_TYPES`; each form produces its own state and result.
 
 ```python
---8<-- "examples/docs/client_recipes.py:alchemy-request"
+--8 < --"examples/docs/client_recipes.py:alchemy-request"
 ```
 
 Call `caption_image("https://example.invalid/public-image.webp")` with a real public URL. Verify that `status.forms`
