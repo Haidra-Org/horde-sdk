@@ -79,6 +79,11 @@ class ChatFeature(StrEnum):
     JSON_SCHEMA = "json_schema"
     """The backend constrains the reply to a client-supplied JSON Schema."""
 
+    TOOLS_WITH_RESPONSE_FORMAT = "tools_with_response_format"
+    """The backend serves a request that offers tools and sets a response format together, applying the format to the
+    final text answer and not to tool calls, as OpenAI does. A capability rather than a guarantee, so a request needs
+    it under either conformance mode."""
+
 
 class ChatGuarantee(StrEnum):
     """Identify one atomic promise that a backend follows part of the OpenAI chat contract exactly.

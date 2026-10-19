@@ -68,6 +68,12 @@ def test_every_known_declaration_parses_to_its_enum_member(declared_name: str) -
     assert isinstance(parsed, ChatFeature) != isinstance(parsed, ChatGuarantee)
 
 
+def test_tools_with_response_format_is_a_capability() -> None:
+    """Serving tools beside a response format is declared as a capability, which applies under every conformance
+    mode, and not as a guarantee."""
+    assert parse_chat_declaration("tools_with_response_format") is ChatFeature.TOOLS_WITH_RESPONSE_FORMAT
+
+
 def test_undefined_declaration_parses_to_none() -> None:
     """A name from a newer SDK release is not mistaken for any defined capability or guarantee."""
     assert parse_chat_declaration("logprobs") is None

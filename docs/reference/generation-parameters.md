@@ -51,7 +51,9 @@ lifecycle-specific extraction, generation-feature union/intersection, and comple
 ## Chat policy
 
 `horde_sdk.generation_parameters.text.chat_policy` holds the names a chat worker declares and a chat request is
-checked against. `ChatFeature` names capabilities, such as tools or a JSON Schema constraint. `ChatGuarantee` names
+checked against. `ChatFeature` names capabilities, such as tools, a JSON Schema constraint, or serving tools and a
+response format in one request (`tools_with_response_format`, the format applying to the final text answer and not
+to tool calls). `ChatGuarantee` names
 places where a backend follows the OpenAI chat contract exactly instead of deviating from it, such as faulting an
 overlong prompt instead of trimming it. Both share one declared list; `parse_chat_declaration` resolves a name to
 either enum and returns `None` for a name this SDK release does not define.
