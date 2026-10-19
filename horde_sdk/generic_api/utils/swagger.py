@@ -7,7 +7,7 @@ import re
 import uuid
 from abc import ABC
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import requests
 from loguru import logger
@@ -213,6 +213,9 @@ class SwaggerEndpointMethodParameter(BaseModel):
     default: object | None = None
     type_: str | None = Field(default=None, alias="type")
     format_: str | None = Field(default=None, alias="format")
+    items: SwaggerModelProperty | None = None
+    collectionFormat: Literal["csv", "ssv", "tsv", "pipes", "multi"] | None = None
+    enum: list[object] | None = None
 
 
 class SwaggerEndpointResponseSchemaItem(BaseModel):
