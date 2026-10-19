@@ -23,6 +23,7 @@ their module or class, which keeps model reference pages compact.
 - [`horde_sdk.ai_horde_api.apimodels.generate.pop`](ai_horde_api/apimodels/generate/pop.md)
 - [`horde_sdk.ai_horde_api.apimodels.generate.progress`](ai_horde_api/apimodels/generate/progress.md)
 - [`horde_sdk.ai_horde_api.apimodels.generate.rate`](ai_horde_api/apimodels/generate/rate.md)
+- [`horde_sdk.ai_horde_api.apimodels.generate.request`](ai_horde_api/apimodels/generate/request.md)
 - [`horde_sdk.ai_horde_api.apimodels.generate.status`](ai_horde_api/apimodels/generate/status.md)
 - [`horde_sdk.ai_horde_api.apimodels.generate.submit`](ai_horde_api/apimodels/generate/submit.md)
 - [`horde_sdk.ai_horde_api.apimodels.generate.text.async_`](ai_horde_api/apimodels/generate/text/async_.md)

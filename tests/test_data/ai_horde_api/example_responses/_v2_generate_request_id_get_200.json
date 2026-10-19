@@ -1,0 +1,95 @@
+{
+    "prompt": "",
+    "params": {
+        "sampler_name": "ipndm",
+        "cfg_scale": 7.5,
+        "denoising_strength": 0.75,
+        "hires_fix_denoising_strength": 0.75,
+        "height": 512,
+        "width": 512,
+        "post_processing": [
+            "GFPGAN"
+        ],
+        "karras": false,
+        "scheduler": "align_your_steps",
+        "sampler_eta": 0.0,
+        "sampler_s_noise": 0.0,
+        "sampler_s_churn": 0.0,
+        "sampler_s_tmin": 0.0,
+        "sampler_s_tmax": 0.0,
+        "sampler_solver_type": "heun",
+        "sampler_order": 1.0,
+        "flow_shift": 0.0,
+        "tiling": false,
+        "hires_fix": false,
+        "clip_skip": 1,
+        "facefixer_strength": 0.75,
+        "loras": [
+            {
+                "name": "Magnagothica",
+                "model": 1.0,
+                "clip": 1.0,
+                "inject_trigger": "a",
+                "is_version": false
+            }
+        ],
+        "tis": [
+            {
+                "name": "7808",
+                "inject_ti": "prompt",
+                "strength": 1.0
+            }
+        ],
+        "special": {
+            "additionalProp1": {},
+            "additionalProp2": {},
+            "additionalProp3": {}
+        },
+        "workflow": "qr_code",
+        "transparent": false,
+        "seed": "The little seed that could",
+        "seed_variation": 1,
+        "control_type": "canny",
+        "control_strength": 0.01,
+        "image_is_control": false,
+        "return_control_map": false,
+        "extra_texts": [
+            {
+                "text": "a",
+                "reference": "aaa"
+            }
+        ],
+        "steps": 30,
+        "n": 1
+    },
+    "nsfw": false,
+    "trusted_workers": false,
+    "validated_backends": true,
+    "slow_workers": true,
+    "extra_slow_workers": false,
+    "censor_nsfw": false,
+    "workers": [
+        ""
+    ],
+    "worker_blacklist": false,
+    "models": [
+        ""
+    ],
+    "source_image": "",
+    "source_processing": "img2img",
+    "source_mask": "",
+    "extra_source_images": [
+        {
+            "image": "a",
+            "strength": 1.0
+        }
+    ],
+    "r2": true,
+    "shared": false,
+    "proxied_account": "",
+    "disable_batching": false,
+    "webhook": "https://haidra.net/00000000-0000-0000-0000-000000000000",
+    "template_fields": {
+        "caption": "a lighthouse in a storm"
+    }
+}

@@ -95,6 +95,8 @@ class AI_HORDE_API_ENDPOINT_SUBPATH(GENERIC_API_ENDPOINT_SUBPATH):
 
     v2_operations_block_worker_ipaddr_single = "/v2/operations/block_worker_ipaddr/{worker_id}"
     v2_operations_ipaddr = "/v2/operations/ipaddr"
+    v2_generate_request = "/v2/generate/request/{id}"
+    v2_generate_text_request = "/v2/generate/text/request/{id}"
     v2_operations_ipaddr_single = "/v2/operations/ipaddr/{ipaddr}"
 
     v2_documents_privacy = "/v2/documents/privacy"

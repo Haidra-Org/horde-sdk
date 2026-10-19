@@ -118,6 +118,12 @@ from horde_sdk.ai_horde_api.apimodels.generate.rate import (
     RateRequest,
     RateResponse,
 )
+from horde_sdk.ai_horde_api.apimodels.generate.request import (
+    GenerationSubmittedKobold,
+    GenerationSubmittedStable,
+    ImageGenerateSubmittedRequest,
+    TextGenerateSubmittedRequest,
+)
 from horde_sdk.ai_horde_api.apimodels.generate.status import (
     DeleteImageGenerateRequest,
     Generation,
@@ -432,6 +438,8 @@ __all__ = [
     "GenMetadataEntry",
     "Generation",
     "GenerationKobold",
+    "GenerationSubmittedKobold",
+    "GenerationSubmittedStable",
     "HordeDocument",
     "HordeModes",
     "HordePerformanceRequest",
@@ -454,6 +462,7 @@ __all__ = [
     "ImageGenerateParamMixin",
     "ImageGenerateStatusRequest",
     "ImageGenerateStatusResponse",
+    "ImageGenerateSubmittedRequest",
     "ImageGeneration",
     "ImageGenerationInputPayload",
     "ImageGenerationJobSubmitRequest",
@@ -575,6 +584,7 @@ __all__ = [
     "TextGenerateJobPopResponse",
     "TextGenerateStatusRequest",
     "TextGenerateStatusResponse",
+    "TextGenerateSubmittedRequest",
     "TextGenerationJobSubmitRequest",
     "TextStatsModelResponse",
     "TextStatsModelsRequest",
