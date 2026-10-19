@@ -296,7 +296,9 @@ class BaseHordeAPIClient(ABC):
                 request_headers_dict[specified_headers[request_key]] = request_value
                 continue
             if request_key in specified_queries:
-                request_queries_dict[specified_queries[request_key]] = request_value
+                request_queries_dict[specified_queries[request_key]] = (
+                    str(request_value).lower() if isinstance(request_value, bool) else request_value
+                )
                 continue
             if request_key in extra_header_keys:
                 # Remove any trailing underscores from the key as they are used to avoid python keyword conflicts
@@ -309,7 +311,9 @@ class BaseHordeAPIClient(ABC):
                 # Remove any trailing underscores from the key as they are used to avoid python keyword conflicts
                 api_name = request_key if not request_key.endswith("_") else request_key[:-1]
                 specified_queries[request_key] = api_name
-                request_queries_dict[api_name] = request_value
+                request_queries_dict[api_name] = (
+                    str(request_value).lower() if isinstance(request_value, bool) else request_value
+                )
                 continue
 
             request_params_dict[request_key] = request_value
