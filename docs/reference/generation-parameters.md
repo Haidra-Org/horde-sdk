@@ -36,6 +36,7 @@ the field's Pydantic bounds and docstring because zero, empty collections, and o
 | Image API payload | `horde_sdk/ai_horde_api/apimodels/generate/async_.py` | `ImageGenerationInputPayload` |
 | Text API payload | `horde_sdk/ai_horde_api/apimodels/generate/text/async_.py` | `ModelGenerationInputKobold` |
 | Alchemy names | `horde_sdk/generation_parameters/alchemy/consts.py` | `KNOWN_ALCHEMY_TYPES` |
+| Chat policy | `horde_sdk/generation_parameters/text/chat_policy.py` | `required_chat_guarantees` |
 
 Parameter validation is covered under `tests/generation_parameters`; dispatch conversion tests verify backend-facing
 representations.
@@ -46,3 +47,16 @@ representations.
 determined by where the model is used; field names and serialized shapes remain identical. See
 [Dispatch normalization](../explanation/dispatch-normalization.md) for subset semantics, per-baseline restrictions,
 lifecycle-specific extraction, generation-feature union/intersection, and complete worker-profile union.
+
+## Chat policy
+
+`horde_sdk.generation_parameters.text.chat_policy` holds the names a chat worker declares and a chat request is
+checked against. `ChatFeature` names capabilities, such as tools or a JSON Schema constraint. `ChatGuarantee` names
+places where a backend follows the OpenAI chat contract exactly instead of deviating from it, such as faulting an
+overlong prompt instead of trimming it. Both share one declared list; `parse_chat_declaration` resolves a name to
+either enum and returns `None` for a name this SDK release does not define.
+
+A request's `ChatConformance` is `strict` unless it selects `best_effort`. `required_chat_guarantees` derives the
+guarantees a strict request needs from its `ChatRequestTraits`; a best-effort request needs none.
+`violated_chat_limit` checks `ChatWorkerLimits` that depend on request traits under either mode. Context and reply
+lengths are compared by the server.
