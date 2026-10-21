@@ -30,6 +30,7 @@ from horde_sdk.generation_parameters.text.chat_policy import (
 )
 
 __all__ = [
+    "IMAGE_PART_TRANSPORTS",
     "ChatBackendFacts",
     "ChatFaultReason",
     "ChatFinishReason",
@@ -45,13 +46,30 @@ __all__ = [
 
 
 class ChatImageTransport(StrEnum):
-    """Identify how a worker accepts a chat job's images, declared in ``image_transports`` on pop."""
+    """Identify how a worker accepts a chat job's images and messages, declared in ``image_transports`` on pop."""
 
     URL = "url"
-    """The worker fetches a signed object storage URL. Preferred whenever a worker declares it."""
+    """The worker fetches a signed object storage URL for each image. Preferred whenever a worker declares it."""
 
     BASE64 = "base64"
     """The worker reads a ``data:image/jpeg;base64,`` URL inlined in the pop response."""
+
+    MESSAGES_URL = "messages_url"
+    """The worker fetches the whole ``messages`` array, images inlined as ``data:image/jpeg;base64,`` URLs, from the
+    signed object storage URL in the payload's ``messages_url``, which then replaces ``messages``. The server sends it
+    only for a request whose messages it stored as one object, so a worker declares it beside ``url`` or ``base64``
+    rather than in their place. The body is JSON served either plain or with ``Content-Encoding: gzip``; the fetcher
+    honours the header."""
+
+
+IMAGE_PART_TRANSPORTS: Final[frozenset[ChatImageTransport]] = frozenset(
+    {
+        ChatImageTransport.URL,
+        ChatImageTransport.BASE64,
+    },
+)
+"""The transports that deliver every image part. ``messages_url`` applies only to requests whose messages the server
+offloaded, so it alone does not let a worker receive images."""
 
 
 class ChatToolStrategy(StrEnum):
@@ -153,8 +171,8 @@ class ChatWorkerDeclaration:
             raise ValueError("A chat worker has to declare the model it serves chat jobs with.")
         if self.limits is None:
             raise ValueError("A chat worker has to declare the limits its chat jobs run under.")
-        if ChatFeature.VISION in self.features and not self.image_transports:
-            raise ValueError("A worker that declares vision has to declare an image transport.")
+        if ChatFeature.VISION in self.features and not self.image_transports & IMAGE_PART_TRANSPORTS:
+            raise ValueError("A worker that declares vision has to declare the url or base64 image transport.")
 
     def to_pop_fields(self) -> dict[str, Any]:
         """Return the chat fields of a text pop body, keyed as the AI-Horde text pop reads them.
@@ -199,7 +217,7 @@ class ChatBackendFacts:
     """The backend applies OpenAI's frequency penalty."""
 
     reads_images: bool = False
-    """The loaded model reads image parts; needs at least one of ``image_transports``."""
+    """The loaded model reads image parts; needs ``url`` or ``base64`` in ``image_transports``."""
 
     image_transports: frozenset[ChatImageTransport] = frozenset()
     """How the worker receives images."""
@@ -235,8 +253,8 @@ class ChatBackendFacts:
         Raises:
             ValueError: Image reading and transports, or tool rendering and the tool strategy, disagree.
         """
-        if self.reads_images != bool(self.image_transports):
-            raise ValueError("A backend reads images exactly when the worker has an image transport.")
+        if self.reads_images != bool(self.image_transports & IMAGE_PART_TRANSPORTS):
+            raise ValueError("A backend reads images exactly when the worker has the url or base64 image transport.")
         if self.renders_tools != (self.tool_strategy is not ChatToolStrategy.NONE):
             raise ValueError("A backend renders tools exactly when it has a tool strategy.")
 

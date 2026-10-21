@@ -209,6 +209,7 @@ def test_operator_temperature_cap_narrows_and_never_widens() -> None:
     [
         {"reads_images": True},
         {"image_transports": frozenset({ChatImageTransport.URL})},
+        {"reads_images": True, "image_transports": frozenset({ChatImageTransport.MESSAGES_URL})},
         {"renders_tools": True},
         {"tool_strategy": ChatToolStrategy.GRAMMAR},
     ],
@@ -217,6 +218,13 @@ def test_contradicting_facts_are_refused(facts_fields: dict[str, Any]) -> None:
     """Image reading without a transport and tool rendering without a strategy, or the reverse, are refused."""
     with pytest.raises(ValueError):
         ChatBackendFacts(**facts_fields)
+
+
+def test_a_text_only_backend_may_declare_the_messages_url_transport() -> None:
+    """``messages_url`` delivers offloaded messages, which a backend that reads no images also receives."""
+    facts = ChatBackendFacts(image_transports=frozenset({ChatImageTransport.MESSAGES_URL}))
+
+    assert facts.reads_images is False
 
 
 def test_fault_submit_shape() -> None:
