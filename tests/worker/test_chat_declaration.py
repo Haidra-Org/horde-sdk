@@ -271,6 +271,26 @@ def test_reply_submit_shape_with_tool_calls_and_usage() -> None:
     }
 
 
+def test_reply_submit_carries_reasoning_beside_the_content_and_its_count() -> None:
+    """Reasoning travels in its own field, never inside ``content``."""
+    submit_body = build_chat_reply_submit(
+        "job-1",
+        "m",
+        {"content": "Blue.", "reasoning_content": "The user asked for a colour."},
+        ChatFinishReason.STOP,
+        ChatUsage(completion_tokens=12, reasoning_tokens=9),
+    )
+
+    assert submit_body == {
+        "id": "job-1",
+        "model_id": "m",
+        "message": {"role": "assistant", "content": "Blue.", "reasoning_content": "The user asked for a colour."},
+        "finish_reason": "stop",
+        "completion_tokens": 12,
+        "reasoning_tokens": 9,
+    }
+
+
 def test_text_reply_submit_shape() -> None:
     """A text reply without usage carries only the required keys; an empty content is a completed reply."""
     assert build_chat_reply_submit("job-1", "m", {"content": ""}, ChatFinishReason.STOP) == {

@@ -340,6 +340,9 @@ class ChatUsage:
     completion_tokens: int | None = None
     """The tokens of the reply."""
 
+    reasoning_tokens: int | None = None
+    """How many of ``completion_tokens`` were the model's reasoning."""
+
 
 def build_chat_fault_submit(job_id: str, model_id: str, reason: ChatFaultReason) -> dict[str, Any]:
     """Return the submit body of a chat job the worker faulted.
@@ -376,15 +379,17 @@ def build_chat_reply_submit(
     Args:
         job_id: The popped job's ``id``.
         model_id: The declared ``model_id`` the job was assigned under.
-        message: The reply: ``content`` (a string, or null only with tool calls) and optional ``tool_calls`` as the
-            backend minted them. The role is always ``assistant``.
+        message: The reply: ``content`` (a string, or null only with tool calls), optional ``tool_calls`` as the
+            backend minted them and optional ``reasoning_content``, the model's reasoning, such as a ``<think>`` block
+            the backend split off. Reasoning never belongs in ``content``, including an unclosed block cut off at the
+            length limit. The role is always ``assistant``.
         finish_reason: Why the backend stopped.
         usage: The token counts the backend reported, if any.
         native_finish_reason: The backend's own finish reason, at most 32 characters.
 
     Returns:
         ``id``, ``model_id``, ``message``, ``finish_reason`` and whichever of ``native_finish_reason``,
-        ``prompt_tokens`` and ``completion_tokens`` are known.
+        ``prompt_tokens``, ``completion_tokens`` and ``reasoning_tokens`` are known.
 
     Raises:
         ValueError: The reply has neither content nor tool calls, or finishes with ``tool_calls`` without any.
@@ -402,6 +407,9 @@ def build_chat_reply_submit(
     }
     if tool_calls:
         submitted_message["tool_calls"] = [dict(tool_call) for tool_call in tool_calls]
+    reasoning_content = message.get("reasoning_content")
+    if reasoning_content is not None:
+        submitted_message["reasoning_content"] = reasoning_content
     submit_body: dict[str, Any] = {
         "id": job_id,
         "model_id": model_id,
@@ -414,6 +422,8 @@ def build_chat_reply_submit(
         submit_body["prompt_tokens"] = usage.prompt_tokens
     if usage is not None and usage.completion_tokens is not None:
         submit_body["completion_tokens"] = usage.completion_tokens
+    if usage is not None and usage.reasoning_tokens is not None:
+        submit_body["reasoning_tokens"] = usage.reasoning_tokens
     return submit_body
 
 
