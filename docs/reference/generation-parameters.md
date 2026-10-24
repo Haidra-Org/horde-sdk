@@ -60,6 +60,10 @@ deviating from it, such as faulting an overlong prompt instead of trimming it. B
 `KNOWN_CHAT_DECLARATIONS`; `parse_chat_declaration` resolves a declared value to either enum and returns `None` for a
 value this SDK release does not define. The vocabulary grows by adding values; a value never changes meaning.
 
+`ChatReasoningEffort` holds OpenAI's `reasoning_effort` values, `none` through `xhigh`. A request that sets any of
+them, `none` included, needs the `reasoning_effort` capability, and the server forwards the value to the worker
+unchanged.
+
 A request's `ChatConformance` is `strict` unless it selects `best_effort`. `required_chat_guarantees` derives the
 guarantees a strict request needs from its `ChatRequestTraits`; a best-effort request needs none.
 `violated_chat_limit` checks the `ChatWorkerLimits` that depend on request traits under either mode and returns the

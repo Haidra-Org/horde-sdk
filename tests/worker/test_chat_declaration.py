@@ -128,6 +128,18 @@ def test_grammar_strategy_declares_tool_guarantees() -> None:
     )
 
 
+def test_reasoning_effort_is_declared_only_when_the_backend_applies_it() -> None:
+    """The ``reasoning_effort`` capability follows its fact and an operator can withhold it."""
+    facts = ChatBackendFacts(applies_reasoning_effort=True)
+
+    unbacked = declare_from_backend(ChatBackendFacts(), model_id="m", limits=_LIMITS)
+
+    assert ChatFeature.REASONING_EFFORT in declare_from_backend(facts, model_id="m", limits=_LIMITS).features
+    assert ChatFeature.REASONING_EFFORT not in unbacked.features
+    withheld = declare_from_backend(facts, model_id="m", limits=_LIMITS, exclude=[ChatFeature.REASONING_EFFORT])
+    assert ChatFeature.REASONING_EFFORT not in withheld.features
+
+
 def test_template_strategy_declares_tools_without_tool_guarantees() -> None:
     """Calls parsed from a templated reply are not enforced, so neither tool guarantee is declared."""
     facts = ChatBackendFacts(
@@ -344,6 +356,43 @@ def test_tools_job_payload_is_read_with_its_requirements() -> None:
         limits=_LIMITS,
     )
     assert chat_job.undeclared_features(declaration) == frozenset({ChatFeature.SEED})
+
+
+def test_reasoning_effort_job_payload_is_read_with_its_requirement() -> None:
+    """A job carrying ``reasoning_effort`` exposes the value as sent and needs the capability."""
+    job = {
+        "id": "job-3",
+        "model": "m",
+        "chat": True,
+        "payload": {
+            **_SAMPLING_PAYLOAD,
+            "messages": [{"role": "user", "content": "Hi"}],
+            "reasoning_effort": "none",
+        },
+    }
+
+    chat_job = ChatJobPayload.from_pop(job)
+
+    assert chat_job.reasoning_effort == "none"
+    assert chat_job.requirements.features == frozenset({ChatFeature.REASONING_EFFORT})
+
+
+def test_job_payload_without_reasoning_effort_reads_none() -> None:
+    """A job whose client sent no ``reasoning_effort`` reads ``None`` and needs no capability for it."""
+    job = {
+        "id": "job-4",
+        "model": "m",
+        "chat": True,
+        "payload": {
+            **_SAMPLING_PAYLOAD,
+            "messages": [{"role": "user", "content": "Hi"}],
+        },
+    }
+
+    chat_job = ChatJobPayload.from_pop(job)
+
+    assert chat_job.reasoning_effort is None
+    assert ChatFeature.REASONING_EFFORT not in chat_job.requirements.features
 
 
 def test_vision_job_payload_needs_vision() -> None:

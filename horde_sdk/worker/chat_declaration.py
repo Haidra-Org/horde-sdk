@@ -247,6 +247,9 @@ class ChatBackendFacts:
     tools_temperature_cap: float | None = None
     """The temperature the backend clamps to when tools are present; ``None`` when it applies any temperature."""
 
+    applies_reasoning_effort: bool = False
+    """The backend applies OpenAI's ``reasoning_effort``, ``none`` disabling thinking."""
+
     def __post_init__(self) -> None:
         """Refuse facts that contradict each other.
 
@@ -304,6 +307,7 @@ def declare_from_backend(
             and facts.renders_tools
             and (facts.constrains_json_object or facts.constrains_json_schema)
         ),
+        ChatFeature.REASONING_EFFORT: facts.applies_reasoning_effort,
         ChatGuarantee.TOOL_CHOICE_ENFORCED: facts.tool_strategy is ChatToolStrategy.GRAMMAR,
         ChatGuarantee.SINGLE_TOOL_CALL_ENFORCED: facts.tool_strategy is ChatToolStrategy.GRAMMAR,
         ChatGuarantee.STRUCTURED_OUTPUT_ENFORCED: facts.constrains_json_schema and facts.faults_on_unbuildable_schema,
@@ -502,6 +506,12 @@ class ChatJobPayload:
     seed: int | None
     """The sampling seed, or ``None`` when the client sent none."""
 
+    reasoning_effort: str | None
+    """The client's ``reasoning_effort``, one of
+    [`ChatReasoningEffort`][horde_sdk.generation_parameters.text.chat_policy.ChatReasoningEffort] as the server
+    forwards it, or ``None`` when the client sent none. Kept as the string so a value added in a later SDK release
+    does not fail the pop."""
+
     requirements: ChatRequirements
     """What the job needs, derived from the payload as for a ``strict`` request."""
 
@@ -545,6 +555,7 @@ class ChatJobPayload:
             min_p=payload["min_p"],
             stop_sequence=stop_sequence,
             seed=payload.get("seed"),
+            reasoning_effort=payload.get("reasoning_effort"),
             requirements=chat_request_requirements(payload),
         )
 

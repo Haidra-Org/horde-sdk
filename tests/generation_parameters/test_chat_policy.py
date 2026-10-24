@@ -14,6 +14,7 @@ from horde_sdk.generation_parameters.text.chat_policy import (
     ChatFeature,
     ChatGuarantee,
     ChatLimitField,
+    ChatReasoningEffort,
     ChatRequestTraits,
     ChatResponseFormatType,
     ChatServiceGap,
@@ -157,14 +158,14 @@ def test_strict_tool_choice_without_offered_tools_requires_no_enforcement() -> N
     )
 
 
-def test_strict_serial_tool_calls_require_single_call_enforcement() -> None:
-    """Offered tools with parallel calls disabled require at most one call per reply."""
+def test_strict_serial_tool_calls_require_no_single_call_enforcement() -> None:
+    """Offered tools with parallel calls disabled need no guarantee; the server reduces a strict reply to one call."""
     traits = dataclasses.replace(
         _TOOL_REQUEST,
         parallel_tool_calls=False,
     )
 
-    assert ChatGuarantee.SINGLE_TOOL_CALL_ENFORCED in required_chat_guarantees(traits, ChatConformance.STRICT)
+    assert ChatGuarantee.SINGLE_TOOL_CALL_ENFORCED not in required_chat_guarantees(traits, ChatConformance.STRICT)
 
 
 def test_strict_parallel_tool_calls_require_no_single_call_enforcement() -> None:
@@ -396,8 +397,8 @@ def test_best_effort_body_requires_no_guarantee() -> None:
 
 
 def test_strict_tool_body_requires_tool_guarantees() -> None:
-    """A strict body forcing one function without parallel calls needs the tool capability and both tool
-    guarantees."""
+    """A strict body forcing one function without parallel calls needs the tool capability and the tool choice
+    guarantee, and not the single call guarantee."""
     body = {
         **_MINIMAL_BODY,
         "tools": [_WEATHER_TOOL],
@@ -413,7 +414,6 @@ def test_strict_tool_body_requires_tool_guarantees() -> None:
         {
             ChatGuarantee.PROMPT_OVERFLOW_REFUSED,
             ChatGuarantee.TOOL_CHOICE_ENFORCED,
-            ChatGuarantee.SINGLE_TOOL_CALL_ENFORCED,
         },
     )
 
@@ -484,6 +484,29 @@ def test_default_valued_penalties_and_text_format_require_nothing() -> None:
     }
 
     assert chat_request_requirements(body).features == frozenset()
+
+
+@pytest.mark.parametrize("reasoning_effort", list(ChatReasoningEffort))
+def test_reasoning_effort_requires_its_capability(reasoning_effort: ChatReasoningEffort) -> None:
+    """Every reasoning effort needs the capability, ``none`` included, since a backend that ignores it reasons."""
+    body = {
+        **_MINIMAL_BODY,
+        "reasoning_effort": reasoning_effort.value,
+    }
+
+    assert chat_request_requirements(body).features == frozenset({ChatFeature.REASONING_EFFORT})
+
+
+def test_reasoning_effort_values_are_openais() -> None:
+    """The accepted values are OpenAI's documented ``reasoning_effort`` set."""
+    assert {reasoning_effort.value for reasoning_effort in ChatReasoningEffort} == {
+        "none",
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+    }
 
 
 def test_tool_fields_without_tools_are_ignored() -> None:

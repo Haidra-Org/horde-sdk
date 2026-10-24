@@ -51,6 +51,7 @@ __all__ = [
     "ChatFeature",
     "ChatGuarantee",
     "ChatLimitField",
+    "ChatReasoningEffort",
     "ChatRequestTraits",
     "ChatRequirements",
     "ChatResponseFormatType",
@@ -101,6 +102,11 @@ class ChatFeature(StrEnum):
     final text answer and not to tool calls, as OpenAI does. A capability rather than a guarantee, so a request needs
     it under either conformance mode."""
 
+    REASONING_EFFORT = "reasoning_effort"
+    """The backend applies the requested
+    [`ChatReasoningEffort`][horde_sdk.generation_parameters.text.chat_policy.ChatReasoningEffort] to the model's
+    reasoning; ``none`` disables thinking."""
+
 
 class ChatGuarantee(StrEnum):
     """Identify one atomic promise that a backend follows part of the OpenAI chat contract exactly.
@@ -119,7 +125,12 @@ class ChatGuarantee(StrEnum):
     """
 
     SINGLE_TOOL_CALL_ENFORCED = "single_tool_call_enforced"
-    """Under ``parallel_tool_calls: false`` the reply carries at most one tool call."""
+    """Under ``parallel_tool_calls: false`` the reply carries at most one tool call.
+
+    A worker may declare it, and no request requires it: under ``strict`` the server reduces a reply's tool calls to
+    the first when parallel calls are off, so the client receives at most one call from any worker, and routing on
+    the guarantee would only narrow the workers that can serve the request.
+    """
 
     STRUCTURED_OUTPUT_ENFORCED = "structured_output_enforced"
     """A ``json_schema`` reply satisfies the schema or the job is faulted.
@@ -203,6 +214,32 @@ class ChatResponseFormatType(StrEnum):
     """The reply must satisfy a client-supplied JSON Schema."""
 
 
+class ChatReasoningEffort(StrEnum):
+    """Identify an OpenAI ``reasoning_effort`` value, from no reasoning to the most.
+
+    The values are OpenAI's documented set. The server forwards the value unchanged and applies no default, so how
+    much reasoning each value buys is the backend's mapping.
+    """
+
+    NONE = "none"
+    """The model does not reason before answering."""
+
+    MINIMAL = "minimal"
+    """The least reasoning short of none."""
+
+    LOW = "low"
+    """Little reasoning."""
+
+    MEDIUM = "medium"
+    """Moderate reasoning."""
+
+    HIGH = "high"
+    """Much reasoning."""
+
+    XHIGH = "xhigh"
+    """The most reasoning; OpenAI accepts it only for some models."""
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ChatRequestTraits:
     """Represents the parts of a chat request that decide which guarantees and limits apply.
@@ -254,12 +291,14 @@ def required_chat_guarantees(
     - forwarded tools with a ``required`` choice, or a choice that specifies one function, require
       [`TOOL_CHOICE_ENFORCED`][horde_sdk.generation_parameters.text.chat_policy.ChatGuarantee.TOOL_CHOICE_ENFORCED];
       ``tool_choice: none`` requires nothing because the server does not forward the definitions;
-    - forwarded tools without parallel tool calls require
-      [`SINGLE_TOOL_CALL_ENFORCED`][horde_sdk.generation_parameters.text.chat_policy.ChatGuarantee.SINGLE_TOOL_CALL_ENFORCED];
     - a strict ``json_schema`` response format requires
       [`STRUCTURED_OUTPUT_ENFORCED`][horde_sdk.generation_parameters.text.chat_policy.ChatGuarantee.STRUCTURED_OUTPUT_ENFORCED];
     - every request requires
       [`PROMPT_OVERFLOW_REFUSED`][horde_sdk.generation_parameters.text.chat_policy.ChatGuarantee.PROMPT_OVERFLOW_REFUSED].
+
+    Forwarded tools without parallel tool calls do not require
+    [`SINGLE_TOOL_CALL_ENFORCED`][horde_sdk.generation_parameters.text.chat_policy.ChatGuarantee.SINGLE_TOOL_CALL_ENFORCED],
+    because the server reduces a strict reply's tool calls to the first itself.
 
     Args:
         traits: The request's policy-relevant traits.
@@ -274,8 +313,6 @@ def required_chat_guarantees(
     required_guarantees = {ChatGuarantee.PROMPT_OVERFLOW_REFUSED}
     if traits.forwards_tools and traits.tool_choice_mode is not ChatToolChoiceMode.AUTO:
         required_guarantees.add(ChatGuarantee.TOOL_CHOICE_ENFORCED)
-    if traits.forwards_tools and not traits.parallel_tool_calls:
-        required_guarantees.add(ChatGuarantee.SINGLE_TOOL_CALL_ENFORCED)
     if traits.response_format_type is ChatResponseFormatType.JSON_SCHEMA and traits.strict_schema:
         required_guarantees.add(ChatGuarantee.STRUCTURED_OUTPUT_ENFORCED)
     return frozenset(required_guarantees)
@@ -512,6 +549,8 @@ def chat_request_requirements(body: Mapping[str, Any]) -> ChatRequirements:
     documented default needs no capability, so a zero penalty is served by any chat worker. The capabilities are:
 
     - ``seed`` when a seed is set;
+    - ``reasoning_effort`` when a reasoning effort is set, ``none`` included, since a backend that ignores the key
+      would reason anyway;
     - each penalty whose value is not zero;
     - ``vision`` when a message carries an ``image_url`` part;
     - ``tools`` when the request forwards tool definitions, or any message is a ``tool`` message or carries tool
@@ -541,6 +580,8 @@ def chat_request_requirements(body: Mapping[str, Any]) -> ChatRequirements:
     features: set[ChatFeature] = set()
     if body.get("seed") is not None:
         features.add(ChatFeature.SEED)
+    if body.get(ChatFeature.REASONING_EFFORT.value) is not None:
+        features.add(ChatFeature.REASONING_EFFORT)
     for penalty_feature in _PENALTY_FEATURES:
         default_penalty = CHAT_SAMPLING_DEFAULTS[penalty_feature.value]
         penalty = body.get(penalty_feature.value)
