@@ -878,7 +878,7 @@ class ModelStyleInputParamsKobold(HordeResponseBaseModel, _BasePayloadKoboldMixi
     v2 API Model: `ModelStyleInputParamsKobold`
     """
 
-    max_length: int | None = Field(default=None, ge=16, le=4096)
+    max_length: int | None = Field(default=None, ge=16, le=16384)
     """Number of tokens to generate."""
 
     max_context_length: int | None = Field(default=None, ge=80, le=1048576)

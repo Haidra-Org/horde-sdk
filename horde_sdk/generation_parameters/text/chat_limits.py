@@ -64,8 +64,9 @@ MIN_CHAT_MAX_TOKENS: Final[int] = 16
 """The smallest token limit served; the native minimum for ``max_length``. A smaller limit OpenAI would accept is
 refused rather than raised, since raising it would generate more tokens than the client asked for."""
 
-MAX_CHAT_MAX_TOKENS: Final[int] = 4096
-"""The largest token limit served; the native cap for ``max_length``."""
+MAX_CHAT_MAX_TOKENS: Final[int] = 16384
+"""The largest token limit served; the native cap for ``max_length``. A request above the AI Horde's free output
+allowance holds its kudos upfront, and a worker's advertised ``max_length`` bounds what it serves."""
 
 MAX_CHAT_STOP_SEQUENCES: Final[int] = 4
 """The most stop sequences a request may carry, as OpenAI documents."""

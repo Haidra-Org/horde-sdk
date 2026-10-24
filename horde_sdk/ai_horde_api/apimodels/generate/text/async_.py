@@ -215,7 +215,7 @@ class ModelPayloadRootKobold(_BasePayloadKoboldMixin):
     n: int | None = Field(default=None, examples=[1], ge=1, le=20)
     """The number of generations to produce."""
 
-    max_length: int | None = Field(80, ge=16, le=4096)
+    max_length: int | None = Field(80, ge=16, le=16384)
     """Number of tokens to generate."""
 
     max_context_length: int | None = Field(

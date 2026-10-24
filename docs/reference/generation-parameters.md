@@ -97,7 +97,7 @@ server imports them, so a client checks against the values the server applies.
 | `MAX_CHAT_TOOL_SPEC_BYTES` | 256 KiB | Compact JSON of `tools`, `tool_choice` and `response_format` together |
 | `MAX_CHAT_TEXT_BYTES` | 1 MiB | UTF-8 message text, with tool call names and arguments in the history |
 | `MAX_CHAT_SCHEMA_NESTING` | 10 | Levels below the root of a tool `parameters` or `response_format` schema |
-| `MIN_CHAT_MAX_TOKENS`, `MAX_CHAT_MAX_TOKENS` | 16, 4096 | `max_tokens` and `max_completion_tokens` |
+| `MIN_CHAT_MAX_TOKENS`, `MAX_CHAT_MAX_TOKENS` | 16, 16384 | `max_tokens` and `max_completion_tokens` |
 | `OPENAI_MIN_MAX_TOKENS` | 1 | The smallest token limit OpenAI accepts |
 | `MAX_CHAT_STOP_SEQUENCES` | 4 | Entries of a `stop` list |
 | `OPENAI_SAMPLING_RANGES` | 0 to 2, 0 to 1, -2 to 2 | `temperature`; `top_p`; both penalties |
